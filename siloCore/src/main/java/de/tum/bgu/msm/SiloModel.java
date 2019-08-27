@@ -130,7 +130,7 @@ public final class SiloModel {
 
             dataContainer.prepareYear(year);
             if (year == properties.main.baseYear || year != properties.main.startYear) {
-                SiloUtil.summarizeMicroData(year, modelContainer, dataContainer);
+                SiloUtil.summarizeMicroData(year, dataContainer);
             }
             simulator.simulate(year);
 			dataContainer.endYear(year);
@@ -158,7 +158,7 @@ public final class SiloModel {
 		if (properties.main.printOutFinalSyntheticPopulation) {
 			SummarizeData.writeOutDevelopmentFile(dataContainer);
 		}
-		SiloUtil.summarizeMicroData(properties.main.endYear, modelContainer, dataContainer);
+		SiloUtil.summarizeMicroData(properties.main.endYear, dataContainer);
 		SiloUtil.finish();
 		SiloUtil.modelStopper("removeFile");
         SiloUtil.writeOutTimeTracker(timeTracker);
