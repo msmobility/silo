@@ -48,9 +48,6 @@ public class SiloMatsimTestMuc {
     @Test
 	public final void testMain() {
 
-		SiloTestUtils.cleanUpMicrodataFiles();
-		SiloTestUtils.cleanUpOtherFiles();
-
         String path = "./test/muc/siloMatsimMucTest.properties";
 		Config config = ConfigUtils.loadConfig("./test/muc/matsim_input/config.xml") ;
 
@@ -60,8 +57,8 @@ public class SiloMatsimTestMuc {
 			e.printStackTrace();
 		}
 
-		File dir = new File("./test/muc/matsimOutput");
-		config.controler().setOutputDirectory(dir.getAbsolutePath());
+		File dir = new File("./test/muc/scenOutput/test/");
+
 		config.global().setNumberOfThreads(1);
 		config.parallelEventHandling().setNumberOfThreads(1);
 		config.qsim().setNumberOfThreads(1);
@@ -86,8 +83,6 @@ public class SiloMatsimTestMuc {
 
 		if (CLEANUP_AFTER_TEST) {
 			IOUtils.deleteDirectoryRecursively(Paths.get(dir.getAbsolutePath()));
-			SiloTestUtils.cleanUpMicrodataFiles();
-			SiloTestUtils.cleanUpOtherFiles();
 		}
 	}
 
