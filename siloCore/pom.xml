@@ -68,21 +68,9 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
+                <version>3.8.0</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <showWarnings>false</showWarnings>
-                    <showDeprecation>false</showDeprecation>
-                    <encoding>UTF-8</encoding>
-                    <!-- configure initial and maximal memory for compiling -->
-                    <fork>true</fork>
-                    <meminitial>128m</meminitial>
-                    <maxmem>512m</maxmem>
-                    <compilerArguments>
-                        <Xmaxwarns>4000</Xmaxwarns>
-                        <Xmaxerrs>100</Xmaxerrs>
-                    </compilerArguments>
+                    <release>11</release>
                 </configuration>
             </plugin>
             <plugin>
@@ -246,14 +234,14 @@
             <scope>test</scope>
         </dependency>
         <!--<dependency>-->
-            <!--<groupId>org.geotools</groupId>-->
-            <!--<artifactId>gt-opengis</artifactId>-->
-            <!--<version>${geotools.version}</version>-->
+        <!--<groupId>org.geotools</groupId>-->
+        <!--<artifactId>gt-opengis</artifactId>-->
+        <!--<version>${geotools.version}</version>-->
         <!--</dependency>-->
         <!--<dependency>-->
-            <!--<groupId>com.vividsolutions</groupId>-->
-            <!--<artifactId>jts</artifactId>-->
-            <!--<version>1.16</version>-->
+        <!--<groupId>com.vividsolutions</groupId>-->
+        <!--<artifactId>jts</artifactId>-->
+        <!--<version>1.16</version>-->
         <!--</dependency>-->
         <dependency>
             <groupId>org.jfree</groupId>
@@ -326,20 +314,20 @@
             </exclusions>
         </dependency>
         <!--<dependency>-->
-            <!--<groupId>org.matsim.contrib</groupId>-->
-            <!--<artifactId>matsim4urbansim</artifactId>-->
-            <!--<version>${matsimVersion}</version>-->
-            <!--<scope>compile</scope>-->
-            <!--<exclusions>-->
-                <!--<exclusion>-->
-                    <!--<groupId>javax.media</groupId>-->
-                    <!--<artifactId>jai_core</artifactId>-->
-                <!--</exclusion>-->
-                <!--<exclusion>-->
-                    <!--<groupId>jgridshift</groupId>-->
-                    <!--<artifactId>jgridshift</artifactId>-->
-                <!--</exclusion>-->
-            <!--</exclusions>-->
+        <!--<groupId>org.matsim.contrib</groupId>-->
+        <!--<artifactId>matsim4urbansim</artifactId>-->
+        <!--<version>${matsimVersion}</version>-->
+        <!--<scope>compile</scope>-->
+        <!--<exclusions>-->
+        <!--<exclusion>-->
+        <!--<groupId>javax.media</groupId>-->
+        <!--<artifactId>jai_core</artifactId>-->
+        <!--</exclusion>-->
+        <!--<exclusion>-->
+        <!--<groupId>jgridshift</groupId>-->
+        <!--<artifactId>jgridshift</artifactId>-->
+        <!--</exclusion>-->
+        <!--</exclusions>-->
         <!--</dependency>-->
         <dependency>
             <groupId>org.matsim.contrib</groupId>
@@ -412,5 +400,8 @@
         <!--<geotools.version>20.2</geotools.version>-->
         <skipTestJar>false</skipTestJar> <!--Overridden in the bintray profile-->
         <matsimVersion>11.0</matsimVersion>
+        <java.version>1.11</java.version>
+        <maven.compiler.source>1.11</maven.compiler.source>
+        <maven.compiler.target>1.11</maven.compiler.target>
     </properties>
 </project>
