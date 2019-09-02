@@ -108,13 +108,14 @@ public class UpdateCarOwnershipModelMuc extends AbstractModel implements ModelUp
                 int hhIncomePlus = 0;
                 int hhIncomeMinus = 0;
                 int licensePlus = 0;
-                boolean changeResidence = newHousehold.getDwellingId() == oldHousehold.getDwellingId();
 
+                boolean changeResidence = newHousehold.getDwellingId() == oldHousehold.getDwellingId();
 
                 if (newHousehold.getHhSize() > oldHousehold.getHhSize()){
                     hhSizePlus = 1;
                 } else if (newHousehold.getHhSize() < oldHousehold.getHhSize()){
                     hhSizeMinus = 1;
+
                 }
                 final int newIncome = HouseholdUtil.getHhIncome(newHousehold);
                 final int oldIncome = HouseholdUtil.getHhIncome(oldHousehold);
@@ -123,6 +124,7 @@ public class UpdateCarOwnershipModelMuc extends AbstractModel implements ModelUp
                 } else if (newIncome < oldIncome - 6000) {
                     hhIncomeMinus = 1;
                 }
+
                 if (HouseholdUtil.getHHLicenseHolders(newHousehold) > HouseholdUtil.getHHLicenseHolders(oldHousehold)){
                     licensePlus = 1;
                 }
@@ -150,10 +152,10 @@ public class UpdateCarOwnershipModelMuc extends AbstractModel implements ModelUp
         }
         final double numberOfHh = householdDataManager.getHouseholds().size();
         //todo reconsider to print out model results and how to pass them to the ResultsMonitor
-        logger.info("  Simulated household added a car" + counter[0] + " (" +
+        logger.info("  Simulated household added a car: " + counter[0] + " (" +
                 SiloUtil.rounder((100f * counter[0] / numberOfHh), 0) + "% of hh)");
 
-        logger.info("  Simulated household relinquished a car" + counter[1] + " (" +
+        logger.info("  Simulated household relinquished a car: " + counter[1] + " (" +
                 SiloUtil.rounder((100f * counter[1] / numberOfHh), 0) + "% of hh)");
 
     }

@@ -289,7 +289,17 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
 
     @Override
     public void saveHouseholdMemento(Household hh) {
-        householdMementos.putIfAbsent(hh.getId(), hhFactory.duplicate(hh, hh.getId()));
+        Household householdMemento = hhFactory.duplicate(hh, hh.getId());
+        //do not confuse with duplicate household. That one changes the id of the hh, while this methods keeps it.
+        //similarly, the memento hh should keep the dwelling id of the original, otherwise silo will understand that
+        //was always relocated.
+        householdMemento.setDwelling(hh.getDwellingId());
+        for (Person originalPerson : hh.getPersons().values()) {
+            Person personDuplicate = ppFactory.duplicate(originalPerson, getNextPersonId());
+            personDuplicate.setRole(originalPerson.getRole());
+            addPersonToHousehold(personDuplicate, householdMemento);
+        }
+        householdMementos.putIfAbsent(hh.getId(), householdMemento);
     }
 
     /**
