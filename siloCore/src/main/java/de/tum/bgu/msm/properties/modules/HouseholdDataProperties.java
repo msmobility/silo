@@ -13,13 +13,8 @@ public final class HouseholdDataProperties {
     public final String selectedMetroStopsFile;
     public final String householdsNearMetroFile;
 
-
     public final String householdFinalFileName;
     public final String personFinalFileName;
-    //public final String jobsFinalFileName;
-    //public final String dwellingsFinalFileName;
-
-
 
     public HouseholdDataProperties(ResourceBundle bundle) {
         PropertiesUtil.newPropertySubmodule("Synthetic persons and households for the base year");
@@ -34,11 +29,5 @@ public final class HouseholdDataProperties {
         summarizeMetro = PropertiesUtil.getBooleanProperty(bundle, "summarize.hh.near.selected.metro.stp", false);
         selectedMetroStopsFile = PropertiesUtil.getStringProperty(bundle, "selected.metro.stops","input/housingNearMetroTracer.csv" );
         householdsNearMetroFile = PropertiesUtil.getStringProperty(bundle, "hh.near.selected.metro.stops.summary", "householdNearSelectedMetroStops");
-
-
-
-
-
-
     }
 }

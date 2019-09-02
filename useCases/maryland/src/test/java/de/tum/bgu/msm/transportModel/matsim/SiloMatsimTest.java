@@ -5,7 +5,6 @@ import de.tum.bgu.msm.transportModel.SiloTestUtils;
 import junitx.framework.FileAssert;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.matsim.api.core.v01.Scenario;
@@ -80,7 +79,7 @@ public class SiloMatsimTest {
 			log.info("Checking MATSim plans file ...");
 
 			final String referenceFilename = utils.getInputDirectory() + "test_matsim_2001.output_plans.xml.gz";
-			final String outputFilename = utils.getOutputDirectory() + "test_matsim_2001/test_matsim_2001.output_plans.xml.gz";
+			final String outputFilename = "./test/scenarios/annapolis/scenOutput/test_matsim/matsim/2001/2001.output_plans.xml.gz";
 
 			Scenario scRef = ScenarioUtils.createScenario(ConfigUtils.createConfig()) ;
 			Scenario scOut = ScenarioUtils.createScenario(ConfigUtils.createConfig()) ;
@@ -92,7 +91,7 @@ public class SiloMatsimTest {
 		}{
 			log.info("Checking MATSim events file ...");
 			final String eventsFilenameReference = utils.getInputDirectory() + "test_matsim_2001.output_events.xml.gz";
-			final String eventsFilenameNew = utils.getOutputDirectory() + "test_matsim_2001//test_matsim_2001.output_events.xml.gz";
+			final String eventsFilenameNew = "./test/scenarios/annapolis/scenOutput/test_matsim/matsim/2001/2001.output_events.xml.gz";
 			assertEquals("Different event files.", FILES_ARE_EQUAL, EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew));
 		}
 		
