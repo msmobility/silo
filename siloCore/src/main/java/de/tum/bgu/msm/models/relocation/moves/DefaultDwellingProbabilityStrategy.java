@@ -13,6 +13,6 @@ public class DefaultDwellingProbabilityStrategy extends JavaScriptCalculator<Dou
     }
 
     public double calculateSelectDwellingProbability(double dwellingUtility) {
-        return super.calculate("calculateSelectDwellingProbability", dwellingUtility).doubleValue();
+        return super.calculate("calculateSelectDwellingProbability", dwellingUtility);
     }
 }
