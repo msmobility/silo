@@ -8,7 +8,7 @@ import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.Job;
-import de.tum.bgu.msm.data.jobTypes.kagawa.KagawaJobType;
+import de.tum.bgu.msm.data.jobTypes.kagawa.JobTypeTak;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.mito.MitoDataConverter;
 import de.tum.bgu.msm.schools.DataContainerWithSchoolsImpl;
@@ -77,7 +77,8 @@ public class MitoDataConverterTak implements MitoDataConverter {
             MitoHousehold household = new MitoHousehold(
                     siloHousehold.getId(),
                     HouseholdUtil.getHhIncome(siloHousehold) / 12,
-                    siloHousehold.getAutos(), zone);
+                    siloHousehold.getAutos());
+            household.setHomeZone(zone);
 
             Coordinate coordinate;
             if (dwelling.getCoordinate() != null) {
@@ -155,7 +156,7 @@ public class MitoDataConverterTak implements MitoDataConverter {
             final MitoZone zone = zones.get(jj.getZoneId());
             final String type = jj.getType().toUpperCase();
             try {
-                de.tum.bgu.msm.data.jobTypes.JobType mitoJobType = KagawaJobType.valueOf(type);
+                de.tum.bgu.msm.data.jobTypes.JobType mitoJobType = JobTypeTak.valueOf(type);
                 zone.addEmployeeForType(mitoJobType);
             } catch (IllegalArgumentException e) {
                 logger.warn("Job type " + type + " not defined for MITO implementation: Munich");
