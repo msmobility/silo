@@ -8,6 +8,7 @@ import de.tum.bgu.msm.data.geo.MunichZone;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.Job;
+import de.tum.bgu.msm.data.job.JobMuc;
 import de.tum.bgu.msm.data.jobTypes.munich.MunichJobType;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonMuc;
@@ -77,7 +78,8 @@ public class MitoDataConverterMuc implements MitoDataConverter {
             MitoHousehold household = new MitoHousehold(
                     siloHousehold.getId(),
                     HouseholdUtil.getHhIncome(siloHousehold) / 12,
-                    siloHousehold.getAutos(), zone);
+                    siloHousehold.getAutos());
+            household.setHomeZone(zone);
 
             Coordinate coordinate;
             if (dwelling.getCoordinate() != null) {
@@ -116,7 +118,7 @@ public class MitoDataConverterMuc implements MitoDataConverter {
         switch (mitoOccupationStatus) {
             case WORKER:
                 if (person.getJobId() > 0) {
-                    Job job = dataContainer.getJobDataManager().getJobFromId(person.getJobId());
+                    JobMuc job = (JobMuc) dataContainer.getJobDataManager().getJobFromId(person.getJobId());
                     MitoZone zone = dataSet.getZones().get(job.getZoneId());
                     final Coordinate coordinate;
                     if (job instanceof MicroLocation) {
@@ -125,6 +127,8 @@ public class MitoDataConverterMuc implements MitoDataConverter {
                         coordinate = zone.getRandomCoord();
                     }
                     mitoOccupation = new MitoJob(zone, coordinate, job.getId());
+                    mitoOccupation.setStartTime(job.getStartTimeInSeconds());
+                    mitoOccupation.setEndTime(job.getStartTimeInSeconds() + job.getWorkingTimeInSeconds());
                 }
                 break;
             case UNEMPLOYED:
