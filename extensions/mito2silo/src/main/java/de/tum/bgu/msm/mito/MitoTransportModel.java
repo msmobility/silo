@@ -109,7 +109,6 @@ public final class MitoTransportModel extends AbstractModel implements Transport
         logger.info("  SILO data being sent to MITO");
         MitoModel mito = MitoModel.initializeModelFromSilo(propertiesPath, dataSet, properties.main.scenarioName);
         mito.setRandomNumberGenerator(SiloUtil.getRandomObject());
-        mito.setBaseDirectory(baseDirectory);
         mito.runModel();
 
         final Controler controler = mito.getData().getMatsimControler();
