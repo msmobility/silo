@@ -70,7 +70,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.0</version>
                 <configuration>
-                    <release>11</release>
+                    <release>1.8</release>
                 </configuration>
             </plugin>
             <plugin>
@@ -400,8 +400,8 @@
         <!--<geotools.version>20.2</geotools.version>-->
         <skipTestJar>false</skipTestJar> <!--Overridden in the bintray profile-->
         <matsimVersion>11.0</matsimVersion>
-        <java.version>1.11</java.version>
-        <maven.compiler.source>1.11</maven.compiler.source>
-        <maven.compiler.target>1.11</maven.compiler.target>
+        <java.version>1.8</java.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 </project>
