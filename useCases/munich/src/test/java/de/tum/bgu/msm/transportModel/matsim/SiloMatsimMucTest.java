@@ -32,7 +32,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author dziemke, nagel
  */
-public class SiloMatsimTestMuc {
+public class SiloMatsimMucTest {
 
     /**
      * Set to true normally; set to false to be able to inspect files
@@ -43,7 +43,7 @@ public class SiloMatsimTestMuc {
     @Rule
     public MatsimTestUtils utils = new MatsimTestUtils();
 
-    private static final Logger log = Logger.getLogger(SiloMatsimTestMuc.class);
+    private static final Logger log = Logger.getLogger(SiloMatsimMucTest.class);
 
     @Test
 	public final void testMain() {

@@ -68,7 +68,7 @@ public final class MitoTransportModel extends AbstractModel implements Transport
     @Override
     public void setup() {
         if (travelTimes instanceof MatsimTravelTimes) {
-            logger.warn("Using mito with matsimData travel times.");
+            logger.warn("Using mito with matsim travel times.");
             mitoInputTravelTimes = new SkimTravelTimes();
             TravelTimeUtil.updateCarSkim((SkimTravelTimes) mitoInputTravelTimes, properties.main.startYear, properties);
             scenario = ScenarioUtils.loadScenario(config);
