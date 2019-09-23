@@ -11,6 +11,7 @@ import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.utils.SiloUtil;
 import junitx.framework.FileAssert;
 import org.apache.log4j.Logger;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.matsim.api.core.v01.Scenario;
@@ -46,6 +47,7 @@ public class SiloMatsimMucTest {
     private static final Logger log = Logger.getLogger(SiloMatsimMucTest.class);
 
     @Test
+    @Ignore
 	public final void testMain() {
 
         String path = "./test/muc/siloMatsimMucTest.properties";
