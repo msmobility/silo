@@ -10,7 +10,6 @@ import de.tum.bgu.msm.DataBuilder;
 import de.tum.bgu.msm.ModelBuilder;
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.container.ModelContainer;
-import de.tum.bgu.msm.schools.DataContainerWithSchoolsImpl;
 import de.tum.bgu.msm.io.output.DefaultResultsMonitor;
 import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
@@ -20,13 +19,13 @@ import junitx.framework.FileAssert;
 /**
  * @author dziemke, nico
  */
-public class SiloTestMuc {
+public class SiloMucTest {
     /**
      * Set to true normally; set to false to be able to inspect files
      */
     private static final boolean CLEANUP_AFTER_TEST = true;
 
-    private static final Logger log = Logger.getLogger(SiloTestMuc.class);
+    private static final Logger log = Logger.getLogger(SiloMucTest.class);
 
     @Test
 	public final void testMain() {
