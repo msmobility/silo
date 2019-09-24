@@ -56,6 +56,8 @@ public class MitoDataConverterMuc implements MitoDataConverter {
                 coordinate = zone.getRandomCoord();
             }
             MitoSchool mitoSchool = new MitoSchool(zones.get(school.getZoneId()), coordinate, school.getId());
+            mitoSchool.setStartTime_min((int) (school.getStartTimeInSeconds() / 60.));
+            mitoSchool.setEndTime_min((int) ((school.getStartTimeInSeconds() + school.getStudyTimeInSeconds()) / 60.));
             zone.addSchoolEnrollment(school.getOccupancy());
             dataSet.addSchool(mitoSchool);
         }
@@ -127,8 +129,8 @@ public class MitoDataConverterMuc implements MitoDataConverter {
                         coordinate = zone.getRandomCoord();
                     }
                     mitoOccupation = new MitoJob(zone, coordinate, job.getId());
-                    mitoOccupation.setStartTime(job.getStartTimeInSeconds());
-                    mitoOccupation.setEndTime(job.getStartTimeInSeconds() + job.getWorkingTimeInSeconds());
+                    mitoOccupation.setStartTime_min((int) (job.getStartTimeInSeconds() / 60.));
+                    mitoOccupation.setEndTime_min((int) ((job.getStartTimeInSeconds() + job.getWorkingTimeInSeconds()) / 60.));
                 }
                 break;
             case UNEMPLOYED:
