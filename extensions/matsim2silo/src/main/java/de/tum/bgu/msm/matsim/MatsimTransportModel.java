@@ -35,7 +35,6 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
-import org.matsim.api.core.v01.population.Population;
 import org.matsim.contrib.accessibility.AccessibilityAttributes;
 import org.matsim.contrib.accessibility.AccessibilityConfigGroup;
 import org.matsim.contrib.accessibility.AccessibilityModule;
@@ -45,12 +44,12 @@ import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.FacilitiesConfigGroup;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.ControlerDefaults;
+import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.router.FastAStarLandmarksFactory;
 import org.matsim.core.router.TripRouterFactoryBuilderWithDefaults;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
-import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.facilities.*;
@@ -66,33 +65,38 @@ import java.util.TreeMap;
  * @author dziemke, nkuehnel
  */
 public final class MatsimTransportModel implements TransportModel {
+
     private static final Logger logger = Logger.getLogger(MatsimTransportModel.class);
 
+    private final Properties properties;
     private final Config initialMatsimConfig;
-    private final MatsimTravelTimes travelTimes;
-    private Properties properties;
-    private final DataContainer dataContainer;
 
     private final MatsimData matsimData;
+    private final MatsimTravelTimes internalTravelTimes;
+    private Scenario scenario;
+
+    private final DataContainer dataContainer;
 
     private ActivityFacilities zoneRepresentativeCoords;
     private MatsimAccessibility accessibility;
-    private Scenario scenario;
+
+    private MatsimScenarioAssembler scenarioAssembler;
 
     public MatsimTransportModel(DataContainer dataContainer, Config matsimConfig,
                                 Properties properties, MatsimAccessibility accessibility,
-                                ZoneConnectorManager.ZoneConnectorMethod method) {
+                                ZoneConnectorManager.ZoneConnectorMethod method, MatsimScenarioAssembler scenarioAssembler) {
         this.dataContainer = Objects.requireNonNull(dataContainer);
         this.initialMatsimConfig = Objects.requireNonNull(matsimConfig,
                 "No initial matsim config provided to SiloModel class!");
 
         final TravelTimes travelTimes = dataContainer.getTravelTimes();
         if (travelTimes instanceof MatsimTravelTimes) {
-            this.travelTimes = (MatsimTravelTimes) travelTimes;
+            this.internalTravelTimes = (MatsimTravelTimes) travelTimes;
         } else {
-            this.travelTimes = new MatsimTravelTimes(matsimConfig);
+            this.internalTravelTimes = new MatsimTravelTimes(matsimConfig);
         }
         this.matsimData = new MatsimData(matsimConfig, properties, method, dataContainer);
+        this.scenarioAssembler = scenarioAssembler;
 
         this.properties = properties;
         this.accessibility = accessibility;
@@ -102,7 +106,7 @@ public final class MatsimTransportModel implements TransportModel {
     public void setup() {
         scenario = ScenarioUtils.loadScenario(initialMatsimConfig);
         Network network = scenario.getNetwork();
-        travelTimes.initialize(dataContainer, matsimData);
+        internalTravelTimes.initialize(dataContainer, matsimData);
 
         logger.warn("Finding coordinates that represent a given zone.");
         zoneRepresentativeCoords = FacilitiesUtils.createActivityFacilities();
@@ -143,19 +147,15 @@ public final class MatsimTransportModel implements TransportModel {
     private void runTransportModel(int year) {
         logger.warn("Running MATSim transport model for year " + year + ".");
 
-        double populationScalingFactor = properties.transportModel.matsimScaleFactor;
+        Scenario assembledScenario = scenarioAssembler.assembleScenario(initialMatsimConfig, year);
 
-        Config config = SiloMatsimUtils.createMatsimConfig(initialMatsimConfig, year, populationScalingFactor, properties);
-        Population population = SiloMatsimUtils.createMatsimPopulation(config, dataContainer, populationScalingFactor);
+        ConfigUtils.setVspDefaults(assembledScenario.getConfig());
+        finalizeConfig(assembledScenario.getConfig(), year);
 
-        MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(config);
-        scenario.setPopulation(population);
-
-        ConfigUtils.setVspDefaults(config);
-        final Controler controler = new Controler(scenario);
+        final Controler controler = new Controler(assembledScenario);
 
         if (accessibility != null) {
-            setupAccessibility(config, scenario, controler);
+            setupAccessibility(assembledScenario, controler);
         }
 
         controler.run();
@@ -168,7 +168,20 @@ public final class MatsimTransportModel implements TransportModel {
         updateTravelTimes(travelTime, travelDisutility);
     }
 
-    private void setupAccessibility(Config config, MutableScenario scenario, Controler controler) {
+    private void finalizeConfig(Config config, int year) {
+        final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
+        String outputDirectory = outputDirectoryRoot + "/matsim/" + year + "/";
+        config.controler().setRunId(String.valueOf(year));
+        config.controler().setOutputDirectory(outputDirectory);
+        config.controler().setWritePlansInterval(Math.max(config.controler().getLastIteration(), 1));
+        config.controler().setWriteEventsInterval(Math.max(config.controler().getLastIteration(), 1));
+        config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
+        config.transit().setUsingTransitInMobsim(false);
+
+        config.vspExperimental().setWritingOutputEvents(true);
+    }
+
+    private void setupAccessibility(Scenario scenario, Controler controler) {
         // Opportunities
         Map<Integer, Integer> populationMap = HouseholdUtil.getPopulationByZoneAsMap(dataContainer);
         Map<Id<ActivityFacility>, Integer> zonePopulationMap = new TreeMap<>();
@@ -190,7 +203,7 @@ public final class MatsimTransportModel implements TransportModel {
         // End opportunities
 
         // Accessibility settings
-        AccessibilityConfigGroup acg = ConfigUtils.addOrGetModule(config, AccessibilityConfigGroup.class);
+        AccessibilityConfigGroup acg = ConfigUtils.addOrGetModule(scenario.getConfig(), AccessibilityConfigGroup.class);
         acg.setMeasuringPointsFacilities(zoneRepresentativeCoords);
         //
         Map<Id<ActivityFacility>, Geometry> measurePointGeometryMap = new TreeMap<>();
@@ -237,6 +250,7 @@ public final class MatsimTransportModel implements TransportModel {
         updateTravelTimes(travelTime, travelDisutility);
     }
 
+
     private void updateTravelTimes(TravelTime travelTime, TravelDisutility disutility) {
         Network network = scenario.getNetwork();
         TransitSchedule schedule = null;
@@ -244,11 +258,12 @@ public final class MatsimTransportModel implements TransportModel {
             schedule = scenario.getTransitSchedule();
         }
         matsimData.update(network, schedule, disutility, travelTime);
-        travelTimes.update(matsimData);
+        internalTravelTimes.update(matsimData);
         final TravelTimes mainTravelTimes = dataContainer.getTravelTimes();
-        if (mainTravelTimes != this.travelTimes && mainTravelTimes instanceof SkimTravelTimes) {
-            ((SkimTravelTimes) mainTravelTimes).updateSkimMatrix(travelTimes.getPeakSkim(TransportMode.car), TransportMode.car);
-            ((SkimTravelTimes) mainTravelTimes).updateSkimMatrix(travelTimes.getPeakSkim(TransportMode.pt), TransportMode.pt);
+
+        if (mainTravelTimes != this.internalTravelTimes && mainTravelTimes instanceof SkimTravelTimes) {
+            ((SkimTravelTimes) mainTravelTimes).updateSkimMatrix(internalTravelTimes.getPeakSkim(TransportMode.car), TransportMode.car);
+            ((SkimTravelTimes) mainTravelTimes).updateSkimMatrix(internalTravelTimes.getPeakSkim(TransportMode.pt), TransportMode.pt);
             ((SkimTravelTimes) mainTravelTimes).updateRegionalTravelTimes(dataContainer.getGeoData().getRegions().values(),
                     dataContainer.getGeoData().getZones().values());
         }

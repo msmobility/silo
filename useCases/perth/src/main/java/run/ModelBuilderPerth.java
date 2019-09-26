@@ -1,13 +1,14 @@
-package de.tum.bgu.msm.run;
+package run;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
+import de.tum.bgu.msm.data.accessibility.MatsimAccessibility;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.person.PersonFactory;
 import de.tum.bgu.msm.matsim.MatsimTransportModel;
+import de.tum.bgu.msm.matsim.SimpleMatsimScenarioAssembler;
 import de.tum.bgu.msm.matsim.ZoneConnectorManager;
-import de.tum.bgu.msm.models.*;
 import de.tum.bgu.msm.models.demography.birth.BirthModelImpl;
 import de.tum.bgu.msm.models.demography.birth.DefaultBirthStrategy;
 import de.tum.bgu.msm.models.demography.birthday.BirthdayModel;
@@ -22,7 +23,6 @@ import de.tum.bgu.msm.models.demography.driversLicense.DefaultDriversLicenseStra
 import de.tum.bgu.msm.models.demography.driversLicense.DriversLicenseModel;
 import de.tum.bgu.msm.models.demography.driversLicense.DriversLicenseModelImpl;
 import de.tum.bgu.msm.models.demography.education.EducationModel;
-import de.tum.bgu.msm.models.demography.education.EducationModelImpl;
 import de.tum.bgu.msm.models.demography.employment.EmploymentModel;
 import de.tum.bgu.msm.models.demography.employment.EmploymentModelImpl;
 import de.tum.bgu.msm.models.demography.leaveParentalHousehold.DefaultLeaveParentalHouseholdStrategy;
@@ -30,10 +30,10 @@ import de.tum.bgu.msm.models.demography.leaveParentalHousehold.LeaveParentHhMode
 import de.tum.bgu.msm.models.demography.leaveParentalHousehold.LeaveParentHhModelImpl;
 import de.tum.bgu.msm.models.demography.marriage.DefaultMarriageStrategy;
 import de.tum.bgu.msm.models.demography.marriage.MarriageModel;
+import de.tum.bgu.msm.models.demography.marriage.MarriageModelImpl;
 import de.tum.bgu.msm.models.jobmography.JobMarketUpdate;
 import de.tum.bgu.msm.models.jobmography.JobMarketUpdateImpl;
-import de.tum.bgu.msm.models.realEstate.construction.DefaultConstructionDemandStrategy;
-import de.tum.bgu.msm.models.realEstate.construction.DefaultConstructionLocationStrategy;
+import de.tum.bgu.msm.models.realEstate.construction.*;
 import de.tum.bgu.msm.models.realEstate.demolition.DefaultDemolitionStrategy;
 import de.tum.bgu.msm.models.realEstate.demolition.DemolitionModel;
 import de.tum.bgu.msm.models.realEstate.demolition.DemolitionModelImpl;
@@ -44,20 +44,17 @@ import de.tum.bgu.msm.models.realEstate.renovation.DefaultRenovationStrategy;
 import de.tum.bgu.msm.models.realEstate.renovation.RenovationModel;
 import de.tum.bgu.msm.models.realEstate.renovation.RenovationModelImpl;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
-import de.tum.bgu.msm.models.relocation.moves.DefaultDwellingProbabilityStrategy;
-import de.tum.bgu.msm.models.relocation.moves.DefaultMovesStrategy;
-import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
-import de.tum.bgu.msm.models.relocation.moves.RegionProbabilityStrategyImpl;
+import de.tum.bgu.msm.models.relocation.moves.*;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
 
-public class ModelBuilder {
+public class ModelBuilderPerth {
 
-    private final static Logger logger = Logger.getLogger(ModelBuilder.class);
+    private final static Logger logger = Logger.getLogger(ModelBuilderPerth.class);
 
-    private ModelBuilder() {}
+    private ModelBuilderPerth() {}
 
     public static ModelContainer getModelContainerForMstm(DataContainer dataContainer, Properties properties, Config config) {
 
@@ -71,15 +68,9 @@ public class ModelBuilder {
 
         DeathModel deathModel = new DeathModelImpl(dataContainer, properties, new DefaultDeathStrategy());
 
-        final HousingStrategyMstm housingStrategy = new HousingStrategyMstm(
-                properties,
-                dataContainer,
-                dataContainer.getTravelTimes(),
-                new DefaultDwellingProbabilityStrategy(),
-                new DwellingUtilityStrategyMstm(),
-                new RegionUilityStrategyMstm(), new RegionProbabilityStrategyImpl());
-
-        MovesModelImpl movesModel = new MovesModelImpl(dataContainer, properties, new DefaultMovesStrategy(), housingStrategy);
+        MovesModelImpl movesModel = new MovesModelImpl(
+                dataContainer, properties, new DefaultMovesStrategy(), new CarOnlyHousingStrategyImpl(dataContainer, properties, dataContainer.getTravelTimes(), new DwellingUtilityStrategyImpl(),
+                new DefaultDwellingProbabilityStrategy(), new RegionUtilityStrategyImpl(), new RegionProbabilityStrategyImpl()));
 
 
         DivorceModel divorceModel = new DivorceModelImpl(
@@ -88,7 +79,7 @@ public class ModelBuilder {
 
         DriversLicenseModel driversLicenseModel = new DriversLicenseModelImpl(dataContainer, properties, new DefaultDriversLicenseStrategy());
 
-        EducationModel educationModel = new EducationModelImpl(dataContainer, properties);
+        EducationModel educationModel = null;
 
         EmploymentModel employmentModel = new EmploymentModelImpl(dataContainer, properties);
 
@@ -97,7 +88,7 @@ public class ModelBuilder {
 
         JobMarketUpdate jobMarketUpdateModel = new JobMarketUpdateImpl(dataContainer, properties);
 
-        ConstructionModelMstm construction = new ConstructionModelMstm(dataContainer, ddFactory,
+        ConstructionModel construction = new ConstructionModelImpl(dataContainer, ddFactory,
                 properties, new DefaultConstructionLocationStrategy(), new DefaultConstructionDemandStrategy());
 
 
@@ -105,7 +96,7 @@ public class ModelBuilder {
 
         RenovationModel renovation = new RenovationModelImpl(dataContainer, properties, new DefaultRenovationStrategy());
 
-        ConstructionOverwriteMstm constructionOverwrite = new ConstructionOverwriteMstm(dataContainer, ddFactory, properties);
+        ConstructionOverwrite constructionOverwrite = new ConstructionOverwriteImpl(dataContainer, ddFactory, properties);
 
         InOutMigrationImpl inOutMigration = new InOutMigrationImpl(dataContainer, employmentModel, movesModel,
                 null, driversLicenseModel, properties);
@@ -113,23 +104,25 @@ public class ModelBuilder {
         DemolitionModel demolition = new DemolitionModelImpl(dataContainer, movesModel,
                 inOutMigration, properties, new DefaultDemolitionStrategy());
 
-        MarriageModel marriageModel = new MarriageModelMstm(dataContainer, movesModel, inOutMigration,
+        MarriageModel marriageModel = new MarriageModelImpl(dataContainer, movesModel, inOutMigration,
                 null, hhFactory, properties, new DefaultMarriageStrategy());
 
 
-        TransportModel transportModel = null;
+        TransportModel transportModel;
         switch (properties.transportModel.transportModelIdentifier) {
+            case MITO_MATSIM:
+                logger.warn("Mito not implemented for perth. Defaulting to simple matsim transport model");
             case MATSIM:
+                final SimpleMatsimScenarioAssembler scenarioAssembler = new SimpleMatsimScenarioAssembler(dataContainer, properties);
                 transportModel = new MatsimTransportModel(dataContainer, config, properties,
-                		//(MatsimAccessibility) dataContainer.getAccessibility()
-                        null, ZoneConnectorManager.ZoneConnectorMethod.RANDOM);
+                        (MatsimAccessibility) dataContainer.getAccessibility(),
+                        ZoneConnectorManager.ZoneConnectorMethod.RANDOM, scenarioAssembler);
                 break;
             case NONE:
-                break;
-            case MITO_MATSIM:
-                logger.warn("Mito not implemented for mstm. setting transport model to \"NONE\"");
-                break;
+            default:
+                transportModel = null;
         }
+
         return new ModelContainer(
                 birthModel, birthdayModel,
                 deathModel, marriageModel,

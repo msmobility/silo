@@ -32,7 +32,7 @@ public class SiloMstm {
         DataContainer dataContainer = DataBuilder.buildDataContainer(properties, config);
         DataBuilder.readInput(properties, dataContainer);
 
-        ModelContainer modelContainer = ModelBuilder.getModelContainerForMstm(dataContainer, properties, config);
+        ModelContainer modelContainer = ModelBuilderMstm.getModelContainerForMstm(dataContainer, properties, config);
 
         ResultsMonitor resultsMonitor = new DefaultResultsMonitor(dataContainer, properties);
         SiloModel model = new SiloModel(properties, dataContainer, modelContainer, resultsMonitor);

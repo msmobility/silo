@@ -36,7 +36,7 @@ public class SiloMucDisability {
         DataContainerWithSchoolsImpl dataContainer = DataBuilderDisability.getModelDataForMuc(properties, config);
         DataBuilderDisability.read(properties, dataContainer);
         //summarizeData(dataContainer, properties);
-        ModelContainer modelContainer = ModelBuilder.getModelContainerForMuc(dataContainer, properties, config);
+        ModelContainer modelContainer = ModelBuilderMuc.getModelContainerForMuc(dataContainer, properties, config);
         modelContainer.registerEventModel(DisabilityEvent.class, new DisabilityImpl(dataContainer, properties,new DefaultDisabilityStrategy()));
         ResultsMonitor resultsMonitor = new ResultsMonitorMuc(dataContainer, properties);
         SiloModel model = new SiloModel(properties, dataContainer, modelContainer, resultsMonitor);

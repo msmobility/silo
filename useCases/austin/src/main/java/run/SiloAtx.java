@@ -6,7 +6,7 @@ import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.io.output.DefaultResultsMonitor;
 import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.run.DataBuilder;
-import de.tum.bgu.msm.run.ModelBuilder;
+import de.tum.bgu.msm.run.ModelBuilderMstm;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
@@ -36,7 +36,7 @@ public class SiloAtx {
         DataContainer dataContainer = DataBuilder.buildDataContainer(properties, config);
         DataBuilder.readInput(properties, dataContainer);
 
-        ModelContainer modelContainer = ModelBuilder.getModelContainerForMstm(dataContainer, properties, config);
+        ModelContainer modelContainer = ModelBuilderMstm.getModelContainerForMstm(dataContainer, properties, config);
 
         ResultsMonitor resultsMonitor = new DefaultResultsMonitor(dataContainer, properties);
         SiloModel model = new SiloModel(properties, dataContainer, modelContainer, resultsMonitor);
