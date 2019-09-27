@@ -5,9 +5,11 @@ import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.person.PersonFactory;
+import de.tum.bgu.msm.matsim.MatsimScenarioAssembler;
 import de.tum.bgu.msm.matsim.MatsimTransportModel;
+import de.tum.bgu.msm.matsim.SimpleMatsimScenarioAssembler;
 import de.tum.bgu.msm.matsim.ZoneConnectorManager;
-import de.tum.bgu.msm.mito.MitoTransportModel;
+import de.tum.bgu.msm.mito.MitoMatsimScenarioAssembler;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.demography.birth.BirthModelImpl;
 import de.tum.bgu.msm.models.demography.birth.DefaultBirthStrategy;
@@ -54,81 +56,85 @@ import org.matsim.core.config.Config;
 public class ModelBuilderTak {
     public static ModelContainer getTakModels(DataContainer dataContainer, Properties properties, Config config) {
 
-            PersonFactory ppFactory = dataContainer.getHouseholdDataManager().getPersonFactory();
-            HouseholdFactory hhFactory = dataContainer.getHouseholdDataManager().getHouseholdFactory();
-            DwellingFactory ddFactory = dataContainer.getRealEstateDataManager().getDwellingFactory();
+        PersonFactory ppFactory = dataContainer.getHouseholdDataManager().getPersonFactory();
+        HouseholdFactory hhFactory = dataContainer.getHouseholdDataManager().getHouseholdFactory();
+        DwellingFactory ddFactory = dataContainer.getRealEstateDataManager().getDwellingFactory();
 
-            BirthModelImpl birthModel = new BirthModelImpl(dataContainer, ppFactory, properties, new DefaultBirthStrategy());
+        BirthModelImpl birthModel = new BirthModelImpl(dataContainer, ppFactory, properties, new DefaultBirthStrategy());
 
-            BirthdayModel birthdayModel = new BirthdayModelImpl(dataContainer, properties);
+        BirthdayModel birthdayModel = new BirthdayModelImpl(dataContainer, properties);
 
-            DeathModel deathModel = new DeathModelImpl(dataContainer, properties, new DefaultDeathStrategy());
+        DeathModel deathModel = new DeathModelImpl(dataContainer, properties, new DefaultDeathStrategy());
 
-            MovesModelImpl movesModel = new MovesModelImpl(
-                    dataContainer, properties, new DefaultMovesStrategy(),
-                    new CarOnlyHousingStrategyImpl(dataContainer,
-                                                properties, dataContainer.getTravelTimes(),
-                                                new DwellingUtilityStrategyImpl(), new DefaultDwellingProbabilityStrategy(),
-                            new RegionUtilityStrategyImpl(), new RegionProbabilityStrategyImpl()));
+        MovesModelImpl movesModel = new MovesModelImpl(
+                dataContainer, properties, new DefaultMovesStrategy(),
+                new CarOnlyHousingStrategyImpl(dataContainer,
+                        properties, dataContainer.getTravelTimes(),
+                        new DwellingUtilityStrategyImpl(), new DefaultDwellingProbabilityStrategy(),
+                        new RegionUtilityStrategyImpl(), new RegionProbabilityStrategyImpl()));
 
-            //TODO reconsider CreateCarOwnershipModel in Kagawa
-            CreateCarOwnershipModel carOwnershipModel = null;
+        //TODO reconsider CreateCarOwnershipModel in Kagawa
+        CreateCarOwnershipModel carOwnershipModel = null;
 
-            DivorceModel divorceModel = new DivorceModelImpl(
-                    dataContainer, movesModel, carOwnershipModel, hhFactory,
-                    properties, new DefaultDivorceStrategy());
+        DivorceModel divorceModel = new DivorceModelImpl(
+                dataContainer, movesModel, carOwnershipModel, hhFactory,
+                properties, new DefaultDivorceStrategy());
 
-            DriversLicenseModel driversLicenseModel = new DriversLicenseModelImpl(dataContainer, properties, new DefaultDriversLicenseStrategy());
+        DriversLicenseModel driversLicenseModel = new DriversLicenseModelImpl(dataContainer, properties, new DefaultDriversLicenseStrategy());
 
-            EducationModel educationModel = new EducationModelImpl(dataContainer, properties);
+        EducationModel educationModel = new EducationModelImpl(dataContainer, properties);
 
-            EmploymentModel employmentModel = new EmploymentModelImpl(dataContainer, properties);
+        EmploymentModel employmentModel = new EmploymentModelImpl(dataContainer, properties);
 
-            LeaveParentHhModel leaveParentsModel = new LeaveParentHhModelImpl(dataContainer, movesModel,
-                    carOwnershipModel, hhFactory, properties, new DefaultLeaveParentalHouseholdStrategy());
+        LeaveParentHhModel leaveParentsModel = new LeaveParentHhModelImpl(dataContainer, movesModel,
+                carOwnershipModel, hhFactory, properties, new DefaultLeaveParentalHouseholdStrategy());
 
-            JobMarketUpdate jobMarketUpdateModel = new JobMarketUpdateImpl(dataContainer, properties);
+        JobMarketUpdate jobMarketUpdateModel = new JobMarketUpdateImpl(dataContainer, properties);
 
-            ConstructionModel construction = new ConstructionModelImpl(dataContainer, ddFactory,
-                    properties, new DefaultConstructionLocationStrategy(), new DefaultConstructionDemandStrategy());
+        ConstructionModel construction = new ConstructionModelImpl(dataContainer, ddFactory,
+                properties, new DefaultConstructionLocationStrategy(), new DefaultConstructionDemandStrategy());
 
 
-            PricingModel pricing = new PricingModelImpl(dataContainer, properties, new DefaultPricingStrategy());
+        PricingModel pricing = new PricingModelImpl(dataContainer, properties, new DefaultPricingStrategy());
 
-            RenovationModel renovation = new RenovationModelImpl(dataContainer, properties, new DefaultRenovationStrategy());
+        RenovationModel renovation = new RenovationModelImpl(dataContainer, properties, new DefaultRenovationStrategy());
 
-            ConstructionOverwrite constructionOverwrite = new ConstructionOverwriteImpl(dataContainer, ddFactory, properties);
+        ConstructionOverwrite constructionOverwrite = new ConstructionOverwriteImpl(dataContainer, ddFactory, properties);
 
-            InOutMigrationImpl inOutMigration = new InOutMigrationImpl(dataContainer, employmentModel, movesModel,
-                    carOwnershipModel, driversLicenseModel, properties);
+        InOutMigrationImpl inOutMigration = new InOutMigrationImpl(dataContainer, employmentModel, movesModel,
+                carOwnershipModel, driversLicenseModel, properties);
 
-            DemolitionModel demolition = new DemolitionModelImpl(dataContainer, movesModel,
-                    inOutMigration, properties, new DefaultDemolitionStrategy());
+        DemolitionModel demolition = new DemolitionModelImpl(dataContainer, movesModel,
+                inOutMigration, properties, new DefaultDemolitionStrategy());
 
-            MarriageModel marriageModel = new MarriageModelImpl(dataContainer, movesModel, inOutMigration,
-                    carOwnershipModel, hhFactory, properties, new DefaultMarriageStrategy());
+        MarriageModel marriageModel = new MarriageModelImpl(dataContainer, movesModel, inOutMigration,
+                carOwnershipModel, hhFactory, properties, new DefaultMarriageStrategy());
 
-            TransportModel transportModel;
-            switch (properties.transportModel.transportModelIdentifier) {
-                case MATSIM:
-                    transportModel = new MatsimTransportModel(dataContainer, config, properties, null,
-                            ZoneConnectorManager.ZoneConnectorMethod.RANDOM);
-                    // (MatsimAccessibility) dataContainer.getAccessibility());
-                    break;
-                case MITO_MATSIM:
-                    transportModel = new MitoTransportModel(properties.main.baseDirectory, dataContainer, properties, config, new MitoDataConverterTak());
-                case NONE:
-                default:
-                    transportModel = null;
-            }
-            final ModelContainer modelContainer = new ModelContainer(
-                    birthModel, birthdayModel,
-                    deathModel, marriageModel,
-                    divorceModel, driversLicenseModel,
-                    educationModel, employmentModel,
-                    leaveParentsModel, jobMarketUpdateModel,
-                    construction, demolition, pricing, renovation,
-                    constructionOverwrite, inOutMigration, movesModel, transportModel);
-            return modelContainer;
+        TransportModel transportModel;
+        MatsimScenarioAssembler scenarioAssembler;
+        switch (properties.transportModel.transportModelIdentifier) {
+            case MITO_MATSIM:
+                scenarioAssembler = new MitoMatsimScenarioAssembler(dataContainer, properties, new MitoDataConverterTak());
+                transportModel = new MatsimTransportModel(dataContainer, config, properties, null,
+                        ZoneConnectorManager.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, scenarioAssembler);
+                break;
+            case MATSIM:
+                scenarioAssembler = new SimpleMatsimScenarioAssembler(dataContainer, properties);
+                transportModel = new MatsimTransportModel(dataContainer, config, properties, null,
+                        ZoneConnectorManager.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, scenarioAssembler);
+                break;
+            case NONE:
+            default:
+                transportModel = null;
+        }
+        final ModelContainer modelContainer = new ModelContainer(
+                birthModel, birthdayModel,
+                deathModel, marriageModel,
+                divorceModel, driversLicenseModel,
+                educationModel, employmentModel,
+                leaveParentsModel, jobMarketUpdateModel,
+                construction, demolition, pricing, renovation,
+                constructionOverwrite, inOutMigration, movesModel, transportModel);
+        return modelContainer;
     }
 }

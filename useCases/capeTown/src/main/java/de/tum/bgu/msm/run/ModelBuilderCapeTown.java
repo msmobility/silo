@@ -6,6 +6,7 @@ import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.person.PersonFactory;
 import de.tum.bgu.msm.matsim.MatsimTransportModel;
+import de.tum.bgu.msm.matsim.SimpleMatsimScenarioAssembler;
 import de.tum.bgu.msm.matsim.ZoneConnectorManager;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.demography.MarriageModelCapeTown;
@@ -120,7 +121,8 @@ public class ModelBuilderCapeTown {
         switch (properties.transportModel.transportModelIdentifier) {
             case MATSIM:
                 transportModel = new MatsimTransportModel(dataContainer, config, properties, null,
-                        ZoneConnectorManager.ZoneConnectorMethod.RANDOM);
+                        ZoneConnectorManager.ZoneConnectorMethod.RANDOM,
+                        new SimpleMatsimScenarioAssembler(dataContainer, properties));
                 // (MatsimAccessibility) dataContainer.getAccessibility());
                 break;
             case NONE:

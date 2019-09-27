@@ -25,7 +25,6 @@ public class MitoDataConverterMuc implements MitoDataConverter {
 
     private final static Logger logger = Logger.getLogger(MitoDataConverterMuc.class);
 
-
     @Override
     public DataSet convertData(DataContainer dataContainer) {
         DataSet dataSet = new DataSet();
@@ -35,7 +34,6 @@ public class MitoDataConverterMuc implements MitoDataConverter {
         convertHhs(dataSet, dataContainer);
         return dataSet;
     }
-
 
     private void convertZones(DataSet dataSet, DataContainer dataContainer) {
         for (Zone siloZone : dataContainer.getGeoData().getZones().values()) {

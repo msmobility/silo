@@ -31,7 +31,7 @@ public class SiloMuc {
         logger.info("Started SILO land use model for the Munich Metropolitan Area");
         DataContainerWithSchools dataContainer = DataBuilder.getModelDataForMuc(properties, config);
         DataBuilder.read(properties, dataContainer);
-        ModelContainer modelContainer = ModelBuilder.getModelContainerForMuc(dataContainer, properties, config);
+        ModelContainer modelContainer = ModelBuilderMuc.getModelContainerForMuc(dataContainer, properties, config);
         ResultsMonitor resultsMonitor = new ResultsMonitorMuc(dataContainer, properties);
         SiloModel model = new SiloModel(properties, dataContainer, modelContainer, resultsMonitor);
         model.runModel();

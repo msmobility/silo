@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.transportModel.matsim;
 
 import de.tum.bgu.msm.DataBuilder;
-import de.tum.bgu.msm.ModelBuilder;
+import de.tum.bgu.msm.ModelBuilderMuc;
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.io.output.DefaultResultsMonitor;
@@ -70,7 +70,7 @@ public class SiloMatsimMucTest {
         DataContainerWithSchools dataContainer = DataBuilder.getModelDataForMuc(properties, config);
         DataBuilder.read(properties, dataContainer);
 
-        ModelContainer modelContainer = ModelBuilder.getModelContainerForMuc(dataContainer, properties, config);
+        ModelContainer modelContainer = ModelBuilderMuc.getModelContainerForMuc(dataContainer, properties, config);
 
         ResultsMonitor resultsMonitor = new DefaultResultsMonitor(dataContainer, properties);
         SiloModel siloModel = new SiloModel(properties, dataContainer, modelContainer, resultsMonitor);
