@@ -26,12 +26,13 @@ import org.matsim.core.config.Config;
 import sdg.data.DataContainerSdg;
 import sdg.reader.TripReader;
 
-public class DataBuilderSdg {
+public class DataBuilderSdg extends DefaultDataContainer {
 
-    private DataBuilderSdg() {
+    public DataBuilderSdg(GeoData geoData, RealEstateDataManager realEstateDataManager, JobDataManager jobDataManager, HouseholdDataManager householdDataManager, TravelTimes travelTimes, Accessibility accessibility, CommutingTimeProbability commutingTimeProbability, Properties properties) {
+        super(geoData, realEstateDataManager, jobDataManager, householdDataManager, travelTimes, accessibility, commutingTimeProbability, properties);
     }
 
-    public static DataContainer getModelData(Properties properties, Config config) {
+    public static DataContainerSdg getModelData(Properties properties, Config config) {
 
         HouseholdData householdData = new HouseholdDataImpl();
         DwellingData dwellingData = new DwellingDataImpl();
@@ -49,9 +50,13 @@ public class DataBuilderSdg {
 
     }
 
-    static public void read(Properties properties, DataContainer dataContainer, int year){
+    static public void read(Properties properties, DataContainerSdg dataContainer, int year){
 
         GeoDataReader reader = new GeoDataReaderMuc(dataContainer.getGeoData());
+        String fileName = properties.main.baseDirectory + properties.geo.zonalDataFile;
+        String pathShp = properties.main.baseDirectory + properties.geo.zoneShapeFile;
+        reader.readZoneCsv(fileName);
+        reader.readZoneShapefile(pathShp);
 
         String householdFile = properties.main.baseDirectory + properties.householdData.householdFileName;
         householdFile += "_" + year + ".csv";
@@ -67,12 +72,12 @@ public class DataBuilderSdg {
         String dwellingsFile = properties.main.baseDirectory + properties.realEstate.dwellingsFileName + "_" + year + ".csv";
         ddReader.readData(dwellingsFile);
 
-        new JobType(properties.jobData.jobTypes);
-        JobReader jjReader = new DefaultJobReader(dataContainer.getJobDataManager());
-        String jobsFile = properties.main.baseDirectory + properties.jobData.jobsFileName + "_" + year + ".csv";
-        jjReader.readData(jobsFile);
+//        new JobType(properties.jobData.jobTypes);
+//        JobReader jjReader = new DefaultJobReader(dataContainer.getJobDataManager());
+//        String jobsFile = properties.main.baseDirectory + properties.jobData.jobsFileName + "_" + year + ".csv";
+//        jjReader.readData(jobsFile);
 
-        SchoolReader ssReader = new SchoolReaderMuc(((DataContainerMuc)dataContainer).getSchoolData());
+        SchoolReader ssReader = new SchoolReaderMuc(dataContainer.getSchoolData());
         String schoolsFile = properties.main.baseDirectory + properties.schoolData.schoolsFileName + "_" + year + ".csv";
         ssReader.readData(schoolsFile);
 

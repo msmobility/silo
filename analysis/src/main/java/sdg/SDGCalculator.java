@@ -14,6 +14,7 @@ import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.util.MitoUtil;
 import org.apache.log4j.Logger;
 import sdg.data.AnalyzedPerson;
+import sdg.data.DataContainerSdg;
 import sdg.data.Trip;
 
 import java.io.PrintWriter;
@@ -42,7 +43,7 @@ public class SDGCalculator {
         this.matsimPerson = matsimPerson;
     }
 
-    void calculateSdgIndicators(DataContainer dataContainer, String outputPath, int year) {
+    void calculateSdgIndicators(DataContainerSdg dataContainer, String outputPath, int year) {
         loadDataSet(dataContainer);
         calculateNonSpatialSdgIndicators(dataContainer,outputPath,year);
         calculateSpatialSdgIndicators(dataContainer,outputPath,year);
@@ -67,7 +68,7 @@ public class SDGCalculator {
         }
     }
 
-    private void calculateSpatialSdgIndicators(DataContainer dataContainer, String outputPath, int year) {
+    private void calculateSpatialSdgIndicators(DataContainerSdg dataContainer, String outputPath, int year) {
         //Spatial indicators
         String fileSpatialSDGIndicator = outputPath + "/spatialSDGIndicators.csv";
         PrintWriter spatialSDGIndicator = MitoUtil.openFileForSequentialWriting(fileSpatialSDGIndicator, false);
@@ -180,7 +181,7 @@ public class SDGCalculator {
 
     }
 
-    private void calculateNonSpatialSdgIndicators(DataContainer dataContainer, String outputPath, int year) {
+    private void calculateNonSpatialSdgIndicators(DataContainerSdg dataContainer, String outputPath, int year) {
 
         String fileNonSpatialSDGIndicator = outputPath + "/nonSpatialSDGIndicators.csv";
         PrintWriter nonSpatialSDGIndicator = MitoUtil.openFileForSequentialWriting(fileNonSpatialSDGIndicator, false);
