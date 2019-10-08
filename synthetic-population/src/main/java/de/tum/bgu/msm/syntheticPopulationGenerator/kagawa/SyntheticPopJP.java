@@ -1299,7 +1299,6 @@ public class SyntheticPopJP implements SyntheticPopI {
                 int price = ddToCopy.getPrice();
                 int quality = ddToCopy.getQuality();
                 int year = ddToCopy.getYearBuilt();
-                DwellingType type = ddToCopy.getType(); //using always type MF234
                 int floorSpaceDwelling = ddToCopy.getFloorSpace();
                 DwellingType dwellingType = ddToCopy.getType();
                 Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, ddTAZ, null, -1, dwellingType, bedRooms, quality, price, year);
