@@ -217,4 +217,13 @@ public class HouseholdUtil {
         }
         return zonePopulationMap;
     }
+
+    public static int getHhRegion(Household household, DataContainer dataContainer) {
+        int zoneId = dataContainer.getRealEstateDataManager().getDwelling(household.getDwellingId()).getZoneId();
+        return dataContainer.getGeoData().getZones().get(zoneId).getRegion().getId();
+    }
+
+    public static int getHhZone(Household household, DataContainer dataContainer) {
+        return dataContainer.getRealEstateDataManager().getDwelling(household.getDwellingId()).getZoneId();
+    }
 }

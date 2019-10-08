@@ -1,5 +1,10 @@
 package de.tum.bgu.msm.data.person;
 
+import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.job.JobImpl;
+import org.matsim.api.core.v01.TransportMode;
+
 import java.util.Comparator;
 
 public class PersonUtils {
