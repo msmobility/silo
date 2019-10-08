@@ -40,8 +40,17 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
 
     public static int largestNoBedrooms;
 
-    private int[] dwellingsByQuality;
-    private double[] initialQualityShares;
+    /**
+     * Stores current shares of dwellings by quality levels. Updated once per year.
+     */
+    private final Map<Integer, Double> updatedQualityShares = new HashMap<>();
+    /**
+     * Stores initial shares of dwellings by quality levels in the base year.
+     */
+    private final Map<Integer, Double> initialQualityShares = new HashMap<>();
+
+
+
     private int highestDwellingIdInUse;
     private static final Map<IncomeCategory, Map<Integer, Float>> ddPriceByIncomeCategory = new EnumMap<>(IncomeCategory.class);
 
@@ -72,7 +81,7 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
     @Override
     public void setup() {
         readDevelopmentData();
-        fillQualityDistribution();
+        calculateInitialDistributionOfDwellingQualityLevels();
         setHighestVariablesAndCalculateRentShareByIncome();
         identifyVacantDwellings();
     }
@@ -80,6 +89,11 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
     @Override
     public void prepareYear(int year) {
         calculateRegionWidePriceAndVacancyByDwellingType();
+        updatedQualityShares.clear();
+        Map<Integer, List<Dwelling>> sortedDds = dwellingData.getDwellings().stream().collect(Collectors.groupingBy(Dwelling::getQuality));
+        for(Map.Entry<Integer, List<Dwelling>> entry: sortedDds.entrySet()) {
+            updatedQualityShares.put(entry.getKey(), ((double) entry.getValue().size()) / dwellingData.getDwellings().size());
+        }
     }
 
     @Override
@@ -108,18 +122,13 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
     }
 
     @Override
-    public double[] getInitialQualShares() {
+    public Map<Integer, Double> getInitialQualShares() {
         return initialQualityShares;
     }
 
     @Override
-    public double[] getCurrentQualShares() {
-        double[] currentQualityShares = new double[Properties.get().main.qualityLevels];
-        for (int qual = 1; qual <= Properties.get().main.qualityLevels; qual++) {
-            currentQualityShares[qual - 1] =
-                    (double) dwellingsByQuality[qual - 1] / (double) SiloUtil.getSum(dwellingsByQuality);
-        }
-        return currentQualityShares;
+    public Map<Integer, Double> getUpdatedQualityShares() {
+        return updatedQualityShares;
     }
 
     /**
@@ -163,10 +172,6 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
         this.dwellingData.addDwelling(dwelling);
     }
 
-    @Override
-    public int[] getDwellingsByQuality() {
-        return dwellingsByQuality;
-    }
 
     /**
      * Walk through all dwellings and identify vacant dwellings
@@ -190,16 +195,10 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
     /**
      *  Count number of dwellings by quality and calculate average quality
      */
-    private void fillQualityDistribution() {
-        int numberOfQualityLevels = properties.main.qualityLevels;
-        dwellingsByQuality = new int[numberOfQualityLevels];
-        initialQualityShares = new double[numberOfQualityLevels];
-        for (Dwelling dd : getDwellings()) {
-            dwellingsByQuality[dd.getQuality() - 1]++;
-        }
-        for (int qual = 1; qual <= numberOfQualityLevels; qual++) {
-            initialQualityShares[qual - 1] = (double) dwellingsByQuality[qual - 1] /
-                    (double) SiloUtil.getSum(dwellingsByQuality);
+    private void calculateInitialDistributionOfDwellingQualityLevels() {
+        Map<Integer, List<Dwelling>> sortedDds = dwellingData.getDwellings().stream().collect(Collectors.groupingBy(Dwelling::getQuality));
+        for(Map.Entry<Integer, List<Dwelling>> entry: sortedDds.entrySet()) {
+            initialQualityShares.put(entry.getKey(), ((double) entry.getValue().size()) / dwellingData.getDwellings().size());
         }
     }
 

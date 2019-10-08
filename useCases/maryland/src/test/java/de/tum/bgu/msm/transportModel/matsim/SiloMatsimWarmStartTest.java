@@ -73,7 +73,7 @@ public class SiloMatsimWarmStartTest {
         {
             log.info("Checking MATSim plans file ...");
 
-            final String referenceFilename = utils.getInputDirectory() + "test_matsim_2001.output_plans.xml.gz";
+            final String referenceFilename = utils.getInputDirectory() + "2001.output_plans.xml.gz";
             final String outputFilename = "./test/scenarios/annapolis/scenOutput/test_matsim/matsim/2001/2001.output_plans.xml.gz";
 
             Scenario scRef = ScenarioUtils.createScenario(ConfigUtils.createConfig()) ;
@@ -85,7 +85,7 @@ public class SiloMatsimWarmStartTest {
             assertTrue("MATSim populations are different", PopulationUtils.equalPopulation( scRef.getPopulation(), scOut.getPopulation() ) ) ;
         }{
             log.info("Checking MATSim events file ...");
-            final String eventsFilenameReference = utils.getInputDirectory() + "test_matsim_2001.output_events.xml.gz";
+            final String eventsFilenameReference = utils.getInputDirectory() + "2001.output_events.xml.gz";
             final String eventsFilenameNew = "./test/scenarios/annapolis/scenOutput/test_matsim/matsim/2001/2001.output_events.xml.gz";
             assertEquals("Different event files.", FILES_ARE_EQUAL, EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew));
         }
