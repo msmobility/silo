@@ -7,9 +7,10 @@ import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.job.JobDataManager;
-import de.tum.bgu.msm.data.school.SchoolData;
+
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.schools.SchoolData;
 
 /**
  * @author moeckel

@@ -2,7 +2,6 @@ package sdg;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.DefaultDataContainer;
-import de.tum.bgu.msm.data.DataContainerMuc;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.accessibility.AccessibilityImpl;
 import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
@@ -14,14 +13,15 @@ import de.tum.bgu.msm.data.job.*;
 import de.tum.bgu.msm.data.person.PersonFactory;
 import de.tum.bgu.msm.data.person.PersonFactoryImpl;
 import de.tum.bgu.msm.data.person.PersonFactoryMuc;
-import de.tum.bgu.msm.data.school.SchoolData;
-import de.tum.bgu.msm.data.school.SchoolDataImpl;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.io.input.*;
-import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.schools.SchoolData;
+import de.tum.bgu.msm.schools.SchoolDataImpl;
+import de.tum.bgu.msm.schools.SchoolReader;
+import de.tum.bgu.msm.schools.SchoolReaderImpl;
 import org.matsim.core.config.Config;
 import sdg.data.DataContainerSdg;
 import sdg.reader.TripReader;
@@ -77,7 +77,7 @@ public class DataBuilderSdg extends DefaultDataContainer {
 //        String jobsFile = properties.main.baseDirectory + properties.jobData.jobsFileName + "_" + year + ".csv";
 //        jjReader.readData(jobsFile);
 
-        SchoolReader ssReader = new SchoolReaderMuc(dataContainer.getSchoolData());
+        SchoolReader ssReader = new SchoolReaderImpl(dataContainer.getSchoolData());
         String schoolsFile = properties.main.baseDirectory + properties.schoolData.schoolsFileName + "_" + year + ".csv";
         ssReader.readData(schoolsFile);
 

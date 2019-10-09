@@ -1,7 +1,6 @@
 package sdg.reader;
 
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.DataContainerMuc;
 import de.tum.bgu.msm.data.Mode;
 import de.tum.bgu.msm.data.Purpose;
 import de.tum.bgu.msm.data.person.Person;
