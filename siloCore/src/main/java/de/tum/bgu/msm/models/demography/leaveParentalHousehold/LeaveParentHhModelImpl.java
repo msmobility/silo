@@ -17,9 +17,6 @@
 package de.tum.bgu.msm.models.demography.leaveParentalHousehold;
 
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.Region;
-import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
-import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
@@ -67,17 +64,6 @@ public class LeaveParentHhModelImpl extends AbstractModel implements LeaveParent
 
     @Override
     public void setup() {
-//        switch (properties.main.implementation) {
-//            case MARYLAND:
-//            case AUSTIN:
-//                reader = new InputStreamReader(this.getClass().getResourceAsStream("LeaveParentHhCalcMstm"));
-//                break;
-//            case MUNICH:
-//            case PERTH:
-//            case KAGAWA:
-//            case CAPE_TOWN:
-//                reader = new InputStreamReader(this.getClass().getResourceAsStream("LeaveParentHhCalc"));
-//        }
     }
 
     @Override
