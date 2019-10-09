@@ -1,14 +1,9 @@
 package sdg;
 
-import de.tum.bgu.msm.DataBuilder;
-import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.container.DefaultDataContainer;
-import de.tum.bgu.msm.data.DataContainerMuc;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import sdg.data.DataContainerSdg;
 import sdg.reader.EventAnalysis;
-import sdg.reader.TripReader;
 
 public class Main {
 
