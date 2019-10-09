@@ -47,7 +47,7 @@ public class PersonWriterMstm implements PersonWriter {
             pwp.print(",");
             pwp.print(pp.getJobId());
             pwp.print(",");
-            pwp.print(pp.getIncome());
+            pwp.print(pp.getAnnualIncome());
             pwp.print(",");
             pwp.print(((MarylandPerson)pp).getRace().toString());
             pwp.println();

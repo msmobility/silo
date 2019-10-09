@@ -27,7 +27,7 @@ public class PersonFactoryTak implements PersonFactory {
                 originalPerson.getOccupation(),
                 originalPerson.getRole(),
                 -1,
-                originalPerson.getIncome());
+                originalPerson.getAnnualIncome());
         duplicate.setDriverLicense(originalPerson.hasDriverLicense());
         duplicate.setSchoolId(((PersonTak) originalPerson).getSchoolId());
         return duplicate;

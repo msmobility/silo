@@ -178,7 +178,7 @@ public class ConstructionOverwriteImpl extends AbstractModel implements Construc
                 Household hh = householdDataManager.getHouseholdFromId(dd.getResidentId());
                 householdId[row-1] = hh.getId();
                 householdSize[row-1] = hh.getHhSize();
-                householdInc[row-1] = HouseholdUtil.getHhIncome(hh);
+                householdInc[row-1] = HouseholdUtil.getAnnualHhIncome(hh);
                 householdAuto[row-1] = hh.getAutos();
             }
         }

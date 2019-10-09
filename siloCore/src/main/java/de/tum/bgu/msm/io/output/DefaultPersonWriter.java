@@ -40,7 +40,7 @@ public class DefaultPersonWriter implements PersonWriter {
             pwp.print(",");
             pwp.print(pp.getJobId());
             pwp.print(",");
-            pwp.print(pp.getIncome());
+            pwp.print(pp.getAnnualIncome());
             pwp.println();
 
             if (pp.getId() == SiloUtil.trackPp) {

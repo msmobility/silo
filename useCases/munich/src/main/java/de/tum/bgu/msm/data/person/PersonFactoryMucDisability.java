@@ -1,7 +1,5 @@
 package de.tum.bgu.msm.data.person;
 
-import de.tum.bgu.msm.models.disability.DisabilityImpl;
-
 public class PersonFactoryMucDisability implements PersonFactory {
 
     @Override
@@ -31,7 +29,7 @@ public class PersonFactoryMucDisability implements PersonFactory {
                 originalPerson.getOccupation(),
                 originalPerson.getRole(),
                 -1,
-                originalPerson.getIncome());
+                originalPerson.getAnnualIncome());
         duplicate.setDriverLicense(originalPerson.hasDriverLicense());
         duplicate.setNationality(((PersonMucDisability)originalPerson).getNationality());
         duplicate.setDisability(((PersonMucDisability) originalPerson).getDisability());

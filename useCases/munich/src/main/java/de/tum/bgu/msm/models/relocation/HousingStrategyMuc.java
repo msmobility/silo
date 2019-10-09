@@ -333,6 +333,8 @@ public class HousingStrategyMuc implements HousingStrategy {
         return (float) quality / (float) properties.main.qualityLevels;
     }
 
+    //TODO: convertAreaToUtility method name is wrong.
+    //TODO: implement method to calculate housing utility with area instead of number of rooms
     private double convertAreaToUtility(int area) {
         return (float) area / (float) RealEstateDataManagerImpl.largestNoBedrooms;
     }

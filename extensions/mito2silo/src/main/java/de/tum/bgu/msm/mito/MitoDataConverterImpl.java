@@ -67,7 +67,7 @@ public class MitoDataConverterImpl implements MitoDataConverter {
 
             MitoHousehold household = new MitoHousehold(
                     siloHousehold.getId(),
-                    HouseholdUtil.getHhIncome(siloHousehold) / 12,
+                    HouseholdUtil.getAnnualHhIncome(siloHousehold) / 12,
                     siloHousehold.getAutos());
             household.setHomeZone(zone);
 

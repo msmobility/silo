@@ -72,8 +72,8 @@ public final class PersonTak implements PersonWithSchool {
     }
 
     @Override
-    public int getIncome() {
-        return delegate.getIncome();
+    public int getAnnualIncome() {
+        return delegate.getAnnualIncome();
     }
 
     @Override
@@ -152,7 +152,7 @@ public final class PersonTak implements PersonWithSchool {
                     originalPerson.getOccupation(),
                     originalPerson.getRole(),
                     -1,
-                    originalPerson.getIncome());
+                    originalPerson.getAnnualIncome());
             duplicate.setDriverLicense(originalPerson.hasDriverLicense());
             duplicate.setSchoolId(((PersonTak) originalPerson).getSchoolId());
             return duplicate;

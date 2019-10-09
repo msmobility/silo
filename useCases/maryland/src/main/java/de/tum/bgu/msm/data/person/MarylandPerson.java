@@ -68,8 +68,8 @@ public final class MarylandPerson implements Person {
     }
 
     @Override
-    public int getIncome() {
-        return delegate.getIncome();
+    public int getAnnualIncome() {
+        return delegate.getAnnualIncome();
     }
 
     @Override

@@ -28,38 +28,29 @@ public class HouseholdUtil {
     }
 
     public static int getNumberOfChildren(Household household) {
-        return (int) household.getPersons().values().stream().filter(p -> ((Person) p).getRole() == PersonRole.CHILD).count();
+        return (int) household.getPersons().values().stream().filter(p -> p.getRole() == PersonRole.CHILD).count();
     }
 
     public static int getHHLicenseHolders(Household household) {
         return (int) household.getPersons().values().stream().filter(Person::hasDriverLicense).count();
     }
 
-    public static int getHhIncome(Household household) {
-        int hhInc = 0;
-        for (Person i : household.getPersons().values()) {
-            hhInc += i.getIncome();
-        }
-        return hhInc;
+    public static int getAnnualHhIncome(Household household) {
+        return household.getPersons().values().stream().mapToInt(Person::getAnnualIncome).sum();
     }
 
-    public static boolean checkIfOnlyChildrenRemaining(Household household) {
+    public static boolean checkIfAdultsPresent(Household household) {
         if (household.getPersons().isEmpty()) {
             return false;
         }
-        for (Person pp : household.getPersons().values()) {
-            if (pp.getAge() >= 16) {
-                return false;
-            }
-        }
-        return true;
+        return household.getPersons().values().stream().anyMatch(pp -> pp.getAge() >= 16);
     }
 
     public static HouseholdType defineHouseholdType(Household household) {
         // define household type based on size and income
 
         int hhSize = household.getHhSize();
-        IncomeCategory incomeCategory = getIncomeCategoryForIncome(HouseholdUtil.getHhIncome(household));
+        IncomeCategory incomeCategory = getIncomeCategoryForIncome(HouseholdUtil.getAnnualHhIncome(household));
 
         HouseholdType ht = null;
         if (hhSize == 1) {
@@ -117,7 +108,8 @@ public class HouseholdUtil {
                     tempUtil = 1f / (float) ageDiff;
                 }
                 if (tempUtil > highestUtil) {
-                    selectedPartner = partner;     // find most likely partner
+                    // find most likely partner
+                    selectedPartner = partner;
                 }
             }
         }

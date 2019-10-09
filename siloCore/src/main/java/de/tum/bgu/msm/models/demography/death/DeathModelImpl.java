@@ -101,7 +101,7 @@ public class DeathModelImpl extends AbstractModel implements DeathModel {
         }
         householdDataManager.removePerson(person.getId());
 
-        final boolean onlyChildrenLeft = HouseholdUtil.checkIfOnlyChildrenRemaining(hhOfPersonToDie);
+        final boolean onlyChildrenLeft = HouseholdUtil.checkIfAdultsPresent(hhOfPersonToDie);
         if (onlyChildrenLeft) {
             for (Person pp : hhOfPersonToDie.getPersons().values()) {
                 if (pp.getId() == SiloUtil.trackPp || hhOfPersonToDie.getId() == SiloUtil.trackHh) {

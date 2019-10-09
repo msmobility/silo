@@ -233,7 +233,7 @@ public final class SummarizeData {
                             pwp.print(",0,");
                             pwp.print(pp.getJobId());
                             pwp.print(",");
-                            pwp.println(pp.getIncome());
+                            pwp.println(pp.getAnnualIncome());
                         }
                         // duplicate household if selected
                         if (selectedHH[i] > 0) {    // household to be repeated for this output file
@@ -260,7 +260,7 @@ public final class SummarizeData {
                                     pwp.print(",0,");
                                     pwp.print(pp.getJobId());
                                     pwp.print(",");
-                                    pwp.println(pp.getIncome());
+                                    pwp.println(pp.getAnnualIncome());
                                     artificialPpId++;
                                 }
                                 artificialHhId++;
@@ -290,7 +290,7 @@ public final class SummarizeData {
                                 pwp.print(",0,");
                                 pwp.print(pp.getJobId());
                                 pwp.print(",");
-                                pwp.println(pp.getIncome());
+                                pwp.println(pp.getAnnualIncome());
                             }
                         }
                     }

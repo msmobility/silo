@@ -6,19 +6,19 @@ import de.tum.bgu.msm.data.Region;
 public class MunichZone extends ZoneImpl {
 
     private final AreaTypes.SGType areaType;
-    private final double ptDistance;
+    private final double ptDistance_m;
 
-    public MunichZone(int id, float area, AreaTypes.SGType areaType, double initialPTDistance, Region region) {
+    public MunichZone(int id, float area, AreaTypes.SGType areaType, double initialPTDistance_m, Region region) {
         super(id, area, region);
         this.areaType = areaType;
-        this.ptDistance = initialPTDistance;
+        this.ptDistance_m = initialPTDistance_m;
     }
 
-    public double getPTDistance() {
-        return ptDistance;
+    public double getPTDistance_m() {
+        return ptDistance_m;
     }
 
-    public AreaTypes.SGType getAreaType() {
+    public AreaTypes.SGType getAreaTypeSG() {
         return areaType;
     }
 }

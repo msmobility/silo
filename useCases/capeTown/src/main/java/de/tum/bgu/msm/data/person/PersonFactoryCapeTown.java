@@ -18,7 +18,7 @@ public class PersonFactoryCapeTown implements PersonFactory {
     public Person duplicate(Person originalPerson, int nextPersonId) {
         PersonCapeTown duplicate = new PersonCapeTown(nextPersonId, originalPerson.getAge(),
                 originalPerson.getGender(), originalPerson.getOccupation(),
-                originalPerson.getRole(), originalPerson.getJobId(), originalPerson.getIncome());
+                originalPerson.getRole(), originalPerson.getJobId(), originalPerson.getAnnualIncome());
         duplicate.setRace(((PersonCapeTown) originalPerson).getRace());
         duplicate.setDriverLicense(originalPerson.hasDriverLicense());
         return duplicate;

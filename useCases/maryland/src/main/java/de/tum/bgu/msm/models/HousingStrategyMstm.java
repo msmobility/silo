@@ -116,7 +116,7 @@ public class HousingStrategyMstm implements HousingStrategy<DwellingMstm> {
             return true;
         }
         int msa = ((MstmZone) geoData.getZones().get(dd.getZoneId())).getMsa();
-        return HouseholdUtil.getHhIncome(household) <= (((HouseholdDataManagerMstm) dataContainer.getHouseholdDataManager()).getMedianIncome(msa) * dd.getRestriction());
+        return HouseholdUtil.getAnnualHhIncome(household) <= (((HouseholdDataManagerMstm) dataContainer.getHouseholdDataManager()).getMedianIncome(msa) * dd.getRestriction());
     }
 
     @Override
@@ -134,7 +134,7 @@ public class HousingStrategyMstm implements HousingStrategy<DwellingMstm> {
 
         if (provideRentSubsidyToLowIncomeHh) {
             int price = dwelling.getPrice();
-            int income = HouseholdUtil.getHhIncome(hh);
+            int income = HouseholdUtil.getAnnualHhIncome(hh);
             if(householdQualifiesForSubsidy(income, geoData.getZones().get(dwelling.getZoneId()).getZoneId(), dwelling.getPrice())) {
                 //need to recalculate the generic utility
                 if (income > 0) {

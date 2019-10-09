@@ -2,7 +2,6 @@ package de.tum.bgu.msm.io;
 
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.person.Person;
-import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.data.person.PersonMucDisability;
 import de.tum.bgu.msm.io.output.PersonWriter;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -52,7 +51,7 @@ public class PersonWriterMucDisability implements PersonWriter {
             pwp.print(",");
             pwp.print(pp.getJobId());
             pwp.print(",");
-            pwp.print(pp.getIncome());
+            pwp.print(pp.getAnnualIncome());
             pwp.print(",");
             pwp.print(((PersonMucDisability)pp).getNationality().toString());
             pwp.print(",");

@@ -93,7 +93,7 @@ public class PersonImpl implements Person {
     }
 
     @Override
-    public int getIncome() {
+    public int getAnnualIncome() {
         return income;
     }
 

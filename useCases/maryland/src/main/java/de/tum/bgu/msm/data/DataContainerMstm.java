@@ -136,7 +136,7 @@ public class DataContainerMstm implements DataContainer {
                 zone = dwelling.getZoneId();
             }
             if (prestoRegionByTaz[zone] > 0) {
-                int hhInc = HouseholdUtil.getHhIncome(hh);
+                int hhInc = HouseholdUtil.getAnnualHhIncome(hh);
                 int rent = getRealEstateDataManager().getDwelling(hh.getDwellingId()).getPrice();
                 int incCat = Math.min((hhInc / 10000), 9);
                 int rentCat = Math.min((rent / 250), 9);

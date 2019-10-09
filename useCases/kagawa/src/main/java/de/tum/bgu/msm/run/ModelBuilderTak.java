@@ -11,6 +11,9 @@ import de.tum.bgu.msm.matsim.SimpleMatsimScenarioAssembler;
 import de.tum.bgu.msm.matsim.ZoneConnectorManager;
 import de.tum.bgu.msm.mito.MitoMatsimScenarioAssembler;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
+import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipTak;
+import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipStrategyTakImpl;
+import de.tum.bgu.msm.models.carOwnership.UpdateCarOwnershipTak;
 import de.tum.bgu.msm.models.demography.birth.BirthModelImpl;
 import de.tum.bgu.msm.models.demography.birth.DefaultBirthStrategy;
 import de.tum.bgu.msm.models.demography.birthday.BirthdayModel;
@@ -73,8 +76,7 @@ public class ModelBuilderTak {
                         new DwellingUtilityStrategyImpl(), new DefaultDwellingProbabilityStrategy(),
                         new RegionUtilityStrategyImpl(), new RegionProbabilityStrategyImpl()));
 
-        //TODO reconsider CreateCarOwnershipModel in Kagawa
-        CreateCarOwnershipModel carOwnershipModel = null;
+        CreateCarOwnershipModel carOwnershipModel = new CreateCarOwnershipTak(dataContainer, new CreateCarOwnershipStrategyTakImpl());
 
         DivorceModel divorceModel = new DivorceModelImpl(
                 dataContainer, movesModel, carOwnershipModel, hhFactory,
@@ -135,6 +137,7 @@ public class ModelBuilderTak {
                 leaveParentsModel, jobMarketUpdateModel,
                 construction, demolition, pricing, renovation,
                 constructionOverwrite, inOutMigration, movesModel, transportModel);
+        modelContainer.registerModelUpdateListener(new UpdateCarOwnershipTak(dataContainer, properties));
         return modelContainer;
     }
 }

@@ -1,36 +1,27 @@
 package de.tum.bgu.msm.models.carOwnership;
 
-
 import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.AreaTypes;
+import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.geo.DefaultGeoData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
-import de.tum.bgu.msm.data.geo.MunichZone;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
-import de.tum.bgu.msm.utils.SiloUtil;
+import de.tum.bgu.msm.utils.SampleException;
+import de.tum.bgu.msm.utils.Sampler;
 import org.apache.log4j.Logger;
 
-import java.io.InputStreamReader;
-import java.io.Reader;
+public class CreateCarOwnershipTak implements CreateCarOwnershipModel {
 
-/**
- * Implements car ownership of initial synthetic population (base year) for the Munich Metropolitan Area
- *
- * @author Matthew Okrah
- *         Created on 28/04/2017 in Munich, Germany.
- */
+    private static Logger logger = Logger.getLogger(CreateCarOwnershipTak.class);
 
-public class CreateCarOwnershipModelMuc implements CreateCarOwnershipModel {
-
-    private static Logger logger = Logger.getLogger(CreateCarOwnershipModelMuc.class);
-    private final CreateCarOwnershipJSCalculatorMuc calculator;
     private final DataContainer dataContainer;
     private final DefaultGeoData geoData;
+    private final CreateCarOwnershipStrategyImpl strategy;
 
-    public CreateCarOwnershipModelMuc(DataContainer dataContainer) {
+    public CreateCarOwnershipTak(DataContainer dataContainer, CreateCarOwnershipStrategyImpl strategy) {
+        this.strategy = strategy;
         logger.info(" Setting up probabilities for car ownership model");
-        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("CreateCarOwnershipCalc"));
-        calculator = new CreateCarOwnershipJSCalculatorMuc(reader);
         this.dataContainer = dataContainer;
         this.geoData = (DefaultGeoData) dataContainer.getGeoData();
     }
@@ -43,7 +34,6 @@ public class CreateCarOwnershipModelMuc implements CreateCarOwnershipModel {
         for (Household hh : dataContainer.getHouseholdDataManager().getHouseholds()) {
             simulateCarOwnership(hh);
         }
-        //SummarizeData.summarizeCarOwnershipByMunicipality(zonalData);
     }
 
     /**
@@ -55,16 +45,23 @@ public class CreateCarOwnershipModelMuc implements CreateCarOwnershipModel {
     public void simulateCarOwnership(Household hh) {
         int license = HouseholdUtil.getHHLicenseHolders(hh);
         int workers = HouseholdUtil.getNumberOfWorkers(hh);
-        int income = HouseholdUtil.getAnnualHhIncome(hh)/12;  // convert yearly into monthly income
-        MunichZone zone = (MunichZone) geoData.getZones().get(dataContainer.getRealEstateDataManager().
+        // convert yearly into monthly income
+        int income = HouseholdUtil.getAnnualHhIncome(hh)/12;
+        Zone zone = geoData.getZones().get(dataContainer.getRealEstateDataManager().
                 getDwelling(hh.getDwellingId()).getZoneId());
 
-        double logDistanceToTransit = Math.log(zone.getPTDistance_m() + 1); // add 1 to avoid taking log of 0
-        int areaType = zone.getAreaTypeSG().code();
+        //TODO: Reconsider static distance to transit for Kagawa zones in CarownershipModel
+        // add 1 to avoid taking log of 0
+        double logDistanceToTransit = Math.log(1000 + 1);
 
-        double[] prob = calculator.calculate(license, workers, income, logDistanceToTransit, areaType);
-        hh.setAutos(SiloUtil.select(prob));
+        //TODO: Reconsider static area type for Kagawa zones in CarownershipModel
+        int areaType = AreaTypes.SGType.MEDIUM_SIZED_CITY.code();
+
+        Sampler<Integer> sampler = strategy.getSampler(license, workers, income, logDistanceToTransit, areaType);
+        try {
+            hh.setAutos(sampler.sampleObject());
+        } catch (SampleException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
-
-
