@@ -114,8 +114,8 @@ public class PersonMucDisability implements PersonWithSchool {
     }
 
     @Override
-    public int getIncome() {
-        return delegate.getIncome();
+    public int getAnnualIncome() {
+        return delegate.getAnnualIncome();
     }
 
     @Override

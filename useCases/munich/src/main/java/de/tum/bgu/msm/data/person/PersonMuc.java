@@ -108,8 +108,8 @@ public class PersonMuc implements PersonWithSchool {
     }
 
     @Override
-    public int getIncome() {
-        return delegate.getIncome();
+    public int getAnnualIncome() {
+        return delegate.getAnnualIncome();
     }
 
     @Override

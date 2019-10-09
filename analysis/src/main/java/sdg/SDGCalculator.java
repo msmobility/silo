@@ -29,14 +29,14 @@ public class SDGCalculator {
 
 
         Map<Integer,List<Household>> hhBySize = households.parallelStream().collect(Collectors.groupingBy(hh -> hh.getPersons().size()));
-        hhBySize.entrySet().forEach(entry -> logger.info(entry.getKey() + " " + entry.getValue().stream().filter(hh -> (double) HouseholdUtil.getHhIncome(hh) < 10000).count() / (double) entry.getValue().size()));
+        hhBySize.entrySet().forEach(entry -> logger.info(entry.getKey() + " " + entry.getValue().stream().filter(hh -> (double) HouseholdUtil.getAnnualHhIncome(hh) < 10000).count() / (double) entry.getValue().size()));
 
 
 
 
 
         Map<Integer,List<Household>> hhByRegion = households.parallelStream().collect(Collectors.groupingBy(hh -> hh.getDwellingId()));
-        hhBySize.entrySet().forEach(entry -> logger.info(entry.getKey() + " " + entry.getValue().stream().filter(hh -> (double) HouseholdUtil.getHhIncome(hh) < 10000).count() / (double) entry.getValue().size()));
+        hhBySize.entrySet().forEach(entry -> logger.info(entry.getKey() + " " + entry.getValue().stream().filter(hh -> (double) HouseholdUtil.getAnnualHhIncome(hh) < 10000).count() / (double) entry.getValue().size()));
 
 
 //        logger.info(hhUnder);

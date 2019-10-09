@@ -383,7 +383,7 @@ public class MarriageModelMstm extends AbstractModel implements MarriageModel {
         if (!moveTo.equals(household1)) {
             householdDataManager.removePersonFromHousehold(person1);
             householdDataManager.addPersonToHousehold(person1, moveTo);
-            if (HouseholdUtil.checkIfOnlyChildrenRemaining(household1)) {
+            if (HouseholdUtil.checkIfNoAdultsPresent(household1)) {
                 moveRemainingChildren(household1, moveTo);
             }
         }

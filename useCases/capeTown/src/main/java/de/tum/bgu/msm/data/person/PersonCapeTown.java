@@ -75,8 +75,8 @@ public class PersonCapeTown implements Person {
     }
 
     @Override
-    public int getIncome() {
-        return delegate.getIncome();
+    public int getAnnualIncome() {
+        return delegate.getAnnualIncome();
     }
 
     @Override

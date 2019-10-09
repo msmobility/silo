@@ -28,38 +28,29 @@ public class HouseholdUtil {
     }
 
     public static int getNumberOfChildren(Household household) {
-        return (int) household.getPersons().values().stream().filter(p -> ((Person) p).getRole() == PersonRole.CHILD).count();
+        return (int) household.getPersons().values().stream().filter(p -> p.getRole() == PersonRole.CHILD).count();
     }
 
     public static int getHHLicenseHolders(Household household) {
         return (int) household.getPersons().values().stream().filter(Person::hasDriverLicense).count();
     }
 
-    public static int getHhIncome(Household household) {
-        int hhInc = 0;
-        for (Person i : household.getPersons().values()) {
-            hhInc += i.getIncome();
-        }
-        return hhInc;
+    public static int getAnnualHhIncome(Household household) {
+        return household.getPersons().values().stream().mapToInt(Person::getAnnualIncome).sum();
     }
 
-    public static boolean checkIfOnlyChildrenRemaining(Household household) {
+    public static boolean checkIfNoAdultsPresent(Household household) {
         if (household.getPersons().isEmpty()) {
             return false;
         }
-        for (Person pp : household.getPersons().values()) {
-            if (pp.getAge() >= 16) {
-                return false;
-            }
-        }
-        return true;
+        return household.getPersons().values().stream().allMatch(pp -> pp.getAge() < 16);
     }
 
     public static HouseholdType defineHouseholdType(Household household) {
         // define household type based on size and income
 
         int hhSize = household.getHhSize();
-        IncomeCategory incomeCategory = getIncomeCategoryForIncome(HouseholdUtil.getHhIncome(household));
+        IncomeCategory incomeCategory = getIncomeCategoryForIncome(HouseholdUtil.getAnnualHhIncome(household));
 
         HouseholdType ht = null;
         if (hhSize == 1) {
@@ -88,6 +79,7 @@ public class HouseholdUtil {
 
     /**
      * return income category defined exogenously
+     *
      * @param hhInc
      * @return
      */
@@ -102,13 +94,13 @@ public class HouseholdUtil {
         return IncomeCategory.values()[IncomeCategory.values().length - 1];
     }
 
-    public static Person findMostLikelyUnmarriedPartner (Person per, Household hh) {
+    public static Person findMostLikelyUnmarriedPartner(Person per, Household hh) {
         // when assigning roles to persons, look for likely partner in household that is not married yet
 
         Person selectedPartner = null;
         double highestUtil = Double.NEGATIVE_INFINITY;
         double tempUtil;
-        for (Person partner: hh.getPersons().values()) {
+        for (Person partner : hh.getPersons().values()) {
             if (partner.getGender() != per.getGender() && partner.getRole() != PersonRole.MARRIED) {
                 int ageDiff = Math.abs(per.getAge() - partner.getAge());
                 if (ageDiff == 0) {
@@ -117,7 +109,8 @@ public class HouseholdUtil {
                     tempUtil = 1f / (float) ageDiff;
                 }
                 if (tempUtil > highestUtil) {
-                    selectedPartner = partner;     // find most likely partner
+                    // find most likely partner
+                    selectedPartner = partner;
                 }
             }
         }
@@ -129,12 +122,12 @@ public class HouseholdUtil {
         double highestUtil = Double.NEGATIVE_INFINITY;
         double tempUtil;
         Person selectedPartner = null;
-        for(Person partner: hh.getPersons().values()) {
+        for (Person partner : hh.getPersons().values()) {
             if (!partner.equals(per) && partner.getGender() != per.getGender() && partner.getRole() == PersonRole.MARRIED) {
                 final int ageDiff = Math.abs(per.getAge() - partner.getAge());
                 if (ageDiff == 0) {
                     tempUtil = 2.;
-                } else  {
+                } else {
                     tempUtil = 1. / ageDiff;
                 }
                 if (tempUtil > highestUtil) {
@@ -145,7 +138,7 @@ public class HouseholdUtil {
         }
         if (selectedPartner == null) {
             logger.error("Could not find spouse of person " + per.getId() + " in household " + hh.getId());
-            for (Person person: hh.getPersons().values()) {
+            for (Person person : hh.getPersons().values()) {
                 logger.error("Houshold member " + person.getId() + " (gender: " + person.getGender() + ") is " +
                         person.getRole());
             }
@@ -153,15 +146,15 @@ public class HouseholdUtil {
         return selectedPartner;
     }
 
-    public static void defineUnmarriedPersons (Household hh) {
+    public static void defineUnmarriedPersons(Household hh) {
         // For those that did not become the married couple define role in household (child or single)
-        for (Person pp: hh.getPersons().values()) {
+        for (Person pp : hh.getPersons().values()) {
             if (pp.getRole() == PersonRole.MARRIED) {
                 continue;
             }
             boolean someone15to40yearsOlder = false;      // assumption that this person is a parent
             final int ageMain = pp.getAge();
-            for (Person per: hh.getPersons().values()) {
+            for (Person per : hh.getPersons().values()) {
                 if (pp.equals(per)) {
                     continue;
                 }
@@ -185,7 +178,7 @@ public class HouseholdUtil {
     public static void findMarriedCouple(Household hh) {
         List<Person> personsCopy = hh.getPersons().values().stream().sorted(new PersonUtils.PersonByAgeComparator()).collect(Collectors.toList());
 
-        for (Person person: personsCopy) {
+        for (Person person : personsCopy) {
             Person partner = HouseholdUtil.findMostLikelyUnmarriedPartner(person, hh);
             if (partner != null) {
                 partner.setRole(PersonRole.MARRIED);
@@ -204,12 +197,12 @@ public class HouseholdUtil {
             }
         }
     }
-    
+
     public static Map<Integer, Integer> getPopulationByZoneAsMap(DataContainer dataContainer) {
-    	Map<Integer, Integer> zonePopulationMap = new HashMap<>();
-    	for (int zone : dataContainer.getGeoData().getZones().keySet()) {
-    		zonePopulationMap.put(zone, 0);
-    	}
+        Map<Integer, Integer> zonePopulationMap = new HashMap<>();
+        for (int zone : dataContainer.getGeoData().getZones().keySet()) {
+            zonePopulationMap.put(zone, 0);
+        }
 
         for (Household hh : dataContainer.getHouseholdDataManager().getHouseholds()) {
             final int zone = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId()).getZoneId();

@@ -97,7 +97,7 @@ public class MaryLandUpdateCarOwnershipModel extends AbstractModel implements Mo
             double[] prob = new double[4];
             int hhSize = Math.min(household.getHhSize(), 8);
             int workers = Math.min(HouseholdUtil.getNumberOfWorkers(household), 4);
-            int incomeCategory = getIncomeCategory(HouseholdUtil.getHhIncome(household));
+            int incomeCategory = getIncomeCategory(HouseholdUtil.getAnnualHhIncome(household));
             Dwelling dwelling = dataContainer.getRealEstateDataManager().getDwelling(household.getDwellingId());
             int transitAcc = (int) (accessibility.getTransitAccessibilityForZone(dataContainer.getGeoData().getZones().get(dwelling.getZoneId())) + 0.5);
             int density = dataContainer.getJobDataManager().getJobDensityCategoryOfZone(dwelling.getZoneId());

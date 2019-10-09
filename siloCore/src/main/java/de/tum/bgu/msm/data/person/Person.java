@@ -48,7 +48,7 @@ public interface Person extends Id {
 
     Occupation getOccupation();
 
-    int getIncome();
+    int getAnnualIncome();
 
     PersonType getType();
 

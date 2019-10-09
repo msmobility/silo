@@ -231,7 +231,7 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
             largestNoBedrooms = Math.max(largestNoBedrooms, dd.getBedrooms());
             int hhId = dd.getResidentId();
             if (hhId > 0) {
-                int hhinc = HouseholdUtil.getHhIncome(householdData.getHousehold(hhId));
+                int hhinc = HouseholdUtil.getAnnualHhIncome(householdData.getHousehold(hhId));
                 IncomeCategory incomeCategory = HouseholdUtil.getIncomeCategoryForIncome(hhinc);
                 int rentCategory = (int) ((dd.getPrice() * 1.) / 200.);  // rent category defined as <rent/200>
                 rentCategory = Math.min(rentCategory, RENT_CATEGORIES);   // ensure that rent categories do not exceed max

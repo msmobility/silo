@@ -46,7 +46,7 @@ public class PersonWriterCapeTown implements PersonWriter {
             pwp.print(",");
             pwp.print(pp.getJobId());
             pwp.print(",");
-            pwp.print(pp.getIncome());
+            pwp.print(pp.getAnnualIncome());
             pwp.print(",");
             pwp.print(((PersonCapeTown)pp).getRace());
             pwp.println();

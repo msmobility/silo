@@ -65,7 +65,7 @@ public class IncomeAdjustment extends RandomizableConcurrentFunction<Void> {
         }
         prob[smallestAbsValuePos] = prob[smallestAbsValuePos] * 10;   // make no change most likely
         int sel = SiloUtil.select(prob, random);
-        return Math.max((person.getIncome() + lowerBound + (upperBound - lowerBound) / prob.length * sel), 0);
+        return Math.max((person.getAnnualIncome() + lowerBound + (upperBound - lowerBound) / prob.length * sel), 0);
     }
 
     private float getDesiredShift() {

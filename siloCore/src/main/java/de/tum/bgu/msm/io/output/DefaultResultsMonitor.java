@@ -144,7 +144,7 @@ public class DefaultResultsMonitor implements ResultsMonitor {
     }
 
     private void summarizeHouseholdIncome() {
-        List<Integer> incomes = dataContainer.getHouseholdDataManager().getHouseholds().stream().map(h -> h.getPersons().values().stream().mapToInt(p -> p.getIncome()).sum()).collect(Collectors.toList());
+        List<Integer> incomes = dataContainer.getHouseholdDataManager().getHouseholds().stream().map(h -> h.getPersons().values().stream().mapToInt(p -> p.getAnnualIncome()).sum()).collect(Collectors.toList());
         double aveHHincome = incomes.stream().mapToDouble(i -> i).average().getAsDouble();
         double medianHhIncome = Quantiles.median().compute(incomes);
         String row = "AveHHInc," + aveHHincome + ",MedianHHInc," + medianHhIncome;
@@ -279,7 +279,7 @@ public class DefaultResultsMonitor implements ResultsMonitor {
         int[][] rentByIncome = new int[10][10];
         int[] rents = new int[10];
         for (Household hh : dataContainer.getHouseholdDataManager().getHouseholds()) {
-            int hhInc = HouseholdUtil.getHhIncome(hh);
+            int hhInc = HouseholdUtil.getAnnualHhIncome(hh);
             int rent = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId()).getPrice();
             int incCat = Math.min((hhInc / 10000), 9);
             int rentCat = Math.min((rent / 250), 9);

@@ -328,7 +328,7 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
         jb.setWorkerID(-1);
         person.setWorkplace(-1);
         person.setOccupation(Occupation.UNEMPLOYED);
-        person.setIncome((int) (person.getIncome() * 0.6 + 0.5));
+        person.setIncome((int) (person.getAnnualIncome() * 0.6 + 0.5));
         //todo: think about smarter retirement/social welfare algorithm to adjust income after employee leaves work.
     }
     

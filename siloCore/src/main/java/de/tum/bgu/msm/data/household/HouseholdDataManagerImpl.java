@@ -248,7 +248,7 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
             if (pp.getOccupation() == Occupation.EMPLOYED) {
                 occupation = 1;
             }
-            averageIncome[pp.getGender().ordinal()][age][occupation] += pp.getIncome();
+            averageIncome[pp.getGender().ordinal()][age][occupation] += pp.getAnnualIncome();
             count[pp.getGender().ordinal()][age][occupation]++;
         }
         for (int i = 0; i < averageIncome.length; i++) {

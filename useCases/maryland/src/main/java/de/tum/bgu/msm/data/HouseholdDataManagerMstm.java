@@ -15,7 +15,7 @@ import de.tum.bgu.msm.utils.SiloUtil;
 
 import java.util.*;
 
-import static de.tum.bgu.msm.data.household.HouseholdUtil.getHhIncome;
+import static de.tum.bgu.msm.data.household.HouseholdUtil.getAnnualHhIncome;
 
 public class HouseholdDataManagerMstm implements HouseholdDataManager {
 
@@ -47,10 +47,10 @@ public class HouseholdDataManagerMstm implements HouseholdDataManager {
             int homeMSA = ((MstmZone) geoData.getZones().get(zone)).getMsa();
             if (incomesByMsa.containsKey(homeMSA)) {
                 List<Integer> inc = incomesByMsa.get(homeMSA);
-                inc.add(getHhIncome(hh));
+                inc.add(getAnnualHhIncome(hh));
             } else {
                 List<Integer> inc = new ArrayList<>();
-                inc.add(getHhIncome(hh));
+                inc.add(getAnnualHhIncome(hh));
                 incomesByMsa.put(homeMSA, inc);
             }
         }

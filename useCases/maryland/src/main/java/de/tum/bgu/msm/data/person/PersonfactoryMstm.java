@@ -23,7 +23,7 @@ public class PersonfactoryMstm implements PersonFactory {
     public MarylandPerson duplicate(Person originalPerson, int nextPersonId) {
         MarylandPerson duplicate = new MarylandPerson(nextPersonId, originalPerson.getAge(),
                 originalPerson.getGender(), originalPerson.getOccupation(),
-                originalPerson.getRole(), originalPerson.getJobId(), originalPerson.getIncome());
+                originalPerson.getRole(), originalPerson.getJobId(), originalPerson.getAnnualIncome());
         duplicate.setRace(((MarylandPerson) originalPerson).getRace());
         duplicate.setDriverLicense(originalPerson.hasDriverLicense());
         return duplicate;

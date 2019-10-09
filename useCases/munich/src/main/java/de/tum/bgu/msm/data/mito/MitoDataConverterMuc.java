@@ -37,7 +37,7 @@ public class MitoDataConverterMuc implements MitoDataConverter {
 
     private void convertZones(DataSet dataSet, DataContainer dataContainer) {
         for (Zone siloZone : dataContainer.getGeoData().getZones().values()) {
-            MitoZone zone = new MitoZone(siloZone.getZoneId(), ((MunichZone) siloZone).getAreaType());
+            MitoZone zone = new MitoZone(siloZone.getZoneId(), ((MunichZone) siloZone).getAreaTypeSG());
             zone.setShapeFeature(siloZone.getZoneFeature());
             dataSet.addZone(zone);
         }
@@ -77,7 +77,7 @@ public class MitoDataConverterMuc implements MitoDataConverter {
 
             MitoHousehold household = new MitoHousehold(
                     siloHousehold.getId(),
-                    HouseholdUtil.getHhIncome(siloHousehold) / 12,
+                    HouseholdUtil.getAnnualHhIncome(siloHousehold) / 12,
                     siloHousehold.getAutos());
             household.setHomeZone(zone);
 
