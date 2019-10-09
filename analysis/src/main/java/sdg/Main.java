@@ -11,15 +11,15 @@ public class Main {
 
         Properties properties = SiloUtil.siloInitialization(args[0]);
         String outputPath = Properties.get().main.baseDirectory + "/scenOutput/" + Properties.get().main.scenarioName;
-        String networkFileName = Properties.get().main.baseDirectory + "/scenOutput/" + Properties.get().main.scenarioName+"/"+Properties.get().main.startYear+"/trafficAssignment/mito_assignment.output_network.xml.gz";
-        String eventFileName = Properties.get().main.baseDirectory +"/scenOutput/" + Properties.get().main.scenarioName+"/"+Properties.get().main.startYear+"/trafficAssignment/mito_assignment.output_events.xml.gz";
+        String networkFileName = Properties.get().main.baseDirectory + "/scenOutput/" + Properties.get().main.scenarioName+"/2040/trafficAssignment/2040.output_network.xml.gz";
+        String eventFileName = Properties.get().main.baseDirectory +"/scenOutput/" + Properties.get().main.scenarioName+"/2040/trafficAssignment/2040.output_events.xml.gz";
 
         DataContainerSdg dataContainer = DataBuilderSdg.getModelData(properties, null);
-        DataBuilderSdg.read(properties, dataContainer,2011);
+        DataBuilderSdg.read(properties, dataContainer,2050);
 
         SDGCalculator sdgCalculator = new SDGCalculator();
         sdgCalculator.setMatsimPerson(new EventAnalysis().runEventAnalysis(networkFileName, eventFileName));
-        sdgCalculator.calculateSdgIndicators(dataContainer, outputPath, Properties.get().main.startYear);
+        sdgCalculator.calculateSdgIndicators(dataContainer, outputPath, 2050);
     }
 
 }
