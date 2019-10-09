@@ -16,7 +16,7 @@ import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.GeoDataReaderTak;
 import de.tum.bgu.msm.io.input.*;
-import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
+import de.tum.bgu.msm.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import org.matsim.core.config.Config;
 

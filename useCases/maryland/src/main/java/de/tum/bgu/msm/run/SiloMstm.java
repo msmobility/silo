@@ -28,11 +28,11 @@ public class SiloMstm {
         if (args.length > 1 && args[1] != null) {
             config = ConfigUtils.loadConfig(args[1]);
         }
-        logger.info("Starting SILO land use model for the Munich Metropolitan Area");
+        logger.info("Started SILO land use model for the Maryland Statewide Model Area");
         DataContainer dataContainer = DataBuilder.buildDataContainer(properties, config);
         DataBuilder.readInput(properties, dataContainer);
 
-        ModelContainer modelContainer = ModelBuilder.getModelContainerForMstm(dataContainer, properties, config);
+        ModelContainer modelContainer = ModelBuilderMstm.getModelContainerForMstm(dataContainer, properties, config);
 
         ResultsMonitor resultsMonitor = new DefaultResultsMonitor(dataContainer, properties);
         SiloModel model = new SiloModel(properties, dataContainer, modelContainer, resultsMonitor);

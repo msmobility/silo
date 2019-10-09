@@ -1,0 +1,62 @@
+var calculateRegionUtility = function (incomeGroup, race, price, accessibility, racialShare, schoolQuality, crimeRate) {
+
+    delta = 0.;
+    if(incomeGroup.name().equals("LOW")){
+        alpha = 0.04;
+        beta = 0.05;
+        gamma = 0.05;
+        if(race.name().equals("white")){
+             delta = 0.55;
+        }else if(race.name().equals("black")){
+             delta = 0.25;
+        }else if(race.name().equals("hispanic")){
+             delta = 0.5;
+        }
+    }else if(incomeGroup.name().equals("MEDIUM")){
+        alpha = 0.08;
+        beta = 0.1;
+        gamma = 0.1;
+         if(race.name().equals("white")){
+              delta = 0.5;
+         }else if(race.name().equals("black")){
+              delta = 0.25;
+         }else if(race.name().equals("hispanic")){
+              delta = 0.45;
+         }
+    }else if(incomeGroup.name().equals("HIGH")){
+        alpha = 0.12;
+        beta = 0.2;
+        gamma = 0.15;
+         if(race.name().equals("white")){
+              delta = 0.45;
+         }else if(race.name().equals("black")){
+              delta = 0.15;
+         }else if(race.name().equals("hispanic")){
+              delta = 0.25;
+         }
+    }else if(incomeGroup.name().equals("VERY_HIGH")){
+        alpha = 0.16;
+        beta = 0.3;
+        gamma = 0.25;
+         if(race.name().equals("white")){
+             delta = 0.25;
+         }else if(race.name().equals("black")){
+             delta = 0.1;
+         }else if(race.name().equals("hispanic")){
+              delta = 0.15;
+         }
+    }else{
+        throw new Error("Undefined income group: " + incomeGroup);
+    }
+
+    if(race.name().equals("white")|| race.name().equals("black") || race.name().equals("hispanic")){
+        relevantShare = racialShare;
+    }else if (race.name().equals("other")){
+        relevantShare = 1.0;
+    }else{
+        throw new Error("Undefined race: " + race);
+    }
+
+
+    return (1 - alpha - beta - gamma - delta) * price + alpha * accessibility + beta * schoolQuality + gamma * crimeRate + delta * relevantShare;
+}

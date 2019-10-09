@@ -39,6 +39,7 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
     private int currentYear = -1;
 
 
+
     private float betaForZoneChoice;
     private float priceIncreaseForNewDwelling;
 
@@ -110,6 +111,8 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
         }
 
         DwellingType[] sortedDwellingTypes = findOrderOfDwellingTypes(dataContainer);
+        int unrealizedDemandCounter = 0;
+
         for (DwellingType dt : sortedDwellingTypes) {
             int dto = dwellingTypes.indexOf(dt);
             for (int region : geoData.getRegions().keySet()) {
@@ -150,11 +153,18 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
                 for (int i = 1; i <= unrealizedDwellings; i++) {
                     int zone = allocateUnrealizedDemandInDifferentRegion(realEstate, dt, dto,
                             avePriceByTypeAndZone, avePriceByTypeAndRegion, utilitiesByDwellingTypeByZone);
-                    events.add(createNewDwelling(realEstate, aveSizeByTypeAndRegion, avePriceByTypeAndZone,
-                            avePriceByTypeAndRegion, dt, dto, region, zone));
+
+                    if(zone > -1) {
+                        events.add(createNewDwelling(realEstate, aveSizeByTypeAndRegion, avePriceByTypeAndZone,
+                                avePriceByTypeAndRegion, dt, dto, region, zone));
+                    } else {
+                        unrealizedDemandCounter++;
+                    }
                 }
             }
         }
+        logger.warn("There have been " + unrealizedDemandCounter + " dwellings that could not be built " +
+                "due to lack of developable land.");
         return events;
     }
 

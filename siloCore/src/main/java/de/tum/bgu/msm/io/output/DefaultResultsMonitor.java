@@ -224,7 +224,7 @@ public class DefaultResultsMonitor implements ResultsMonitor {
 
         resultWriter.println("QualityLevel,Dwellings");
         for (int qual = 1; qual <= Properties.get().main.qualityLevels; qual++) {
-            String row = qual + "," + dataContainer.getRealEstateDataManager().getDwellingsByQuality()[qual - 1];
+            String row = qual + "," + dataContainer.getRealEstateDataManager().getUpdatedQualityShares().getOrDefault(qual, 0.);
             resultWriter.println(row);
         }
 

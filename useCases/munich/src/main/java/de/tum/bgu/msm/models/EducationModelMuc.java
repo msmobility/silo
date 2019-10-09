@@ -1,11 +1,9 @@
 package de.tum.bgu.msm.models;
 
-import de.tum.bgu.msm.data.DataContainerMuc;
+import de.tum.bgu.msm.schools.*;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonMuc;
-import de.tum.bgu.msm.data.school.School;
-import de.tum.bgu.msm.data.school.SchoolDataImpl;
 import de.tum.bgu.msm.events.impls.person.EducationEvent;
 import de.tum.bgu.msm.models.demography.education.EducationModel;
 import de.tum.bgu.msm.properties.Properties;
@@ -30,7 +28,7 @@ public class EducationModelMuc extends AbstractModel implements EducationModel {
     private static final int MIN_TERTIARY_AGE = 18;
     private static final int MAX_EDUCATION_AGE = 24;
 
-    public EducationModelMuc(DataContainerMuc dataContainer, Properties properties) {
+    public EducationModelMuc(DataContainerWithSchools dataContainer, Properties properties) {
         super(dataContainer, properties);
     }
 
@@ -70,9 +68,9 @@ public class EducationModelMuc extends AbstractModel implements EducationModel {
                 case STUDENT:
                     int oldSchoolType = -1;
                     if(((PersonMuc)person).getSchoolId()> 0){
-                        oldSchoolType = ((DataContainerMuc)dataContainer).getSchoolData().getSchoolFromId(((PersonMuc)person).getSchoolId()).getType();
+                        oldSchoolType = ((DataContainerWithSchoolsImpl)dataContainer).getSchoolData().getSchoolFromId(((PersonMuc)person).getSchoolId()).getType();
                     }else if(((PersonMuc)person).getSchoolId()== -2){
-                        oldSchoolType = SchoolDataImpl.guessSchoolType(person);
+                        oldSchoolType = SchoolDataImpl.guessSchoolType((PersonWithSchool) person);
                     }else{
                         logger.warn("person id " + person.getId()+" has no school." + " Age: " +person.getAge()+" Occupation: "+ person.getOccupation().name());
                         continue;
@@ -106,7 +104,7 @@ public class EducationModelMuc extends AbstractModel implements EducationModel {
                     if(pp.getSchoolId()== -2) {
                         currentSchoolType = pp.getSchoolType();
                     }else{
-                        currentSchoolType = ((DataContainerMuc)dataContainer).getSchoolData().getSchoolFromId(pp.getSchoolId()).getType();
+                        currentSchoolType = ((DataContainerWithSchoolsImpl)dataContainer).getSchoolData().getSchoolFromId(pp.getSchoolId()).getType();
                     }
 
                     if (currentSchoolType == 3) {
@@ -155,7 +153,7 @@ public class EducationModelMuc extends AbstractModel implements EducationModel {
             person.setSchoolId(-1);
             person.setSchoolType(-1);
         }else{
-            School school = ((DataContainerMuc)dataContainer).getSchoolData().getSchoolFromId(person.getSchoolId());
+            School school = ((DataContainerWithSchoolsImpl)dataContainer).getSchoolData().getSchoolFromId(person.getSchoolId());
             school.setOccupancy(school.getOccupancy() + 1);
             person.setSchoolId(-1);
         }
@@ -168,6 +166,6 @@ public class EducationModelMuc extends AbstractModel implements EducationModel {
     }
 
     public School findSchool(Person person, int schoolType) {
-        return ((DataContainerMuc)dataContainer).getSchoolData().getClosestSchool(person, schoolType);
+        return ((DataContainerWithSchoolsImpl)dataContainer).getSchoolData().getClosestSchool(person, schoolType);
     }
 }

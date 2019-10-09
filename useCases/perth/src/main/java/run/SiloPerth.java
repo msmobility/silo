@@ -31,7 +31,7 @@ public class SiloPerth {
         DataContainer dataContainer = DataBuilder.buildDataContainer(properties, config);
         DataBuilder.readInput(properties, dataContainer);
 
-        ModelContainer modelContainer = ModelBuilder.getModelContainerForMstm(dataContainer, properties, config);
+        ModelContainer modelContainer = ModelBuilderPerth.getModelContainerForMstm(dataContainer, properties, config);
         SiloModel model = new SiloModel(properties, dataContainer, modelContainer, new DefaultResultsMonitor(dataContainer, properties));
         model.runModel();
         logger.info("Finished SILO.");

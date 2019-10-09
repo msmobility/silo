@@ -1,0 +1,49 @@
+var calculateRegionUtility = function (incomeGroup, race, price, accessibility, racialShare) {
+
+        beta = 0.;
+        if(incomeGroup.name().equals("LOW")) {
+            alpha = 0.05
+            if(race.name().equals("BLACK")) {
+                         beta = 0.47;
+            } else if(race.name().equals("COLOURED")) {
+                         beta = 0.45;
+            } else if(race.name().equals("WHITE")) {
+                         beta = 0.43;
+            }
+        } else if(incomeGroup.name().equals("MEDIUM")) {
+            alpha = 0.17;
+            if(race.name().equals("BLACK")) {
+                         beta = 0.46;
+            } else if(race.name().equals("COLOURED")) {
+                         beta = 0.43;
+            } else if(race.name().equals("WHITE")) {
+                         beta = 0.4;
+            }
+        } else if(incomeGroup.name().equals("HIGH")) {
+            alpha = 0.29;
+            if(race.name().equals("BLACK")) {
+                         beta = 0.45;
+            } else if(race.name().equals("COLOURED")) {
+                         beta = 0.41;
+            } else if(race.name().equals("WHITE")) {
+                         beta = 0.37;
+            }
+        } else if(incomeGroup.name().equals("VERY_HIGH")) {
+            alpha = 0.4;
+            if(race.name().equals("BLACK")) {
+                         beta = 0.45;
+            } else if(race.name().equals("COLOURED")) {
+                         beta = 0.4;
+            } else if(race.name().equals("WHITE")) {
+                         beta = 0.35;
+            }
+        } else {
+            throw new Error("Undefined income group: " + incomeGroup);
+        }
+
+    if(racialShare > 1 || racialShare < 0) {
+        throw new Error("Racial share must be between 0 and 1!")
+    }
+
+    return (1 - alpha - beta) * price + alpha * accessibility + beta * racialShare;
+}

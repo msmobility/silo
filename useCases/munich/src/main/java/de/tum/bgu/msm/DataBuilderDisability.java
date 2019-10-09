@@ -1,6 +1,5 @@
 package de.tum.bgu.msm;
 
-import de.tum.bgu.msm.data.DataContainerMuc;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.accessibility.AccessibilityImpl;
 import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
@@ -9,29 +8,23 @@ import de.tum.bgu.msm.data.geo.DefaultGeoData;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.*;
 import de.tum.bgu.msm.data.job.*;
-import de.tum.bgu.msm.data.person.PersonFactoryMuc;
 import de.tum.bgu.msm.data.person.PersonFactoryMucDisability;
-import de.tum.bgu.msm.data.school.SchoolData;
-import de.tum.bgu.msm.data.school.SchoolDataImpl;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.io.input.*;
+import de.tum.bgu.msm.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.models.disability.DefaultDisabilityStrategy;
-import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.schools.*;
 import org.matsim.core.config.Config;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class DataBuilderDisability {
 
     private DataBuilderDisability() {
     }
 
-    public static DataContainerMuc getModelDataForMuc(Properties properties, Config config) {
+    public static DataContainerWithSchoolsImpl getModelDataForMuc(Properties properties, Config config) {
 
         HouseholdData householdData = new HouseholdDataImpl();
         JobData jobData = new JobDataImpl();
@@ -79,11 +72,11 @@ public class DataBuilderDisability {
 
         SchoolData schoolData = new SchoolDataImpl(geoData, dwellingData, properties);
 
-        return new DataContainerMuc(geoData, realEstateDataManager, jobDataManager, householdDataManager, travelTimes, accessibility,
+        return new DataContainerWithSchoolsImpl(geoData, realEstateDataManager, jobDataManager, householdDataManager, travelTimes, accessibility,
         		commutingTimeProbability, schoolData, properties);
     }
 
-    static public void read(Properties properties, DataContainerMuc dataContainer){
+    static public void read(Properties properties, DataContainerWithSchoolsImpl dataContainer){
 
         GeoDataReader reader = new GeoDataReaderMuc(dataContainer.getGeoData());
         String pathShp = properties.main.baseDirectory + properties.geo.zoneShapeFile;
@@ -111,7 +104,7 @@ public class DataBuilderDisability {
         String jobsFile = properties.main.baseDirectory + properties.jobData.jobsFileName + "_" + year + ".csv";
         jjReader.readData(jobsFile);
 
-        SchoolReader ssReader = new SchoolReaderMuc(dataContainer.getSchoolData());
+        SchoolReader ssReader = new SchoolReaderImpl(dataContainer.getSchoolData());
         String schoolsFile = properties.main.baseDirectory + properties.schoolData.schoolsFileName + "_" + year + ".csv";
         ssReader.readData(schoolsFile);
     }

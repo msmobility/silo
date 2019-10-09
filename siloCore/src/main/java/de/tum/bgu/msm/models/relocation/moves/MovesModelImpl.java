@@ -9,11 +9,10 @@ import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdType;
-import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.events.impls.household.MoveEvent;
 import de.tum.bgu.msm.models.AbstractModel;
-import de.tum.bgu.msm.models.transportModel.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import de.tum.bgu.msm.utils.SampleException;
 import de.tum.bgu.msm.utils.Sampler;
@@ -21,14 +20,11 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.CyclicBarrier;
 
 /**
  * @author Nico
@@ -38,7 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class MovesModelImpl extends AbstractModel implements MovesModel {
 
-    public static BufferedWriter fileWriter;
+//    public static BufferedWriter fileWriter;
 
     public static boolean track = false;
 
@@ -55,16 +51,16 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
     public MovesModelImpl(DataContainer dataContainer, Properties properties, MovesStrategy movesStrategy, HousingStrategy housingStrategy) {
         super(dataContainer, properties);
-        try {
-            fileWriter = new BufferedWriter(new FileWriter(new File(properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/indiv_tt.csv")));
-            fileWriter.write("ppId,hhId,ddId,jobId,jobX,jobY,ddX,ddY,jobZone,dwellingZone,min,minSkim,queryTime,ddUtil,areaDDZone,areaJJZone,minFixedTime,minFixedZone,transitSkim,transitIndiv,transitIndivFixedQuery,transitIndivFixedZone");
-            fileWriter.newLine();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            fileWriter = new BufferedWriter(new FileWriter(new File(properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/indiv_tt.csv")));
+//            fileWriter.write("ppId,hhId,ddId,jobId,jobX,jobY,ddX,ddY,jobZone,dwellingZone,min,minSkim,queryTime,ddUtil,areaDDZone,areaJJZone,minFixedTime,minFixedZone,transitSkim,transitIndiv,transitIndivFixedQuery,transitIndivFixedZone");
+//            fileWriter.newLine();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
         this.movesStrategy = movesStrategy;
         this.housingStrategy = housingStrategy;
-        this.threaded = dataContainer.getTravelTimes() instanceof MatsimTravelTimes;
+        this.threaded = properties.transportModel.travelTimeImplIdentifier == TransportModelPropertiesModule.TravelTimeImplIdentifier.MATSIM;
     }
 
     @Override
@@ -102,11 +98,11 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
     @Override
     public void endSimulation() {
-        try {
-            fileWriter.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            fileWriter.close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     /**
@@ -207,11 +203,13 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
             }
         }
 
+
         if (threaded) {
-            while (true) {
-                if (UtilityUtils.counter.get() == maxNumberOfDwellings) {
-                    break;
-                }
+            try {
+                UtilityUtils.barrier.await();
+                UtilityUtils.barrier.await();
+            } catch (InterruptedException | BrokenBarrierException e) {
+                e.printStackTrace();
             }
         }
 
@@ -245,12 +243,20 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         averageHousingSatisfaction.replaceAll((householdType, aDouble) -> 0.);
 
         final Collection<Household> households = householdDataManager.getHouseholds();
-        final int partitionSize = (int) ((double) households.size() / (Properties.get().main.numberOfThreads - 1)) + 1;
-        Iterable<List<Household>> partitions = Iterables.partition(households, partitionSize);
-        ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Properties.get().main.numberOfThreads - 1);
         ConcurrentHashMultiset<HouseholdType> hhByType = ConcurrentHashMultiset.create();
 
-        logger.info("Using " + Properties.get().main.numberOfThreads + " threads" +
+        int numberOfTasks;
+
+        if (threaded) {
+            numberOfTasks = Properties.get().main.numberOfThreads;
+        } else {
+            numberOfTasks = 1;
+        }
+        final int partitionSize = (int) ((double) households.size() / (numberOfTasks)) + 1;
+        Iterable<List<Household>> partitions = Iterables.partition(households, partitionSize);
+        ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Properties.get().main.numberOfThreads);
+
+        logger.info("Using " + numberOfTasks + " thread(s)" +
                 " with partitions of size " + partitionSize);
 
         for (final List<Household> partition : partitions) {
@@ -266,7 +272,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
                         averageHousingSatisfaction.merge(householdType, util, (oldUtil, newUtil) -> oldUtil + newUtil);
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    throw new RuntimeException(e);
                 }
                 return null;
             });
@@ -313,15 +319,12 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
          */
         private static final Queue<UtilityTask> queue = new ConcurrentLinkedQueue<>();
 
+        private static CyclicBarrier barrier;
+
         /**
          * boolean that is used to stop threads once they're running.
          */
         private static boolean run = false;
-
-        /**
-         * counter that is used to dtermine when current dwelling evaluations have been finished
-         */
-        private final static AtomicInteger counter = new AtomicInteger(0);
 
         /**
          * static array that is used to store probabilities of dwelling evaluations accessed
@@ -351,7 +354,6 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         private static void reset() {
             probabilities = new double[MAX_NUMBER_DWELLINGS];
             dwellings = new Dwelling[MAX_NUMBER_DWELLINGS];
-            counter.set(0);
         }
 
         /**
@@ -360,6 +362,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
          */
         private static void startThreads(HousingStrategy strategy, int threads) {
             run = true;
+            barrier = new CyclicBarrier(threads +1);
             for (int i = 0; i < threads; i++) {
                 new UtilityUtils(strategy.duplicate()).start();
             }
@@ -372,14 +375,13 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
             run = false;
         }
 
-
-        @Override
         /**
          * when running, a thread polls the queue for utility tasks. for each task
          * a dwelling has to be evaluated. after the evaluation, the probabilities
          * are stored in the static array that is shared among the threads and the
          * jobcounter is incremented
          */
+        @Override
         public void run() {
             while (run) {
                 final UtilityTask poll = queue.poll();
@@ -390,7 +392,12 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
                     final int i = poll.id;
                     probabilities[i] = probability;
                     dwellings[i] = dwelling;
-                    counter.incrementAndGet();
+                } else {
+                    try {
+                        barrier.await();
+                    } catch (InterruptedException | BrokenBarrierException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }

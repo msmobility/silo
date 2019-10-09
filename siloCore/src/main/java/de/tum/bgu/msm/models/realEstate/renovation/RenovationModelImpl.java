@@ -8,9 +8,7 @@ import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * Simulates renovation and deterioration of dwellings
@@ -21,6 +19,37 @@ public class RenovationModelImpl extends AbstractModel implements RenovationMode
 
     private final RenovationStrategy strategy;
     private double[][] renovationProbability;
+
+    private enum DdQualityChange {
+        DECREASE_2 {
+            @Override
+            int getChange() {
+                return -2;
+            }
+        }, DECREASE_1 {
+            @Override
+            int getChange() {
+                return -1;
+            }
+        }, UNCHANGED {
+            @Override
+            int getChange() {
+                return 0;
+            }
+        }, IMPROVE_1 {
+            @Override
+            int getChange() {
+                return 1;
+            }
+        }, IMPROVE_2 {
+            @Override
+            int getChange() {
+                return 2;
+            }
+        };
+
+        abstract int getChange();
+    }
 
     public RenovationModelImpl(DataContainer dataContainer, Properties properties, RenovationStrategy strategy) {
         super(dataContainer, properties);
@@ -59,33 +88,8 @@ public class RenovationModelImpl extends AbstractModel implements RenovationMode
         Dwelling dd = realEstateDataManager.getDwelling(event.getDwellingId());
         if (dd != null) {
             int currentQuality = dd.getQuality();
-            int selected = SiloUtil.select(getProbabilities(currentQuality));
-
-            if (selected != 2) {
-                realEstateDataManager.getDwellingsByQuality()[currentQuality - 1] -= 1;
-            }
-            switch (selected) {
-                case (0): {
-                    realEstateDataManager.getDwellingsByQuality()[currentQuality - 1 - 2] += 1;
-                    dd.setQuality(currentQuality - 2);
-                    break;
-                }
-                case (1): {
-                    realEstateDataManager.getDwellingsByQuality()[currentQuality - 1 - 1] += 1;
-                    dd.setQuality(currentQuality - 1);
-                    break;
-                }
-                case (3): {
-                    realEstateDataManager.getDwellingsByQuality()[currentQuality - 1 + 1] += 1;
-                    dd.setQuality(currentQuality + 1);
-                    break;
-                }
-                case (4): {
-                    realEstateDataManager.getDwellingsByQuality()[currentQuality - 1 + 2] += 1;
-                    dd.setQuality(currentQuality + 2);
-                    break;
-                }
-            }
+            DdQualityChange change = SiloUtil.select(getProbabilities(currentQuality));
+            dd.setQuality(currentQuality + change.getChange());
             return true;
         }
         return false;
@@ -101,26 +105,22 @@ public class RenovationModelImpl extends AbstractModel implements RenovationMode
 
     }
 
-    private double[] getProbabilities(int currentQual) {
+    private Map<DdQualityChange, Double> getProbabilities(int currentQual) {
         // return probabilities to upgrade or deteriorate based on current quality of dwelling and average
         // quality of all dwellings
-        double[] currentShare = dataContainer.getRealEstateDataManager().getCurrentQualShares();
-        // if share of certain quality level is currently 0, set it to very small number to ensure model keeps working
-        for (int i = 0; i < currentShare.length; i++) if (currentShare[i] == 0) currentShare[i] = 0.01d;
-        double[] initialShare = dataContainer.getRealEstateDataManager().getInitialQualShares();
-        for (int i = 0; i < initialShare.length; i++) if (initialShare[i] == 0) initialShare[i] = 0.01d;
-        double[] probs = new double[5];
-        for (int i = 0; i < probs.length; i++) {
-            int potentialNewQual = currentQual + i - 2;  // translate into new quality level this alternative would generate
-            double ratio;
-            if (potentialNewQual >= 1 && potentialNewQual <= 4)
-                ratio = initialShare[potentialNewQual - 1] / currentShare[potentialNewQual - 1];
-            else ratio = 0.;
-            if (i <= 1) {
-                probs[i] = renovationProbability[currentQual - 1][i] * ratio;
-            } else if (i == 2) {
-                probs[i] = renovationProbability[currentQual - 1][i];
-            } else probs[i] = renovationProbability[currentQual - 1][i] * ratio;
+        Map<Integer, Double> currentShare = dataContainer.getRealEstateDataManager().getUpdatedQualityShares();
+        Map<Integer, Double> initialShare = dataContainer.getRealEstateDataManager().getInitialQualShares();
+
+        Map<DdQualityChange, Double> probs = new EnumMap<>(DdQualityChange.class);
+        for (DdQualityChange change: DdQualityChange.values()) {
+            int potentialNewQual = currentQual + change.getChange();
+            potentialNewQual = Math.min(Math.max(1, potentialNewQual), properties.main.qualityLevels);
+
+            double ratio = initialShare.getOrDefault(potentialNewQual, 0.01)
+                    / currentShare.getOrDefault(potentialNewQual, 0.01);
+
+            double prob = renovationProbability[currentQual - 1][change.ordinal()] * ratio;
+            probs.put(change, prob);
         }
         return probs;
     }

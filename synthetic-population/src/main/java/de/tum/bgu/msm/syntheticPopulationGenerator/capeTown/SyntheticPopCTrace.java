@@ -4,9 +4,6 @@ import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.util.ResourceUtil;
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.container.DefaultDataContainer;
-import de.tum.bgu.msm.data.DataContainerMuc;
-import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.job.JobDataManager;
@@ -17,7 +14,6 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.capeTown.preparation.MicroDat
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
-import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobUtils;
 import de.tum.bgu.msm.data.person.Gender;
@@ -30,7 +26,6 @@ import omx.OmxLookup;
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.distribution.GammaDistributionImpl;
 import org.apache.commons.math.stat.Frequency;
-import org.apache.commons.math3.distribution.EnumeratedIntegerDistribution;
 import org.apache.log4j.Logger;
 
 import java.io.*;

@@ -76,13 +76,13 @@ public class RealEstateDataManagerMstm implements RealEstateDataManager {
     }
 
     @Override
-    public double[] getInitialQualShares() {
+    public Map<Integer, Double> getInitialQualShares() {
         return delegate.getInitialQualShares();
     }
 
     @Override
-    public double[] getCurrentQualShares() {
-        return delegate.getCurrentQualShares();
+    public Map<Integer, Double> getUpdatedQualityShares() {
+        return delegate.getUpdatedQualityShares();
     }
 
 
@@ -121,10 +121,6 @@ public class RealEstateDataManagerMstm implements RealEstateDataManager {
         delegate.addDwelling(dwelling);
     }
 
-    @Override
-    public int[] getDwellingsByQuality() {
-        return delegate.getDwellingsByQuality();
-    }
 
     @Override
     public Map<Integer, Double> calculateRegionalPrices() {

@@ -4,6 +4,9 @@ import java.io.InputStream;
 
 public final class ScriptInputProvider {
 
+    private static InputStream regionUtilityScriptInput = ScriptInputProvider.class.getResourceAsStream("RegionUtilityCalc");
+    private static InputStream regionProbabilityScriptInput = ScriptInputProvider.class.getResourceAsStream("SelectRegionCalc");
+
     public static InputStream getDwellingProbabilityScriptInput() {
         return ScriptInputProvider.class.getResourceAsStream("SelectDwellingCalc");
     }
@@ -26,8 +29,14 @@ public final class ScriptInputProvider {
             = ScriptInputProvider.class.getResourceAsStream("PricingCalc");
     private static InputStream renovationScriptInput
             = ScriptInputProvider.class.getResourceAsStream("RenovationCalc");
-    private static InputStream movesScriptInput
-            = ScriptInputProvider.class.getResourceAsStream("MovesOrNotCalc");
+    private static InputStream movesScriptInput  = ScriptInputProvider.class.getResourceAsStream("MovesOrNotCalc");
+          private static InputStream dwellingUtilityScriptInput
+                = ScriptInputProvider.class.getResourceAsStream(("DwellingUtilityCalc"));
+
+          public static InputStream getDwellingUtilityScriptInput() {
+              return dwellingUtilityScriptInput;
+          }
+
 
     public static void setMovesScriptInput(InputStream movesScriptInput) {
         ScriptInputProvider.movesScriptInput = movesScriptInput;
@@ -164,5 +173,13 @@ public final class ScriptInputProvider {
 
     public static InputStream getMovesScriptInput() {
         return movesScriptInput;
+    }
+
+    public static InputStream getRegionUtilityScriptInput() {
+        return regionUtilityScriptInput;
+    }
+
+    public static InputStream getRegionProbabilityScriptInput() {
+        return regionProbabilityScriptInput;
     }
 }
