@@ -1094,7 +1094,7 @@ public class SiloUtil {
 
     public static boolean modelStopper (String action) {
         // provide option for a clean model stop after every simulation period is completed
-        String fileName = Properties.get().main.baseDirectory + "status.csv";
+        String fileName = Properties.get().main.baseDirectory + "/scenOutput/" + Properties.get().main.scenarioName +  "/status.csv";
         if (action.equalsIgnoreCase("initialize")) {
             PrintWriter pw = openFileForSequentialWriting(fileName, false);
             pw.println("Status");
