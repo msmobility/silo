@@ -118,12 +118,12 @@ public class ModelBuilderTak {
             case MITO_MATSIM:
                 scenarioAssembler = new MitoMatsimScenarioAssembler(dataContainer, properties, new MitoDataConverterTak());
                 transportModel = new MatsimTransportModel(dataContainer, config, properties, null,
-                        ZoneConnectorManager.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, scenarioAssembler);
+                        ZoneConnectorManager.ZoneConnectorMethod.RANDOM, scenarioAssembler);
                 break;
             case MATSIM:
                 scenarioAssembler = new SimpleMatsimScenarioAssembler(dataContainer, properties);
                 transportModel = new MatsimTransportModel(dataContainer, config, properties, null,
-                        ZoneConnectorManager.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, scenarioAssembler);
+                        ZoneConnectorManager.ZoneConnectorMethod.RANDOM, scenarioAssembler);
                 break;
             case NONE:
             default:
