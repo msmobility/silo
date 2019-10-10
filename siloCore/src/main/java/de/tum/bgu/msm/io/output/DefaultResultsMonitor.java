@@ -277,7 +277,7 @@ public class DefaultResultsMonitor implements ResultsMonitor {
         header = header.concat(",averageRent");
         resultWriter.println(header);
         int[][] rentByIncome = new int[10][10];
-        int[] rents = new int[10];
+        long [] rents = new long[10];
         for (Household hh : dataContainer.getHouseholdDataManager().getHouseholds()) {
             int hhInc = HouseholdUtil.getAnnualHhIncome(hh);
             int rent = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId()).getPrice();
