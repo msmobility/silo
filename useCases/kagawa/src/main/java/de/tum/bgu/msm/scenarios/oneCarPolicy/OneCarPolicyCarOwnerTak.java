@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.models.carOwnership;
+package de.tum.bgu.msm.scenarios.oneCarPolicy;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.household.Household;
@@ -11,14 +11,13 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 /**
- * Implements car ownership level change (subsequent years) for the Kagawa Area
+ * Implements car ownership level change (subsequent years) for the Munich Metropolitan Area
  * @author nkuehnel
- * Created on 09/10/2019 in Tokyo.
+ * Created on 10/10/2019 in Tokyo.
  */
-public class UpdateCarOwnershipTak extends AbstractModel implements ModelUpdateListener {
+public class OneCarPolicyCarOwnerTak extends AbstractModel implements ModelUpdateListener {
 
     private static final int REMOVE_ONE_CAR = 2;
-    private static final int ADD_ONE_CAR = 1;
     private static final int MAX_NUMBER_OF_CARS = 3;
 
     private static final double[] intercept = {-3.0888, -5.6650};
@@ -30,19 +29,24 @@ public class UpdateCarOwnershipTak extends AbstractModel implements ModelUpdateL
     private static final double[] betaLicensePlus = {1.8213, 0.};
     private static final double[] betaChangeResidence = {1.1440, 0.9055};
 
-    private static Logger logger = Logger.getLogger(UpdateCarOwnershipTak.class);
+    private static Logger logger = Logger.getLogger(OneCarPolicyCarOwnerTak.class);
 
     /**
      *  [previousCars][hhSize+][hhSize-][income+][income-][license+][changeRes][three probabilities]
      */
     private final double[][][][][][][][] carUpdateProb = new double[4][2][2][2][2][2][2][3];
 
-    public UpdateCarOwnershipTak(DataContainer dataContainer, Properties properties) {
+    public OneCarPolicyCarOwnerTak(DataContainer dataContainer, Properties properties) {
         super(dataContainer, properties);
     }
 
     @Override
     public void setup() {
+        logger.warn("One car per househld policy! Removing cars from households that own more than one car" +
+                "in the base year.");
+        for(Household household: dataContainer.getHouseholdDataManager().getHouseholds()) {
+            household.setAutos(Math.min(household.getAutos(), 1));
+        }
         for (int prevCar = 0; prevCar < 4; prevCar++){
             for (int sizePlus = 0; sizePlus < 2; sizePlus++){
                 for (int sizeMinus = 0; sizeMinus < 2; sizeMinus++){
@@ -143,12 +147,7 @@ public class UpdateCarOwnershipTak extends AbstractModel implements ModelUpdateL
 
                 int action = SiloUtil.select(prob);
 
-                if (action == ADD_ONE_CAR){
-                    if (newHousehold.getAutos() < MAX_NUMBER_OF_CARS) {
-                        newHousehold.setAutos(newHousehold.getAutos() + 1);
-                        counter[0]++;
-                    }
-                } else if (action == REMOVE_ONE_CAR) {
+                if (action == REMOVE_ONE_CAR) {
                     if (newHousehold.getAutos() > 0){
                         newHousehold.setAutos(newHousehold.getAutos() - 1);
                         counter[1]++;
@@ -157,8 +156,6 @@ public class UpdateCarOwnershipTak extends AbstractModel implements ModelUpdateL
             }
         }
         final double numberOfHh = householdDataManager.getHouseholds().size();
-        logger.info("  Simulated household added a car: " + counter[0] + " (" +
-                SiloUtil.rounder((100f * counter[0] / numberOfHh), 0) + "% of hh)");
 
         logger.info("  Simulated household relinquished a car: " + counter[1] + " (" +
                 SiloUtil.rounder((100f * counter[1] / numberOfHh), 0) + "% of hh)");
