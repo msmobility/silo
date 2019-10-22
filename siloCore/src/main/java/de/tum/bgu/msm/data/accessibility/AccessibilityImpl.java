@@ -3,18 +3,16 @@ package de.tum.bgu.msm.data.accessibility;
 import cern.jet.math.tdouble.DoubleFunctions;
 import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.Region;
-import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingData;
 import de.tum.bgu.msm.data.geo.GeoData;
-import de.tum.bgu.msm.data.household.HouseholdData;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobData;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix2D;
-import de.tum.bgu.msm.util.matrices.Matrices;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
@@ -34,6 +32,7 @@ public class AccessibilityImpl implements Accessibility {
 
     private final GeoData geoData;
     private final TravelTimes travelTimes;
+    private final DwellingData dwellingData;
     private final JobData jobData;
 
     private IndexedDoubleMatrix1D autoAccessibilities;
@@ -53,6 +52,7 @@ public class AccessibilityImpl implements Accessibility {
         this.betaAuto = properties.accessibility.betaAuto;
         this.alphaTransit = properties.accessibility.alphaTransit;
         this.betaTransit = properties.accessibility.betaTransit;
+        this.dwellingData = dwellingData;
         this.jobData = jobData;
     }
 
@@ -88,6 +88,12 @@ public class AccessibilityImpl implements Accessibility {
             employment.setIndexed(entry.getKey(), entry.getValue().size());
         }
 
+        final Map<Integer, List<Dwelling>> dwellingsByZone = dwellingData.getDwellings().stream().collect(Collectors.groupingBy(Location::getZoneId));
+        IndexedDoubleMatrix1D popDensity = new IndexedDoubleMatrix1D(geoData.getZones().values());
+        for(Map.Entry<Integer, List<Dwelling>> entry: dwellingsByZone.entrySet()) {
+            popDensity.setIndexed(entry.getKey(), entry.getValue().size());
+        }
+
         logger.info("  Calculating zone zone accessibilities: auto");
         final IndexedDoubleMatrix2D peakTravelTimeMatrixCar =
                 travelTimes.getPeakSkim(TransportMode.car);
@@ -109,7 +115,7 @@ public class AccessibilityImpl implements Accessibility {
         scaleAccessibility(transitAccessibilities);
 
         logger.info("  Calculating regional accessibilities");
-        regionalAccessibilities.assign(calculateRegionalAccessibility(geoData.getRegions().values(), autoAccessibilities));
+        regionalAccessibilities.assign(calculateRegionalAccessibility(geoData.getRegions().values(), autoAccessibilities, popDensity));
     }
 
     /**
@@ -117,11 +123,17 @@ public class AccessibilityImpl implements Accessibility {
      *
      * @param regions             the regions to calculate the accessibility for
      * @param autoAccessibilities the accessibility vector containing values for each zone
+     * @param population          the vector of population by zone. Population will be used as a weight for
+     *                            each zone's accessibility contribution
      */
-    static IndexedDoubleMatrix1D calculateRegionalAccessibility(Collection<Region> regions, IndexedDoubleMatrix1D autoAccessibilities) {
+    static IndexedDoubleMatrix1D calculateRegionalAccessibility(Collection<Region> regions, IndexedDoubleMatrix1D autoAccessibilities, IndexedDoubleMatrix1D population) {
         final IndexedDoubleMatrix1D matrix = new IndexedDoubleMatrix1D(regions);
         regions.parallelStream().forEach(r -> {
-            double sum = r.getZones().stream().mapToDouble(z -> autoAccessibilities.getIndexed(z.getZoneId())).sum() / r.getZones().size();
+            double sum = r.getZones().stream().mapToDouble(z -> {
+                double accessibility = autoAccessibilities.getIndexed(z.getZoneId());
+                double weight = population.getIndexed(z.getZoneId());
+                return accessibility * weight;
+            }).sum() / r.getZones().size();
             matrix.setIndexed(r.getId(), sum);
         });
         return matrix;
