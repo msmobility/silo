@@ -1,20 +1,27 @@
 package de.tum.bgu.msm.data.accessibility;
 
 import cern.jet.math.tdouble.DoubleFunctions;
+import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.dwelling.DwellingData;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.HouseholdData;
+import de.tum.bgu.msm.data.job.Job;
+import de.tum.bgu.msm.data.job.JobData;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix2D;
+import de.tum.bgu.msm.util.matrices.Matrices;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Calculates and stores accessibilities
@@ -27,8 +34,7 @@ public class AccessibilityImpl implements Accessibility {
 
     private final GeoData geoData;
     private final TravelTimes travelTimes;
-    private final DwellingData dwellingData;
-    private final HouseholdData householdData;
+    private final JobData jobData;
 
     private IndexedDoubleMatrix1D autoAccessibilities;
     private IndexedDoubleMatrix1D transitAccessibilities;
@@ -39,15 +45,15 @@ public class AccessibilityImpl implements Accessibility {
     private final float alphaTransit;
     private final float betaTransit;
 
-    public AccessibilityImpl(GeoData geoData, TravelTimes travelTimes, Properties properties, DwellingData dwellingData, HouseholdData householdData) {
+    public AccessibilityImpl(GeoData geoData, TravelTimes travelTimes, Properties properties,
+                             DwellingData dwellingData, JobData jobData) {
         this.geoData = geoData;
         this.travelTimes = travelTimes;
         this.alphaAuto = properties.accessibility.alphaAuto;
         this.betaAuto = properties.accessibility.betaAuto;
         this.alphaTransit = properties.accessibility.alphaTransit;
         this.betaTransit = properties.accessibility.betaTransit;
-        this.dwellingData = dwellingData;
-        this.householdData = householdData;
+        this.jobData = jobData;
     }
 
     @Override
@@ -74,19 +80,24 @@ public class AccessibilityImpl implements Accessibility {
 
     @Override
     public void calculateHansenAccessibilities(int year) {
+
         logger.info("  Calculating accessibilities for " + year);
-        final IndexedDoubleMatrix1D population = SummarizeData.getPopulationByZone(householdData, geoData, dwellingData);
+        final Map<Integer, List<Job>> jobsByZone = jobData.getJobs().stream().collect(Collectors.groupingBy(Location::getZoneId));
+        IndexedDoubleMatrix1D employment = new IndexedDoubleMatrix1D(geoData.getZones().values());
+        for(Map.Entry<Integer, List<Job>> entry: jobsByZone.entrySet()) {
+            employment.setIndexed(entry.getKey(), entry.getValue().size());
+        }
 
         logger.info("  Calculating zone zone accessibilities: auto");
         final IndexedDoubleMatrix2D peakTravelTimeMatrixCar =
                 travelTimes.getPeakSkim(TransportMode.car);
         final IndexedDoubleMatrix2D autoAccessZoneToZone =
-                calculateZoneToZoneAccessibilities(population, peakTravelTimeMatrixCar, alphaAuto, betaAuto);
+                calculateZoneToZoneAccessibilities(employment, peakTravelTimeMatrixCar, alphaAuto, betaAuto);
         logger.info("  Calculating zone zone accessibilities: transit");
         final IndexedDoubleMatrix2D peakTravelTimeMatrixTransit =
                 travelTimes.getPeakSkim(TransportMode.pt);
         final IndexedDoubleMatrix2D transitAccessZoneToZone =
-                calculateZoneToZoneAccessibilities(population,
+                calculateZoneToZoneAccessibilities(employment,
                         peakTravelTimeMatrixTransit, alphaTransit, betaTransit);
 
         logger.info("  Aggregating zone accessibilities");
@@ -148,15 +159,15 @@ public class AccessibilityImpl implements Accessibility {
      * Formula for origin i to destinations j:
      * accessibility_i = population_j^alpha * e^(beta * traveltime_ij)
      *
-     * @param population  a vector containing the population by zone
+     * @param employment  a vector containing the employment by zone
      * @param travelTimes zone to zone travel time matrix
      * @param alpha       alpha parameter used for the hansen calculation
      * @param beta        beta parameter used for the hansen calculation
      */
-    static IndexedDoubleMatrix2D calculateZoneToZoneAccessibilities(IndexedDoubleMatrix1D population, IndexedDoubleMatrix2D travelTimes, double alpha, double beta) {
+    static IndexedDoubleMatrix2D calculateZoneToZoneAccessibilities(IndexedDoubleMatrix1D employment, IndexedDoubleMatrix2D travelTimes, double alpha, double beta) {
         final IndexedDoubleMatrix2D travelTimesCopy = travelTimes.copy();
         return travelTimesCopy.forEachNonZero((origin, destination, travelTime) ->
-                travelTime > 0 ? Math.pow(population.getIndexed(travelTimesCopy.getIdForInternalColumnIndex(destination)), alpha) * Math.exp(beta * travelTime) : 0);
+                travelTime > 0 ? Math.pow(employment.getIndexed(travelTimesCopy.getIdForInternalColumnIndex(destination)), alpha) * Math.exp(beta * travelTime) : 0);
     }
 
     @Override

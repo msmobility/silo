@@ -38,12 +38,12 @@ public class DataBuilder {
         switch (properties.transportModel.travelTimeImplIdentifier) {
             case SKIM:
                 travelTimes = new SkimTravelTimes();
-                accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
+                accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, jobData);
                 break;
             case MATSIM:
                 travelTimes = new MatsimTravelTimes(config);
 //                accessibility = new MatsimAccessibility(geoData);
-                accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
+                accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, jobData);
                 break;
             default:
                 throw new RuntimeException("Travel time not recognized! Please set property \"travel.time\" accordingly!");
