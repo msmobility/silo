@@ -60,14 +60,18 @@ public class GeoDataReaderMuc implements GeoDataReader {
             logger.error("No shape file found!");
             throw new RuntimeException("No shape file found!");
         }
+        int counter = 0;
         for (SimpleFeature feature : ShapeFileReader.getAllFeatures(path)) {
             int zoneId = Integer.parseInt(feature.getAttribute(SHAPE_IDENTIFIER).toString());
             Zone zone = geoDataMuc.getZones().get(zoneId);
             if (zone != null) {
                 zone.setZoneFeature(feature);
             } else {
-                logger.warn("zoneId: " + zoneId + " does not exist in silo zone system");
+                counter++;
             }
+        }
+        if(counter > 0) {
+            logger.warn("There were " + counter + " shapes that do not exist in silo zone system");
         }
     }
 }

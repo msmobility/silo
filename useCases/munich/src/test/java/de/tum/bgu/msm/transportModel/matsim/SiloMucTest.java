@@ -23,7 +23,7 @@ public class SiloMucTest {
     /**
      * Set to true normally; set to false to be able to inspect files
      */
-    private static final boolean CLEANUP_AFTER_TEST = true;
+    private static final boolean CLEANUP_AFTER_TEST = false;
 
     private static final Logger log = Logger.getLogger(SiloMucTest.class);
 
