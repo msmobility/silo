@@ -4,14 +4,12 @@ import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
+import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManagerImpl;
 import de.tum.bgu.msm.data.geo.GeoData;
-import de.tum.bgu.msm.data.household.Household;
-import de.tum.bgu.msm.data.household.HouseholdCapeTown;
-import de.tum.bgu.msm.data.household.HouseholdType;
-import de.tum.bgu.msm.data.household.IncomeCategory;
+import de.tum.bgu.msm.data.household.*;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.person.Occupation;
@@ -167,13 +165,28 @@ public class HousingStrategyCapeTown implements HousingStrategy {
                         .getIncomeCategory()).get(race).get(region.getId());
 
         double thisRegionFactor = 1;
-        JobDataManager jobDataManager = dataContainer.getJobDataManager();
+        double carToWorkersRatio = Math.min(1., ((double) household.getAutos() / HouseholdUtil.getNumberOfWorkers(household)));
+
+        CommutingTimeProbability commutingTimeProbability = dataContainer.getCommutingTimeProbability();
+
         for (Person pp : household.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
-                Zone workZone = geoData.getZones().get(jobDataManager.getJobFromId(pp.getJobId()).getZoneId());
-                int timeFromZoneToRegion = (int) dataContainer.getTravelTimes().getTravelTimeToRegion(
-                        workZone, region, properties.transportModel.peakHour_s, TransportMode.car);
-                thisRegionFactor = thisRegionFactor * dataContainer.getCommutingTimeProbability().getCommutingTimeProbability(timeFromZoneToRegion);
+                final Job job = dataContainer.getJobDataManager().getJobFromId(pp.getJobId());
+                Zone workZone = geoData.getZones().get(job.getZoneId());
+                if(carToWorkersRatio <= 0.) {
+                    int ptTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, properties.transportModel.peakHour_s, TransportMode.pt);
+                    thisRegionFactor = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, ptTime));
+                } else if( carToWorkersRatio >= 1.) {
+                    int carTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, properties.transportModel.peakHour_s, TransportMode.car);
+                    thisRegionFactor = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, carTime));
+                } else {
+                    int carTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, properties.transportModel.peakHour_s, TransportMode.car);
+                    int ptTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, properties.transportModel.peakHour_s, TransportMode.pt);
+                    double factorCar = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, carTime));
+                    double factorPt = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, ptTime));
+
+                    thisRegionFactor= factorCar * carToWorkersRatio + (1 - carToWorkersRatio) * factorPt;
+                }
             }
         }
         return normalize(region, genericUtil*thisRegionFactor);

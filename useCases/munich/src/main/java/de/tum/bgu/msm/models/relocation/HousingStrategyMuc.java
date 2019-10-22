@@ -10,6 +10,7 @@ import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManagerImpl;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.*;
+import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.job.JobMuc;
 import de.tum.bgu.msm.data.person.Nationality;
@@ -129,8 +130,6 @@ public class HousingStrategyMuc implements HousingStrategy {
         for (Person pp : hh.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
                 JobMuc workLocation = Objects.requireNonNull((JobMuc) jobDataManager.getJobFromId(pp.getJobId()));
-
-
 
                 if(carToWorkersRatio == 0.) {
                     int ptTime = (int) travelTimes.getTravelTime(dd, workLocation, workLocation.getStartTimeInSeconds(), TransportMode.pt);
@@ -252,12 +251,26 @@ public class HousingStrategyMuc implements HousingStrategy {
 
         JobDataManager jobDataManager = dataContainer.getJobDataManager();
         double thisRegionFactor = 1;
+        double carToWorkersRatio = Math.min(1., ((double) household.getAutos() / HouseholdUtil.getNumberOfWorkers(household)));
+
         for (Person pp : household.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
-                Zone workZone = geoData.getZones().get(jobDataManager.getJobFromId(pp.getJobId()).getZoneId());
-                int timeFromRegionToZone = (int) dataContainer.getTravelTimes().getTravelTimeToRegion(
-                        workZone, region, properties.transportModel.peakHour_s, TransportMode.car);
-                thisRegionFactor = thisRegionFactor * commutingTimeProbability.getCommutingTimeProbability(timeFromRegionToZone);
+                final JobMuc job = (JobMuc) jobDataManager.getJobFromId(pp.getJobId());
+                Zone workZone = geoData.getZones().get(job.getZoneId());
+                if(carToWorkersRatio <= 0.) {
+                    int ptTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds(), TransportMode.pt);
+                    thisRegionFactor = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, ptTime));
+                } else if( carToWorkersRatio >= 1.) {
+                    int carTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds(), TransportMode.car);
+                    thisRegionFactor = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, carTime));
+                } else {
+                    int carTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds(), TransportMode.car);
+                    int ptTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds(), TransportMode.pt);
+                    double factorCar = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, carTime));
+                    double factorPt = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, ptTime));
+
+                    thisRegionFactor= factorCar * carToWorkersRatio + (1 - carToWorkersRatio) * factorPt;
+                }
             }
         }
 
@@ -269,7 +282,6 @@ public class HousingStrategyMuc implements HousingStrategy {
 
         // todo: adjust probabilities to make that households tend to move shorter distances (dist to work is already represented)
         return normalize(region, baseUtil);
-
     }
 
     private double normalize(Region region, double baseUtil) {
