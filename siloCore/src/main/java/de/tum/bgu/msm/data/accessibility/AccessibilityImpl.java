@@ -128,7 +128,7 @@ public class AccessibilityImpl implements Accessibility {
      */
     static IndexedDoubleMatrix1D calculateRegionalAccessibility(Collection<Region> regions, IndexedDoubleMatrix1D autoAccessibilities, IndexedDoubleMatrix1D population) {
         final IndexedDoubleMatrix1D matrix = new IndexedDoubleMatrix1D(regions);
-        regions.parallelStream().forEach(r -> {
+        regions.stream().forEach(r -> {
             double sum = r.getZones().stream().mapToDouble(z -> {
                 double accessibility = autoAccessibilities.getIndexed(z.getZoneId());
                 double weight = population.getIndexed(z.getZoneId());
