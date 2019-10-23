@@ -253,26 +253,26 @@ public class HousingStrategyMuc implements HousingStrategy {
         double thisRegionFactor = 1;
         double carToWorkersRatio = Math.min(1., ((double) household.getAutos() / HouseholdUtil.getNumberOfWorkers(household)));
 
-        for (Person pp : household.getPersons().values()) {
-            if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
-                final JobMuc job = (JobMuc) jobDataManager.getJobFromId(pp.getJobId());
-                Zone workZone = geoData.getZones().get(job.getZoneId());
-                if(carToWorkersRatio <= 0.) {
-                    int ptTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds(), TransportMode.pt);
-                    thisRegionFactor = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, ptTime));
-                } else if( carToWorkersRatio >= 1.) {
-                    int carTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds(), TransportMode.car);
-                    thisRegionFactor = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, carTime));
-                } else {
-                    int carTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds(), TransportMode.car);
-                    int ptTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds(), TransportMode.pt);
-                    double factorCar = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, carTime));
-                    double factorPt = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, ptTime));
-
-                    thisRegionFactor= factorCar * carToWorkersRatio + (1 - carToWorkersRatio) * factorPt;
-                }
-            }
-        }
+//        for (Person pp : household.getPersons().values()) {
+//            if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
+//                final JobMuc job = (JobMuc) jobDataManager.getJobFromId(pp.getJobId());
+//                Zone workZone = geoData.getZones().get(job.getZoneId());
+//                if(carToWorkersRatio <= 0.) {
+//                    int ptTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds(), TransportMode.pt);
+//                    thisRegionFactor = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, ptTime));
+//                } else if( carToWorkersRatio >= 1.) {
+//                    int carTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds(), TransportMode.car);
+//                    thisRegionFactor = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, carTime));
+//                } else {
+//                    int carTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds(), TransportMode.car);
+//                    int ptTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds(), TransportMode.pt);
+//                    double factorCar = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, carTime));
+//                    double factorPt = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, ptTime));
+//
+//                    thisRegionFactor= factorCar * carToWorkersRatio + (1 - carToWorkersRatio) * factorPt;
+//                }
+//            }
+//        }
 
         HouseholdType ht = household.getHouseholdType();
         Nationality nationality = ((HouseholdMuc) household).getNationality();
