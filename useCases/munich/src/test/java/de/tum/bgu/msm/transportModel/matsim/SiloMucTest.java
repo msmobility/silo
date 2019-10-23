@@ -1,11 +1,5 @@
 package de.tum.bgu.msm.transportModel.matsim;
 
-import java.io.File;
-
-import de.tum.bgu.msm.schools.DataContainerWithSchools;
-import org.apache.log4j.Logger;
-import org.junit.Test;
-
 import de.tum.bgu.msm.DataBuilder;
 import de.tum.bgu.msm.ModelBuilderMuc;
 import de.tum.bgu.msm.SiloModel;
@@ -13,8 +7,15 @@ import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.io.output.DefaultResultsMonitor;
 import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.utils.SiloUtil;
 import junitx.framework.FileAssert;
+import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
+import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * @author dziemke, nico
@@ -87,6 +88,12 @@ public class SiloMucTest {
         log.info("Checking dwellings file ...");
         final File ref = new File("./test/muc/refOutput/noTransportModel/dd_2013.csv");
         final File actual = new File("./test/muc/scenOutput/test/microData/dd_2013.csv");
+        log.info("Ref file exists: " + ref.exists() + ". Actual file exists: " + actual.exists());
+        try {
+            log.info("Content is equal: " + FileUtils.contentEquals(ref, actual));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         FileAssert.assertEquals("dwellings are different.", ref, actual);
 
         if (CLEANUP_AFTER_TEST) {
