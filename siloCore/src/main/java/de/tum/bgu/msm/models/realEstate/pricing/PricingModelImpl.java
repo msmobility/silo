@@ -81,6 +81,7 @@ public final class PricingModelImpl extends AbstractModel implements PricingMode
             int region = dataContainer.getGeoData().getZones().get(dd.getZoneId()).getRegion().getId();
             double changeRate;
             if (vacRate[dto][region] > maxVacancyRateForPriceChange){
+                //vacancy is higher than the maximum value to change price. Do not change price.
                 changeRate = 1f;
             } else if (vacRate[dto][region] < structuralVacLow) {
                 // vacancy is particularly low, prices need to rise steeply
@@ -91,7 +92,7 @@ public final class PricingModelImpl extends AbstractModel implements PricingMode
                 // vacancy is within a normal range, prices change gradually
                 changeRate = 1 - structuralVacancyRate * slopeMain + slopeMain * vacRate[dto][region];
             } else {
-                // vacancy is very low, prices do not change much anymore
+                // vacancy is very high but under the maximum value to change price, prices do not change much
                 changeRate = 1 - structuralVacHigh * slopeHigh +
                         (-structuralVacancyRate * slopeMain + structuralVacHigh * slopeMain) +
                         slopeHigh * vacRate[dto][region];
