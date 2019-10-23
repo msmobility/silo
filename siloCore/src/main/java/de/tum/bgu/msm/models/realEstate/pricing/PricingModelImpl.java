@@ -20,13 +20,7 @@ public final class PricingModelImpl extends AbstractModel implements PricingMode
     private final static Logger logger = Logger.getLogger(PricingModelImpl.class);
     private final PricingStrategy strategy;
 
-    private double inflectionLow;
-    private double inflectionHigh;
-    private double slopeLow;
-    private double slopeMain;
-    private double slopeHigh;
-    private double maxDelta;
-    private double maxVacancyRateForPriceChange;
+
 
     public PricingModelImpl(DataContainer dataContainer, Properties properties, PricingStrategy strategy) {
         super(dataContainer, properties);
@@ -35,13 +29,7 @@ public final class PricingModelImpl extends AbstractModel implements PricingMode
 
     @Override
     public void setup() {
-        inflectionLow = strategy.getLowInflectionPoint();
-        inflectionHigh = strategy.getHighInflectionPoint();
-        slopeLow = strategy.getLowerSlope();
-        slopeMain = strategy.getMainSlope();
-        slopeHigh = strategy.getHighSlope();
-        maxDelta = strategy.getMaximumChange();
-        maxVacancyRateForPriceChange = strategy.getMaxVacancyRateForPriceChange();
+
     }
 
     @Override
@@ -73,32 +61,15 @@ public final class PricingModelImpl extends AbstractModel implements PricingMode
                 continue;
             }
             int dto = dwellingTypes.indexOf(dd.getType());
-            float structuralVacancyRate = dd.getType().getStructuralVacancyRate();
-            float structuralVacLow = (float) (structuralVacancyRate * inflectionLow);
-            float structuralVacHigh = (float) (structuralVacancyRate * inflectionHigh);
             int currentPrice = dd.getPrice();
-
             int region = dataContainer.getGeoData().getZones().get(dd.getZoneId()).getRegion().getId();
-            double changeRate;
-            if (vacRate[dto][region] > maxVacancyRateForPriceChange){
-                //vacancy is higher than the maximum value to change price. Do not change price.
-                changeRate = 1f;
-            } else if (vacRate[dto][region] < structuralVacLow) {
-                // vacancy is particularly low, prices need to rise steeply
-                changeRate = 1 - structuralVacLow * slopeLow +
-                        (-structuralVacancyRate * slopeMain + structuralVacLow * slopeMain) +
-                        slopeLow * vacRate[dto][region];
-            } else if (vacRate[dto][region] < structuralVacHigh) {
-                // vacancy is within a normal range, prices change gradually
-                changeRate = 1 - structuralVacancyRate * slopeMain + slopeMain * vacRate[dto][region];
-            } else {
-                // vacancy is very high but under the maximum value to change price, prices do not change much
-                changeRate = 1 - structuralVacHigh * slopeHigh +
-                        (-structuralVacancyRate * slopeMain + structuralVacHigh * slopeMain) +
-                        slopeHigh * vacRate[dto][region];
-            }
-            changeRate = Math.min(changeRate, 1f + maxDelta);
-            changeRate = Math.max(changeRate, 1f - maxDelta);
+            double vacancyRateAtThisRegion = vacRate[dto][region];
+            float structuralVacancyRate = dd.getType().getStructuralVacancyRate();
+            double changeRate = strategy.getPriceChangeRate(vacancyRateAtThisRegion, structuralVacancyRate);
+
+
+
+
             double newPrice = currentPrice * changeRate;
 
             if (dd.getId() == SiloUtil.trackDd) {
