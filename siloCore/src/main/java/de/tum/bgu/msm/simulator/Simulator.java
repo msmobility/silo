@@ -5,6 +5,7 @@ import com.google.common.collect.Multiset;
 import com.google.common.math.LongMath;
 import de.tum.bgu.msm.events.MicroEvent;
 import de.tum.bgu.msm.io.output.ResultsMonitor;
+import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -78,13 +79,11 @@ public final class Simulator {
         timeTracker.reset();
         logger.info("  Running annual models");
         for(ModelUpdateListener modelUpdateListener : modelUpdateListeners) {
-            logger.info("Random: " + SiloUtil.getRandomNumberAsDouble());
             modelUpdateListener.prepareYear(year);
             timeTracker.recordAndReset("PreparationFor" + modelUpdateListener.getClass().getSimpleName());
         }
         logger.info("  Preparing and creating events");
         for(EventModel<MicroEvent> model: models.values()) {
-            logger.info("Random: " + SiloUtil.getRandomNumberAsDouble());
             model.prepareYear(year);
             events.addAll(model.getEventsForCurrentYear(year));
             timeTracker.recordAndReset("PreparationFor" + model.getClass().getSimpleName());
@@ -93,22 +92,17 @@ public final class Simulator {
         logger.info("  Shuffling events...");
         Collections.shuffle(events, SiloUtil.getRandomObject());
         eventCounter.clear();
-        logger.info("Random: " + SiloUtil.getRandomNumberAsDouble());
     }
 
     private void processEvents() {
         logger.info("  Processing events...");
         int counter = 0;
-        logger.info("Random: " + SiloUtil.getRandomNumberAsDouble());
         for (MicroEvent e: events) {
             if (LongMath.isPowerOfTwo(counter)) {
                 logger.info("Handled " + counter + " events.");
             }
 //            timeTracker.reset();
             Class<? extends MicroEvent> klass= e.getClass();
-            //unchecked is justified here, as
-            //<T extends Event> void registerEventModel(Class<T> klass, EventModel<T> model)
-            // checks for the right type of model handlers
 
             boolean success = this.models.get(klass).handleEvent(e);
             if(success) {
@@ -134,9 +128,15 @@ public final class Simulator {
     public void endSimulation() {
         for(ModelUpdateListener modelUpdateListener : modelUpdateListeners) {
             modelUpdateListener.endSimulation();
+            if(modelUpdateListener instanceof AbstractModel) {
+                ((AbstractModel) modelUpdateListener).logCurrentRandomState();
+            }
         }
         for(EventModel model: models.values()) {
             model.endSimulation();
+            if(model instanceof AbstractModel) {
+                ((AbstractModel) model).logCurrentRandomState();
+            }
         }
         resultsMonitor.endSimulation();
     }

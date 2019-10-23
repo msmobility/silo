@@ -53,6 +53,7 @@ import de.tum.bgu.msm.models.relocation.moves.*;
 import de.tum.bgu.msm.models.transport.MitoDataConverterTak;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.matsim.core.config.Config;
 
 public class OneCarPolicyModelBuilderTak {
@@ -62,54 +63,54 @@ public class OneCarPolicyModelBuilderTak {
         HouseholdFactory hhFactory = dataContainer.getHouseholdDataManager().getHouseholdFactory();
         DwellingFactory ddFactory = dataContainer.getRealEstateDataManager().getDwellingFactory();
 
-        BirthModelImpl birthModel = new BirthModelImpl(dataContainer, ppFactory, properties, new DefaultBirthStrategy());
+        BirthModelImpl birthModel = new BirthModelImpl(dataContainer, ppFactory, properties, new DefaultBirthStrategy(), SiloUtil.provideNewRandom());
 
-        BirthdayModel birthdayModel = new BirthdayModelImpl(dataContainer, properties);
+        BirthdayModel birthdayModel = new BirthdayModelImpl(dataContainer, properties, SiloUtil.provideNewRandom());
 
-        DeathModel deathModel = new DeathModelImpl(dataContainer, properties, new DefaultDeathStrategy());
+        DeathModel deathModel = new DeathModelImpl(dataContainer, properties, new DefaultDeathStrategy(), SiloUtil.provideNewRandom());
 
         MovesModelImpl movesModel = new MovesModelImpl(
                 dataContainer, properties, new DefaultMovesStrategy(),
                 new CarOnlyHousingStrategyImpl(dataContainer,
                         properties, dataContainer.getTravelTimes(),
                         new DwellingUtilityStrategyImpl(), new DefaultDwellingProbabilityStrategy(),
-                        new RegionUtilityStrategyImpl(), new RegionProbabilityStrategyImpl()));
+                        new RegionUtilityStrategyImpl(), new RegionProbabilityStrategyImpl()), SiloUtil.provideNewRandom());
 
         CreateCarOwnershipModel carOwnershipModel = new CreateCarOwnershipTak(dataContainer, new CreateCarOwnershipStrategyTakImpl());
 
         DivorceModel divorceModel = new DivorceModelImpl(
                 dataContainer, movesModel, carOwnershipModel, hhFactory,
-                properties, new DefaultDivorceStrategy());
+                properties, new DefaultDivorceStrategy(), SiloUtil.provideNewRandom());
 
-        DriversLicenseModel driversLicenseModel = new DriversLicenseModelImpl(dataContainer, properties, new DefaultDriversLicenseStrategy());
+        DriversLicenseModel driversLicenseModel = new DriversLicenseModelImpl(dataContainer, properties, new DefaultDriversLicenseStrategy(), SiloUtil.provideNewRandom());
 
-        EducationModel educationModel = new EducationModelImpl(dataContainer, properties);
+        EducationModel educationModel = new EducationModelImpl(dataContainer, properties, SiloUtil.provideNewRandom());
 
-        EmploymentModel employmentModel = new EmploymentModelImpl(dataContainer, properties);
+        EmploymentModel employmentModel = new EmploymentModelImpl(dataContainer, properties, SiloUtil.provideNewRandom());
 
         LeaveParentHhModel leaveParentsModel = new LeaveParentHhModelImpl(dataContainer, movesModel,
-                carOwnershipModel, hhFactory, properties, new DefaultLeaveParentalHouseholdStrategy());
+                carOwnershipModel, hhFactory, properties, new DefaultLeaveParentalHouseholdStrategy(), SiloUtil.provideNewRandom());
 
-        JobMarketUpdate jobMarketUpdateModel = new JobMarketUpdateImpl(dataContainer, properties);
+        JobMarketUpdate jobMarketUpdateModel = new JobMarketUpdateImpl(dataContainer, properties, SiloUtil.provideNewRandom());
 
         ConstructionModel construction = new ConstructionModelImpl(dataContainer, ddFactory,
-                properties, new DefaultConstructionLocationStrategy(), new DefaultConstructionDemandStrategy());
+                properties, new DefaultConstructionLocationStrategy(), new DefaultConstructionDemandStrategy(), SiloUtil.provideNewRandom());
 
 
-        PricingModel pricing = new PricingModelImpl(dataContainer, properties, new DefaultPricingStrategy());
+        PricingModel pricing = new PricingModelImpl(dataContainer, properties, new DefaultPricingStrategy(), SiloUtil.provideNewRandom());
 
-        RenovationModel renovation = new RenovationModelImpl(dataContainer, properties, new DefaultRenovationStrategy());
+        RenovationModel renovation = new RenovationModelImpl(dataContainer, properties, new DefaultRenovationStrategy(), SiloUtil.provideNewRandom());
 
-        ConstructionOverwrite constructionOverwrite = new ConstructionOverwriteImpl(dataContainer, ddFactory, properties);
+        ConstructionOverwrite constructionOverwrite = new ConstructionOverwriteImpl(dataContainer, ddFactory, properties, SiloUtil.provideNewRandom());
 
         InOutMigrationImpl inOutMigration = new InOutMigrationImpl(dataContainer, employmentModel, movesModel,
-                carOwnershipModel, driversLicenseModel, properties);
+                carOwnershipModel, driversLicenseModel, properties, SiloUtil.provideNewRandom());
 
         DemolitionModel demolition = new DemolitionModelImpl(dataContainer, movesModel,
-                inOutMigration, properties, new DefaultDemolitionStrategy());
+                inOutMigration, properties, new DefaultDemolitionStrategy(), SiloUtil.provideNewRandom());
 
         MarriageModel marriageModel = new MarriageModelImpl(dataContainer, movesModel, inOutMigration,
-                carOwnershipModel, hhFactory, properties, new DefaultMarriageStrategy());
+                carOwnershipModel, hhFactory, properties, new DefaultMarriageStrategy(), SiloUtil.provideNewRandom());
 
         TransportModel transportModel;
         MatsimScenarioAssembler scenarioAssembler;
@@ -136,7 +137,7 @@ public class OneCarPolicyModelBuilderTak {
                 leaveParentsModel, jobMarketUpdateModel,
                 construction, demolition, pricing, renovation,
                 constructionOverwrite, inOutMigration, movesModel, transportModel);
-        modelContainer.registerModelUpdateListener(new OneCarPolicyCarOwnerTak(dataContainer, properties));
+        modelContainer.registerModelUpdateListener(new OneCarPolicyCarOwnerTak(dataContainer, properties, SiloUtil.provideNewRandom()));
         return modelContainer;
     }
 }

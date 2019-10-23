@@ -117,8 +117,6 @@ public final class SiloModel {
         final HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
         for (int year = properties.main.startYear; year < properties.main.endYear; year++) {
 
-        	logger.info("Random: " + SiloUtil.getRandomNumberAsDouble());
-
             logger.info("Simulating changes from year " + year + " to year " + (year + 1));
             long time = System.currentTimeMillis();
             SiloUtil.trackingFile("Simulating changes from year " + year + " to year " + (year + 1));

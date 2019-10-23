@@ -74,8 +74,8 @@ public class MarriageModelImpl extends AbstractModel implements MarriageModel {
 
     public MarriageModelImpl(DataContainer dataContainer, MovesModelImpl movesModel,
                              InOutMigrationImpl iomig, CreateCarOwnershipModel carOwnership,
-                             HouseholdFactory hhFactory, Properties properties, MarriageStrategy strategy) {
-        super(dataContainer, properties);
+                             HouseholdFactory hhFactory, Properties properties, MarriageStrategy strategy, Random rnd) {
+        super(dataContainer, properties, rnd);
         this.movesModel = movesModel;
         this.iomig = iomig;
         this.carOwnership = carOwnership;
@@ -85,24 +85,6 @@ public class MarriageModelImpl extends AbstractModel implements MarriageModel {
 
     @Override
     public void setup() {
-
-
-//        final Reader reader;
-//        switch (properties.main.implementation) {
-//            case MUNICH:
-//                reader = new InputStreamReader(this.getClass().getResourceAsStream("MarriageProbabilityCalc"));
-//                break;
-//            case MARYLAND:
-//                reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMstm"));
-//                break;
-//            case PERTH:
-//                reader = new InputStreamReader(this.getClass().getResourceAsStream("MarriageProbabilityCalc"));
-//                break;
-//            case KAGAWA:
-//            case CAPE_TOWN:
-//            default:
-//                throw new RuntimeException("Marriage model implementation not applicable for " + properties.main.implementation);
-//        }
         ageDiffProbabilityByGender = calculateAgeDiffProbabilities();
     }
 
@@ -172,7 +154,7 @@ public class MarriageModelImpl extends AbstractModel implements MarriageModel {
         for (final Person pp : persons) {
             if (ruleGetMarried(pp)) {
                 final double marryProb = getMarryProb(pp);
-                if (SiloUtil.getRandomNumberAsDouble() <= marryProb) {
+                if (random.nextDouble() <= marryProb) {
                     activePartners.add(pp);
                 } else if (isQualifiedAsPossiblePartner(pp)) {
                     final List<Person> entry = partnersByAgeAndGender.get(pp.getAge(), pp.getGender());
@@ -196,15 +178,15 @@ public class MarriageModelImpl extends AbstractModel implements MarriageModel {
         if (preference == null || possiblePartners.isEmpty()) {
             return null;
         }
-        return possiblePartners.remove(SiloUtil.getRandomObject().nextInt(possiblePartners.size()));
+        return possiblePartners.remove(random.nextInt(possiblePartners.size()));
     }
 
     private MarriagePreference defineMarriagePreference(Person person, MarriageMarket market) {
 
         final Gender partnerGender = person.getGender().opposite();
-        final boolean sameRace = SiloUtil.getRandomNumberAsFloat() >= interRacialMarriageShare;
+        final boolean sameRace = random.nextDouble() >= interRacialMarriageShare;
 
-        Sampler<Integer> sampler = new Sampler<>(AGE_DIFF_RANGE.size(), Integer.class, SiloUtil.getRandomObject());
+        Sampler<Integer> sampler = new Sampler<>(AGE_DIFF_RANGE.size(), Integer.class, random);
         double sum = 0;
         for (int ageDiff : AGE_DIFF_RANGE) {
             final int resultingAge = person.getAge() + ageDiff;
@@ -247,7 +229,7 @@ public class MarriageModelImpl extends AbstractModel implements MarriageModel {
         if (hh.getHhSize() == 1) {
             share *= properties.demographics.onePersonHhMarriageBias;
         }
-        return SiloUtil.getRandomNumberAsFloat() < share;
+        return random.nextDouble() < share;
     }
 
     private boolean marryCouple(int id1, int id2) {
@@ -256,12 +238,14 @@ public class MarriageModelImpl extends AbstractModel implements MarriageModel {
         final Person partner1 = householdDataManager.getPersonFromId(id1);
 
         if (!ruleGetMarried(partner1)) {
-            return false;  // Person got already married this simulation period or died or moved away
+            // Person got already married this simulation period or died or moved away
+            return false;
         }
 
         final Person partner2 = householdDataManager.getPersonFromId(id2);
         if (!ruleGetMarried(partner2)) {
-            return false;  // Person got already married this simulation period or died or moved away
+            // Person got already married this simulation period or died or moved away
+            return false;
         }
 
         final Household hhOfPartner1 = partner1.getHousehold();

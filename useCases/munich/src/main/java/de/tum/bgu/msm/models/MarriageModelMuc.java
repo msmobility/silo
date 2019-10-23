@@ -77,8 +77,8 @@ public class MarriageModelMuc extends AbstractModel implements MarriageModel {
 
     public MarriageModelMuc(DataContainer dataContainer, MovesModelImpl movesModel,
                             InOutMigration iomig, CreateCarOwnershipModel carOwnership,
-                            HouseholdFactory hhFactory, Properties properties, MarriageStrategy strategy) {
-        super(dataContainer, properties);
+                            HouseholdFactory hhFactory, Properties properties, MarriageStrategy strategy, Random rnd) {
+        super(dataContainer, properties, rnd);
         this.movesModel = movesModel;
         this.iomig = iomig;
         this.carOwnership = carOwnership;
@@ -157,7 +157,7 @@ public class MarriageModelMuc extends AbstractModel implements MarriageModel {
         for (final Person pp : persons) {
             if (ruleGetMarried(pp)) {
                 final double marryProb = getMarryProb(pp);
-                if (SiloUtil.getRandomNumberAsDouble() <= marryProb) {
+                if (random.nextDouble() <= marryProb) {
                     activePartners.add(pp);
                 } else if (isQualifiedAsPossiblePartner(pp)) {
                     final List<Person> entry = partnersByAgeAndGender.get(pp.getAge(), pp.getGender());
@@ -199,7 +199,7 @@ public class MarriageModelMuc extends AbstractModel implements MarriageModel {
             probabilities.put(p, prob);
         }
 
-        final Person selectedPartner = SiloUtil.select(probabilities, sum);
+        final Person selectedPartner = SiloUtil.select(probabilities, sum, random);
         possiblePartners.remove(selectedPartner);
         return selectedPartner;
     }
@@ -207,7 +207,7 @@ public class MarriageModelMuc extends AbstractModel implements MarriageModel {
     private MarriagePreference defineMarriagePreference(Person person, MarriageMarket market) {
 
         final Gender partnerGender = person.getGender().opposite();
-        final boolean sameRace = SiloUtil.getRandomNumberAsFloat() >= interRacialMarriageShare;
+        final boolean sameRace = random.nextDouble() >= interRacialMarriageShare;
 
         final Map<Integer, Double> probabilityByAge = new LinkedHashMap<>();
 
@@ -225,7 +225,7 @@ public class MarriageModelMuc extends AbstractModel implements MarriageModel {
             return null;
         }
 
-        final int selectedAge = SiloUtil.select(probabilityByAge, sum);
+        final int selectedAge = SiloUtil.select(probabilityByAge, sum, random);
         return new MarriagePreference(sameRace, selectedAge, partnerGender);
 
     }
@@ -249,7 +249,7 @@ public class MarriageModelMuc extends AbstractModel implements MarriageModel {
         if (hh.getHhSize() == 1) {
             share *= properties.demographics.onePersonHhMarriageBias;
         }
-        return SiloUtil.getRandomNumberAsFloat() < share;
+        return random.nextDouble() < share;
     }
 
     private boolean marryCouple(int id1, int id2) {

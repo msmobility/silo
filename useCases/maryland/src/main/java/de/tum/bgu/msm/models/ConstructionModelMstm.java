@@ -48,8 +48,8 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
 
     public ConstructionModelMstm(DataContainer dataContainer, DwellingFactory factory,
                                  Properties properties, ConstructionLocationStrategy locationStrategy,
-                                 ConstructionDemandStrategy demandStrategy) {
-        super(dataContainer, properties);
+                                 ConstructionDemandStrategy demandStrategy, Random rnd) {
+        super(dataContainer, properties, rnd);
         this.geoData = dataContainer.getGeoData();
         this.accessibility = dataContainer.getAccessibility();
         this.factory = factory;
@@ -154,7 +154,7 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
                     for (int zone : zonesInThisRegion) {
                         prob[zone] = prob[zone] / probSum;
                     }
-                    int zone = SiloUtil.select(prob);
+                    int zone = SiloUtil.select(prob, random);
                     events.add(createNewDwelling(realEstate, aveSizeByTypeAndRegion, avePriceByTypeAndZone,
                             avePriceByTypeAndRegion, dt, dto, region, zone));
                 }
@@ -186,7 +186,7 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
         int price;
 
         if (makeSomeNewDdAffordable) {
-            if (SiloUtil.getRandomNumberAsFloat() <= shareOfAffordableDd) {
+            if (random.nextDouble() <= shareOfAffordableDd) {
                 restriction = (int) (restrictionForAffordableDd * 100);
             }
         }
@@ -248,7 +248,7 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
         for (Map.Entry<Integer, Zone> zone : geoData.getZones().entrySet()) {
             prob[zone.getValue().getId()] = prob[zone.getValue().getId()] / probSum;
         }
-        return SiloUtil.select(prob);
+        return SiloUtil.select(prob, random);
     }
 
     @Override
@@ -258,7 +258,7 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
         Dwelling dd = event.getDwelling();
         realEstate.addDwelling(dd);
 
-        Coordinate coordinate = dataContainer.getGeoData().getZones().get(dd.getZoneId()).getRandomCoordinate(SiloUtil.getRandomObject());
+        Coordinate coordinate = dataContainer.getGeoData().getZones().get(dd.getZoneId()).getRandomCoordinate(random);
         dd.setCoordinate(coordinate);
 
         realEstate.addDwellingToVacancyList(dd);

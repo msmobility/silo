@@ -18,10 +18,10 @@ import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Random;
 
 public class DivorceModelImpl extends AbstractModel implements DivorceModel {
 
-    Class clazz;
     private final static Logger logger = Logger.getLogger(DivorceModelImpl.class);
 
     private final MovesModelImpl movesModel;
@@ -32,8 +32,8 @@ public class DivorceModelImpl extends AbstractModel implements DivorceModel {
 
     public DivorceModelImpl(DataContainer dataContainer, MovesModelImpl movesModel,
                             CreateCarOwnershipModel carOwnership, HouseholdFactory hhFactory,
-                            Properties properties, DivorceStrategy strategy) {
-        super(dataContainer, properties);
+                            Properties properties, DivorceStrategy strategy, Random rnd) {
+        super(dataContainer, properties, rnd);
         this.hhFactory = hhFactory;
         this.movesModel = movesModel;
         this.carOwnership = carOwnership;
@@ -43,21 +43,6 @@ public class DivorceModelImpl extends AbstractModel implements DivorceModel {
 
     @Override
     public void setup() {
-//        switch (properties.main.implementation) {
-//            case MUNICH:
-//                reader = new InputStreamReader(this.getClass().getResourceAsStream("MarriageProbabilityCalc"));
-//                break;
-//            case MARYLAND:
-//                reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMstm"));
-//                break;
-//            case PERTH:
-//                reader = new InputStreamReader(this.getClass().getResourceAsStream("MarriageProbabilityCalc"));
-//                break;
-//            case KAGAWA:
-//            case CAPE_TOWN:
-//            default:
-//                throw new RuntimeException("DivorceModel implementation not applicable for " + properties.main.implementation);
-
     }
 
     @Override
@@ -101,7 +86,7 @@ public class DivorceModelImpl extends AbstractModel implements DivorceModel {
         Person per = householdDataManager.getPersonFromId(perId);
         if (per != null && per.getRole() == PersonRole.MARRIED) {
             final double probability = strategy.calculateDivorceProbability(per) / 2;
-            if (SiloUtil.getRandomNumberAsDouble() < probability) {
+            if (random.nextDouble() < probability) {
                 // check if vacant dwelling is available
 
                 Household fakeHypotheticalHousehold = hhFactory.createHousehold(-1, -1, 0);

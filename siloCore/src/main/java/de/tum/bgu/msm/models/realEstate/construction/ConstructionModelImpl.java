@@ -45,8 +45,8 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
 
     public ConstructionModelImpl(DataContainer dataContainer, DwellingFactory factory,
                                  Properties properties, ConstructionLocationStrategy locationStrategy,
-                                 ConstructionDemandStrategy demandStrategy) {
-        super(dataContainer, properties);
+                                 ConstructionDemandStrategy demandStrategy, Random random) {
+        super(dataContainer, properties, random);
         this.geoData = dataContainer.getGeoData();
         this.accessibility = dataContainer.getAccessibility();
         this.factory = factory;
@@ -146,7 +146,7 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
                     for (int zone : zonesInThisRegion) {
                         prob[zone] = prob[zone] / probSum;
                     }
-                    int zone = SiloUtil.select(prob);
+                    int zone = SiloUtil.select(prob, random);
                     events.add(createNewDwelling(realEstate, aveSizeByTypeAndRegion, avePriceByTypeAndZone,
                             avePriceByTypeAndRegion, dt, dto, region, zone));
                 }
@@ -245,7 +245,7 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
 
 
         int ddId = realEstate.getNextDwellingId();
-        Coordinate coordinate = dataContainer.getGeoData().getZones().get(zone).getRandomCoordinate(SiloUtil.getRandomObject());
+        Coordinate coordinate = dataContainer.getGeoData().getZones().get(zone).getRandomCoordinate(this.random);
         Dwelling plannedDwelling = factory.createDwelling(ddId, zone, coordinate, -1,
                 dt, size, quality, price, currentYear);
         // Dwelling is created and added to events list, but dwelling it not added to realEstateDataManager yet
@@ -282,7 +282,7 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
         for (Map.Entry<Integer, Zone> zone : geoData.getZones().entrySet()) {
             prob[zone.getValue().getId()] = prob[zone.getValue().getId()] / probSum;
         }
-        return SiloUtil.select(prob);
+        return SiloUtil.select(prob, random);
     }
 
 
