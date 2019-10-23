@@ -259,6 +259,9 @@ public class HousingStrategyMuc implements HousingStrategy {
                 Zone workZone = geoData.getZones().get(job.getZoneId());
                 if(carToWorkersRatio <= 0.) {
                     int ptTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds(), TransportMode.pt);
+                    if(ptTime > 200) {
+                        logger.info(pp.getId() + ", " + ptTime + ", " + region.getId() +  ", " + workZone);
+                    }
                     thisRegionFactor = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, ptTime));
                 } else if( carToWorkersRatio >= 1.) {
                     int carTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds(), TransportMode.car);
@@ -272,10 +275,6 @@ public class HousingStrategyMuc implements HousingStrategy {
                     thisRegionFactor= factorCar * carToWorkersRatio + (1 - carToWorkersRatio) * factorPt;
                 }
             }
-        }
-
-        if(thisRegionFactor < 0.001) {
-            logger.info("low probability");
         }
 
         HouseholdType ht = household.getHouseholdType();
