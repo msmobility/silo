@@ -78,11 +78,13 @@ public final class Simulator {
         timeTracker.reset();
         logger.info("  Running annual models");
         for(ModelUpdateListener modelUpdateListener : modelUpdateListeners) {
+            logger.info("Random: " + SiloUtil.getRandomNumberAsDouble());
             modelUpdateListener.prepareYear(year);
             timeTracker.recordAndReset("PreparationFor" + modelUpdateListener.getClass().getSimpleName());
         }
         logger.info("  Preparing and creating events");
         for(EventModel<MicroEvent> model: models.values()) {
+            logger.info("Random: " + SiloUtil.getRandomNumberAsDouble());
             model.prepareYear(year);
             events.addAll(model.getEventsForCurrentYear(year));
             timeTracker.recordAndReset("PreparationFor" + model.getClass().getSimpleName());
@@ -91,11 +93,13 @@ public final class Simulator {
         logger.info("  Shuffling events...");
         Collections.shuffle(events, SiloUtil.getRandomObject());
         eventCounter.clear();
+        logger.info("Random: " + SiloUtil.getRandomNumberAsDouble());
     }
 
     private void processEvents() {
         logger.info("  Processing events...");
         int counter = 0;
+        logger.info("Random: " + SiloUtil.getRandomNumberAsDouble());
         for (MicroEvent e: events) {
             if (LongMath.isPowerOfTwo(counter)) {
                 logger.info("Handled " + counter + " events.");
