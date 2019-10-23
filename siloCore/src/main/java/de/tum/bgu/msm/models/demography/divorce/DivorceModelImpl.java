@@ -88,6 +88,7 @@ public class DivorceModelImpl extends AbstractModel implements DivorceModel {
             final double probability = strategy.calculateDivorceProbability(per) / 2;
             if (random.nextDouble() < probability) {
                 // check if vacant dwelling is available
+                logger.info("Divorcing person " + perId);
 
                 Household fakeHypotheticalHousehold = hhFactory.createHousehold(-1, -1, 0);
                 fakeHypotheticalHousehold.addPerson(per);
@@ -98,6 +99,7 @@ public class DivorceModelImpl extends AbstractModel implements DivorceModel {
                                 "Person " + perId + " wanted to but could not divorce from household "
                                         + per.getHousehold().getId() + " because no appropriate vacant dwelling was found.");
                     }
+                    logger.warn("Divorce of " + perId + " failed.");
                     lackOfDwellingFailedDivorce++;
                     return false;
                 }
