@@ -15,7 +15,9 @@ import org.apache.log4j.Logger;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Scanner;
 
 /**
  * @author dziemke, nico
@@ -29,9 +31,9 @@ public class SiloMucTest {
     private static final Logger log = Logger.getLogger(SiloMucTest.class);
 
     @Test
-	public final void testMain() {
-		SiloTestUtils.cleanUpMicrodataFiles();
-		SiloTestUtils.cleanUpOtherFiles();
+    public final void testMain() {
+        SiloTestUtils.cleanUpMicrodataFiles();
+        SiloTestUtils.cleanUpOtherFiles();
 
         String path = "./test/muc/siloMucTest.properties";
         Properties properties = SiloUtil.siloInitialization(path);
@@ -49,7 +51,7 @@ public class SiloMucTest {
         checkHouseholds();
         checkJobs();
         checkPersons();
-	}
+    }
 
     private void checkPersons() {
         log.info("checking SILO population file ...");
@@ -94,6 +96,24 @@ public class SiloMucTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+
+        try {
+            Scanner input1 = new Scanner(ref);
+            Scanner input2 = new Scanner(actual);
+
+            while (input1.hasNextLine() && input2.hasNextLine()) {
+                String first = input1.nextLine();
+                String second = input2.nextLine();
+
+                if (!first.equals(second)) {
+                    log.warn("Differences found: " + "\n" + first + '\n' + second);
+                }
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
         FileAssert.assertEquals("dwellings are different.", ref, actual);
 
         if (CLEANUP_AFTER_TEST) {

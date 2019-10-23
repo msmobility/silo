@@ -49,8 +49,7 @@ public final class MatsimTravelTimes implements TravelTimes {
         this.config = config;
     }
 
-    public void initialize(DataContainer dataContainer, MatsimData matsimData) {
-        final GeoData geoData = dataContainer.getGeoData();
+    public void initialize(GeoData geoData, MatsimData matsimData) {
         this.zones = geoData.getZones();
         this.matsimData = matsimData;
         regions = geoData.getRegions().values();
