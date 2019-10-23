@@ -254,14 +254,12 @@ public class HousingStrategyMuc implements HousingStrategy {
         double carToWorkersRatio = Math.min(1., ((double) household.getAutos() / HouseholdUtil.getNumberOfWorkers(household)));
 
         for (Person pp : household.getPersons().values()) {
+            logger.info("test");
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
                 final JobMuc job = (JobMuc) jobDataManager.getJobFromId(pp.getJobId());
                 Zone workZone = geoData.getZones().get(job.getZoneId());
                 if(carToWorkersRatio <= 0.) {
                     int ptTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds(), TransportMode.pt);
-                    if(ptTime > 200) {
-                        logger.info(pp.getId() + ", " + ptTime + ", " + region.getId() +  ", " + workZone);
-                    }
                     thisRegionFactor = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, ptTime));
                 } else if( carToWorkersRatio >= 1.) {
                     int carTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds(), TransportMode.car);
