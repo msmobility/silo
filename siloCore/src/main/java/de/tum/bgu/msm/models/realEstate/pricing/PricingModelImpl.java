@@ -8,7 +8,6 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -27,6 +26,7 @@ public final class PricingModelImpl extends AbstractModel implements PricingMode
     private double slopeMain;
     private double slopeHigh;
     private double maxDelta;
+    private double maxVacancyRateForPriceChange;
 
     public PricingModelImpl(DataContainer dataContainer, Properties properties, PricingStrategy strategy) {
         super(dataContainer, properties);
@@ -41,6 +41,7 @@ public final class PricingModelImpl extends AbstractModel implements PricingMode
         slopeMain = strategy.getMainSlope();
         slopeHigh = strategy.getHighSlope();
         maxDelta = strategy.getMaximumChange();
+        maxVacancyRateForPriceChange = strategy.getMaxVacancyRateForPriceChange();
     }
 
     @Override
@@ -79,7 +80,9 @@ public final class PricingModelImpl extends AbstractModel implements PricingMode
 
             int region = dataContainer.getGeoData().getZones().get(dd.getZoneId()).getRegion().getId();
             double changeRate;
-            if (vacRate[dto][region] < structuralVacLow) {
+            if (vacRate[dto][region] > maxVacancyRateForPriceChange){
+                changeRate = 1f;
+            } else if (vacRate[dto][region] < structuralVacLow) {
                 // vacancy is particularly low, prices need to rise steeply
                 changeRate = 1 - structuralVacLow * slopeLow +
                         (-structuralVacancyRate * slopeMain + structuralVacLow * slopeMain) +

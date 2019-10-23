@@ -16,4 +16,6 @@ public interface PricingStrategy {
     double getMaximumChange();
 
     boolean shouldUpdatePrice(Dwelling dd);
+
+    double getMaxVacancyRateForPriceChange();
 }

@@ -44,4 +44,9 @@ public class DefaultPricingStrategy extends JavaScriptCalculator<Double> impleme
     public boolean shouldUpdatePrice(Dwelling dd) {
         return true;
     }
+
+    @Override
+    public double getMaxVacancyRateForPriceChange() {
+        return super.calculate("getMaxVacancyRateForPriceChange");
+    }
 }

@@ -11,6 +11,14 @@ var getHighInflectionPoint = function() {
     return 2.;
 }
 
+var getMaxVacancyRateForPriceChange = function() {
+    // This value defines the vacancy rate (not multiplied by structural vacancies) from which the price will not change at all.
+    // For vacancies rates above 10% (if set to 0.1) the price will not decrease any more.
+    // This value applies for all dwelling types.
+    return 0.1;
+}
+
+
 var getLowerSlope = function() {
     // describes the steep slope that is used for vacancies below the lower inflection point
     return -10.;
