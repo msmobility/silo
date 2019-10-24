@@ -116,15 +116,9 @@ public final class Simulator {
     private void finishYear(int year) {
         for(ModelUpdateListener modelUpdateListener : modelUpdateListeners) {
             modelUpdateListener.endYear(year);
-            if(modelUpdateListener instanceof AbstractModel) {
-                ((AbstractModel) modelUpdateListener).logCurrentRandomState();
-            }
         }
         for(EventModel model: models.values()) {
             model.endYear(year);
-            if(model instanceof AbstractModel) {
-                ((AbstractModel) model).logCurrentRandomState();
-            }
         }
 
         resultsMonitor.endYear(year, eventCounter);

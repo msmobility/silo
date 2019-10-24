@@ -97,25 +97,6 @@ public class SiloMucTest {
             e.printStackTrace();
         }
 
-        log.info("Random: "  + SiloUtil.getRandomNumberAsDouble());
-
-//
-//        try {
-//            Scanner input1 = new Scanner(ref);
-//            Scanner input2 = new Scanner(actual);
-//
-//            while (input1.hasNextLine() && input2.hasNextLine()) {
-//                String first = input1.nextLine();
-//                String second = input2.nextLine();
-//
-//                if (!first.equals(second)) {
-//                    log.warn("Differences found: " + "\n" + first + '\n' + second);
-//                }
-//            }
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        }
-
         FileAssert.assertEquals("dwellings are different.", ref, actual);
 
         if (CLEANUP_AFTER_TEST) {
