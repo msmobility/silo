@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.Random;
 
 /**
  * Simulates number of vehicles per household
@@ -24,8 +25,8 @@ public class MaryLandUpdateCarOwnershipModel extends AbstractModel implements Mo
     private final Accessibility accessibility;
     private double[][][][][][] autoOwnerShipUtil;   // [three probabilities][hhsize][workers][income][transitAcc][density]
 
-    public MaryLandUpdateCarOwnershipModel(DataContainer dataContainer, Accessibility accessibility, Properties properties) {
-        super(dataContainer, properties);
+    public MaryLandUpdateCarOwnershipModel(DataContainer dataContainer, Accessibility accessibility, Properties properties, Random rnd) {
+        super(dataContainer, properties, rnd);
         logger.info("  Setting up probabilities for auto-ownership model");
         this.accessibility = accessibility;
     }
@@ -105,7 +106,7 @@ public class MaryLandUpdateCarOwnershipModel extends AbstractModel implements Mo
                 prob[i] = autoOwnerShipUtil[i - 1][hhSize - 1][workers][incomeCategory - 1][transitAcc][density - 1];
             }
             prob[0] = 1 - SiloUtil.getSum(prob);
-            household.setAutos(SiloUtil.select(prob));
+            household.setAutos(SiloUtil.select(prob, random));
         }
     }
 }

@@ -1,16 +1,11 @@
 package de.tum.bgu.msm.models.jobmography;
 
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.Zone;
-import de.tum.bgu.msm.data.job.Job;
-import de.tum.bgu.msm.data.job.JobFactory;
-import de.tum.bgu.msm.data.job.JobType;
-import de.tum.bgu.msm.data.job.JobUtils;
+import de.tum.bgu.msm.data.job.*;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
-import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -26,8 +21,8 @@ public class JobMarketUpdateImpl extends AbstractModel implements JobMarketUpdat
     private final Logger LOGGER = Logger.getLogger(JobMarketUpdateImpl.class);
     private JobFactory factory;
 
-    public JobMarketUpdateImpl(DataContainer dataContainer, Properties properties) {
-        super(dataContainer, properties);
+    public JobMarketUpdateImpl(DataContainer dataContainer, Properties properties, Random rnd) {
+        super(dataContainer, properties, rnd);
         factory = JobUtils.getFactory();
     }
 
@@ -100,7 +95,7 @@ public class JobMarketUpdateImpl extends AbstractModel implements JobMarketUpdat
                 int jobsExogenousForecast = (int) jobDataManager.getJobForecast(year, zoneId, jt);
                 if (jobsExogenousForecast > jobsByZone[JobType.getOrdinal(jt)][zoneId]) {
                     int change = jobsExogenousForecast - jobsByZone[JobType.getOrdinal(jt)][zoneId];
-                    executor.addTaskToQueue(new AddJobsDefinition(zone, change, jt, dataContainer, factory, new Random(SiloUtil.getRandomObject().nextLong())));
+                    executor.addTaskToQueue(new AddJobsDefinition(zone, change, jt, dataContainer, factory, new Random(random.nextLong())));
                 } else if (jobsExogenousForecast < jobsByZone[JobType.getOrdinal(jt)][zoneId]) {
                     int change = jobsByZone[JobType.getOrdinal(jt)][zoneId] - jobsExogenousForecast;
                     List<Integer> vacantJobs = jobsAvailableForRemoval.get(jt + "." + zone + "." + true);

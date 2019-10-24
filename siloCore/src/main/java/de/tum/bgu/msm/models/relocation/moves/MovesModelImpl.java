@@ -49,8 +49,9 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
     private final Map<HouseholdType, Double> averageHousingSatisfaction = new ConcurrentHashMap<>();
     private final Map<Integer, Double> satisfactionByHousehold = new ConcurrentHashMap<>();
 
-    public MovesModelImpl(DataContainer dataContainer, Properties properties, MovesStrategy movesStrategy, HousingStrategy housingStrategy) {
-        super(dataContainer, properties);
+    public MovesModelImpl(DataContainer dataContainer, Properties properties, MovesStrategy movesStrategy,
+                          HousingStrategy housingStrategy, Random random) {
+        super(dataContainer, properties, random);
 //        try {
 //            fileWriter = new BufferedWriter(new FileWriter(new File(properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/indiv_tt.csv")));
 //            fileWriter.write("ppId,hhId,ddId,jobId,jobX,jobY,ddX,ddY,jobZone,dwellingZone,min,minSkim,queryTime,ddUtil,areaDDZone,areaJJZone,minFixedTime,minFixedZone,transitSkim,transitIndiv,transitIndivFixedQuery,transitIndivFixedZone");
@@ -151,7 +152,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
         // Step 1: select region
         final GeoData geoData = dataContainer.getGeoData();
-        Sampler<Region> regionSampler = new Sampler<>(geoData.getRegions().size(), Region.class, SiloUtil.getRandomObject());
+        Sampler<Region> regionSampler = new Sampler<>(geoData.getRegions().size(), Region.class, this.random);
         for (Region region : geoData.getRegions().values()) {
             double utility;
             if (dataContainer.getRealEstateDataManager().getNumberOfVacantDDinRegion(region.getId()) == 0) {
@@ -186,7 +187,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
         UtilityUtils.reset();
 
-        Collections.shuffle(vacantDwellings, SiloUtil.getRandomObject());
+        Collections.shuffle(vacantDwellings, this.random);
         for (int i = 0; i < maxNumberOfDwellings; i++) {
             Dwelling dwelling = vacantDwellings.get(i);
             if (housingStrategy.isHouseholdEligibleToLiveHere(household, dwelling)) {
@@ -213,7 +214,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
             }
         }
 
-        Sampler<Dwelling> sampler = new Sampler<>(UtilityUtils.dwellings, UtilityUtils.probabilities, SiloUtil.getRandomObject());
+        Sampler<Dwelling> sampler = new Sampler<>(UtilityUtils.dwellings, UtilityUtils.probabilities, this.random);
         try {
             return sampler.sampleObject().getId();
         } catch (SampleException e) {
@@ -232,7 +233,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         final double avgSatisfaction = averageHousingSatisfaction.getOrDefault(hhType, currentUtil);
 
         final double prop = movesStrategy.getMovingProbability(avgSatisfaction, currentUtil);
-        return SiloUtil.getRandomNumberAsDouble() <= prop;
+        return this.random.nextDouble() <= prop;
     }
 
 

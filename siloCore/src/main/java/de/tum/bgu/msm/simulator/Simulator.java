@@ -5,6 +5,7 @@ import com.google.common.collect.Multiset;
 import com.google.common.math.LongMath;
 import de.tum.bgu.msm.events.MicroEvent;
 import de.tum.bgu.msm.io.output.ResultsMonitor;
+import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -102,9 +103,6 @@ public final class Simulator {
             }
 //            timeTracker.reset();
             Class<? extends MicroEvent> klass= e.getClass();
-            //unchecked is justified here, as
-            //<T extends Event> void registerEventModel(Class<T> klass, EventModel<T> model)
-            // checks for the right type of model handlers
 
             boolean success = this.models.get(klass).handleEvent(e);
             if(success) {

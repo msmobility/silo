@@ -106,7 +106,7 @@ public final class MatsimTransportModel implements TransportModel {
     public void setup() {
         scenario = ScenarioUtils.loadScenario(initialMatsimConfig);
         Network network = scenario.getNetwork();
-        internalTravelTimes.initialize(dataContainer, matsimData);
+        internalTravelTimes.initialize(dataContainer.getGeoData(), matsimData);
 
         logger.warn("Finding coordinates that represent a given zone.");
         zoneRepresentativeCoords = FacilitiesUtils.createActivityFacilities();

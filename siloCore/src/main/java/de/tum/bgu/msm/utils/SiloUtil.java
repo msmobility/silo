@@ -7,6 +7,7 @@ import com.pb.common.matrix.Matrix;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.SummarizeData;
+import de.tum.bgu.msm.models.realEstate.renovation.RenovationModelImpl;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.PropertiesUtil;
 import omx.OmxMatrix;
@@ -173,6 +174,10 @@ public class SiloUtil {
             rand = new Random(42);
         }
         return rand;
+    }
+
+    public static Random provideNewRandom() {
+        return new Random(getRandomObject().nextInt());
     }
 
     public static float getRandomNumberAsFloat() {
@@ -422,6 +427,10 @@ public class SiloUtil {
     public static <T> T select(Map<T, ? extends Number> mappedProbabilities) {
         // select item based on probabilities (for mapped double probabilities)
         return select(mappedProbabilities, getSum(mappedProbabilities.values()));
+    }
+
+    public static <T> T select(Map<T, ? extends Number> probabilities, Random random) {
+        return select(probabilities, getSum(probabilities.values()), random);
     }
 
     public static <T> T select(Map<T, ? extends Number> mappedProbabilities, double sum, Random random) {
@@ -1135,4 +1144,6 @@ public class SiloUtil {
         pw.write(timeTracker.toString());
         pw.close();
     }
+
+
 }

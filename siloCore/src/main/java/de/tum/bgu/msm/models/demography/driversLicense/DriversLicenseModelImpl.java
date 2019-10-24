@@ -10,6 +10,7 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Simulates if someone obtains a drivers license
@@ -21,8 +22,8 @@ public class DriversLicenseModelImpl extends AbstractModel implements DriversLic
 
     private final DriversLicenseStrategy strategy;
 
-    public DriversLicenseModelImpl(DataContainer dataContainer, Properties properties, DriversLicenseStrategy strategy) {
-        super(dataContainer, properties);
+    public DriversLicenseModelImpl(DataContainer dataContainer, Properties properties, DriversLicenseStrategy strategy, Random rnd) {
+        super(dataContainer, properties, rnd);
         this.strategy = strategy;
     }
 
@@ -47,7 +48,7 @@ public class DriversLicenseModelImpl extends AbstractModel implements DriversLic
         //assign new licenses to adults who does not have one, no license is revoked at any time
         if (pp != null && !pp.hasDriverLicense() && pp.getAge()>= 18) {
             final double changeProb = strategy.calculateChangeDriversLicenseProbability(pp);
-            if (SiloUtil.getRandomNumberAsDouble() < changeProb) {
+            if (random.nextDouble() < changeProb) {
                 return createLicense(pp);
             }
         }
@@ -70,7 +71,7 @@ public class DriversLicenseModelImpl extends AbstractModel implements DriversLic
             return;
         }
         final double createProb = strategy.calculateCreateDriversLicenseProbability(pp);
-        if (SiloUtil.getRandomNumberAsDouble() < createProb) {
+        if (random.nextDouble() < createProb) {
             createLicense(pp);
         }
     }

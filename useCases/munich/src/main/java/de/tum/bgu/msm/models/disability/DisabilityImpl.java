@@ -12,13 +12,14 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Random;
 
 public class DisabilityImpl extends AbstractModel implements DisabilityModel {
 
     private final DefaultDisabilityStrategy strategy;
 
-    public DisabilityImpl(DataContainer dataContainer, Properties properties, DefaultDisabilityStrategy strategy) {
-        super(dataContainer, properties);
+    public DisabilityImpl(DataContainer dataContainer, Properties properties, DefaultDisabilityStrategy strategy, Random rnd) {
+        super(dataContainer, properties, rnd);
         this.strategy = strategy;
     }
 
@@ -58,13 +59,12 @@ public class DisabilityImpl extends AbstractModel implements DisabilityModel {
 
     }
 
-
     public boolean checkDisability(DisabilityEvent event) {
         // check if the person will get a disability on the current year
         Person person = dataContainer.getHouseholdDataManager().getPersonFromId(event.getPersonId());
         if (person != null) {
-            if (SiloUtil.getRandomNumberAsDouble() < strategy.calculateDisabilityProbability(person)) {
-                if (SiloUtil.getRandomNumberAsDouble() < strategy.calculateDisabilityType(person)) {
+            if (random.nextDouble() < strategy.calculateDisabilityProbability(person)) {
+                if (random.nextDouble() < strategy.calculateDisabilityType(person)) {
                     giveDisability(person, Disability.PHYSICAL);
                     return true;
                 } else {
@@ -83,6 +83,4 @@ public class DisabilityImpl extends AbstractModel implements DisabilityModel {
                     per.getId() + ". New age is " + per.getAge() + ".");
         }
     }
-
-
 }

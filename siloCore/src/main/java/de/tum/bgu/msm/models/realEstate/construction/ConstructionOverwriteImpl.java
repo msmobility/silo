@@ -15,10 +15,7 @@ import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This method allows to add dwellings as an overwrite. New dwellings are given exogenously and added in a given year,
@@ -37,11 +34,13 @@ public class ConstructionOverwriteImpl extends AbstractModel implements Construc
 
     private Map<Integer, List<Integer[]>> plannedDwellings;
 
-    public ConstructionOverwriteImpl(DataContainer dataContainer, DwellingFactory factory, Properties properties) {
-        super(dataContainer, properties);
+    public ConstructionOverwriteImpl(DataContainer dataContainer, DwellingFactory factory, Properties properties, Random random) {
+        super(dataContainer, properties, random);
         this.factory = factory;
         useOverwrite = properties.realEstate.constructionOverwriteDwelling;
-        if (!useOverwrite) return;
+        if (!useOverwrite) {
+            return;
+        }
         traceOverwriteDwellings = properties.realEstate.traceOverwriteDwellings;
         if (traceOverwriteDwellings) {
             String directory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
@@ -138,7 +137,7 @@ public class ConstructionOverwriteImpl extends AbstractModel implements Construc
             Dwelling dd = factory.createDwelling(ddId, zoneId, null, -1, dataContainer.getRealEstateDataManager().getDwellingTypes().get(dto), size, quality, price, year);
             dataContainer.getRealEstateDataManager().addDwelling(dd);
 
-            Coordinate coordinate = dataContainer.getGeoData().getZones().get(zoneId).getRandomCoordinate(SiloUtil.getRandomObject());
+            Coordinate coordinate = dataContainer.getGeoData().getZones().get(zoneId).getRandomCoordinate(random);
             dd.setCoordinate(coordinate);
 
             if (traceOverwriteDwellings) traceFile.println(ddId + "," + zoneId + "," +  dataContainer.getRealEstateDataManager().getDwellingTypes().get(dto).toString() + "," + size + "," +

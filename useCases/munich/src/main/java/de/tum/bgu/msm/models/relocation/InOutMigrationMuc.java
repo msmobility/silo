@@ -17,6 +17,7 @@ import de.tum.bgu.msm.schools.DataContainerWithSchoolsImpl;
 import de.tum.bgu.msm.schools.PersonWithSchool;
 import de.tum.bgu.msm.schools.School;
 import de.tum.bgu.msm.schools.SchoolDataImpl;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.util.Collection;
@@ -30,7 +31,8 @@ public class InOutMigrationMuc implements InOutMigration {
     public InOutMigrationMuc(DataContainer dataContainer, EmploymentModel employment,
                               MovesModelImpl movesModel, CreateCarOwnershipModel carOwnership,
                               DriversLicenseModel driversLicense, Properties properties) {
-        delegate = new InOutMigrationImpl(dataContainer,employment,movesModel,carOwnership,driversLicense,properties);
+        delegate = new InOutMigrationImpl(dataContainer, employment, movesModel,
+                carOwnership, driversLicense, properties, SiloUtil.provideNewRandom());
         dataContainerWithSchoolsImpl = (DataContainerWithSchoolsImpl) dataContainer;
     }
 
