@@ -254,7 +254,6 @@ public class HousingStrategyMuc implements HousingStrategy {
         double carToWorkersRatio = Math.min(1., ((double) household.getAutos() / HouseholdUtil.getNumberOfWorkers(household)));
 
         for (Person pp : household.getPersons().values()) {
-            logger.info("test");
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
                 final JobMuc job = (JobMuc) jobDataManager.getJobFromId(pp.getJobId());
                 Zone workZone = geoData.getZones().get(job.getZoneId());
