@@ -9,6 +9,7 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.util.List;
+import java.util.Random;
 
 /**
  * Updates prices of dwellings based on current demand
@@ -22,8 +23,8 @@ public final class PricingModelImpl extends AbstractModel implements PricingMode
 
 
 
-    public PricingModelImpl(DataContainer dataContainer, Properties properties, PricingStrategy strategy) {
-        super(dataContainer, properties);
+    public PricingModelImpl(DataContainer dataContainer, Properties properties, PricingStrategy strategy, Random rnd) {
+        super(dataContainer, properties, rnd);
         this.strategy = strategy;
     }
 

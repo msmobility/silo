@@ -18,10 +18,7 @@ import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ConstructionOverwriteMstm extends AbstractModel implements ConstructionOverwrite {
 
@@ -33,8 +30,8 @@ public class ConstructionOverwriteMstm extends AbstractModel implements Construc
 
     private Map<Integer, List<Integer[]>> plannedDwellings;
 
-    public ConstructionOverwriteMstm(DataContainer dataContainer, DwellingFactory factory, Properties properties) {
-        super(dataContainer, properties);
+    public ConstructionOverwriteMstm(DataContainer dataContainer, DwellingFactory factory, Properties properties, Random rnd) {
+        super(dataContainer, properties, rnd);
         this.factory = factory;
         useOverwrite = properties.realEstate.constructionOverwriteDwelling;
         if (!useOverwrite) {
@@ -147,7 +144,7 @@ public class ConstructionOverwriteMstm extends AbstractModel implements Construc
             dd.setRestriction(restriction);
             dataContainer.getRealEstateDataManager().addDwelling(dd);
 
-            Coordinate coordinate = dataContainer.getGeoData().getZones().get(zoneId).getRandomCoordinate(SiloUtil.getRandomObject());
+            Coordinate coordinate = dataContainer.getGeoData().getZones().get(zoneId).getRandomCoordinate(random);
             dd.setCoordinate(coordinate);
 
             if (traceOverwriteDwellings) traceFile.println(ddId + "," + zoneId + "," +  dataContainer.getRealEstateDataManager().getDwellingTypes().get(dto).toString() + "," + size + "," +

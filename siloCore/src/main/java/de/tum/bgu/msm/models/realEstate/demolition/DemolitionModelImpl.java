@@ -6,7 +6,6 @@ import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.events.impls.realEstate.DemolitionEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigration;
-import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
 import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -15,6 +14,7 @@ import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Simulates demolition of dwellings
@@ -35,8 +35,8 @@ public class DemolitionModelImpl extends AbstractModel implements DemolitionMode
 
     public DemolitionModelImpl(DataContainer dataContainer, MovesModelImpl moves,
                                InOutMigration inOutMigration, Properties properties,
-                               DemolitionStrategy strategy) {
-        super(dataContainer, properties);
+                               DemolitionStrategy strategy, Random rnd) {
+        super(dataContainer, properties, rnd);
         this.moves = moves;
         this.inOutMigration = inOutMigration;
 //        final Reader reader;
@@ -82,7 +82,7 @@ public class DemolitionModelImpl extends AbstractModel implements DemolitionMode
     public boolean handleEvent(DemolitionEvent event) {
         Dwelling dd = dataContainer.getRealEstateDataManager().getDwelling(event.getDwellingId());
         if (dd != null) {
-            if (SiloUtil.getRandomNumberAsDouble() < strategy.calculateDemolitionProbability(dd, currentYear)) {
+            if (random.nextDouble() < strategy.calculateDemolitionProbability(dd, currentYear)) {
                 return demolishDwelling(dd);
             }
         }

@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Simulates if someone changes school
@@ -28,8 +29,8 @@ public class EducationModelMuc extends AbstractModel implements EducationModel {
     private static final int MIN_TERTIARY_AGE = 18;
     private static final int MAX_EDUCATION_AGE = 24;
 
-    public EducationModelMuc(DataContainerWithSchools dataContainer, Properties properties) {
-        super(dataContainer, properties);
+    public EducationModelMuc(DataContainerWithSchools dataContainer, Properties properties, Random rnd) {
+        super(dataContainer, properties, rnd);
     }
 
     @Override

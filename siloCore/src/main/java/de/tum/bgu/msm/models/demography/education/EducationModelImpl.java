@@ -11,6 +11,7 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Simulates if someone changes school
@@ -19,8 +20,8 @@ import java.util.List;
  **/
 public class EducationModelImpl extends AbstractModel implements EducationModel {
 
-    public EducationModelImpl(DataContainer dataContainer, Properties properties) {
-        super(dataContainer, properties);
+    public EducationModelImpl(DataContainer dataContainer, Properties properties, Random rnd) {
+        super(dataContainer, properties, rnd);
     }
 
     @Override

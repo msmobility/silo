@@ -10,11 +10,12 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Random;
 
 public class BirthdayModelImpl extends AbstractModel implements BirthdayModel {
 
-    public BirthdayModelImpl(DataContainer dataContainer, Properties properties) {
-        super(dataContainer, properties);
+    public BirthdayModelImpl(DataContainer dataContainer, Properties properties, Random random) {
+        super(dataContainer, properties, random);
     }
 
     @Override

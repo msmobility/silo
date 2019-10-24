@@ -14,6 +14,7 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Random;
 
 /**
  * @author Greg Erhardt, Rolf Moeckel
@@ -24,8 +25,8 @@ public class DeathModelImpl extends AbstractModel implements DeathModel {
 
     private final DeathStrategy strategy;
 
-    public DeathModelImpl(DataContainer dataContainer, Properties properties, DeathStrategy strategy) {
-        super(dataContainer, properties);
+    public DeathModelImpl(DataContainer dataContainer, Properties properties, DeathStrategy strategy, Random rnd) {
+        super(dataContainer, properties, rnd);
         this.strategy = strategy;
     }
 
@@ -45,7 +46,7 @@ public class DeathModelImpl extends AbstractModel implements DeathModel {
         HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
         final Person person = householdDataManager.getPersonFromId(event.getPersonId());
         if (person != null) {
-            if (SiloUtil.getRandomNumberAsDouble() < strategy.calculateDeathProbability(person)) {
+            if (random.nextDouble() < strategy.calculateDeathProbability(person)) {
                 return die(person);
             }
         }

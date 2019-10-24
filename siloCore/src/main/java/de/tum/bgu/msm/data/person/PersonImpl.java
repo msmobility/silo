@@ -120,7 +120,7 @@ public class PersonImpl implements Person {
 
     @Override
     public String toString() {
-        return "Attributes of person " + id
+        return "+++ Person " + id
                 +"\nHousehold id         " + (household == null ? "null": household.getId())
                 +"\nAge                  " + age
                 +"\nGender               " + gender

@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.Random;
 
 /**
  * Created by matthewokrah on 26/06/2018.
@@ -24,8 +25,8 @@ public class SwitchToAutonomousVehicleModelMuc extends AbstractModel implements 
     private SwitchToAutonomousVehicleJSCalculatorMuc calculator;
     private final Reader reader;
 
-    public SwitchToAutonomousVehicleModelMuc(DataContainer dataContainer, Properties properties, InputStream inputStream) {
-        super(dataContainer, properties);
+    public SwitchToAutonomousVehicleModelMuc(DataContainer dataContainer, Properties properties, InputStream inputStream, Random rnd) {
+        super(dataContainer, properties, rnd);
         this.reader = new InputStreamReader(inputStream);
     }
 
@@ -60,7 +61,7 @@ public class SwitchToAutonomousVehicleModelMuc extends AbstractModel implements 
             if (hh.getAutos() > ((HouseholdMuc)hh).getAutonomous()) {
                 int income = HouseholdUtil.getAnnualHhIncome(hh) / 12;
                 double[] prob = calculator.calculate(income, year);
-                int action = SiloUtil.select(prob);
+                int action = SiloUtil.select(prob, random);
                 if (action == 1) {
                     ((HouseholdMuc)hh).setAutonomous(((HouseholdMuc)hh).getAutonomous() + 1);
                     counter++;
