@@ -31,8 +31,9 @@ public class RunOneCarPolicyScenarioTak {
         DataBuilderTak.read(properties, dataContainer);
         ModelContainer modelContainer = OneCarPolicyModelBuilderTak.getTakModels(
                 dataContainer, properties, config);
-        ResultsMonitor resultsMonitor = new DefaultResultsMonitor(dataContainer, properties);
-        SiloModel model = new SiloModel(properties, dataContainer, modelContainer, resultsMonitor);
+
+        SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
+        model.addResultMonitor(new DefaultResultsMonitor(dataContainer,properties));
         model.runModel();
         logger.info("Finished SILO.");
     }
