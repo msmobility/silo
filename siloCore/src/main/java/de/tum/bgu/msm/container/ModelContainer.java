@@ -73,15 +73,15 @@ public class ModelContainer {
         eventModels.put(EducationEvent.class, educationModel);
         eventModels.put(EmploymentEvent.class, employmentModel);
         eventModels.put(LeaveParentsEvent.class, leaveParentHhModel);
-        //eventModels.put(ConstructionEvent.class, constructionModel);
-        //eventModels.put(DemolitionEvent.class, demolitionModel);
-        //eventModels.put(RenovationEvent.class, renovationModel);
+        eventModels.put(ConstructionEvent.class, constructionModel);
+        eventModels.put(DemolitionEvent.class, demolitionModel);
+        eventModels.put(RenovationEvent.class, renovationModel);
         eventModels.put(MigrationEvent.class, inOutMigration);
         eventModels.put(MoveEvent.class, movesModel);
 
         modelUpdateListeners.add(jobMarketUpdate);
-        //modelUpdateListeners.add(pricingModel);
-        //modelUpdateListeners.add(constructionOverwrite);
+        modelUpdateListeners.add(pricingModel);
+        modelUpdateListeners.add(constructionOverwrite);
         modelUpdateListeners.add(transportModel);
 
     }
