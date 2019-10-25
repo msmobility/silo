@@ -34,6 +34,7 @@ public final class SummarizeData {
 
 
     private static PrintWriter spatialResultWriter;
+    private static PrintWriter spatialResultWriter_2;
 
     private static TableDataSet scalingControlTotals;
     private static final String RESULT_FILE_SPATIAL = "resultFileSpatial";
@@ -70,14 +71,14 @@ public final class SummarizeData {
         switch (action) {
             case "open":
                 String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
-                spatialResultWriter = SiloUtil.openFileForSequentialWriting(directory + "/" + RESULT_FILE_SPATIAL +
+                spatialResultWriter_2 = SiloUtil.openFileForSequentialWriting(directory + "/" + RESULT_FILE_SPATIAL +
                         "_2.csv", Properties.get().main.startYear != Properties.get().main.baseYear);
                 break;
             case "close":
-                spatialResultWriter.close();
+                spatialResultWriter_2.close();
                 break;
             default:
-                spatialResultWriter.println(action);
+                spatialResultWriter_2.println(action);
                 break;
         }
     }
@@ -103,12 +104,12 @@ public final class SummarizeData {
                 hd_2 = hd_2.concat(",dd_" + dwellingType.toString());
             }
             hd_2 = hd_2.concat(",availLand,avePrice,jobs,shWhite,shBlack,shHispanic,shOther");
+            resultFileSpatial_2(hd_2);
         }
 
 
         hd = hd.concat(",availLand,avePrice,jobs,shWhite,shBlack,shHispanic,shOther");
         resultFileSpatial(hd);
-        resultFileSpatial_2(hd);
 
         final int highestZonalId = dataContainer.getGeoData().getZones().keySet()
                 .stream().mapToInt(Integer::intValue).max().getAsInt();
