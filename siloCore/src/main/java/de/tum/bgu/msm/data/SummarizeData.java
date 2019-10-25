@@ -65,6 +65,23 @@ public final class SummarizeData {
         }
     }
 
+    public static void resultFileSpatial_2(String action) {
+        // handle summary file
+        switch (action) {
+            case "open":
+                String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
+                spatialResultWriter = SiloUtil.openFileForSequentialWriting(directory + "/" + RESULT_FILE_SPATIAL +
+                        "_2.csv", Properties.get().main.startYear != Properties.get().main.baseYear);
+                break;
+            case "close":
+                spatialResultWriter.close();
+                break;
+            default:
+                spatialResultWriter.println(action);
+                break;
+        }
+    }
+
     public static void summarizeSpatially(int year, DataContainer dataContainer) {
         // write out results by zone
 
@@ -77,8 +94,21 @@ public final class SummarizeData {
             hd = hd.concat(",dd_" + dwellingType.toString());
         }
 
+        if(year == Properties.get().main.baseYear) {
+            String hd_2 = "year,zone,autoAccessibility,transitAccessibility,population,households,hhInc_<" + Properties.get().main.incomeBrackets[0];
+            for (int inc = 0; inc < Properties.get().main.incomeBrackets.length; inc++) {
+                hd_2 = hd_2.concat(",hhInc_>" + Properties.get().main.incomeBrackets[inc]);
+            }
+            for (DwellingType dwellingType : dwellingTypes) {
+                hd_2 = hd_2.concat(",dd_" + dwellingType.toString());
+            }
+            hd_2 = hd_2.concat(",availLand,avePrice,jobs,shWhite,shBlack,shHispanic,shOther");
+        }
+
+
         hd = hd.concat(",availLand,avePrice,jobs,shWhite,shBlack,shHispanic,shOther");
         resultFileSpatial(hd);
+        resultFileSpatial_2(hd);
 
         final int highestZonalId = dataContainer.getGeoData().getZones().keySet()
                 .stream().mapToInt(Integer::intValue).max().getAsInt();
@@ -132,7 +162,9 @@ public final class SummarizeData {
 //                    modelContainer.getMove().getZonalRacialShare(taz, Race.hispanic) + "," +
 //                    modelContainer.getMove().getZonalRacialShare(taz, Race.other));
 //            String txt = f.toString();
+            String txt_2 = String.valueOf(year).concat(",").concat(txt);
             resultFileSpatial(txt);
+            resultFileSpatial_2(txt_2);
         }
     }
 
