@@ -44,7 +44,8 @@ public class SiloMucTest {
         ModelContainer modelContainer = ModelBuilderMuc.getModelContainerForMuc(dataContainer, properties, null);
 
         ResultsMonitor resultsMonitor = new DefaultResultsMonitor(dataContainer, properties);
-        SiloModel siloModel = new SiloModel(properties, dataContainer, modelContainer, resultsMonitor);
+        SiloModel siloModel = new SiloModel(properties, dataContainer, modelContainer);
+        siloModel.addResultMonitor(resultsMonitor);
         siloModel.runModel();
 
         checkDwellings();

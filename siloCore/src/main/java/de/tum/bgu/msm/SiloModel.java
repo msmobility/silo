@@ -50,7 +50,7 @@ public final class SiloModel {
 
     private Simulator simulator;
     private final TimeTracker timeTracker = new TimeTracker();
-	private ResultsMonitor resultsMonitor;
+	private Set<ResultsMonitor> resultsMonitors = new HashSet<>();
 
 	/**
      * @param properties
@@ -58,12 +58,16 @@ public final class SiloModel {
      * @param modelContainer
      */
   	public SiloModel(Properties properties,
-                     DataContainer dataContainer, ModelContainer modelContainer, ResultsMonitor resultsMonitor) {
+                     DataContainer dataContainer, ModelContainer modelContainer) {
         this.modelContainer = modelContainer;
         this.dataContainer = dataContainer;
 		this.properties = properties;
-		this.resultsMonitor = resultsMonitor;
+
 		SiloUtil.modelStopper("initialize");
+	}
+
+	public void addResultMonitor(ResultsMonitor resultsMonitor){
+  		resultsMonitors.add(resultsMonitor);
 	}
 
 	public void runModel() {
@@ -97,7 +101,10 @@ public final class SiloModel {
 			}
 		}
 
-		simulator.registerResultsMonitor(resultsMonitor);
+		for (ResultsMonitor resultsMonitor : resultsMonitors){
+			simulator.registerResultsMonitor(resultsMonitor);
+
+		}
 
         setupScalingYears();
 

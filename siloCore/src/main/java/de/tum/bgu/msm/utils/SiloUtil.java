@@ -58,6 +58,7 @@ public class SiloUtil {
         }
 
         SummarizeData.resultFileSpatial("open");
+        SummarizeData.resultFileSpatial_2("open");
         PropertiesUtil.writePropertiesForThisRun(propertiesPath);
 
         initializeRandomNumber(properties.main.randomSeed);
@@ -1082,6 +1083,7 @@ public class SiloUtil {
         // run this method whenever SILO closes, regardless of whether SILO completed successfully or SILO crashed
         trackingFile("close");
         SummarizeData.resultFileSpatial("close");
+        SummarizeData.resultFileSpatial_2("close");
         float endTime = rounder(((System.currentTimeMillis() - startTime) / 60000), 1);
         int hours = (int) (endTime / 60);
         int min = (int) (endTime - 60 * hours);
