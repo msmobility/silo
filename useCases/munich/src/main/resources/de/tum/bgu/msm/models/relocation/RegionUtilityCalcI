@@ -1,0 +1,51 @@
+var calculateRegionUtility = function (incomeGroup, nationality, price, accessibility, foreignerShare) {
+//used for scenario I
+
+      if(nationality.name().equals("GERMAN") || nationality.name().equals("OTHER")) {
+        if(incomeGroup.name().equals("LOW")) {
+            alpha = 0.2;
+            if(nationality.name().equals("GERMAN") ) {
+                beta = 0.1;
+            } else {
+                beta = 0.1;
+            }
+        } else if(incomeGroup.name().equals("MEDIUM")) {
+            alpha = 0.3;
+            if(nationality.name().equals("GERMAN") ) {
+                beta = 0.1;
+            } else {
+                beta = 0.1;
+            }
+        } else if(incomeGroup.name().equals("HIGH")) {
+            alpha = 0.4;
+            if(nationality.name().equals("GERMAN") ) {
+                beta = 0.1;
+            } else {
+                beta = 0.1;
+            }
+        } else if(incomeGroup.name().equals("VERY_HIGH")) {
+            alpha = 0.5;
+            if(nationality.name().equals("GERMAN") ) {
+                beta = 0.1;
+            } else {
+                beta = 0.1;
+            }
+        } else {
+            throw new Error("Undefined income group: " + incomeGroup);
+        }
+    } else {
+        throw new Error("Undefined nationality: " + nationality);
+    }
+
+    if(foreignerShare > 1 || foreignerShare < 0) {
+        throw new Error("Foreigner share must be between 0 and 1!")
+    }
+
+    if(nationality == 1) {
+        relevantShare = foreignerShare;
+    } else {
+        relevantShare = 1 - foreignerShare;
+    }
+
+    return (1 - alpha - beta) * price + alpha * accessibility + beta * relevantShare;
+}
