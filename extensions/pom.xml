@@ -219,7 +219,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <skipTestJar>false</skipTestJar> <!--Overridden in the bintray profile-->
         <jackson.version>2.9.5</jackson.version>
-        <matsimVersion>11.0</matsimVersion>
     </properties>
 
 
