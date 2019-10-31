@@ -16,6 +16,7 @@ import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
+import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 
 import java.util.Collection;
@@ -130,7 +131,7 @@ public final class MatsimData {
         final RoutingModule networkRoutingModule = DefaultRoutingModules.createPureNetworkRouter(
                 TransportMode.car, PopulationUtils.getFactory(), carNetwork, leastCostPathCalculatorFactory.createPathCalculator(carNetwork, travelDisutility, travelTime));
         final RoutingModule teleportationRoutingModule = DefaultRoutingModules.createTeleportationRouter(
-                TransportMode.walk, PopulationUtils.getFactory(), config.plansCalcRoute().getOrCreateModeRoutingParams(TransportMode.walk));
+                TransportMode.walk, ScenarioUtils.createScenario(config), config.plansCalcRoute().getOrCreateModeRoutingParams(TransportMode.walk));
         final RoutingModule ptRoutingModule;
 
         if (schedule != null) {

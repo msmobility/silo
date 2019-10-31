@@ -1,20 +1,19 @@
 package de.tum.bgu.msm.data.accessibility;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
-import org.jfree.util.Log;
-import org.matsim.api.core.v01.Id;
-import org.matsim.contrib.accessibility.interfaces.FacilityDataExchangeInterface;
-import org.matsim.core.utils.collections.Tuple;
-import org.matsim.facilities.ActivityFacility;
-
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
+import org.apache.log4j.Logger;
+import org.jfree.util.Log;
+import org.matsim.api.core.v01.Id;
+import org.matsim.contrib.accessibility.FacilityDataExchangeInterface;
+import org.matsim.core.utils.collections.Tuple;
+import org.matsim.facilities.ActivityFacility;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author dziemke
@@ -29,20 +28,25 @@ public class MatsimAccessibility implements Accessibility, FacilityDataExchangeI
 	private Map<Id<ActivityFacility>, Double> autoAccessibilities = new HashMap<>();
 	private Map<Id<ActivityFacility>, Double> transitAccessibilities = new HashMap<>();
 	private IndexedDoubleMatrix1D regionalAccessibilities;
-	
+
 	public MatsimAccessibility(GeoData geoData) {
         this.geoData = geoData;
     }
-	
+
 	// FacilityDataExchangeInterface methods
-	@Override
+//	@Override
 	public void setFacilityAccessibilities(ActivityFacility measurePoint, Double timeOfDay, Map<String, Double> accessibilities){
 		if (timeOfDay == 8 * 60. * 60.) { // TODO Find better way for this check
 			accessibilitiesMap.put(new Tuple<ActivityFacility, Double>(measurePoint, timeOfDay), accessibilities);
 		}
 	}
-		
+
 	@Override
+	public void setFacilityAccessibilities(ActivityFacility activityFacility, Double aDouble, String s, double v) {
+
+	}
+
+	//	@Override
 	public void finish() { }
 
 	// Accessibility interface methods
@@ -61,7 +65,7 @@ public class MatsimAccessibility implements Accessibility, FacilityDataExchangeI
         logger.info("Calculating regional accessibilities");
         regionalAccessibilities.assign(calculateRegionalAccessibility(geoData.getRegions().values(), autoAccessibilities));
     }
-	
+
     @Override
     public double getAutoAccessibilityForZone(Zone zone) {
     	Id<ActivityFacility> afId = Id.create(zone.getId(), ActivityFacility.class);
@@ -69,7 +73,7 @@ public class MatsimAccessibility implements Accessibility, FacilityDataExchangeI
     	// logger.info("Auto accessibility of zone " + zone + " is " + autoAccessibility);
 		return autoAccessibility;
     }
-    
+
     @Override
     public double getTransitAccessibilityForZone(Zone zone) {
     	// logger.warn("Transit accessibilities not yet properly implemented.");
@@ -83,7 +87,7 @@ public class MatsimAccessibility implements Accessibility, FacilityDataExchangeI
     public double getRegionalAccessibility(Region region) {
     	return regionalAccessibilities.getIndexed(region.getId());
     }
-    
+
     // Other methods
     private static void scaleAccessibility(Map<Id<ActivityFacility>, Double> accessibility) {
 		double highestAccessibility = Double.MIN_VALUE; // TODO Rather use minus infinity
@@ -97,7 +101,7 @@ public class MatsimAccessibility implements Accessibility, FacilityDataExchangeI
         	accessibility.put(measurePointId, accessibility.get(measurePointId) * scaleFactor);
         }
     }
-	
+
 	private static IndexedDoubleMatrix1D calculateRegionalAccessibility(Collection<Region> regions, Map<Id<ActivityFacility>, Double> autoAccessibilities) {
 		final IndexedDoubleMatrix1D matrix = new IndexedDoubleMatrix1D(regions);
         for (Region region : regions) {
@@ -119,7 +123,7 @@ public class MatsimAccessibility implements Accessibility, FacilityDataExchangeI
 	@Override
 	public void prepareYear(int year) {
 		Log.warn("Preparing year in accessibilities.");
-        calculateHansenAccessibilities(year);		
+        calculateHansenAccessibilities(year);
 	}
 
 	@Override

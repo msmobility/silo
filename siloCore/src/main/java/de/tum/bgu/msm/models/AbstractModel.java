@@ -7,7 +7,7 @@ import org.apache.log4j.Logger;
 
 import java.util.Random;
 
-public class AbstractModel implements UpdateListener {
+public abstract class AbstractModel implements UpdateListener {
 
     private final static Logger logger = Logger.getLogger(AbstractModel.class);
 
@@ -19,26 +19,6 @@ public class AbstractModel implements UpdateListener {
         this.dataContainer = dataContainer;
         this.properties = properties;
         this.random = random;
-    }
-
-    @Override
-    public void setup() {
-
-    }
-
-    @Override
-    public void prepareYear(int year) {
-
-    }
-
-    @Override
-    public void endYear(int year) {
-
-    }
-
-    @Override
-    public void endSimulation() {
-
     }
 
     public void logCurrentRandomState() {

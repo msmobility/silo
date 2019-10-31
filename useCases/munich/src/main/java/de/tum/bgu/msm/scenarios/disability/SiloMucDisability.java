@@ -1,5 +1,7 @@
-package de.tum.bgu.msm;
+package de.tum.bgu.msm.scenarios.disability;
 
+import de.tum.bgu.msm.ModelBuilderMuc;
+import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.schools.DataContainerWithSchoolsImpl;
 import de.tum.bgu.msm.events.DisabilityEvent;
