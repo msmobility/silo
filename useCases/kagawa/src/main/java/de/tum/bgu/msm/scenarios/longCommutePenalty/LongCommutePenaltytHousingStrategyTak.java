@@ -76,7 +76,7 @@ public class LongCommutePenaltytHousingStrategyTak implements HousingStrategy {
 
     private EnumMap<IncomeCategory, Map<Integer, Double>> utilityByIncomeByRegion = new EnumMap<>(IncomeCategory.class);
 
-    public LongCommutePenaltytHousingStrategyTak(DataContainer dataContainer,
+    protected LongCommutePenaltytHousingStrategyTak(DataContainer dataContainer,
                                                  Properties properties,
                                                  TravelTimes travelTimes,
                                                  DwellingUtilityStrategy dwellingUtilityStrategy,

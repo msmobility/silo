@@ -38,7 +38,7 @@ public class OneCarPolicyCarOwnerTak extends AbstractModel implements ModelUpdat
      */
     private final double[][][][][][][][] carUpdateProb = new double[4][2][2][2][2][2][2][3];
 
-    public OneCarPolicyCarOwnerTak(DataContainer dataContainer, Properties properties, Random rnd) {
+    protected OneCarPolicyCarOwnerTak(DataContainer dataContainer, Properties properties, Random rnd) {
         super(dataContainer, properties, rnd);
     }
 

@@ -13,6 +13,7 @@ import de.tum.bgu.msm.mito.MitoMatsimScenarioAssembler;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipStrategyTakImpl;
 import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipTak;
+import de.tum.bgu.msm.models.carOwnership.UpdateCarOwnershipTak;
 import de.tum.bgu.msm.models.demography.birth.BirthModelImpl;
 import de.tum.bgu.msm.models.demography.birth.DefaultBirthStrategy;
 import de.tum.bgu.msm.models.demography.birthday.BirthdayModel;
@@ -138,7 +139,7 @@ public class LongCommutePenaltyModelBuilderTak {
                 leaveParentsModel, jobMarketUpdateModel,
                 construction, demolition, pricing, renovation,
                 constructionOverwrite, inOutMigration, movesModel, transportModel);
-        modelContainer.registerModelUpdateListener(new OneCarPolicyCarOwnerTak(dataContainer, properties, SiloUtil.provideNewRandom()));
+        modelContainer.registerModelUpdateListener(new UpdateCarOwnershipTak(dataContainer, properties, SiloUtil.provideNewRandom()));
         return modelContainer;
     }
 }
