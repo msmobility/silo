@@ -118,7 +118,6 @@ public class LongCommutePenaltytHousingStrategyTak implements HousingStrategy {
         double ddAutoAccessibilityUtility = convertAccessToUtility(accessibility.getAutoAccessibilityForZone(geoData.getZones().get(dwelling.getZoneId())));
         double transitAccessibilityUtility = convertAccessToUtility(accessibility.getTransitAccessibilityForZone(geoData.getZones().get(dwelling.getZoneId())));
         HouseholdType ht = hh.getHouseholdType();
-        double ddPriceUtility = convertPriceToUtility(dwelling.getPrice(), ht.getIncomeCategory());
 
 
         double carToWorkersRatio = Math.min(1., ((double) hh.getAutos() / HouseholdUtil.getNumberOfWorkers(hh)));
@@ -126,6 +125,7 @@ public class LongCommutePenaltytHousingStrategyTak implements HousingStrategy {
         //currently this is re-filtering persons to find workers (it was done previously in select region)
         // This way looks more flexible to account for other trips, such as education, though.
 
+        int penaltiesForThisDwelling = 0;
         double travelCostUtility = 1; //do not have effect at the moment;
         double factorForThisZone;
         JobDataManager jobDataManager = dataContainer.getJobDataManager();
@@ -133,15 +133,17 @@ public class LongCommutePenaltytHousingStrategyTak implements HousingStrategy {
         for (Person pp: hh.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
                 final Job job = jobDataManager.getJobFromId(pp.getJobId());
+                int ptTime = (int) travelTimes.getTravelTime(dwelling, job, properties.transportModel.peakHour_s, TransportMode.pt);
+                int carTime = (int) travelTimes.getTravelTime(dwelling, job,  properties.transportModel.peakHour_s, TransportMode.car);
+
+                if(carTime > TIME_THRESHOLD_M){
+                    penaltiesForThisDwelling += PENALTY_EUR;
+                }
                 if(carToWorkersRatio == 0.) {
-                    int ptTime = (int) travelTimes.getTravelTime(dwelling, job, properties.transportModel.peakHour_s, TransportMode.pt);
                     factorForThisZone = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, ptTime));
                 } else if( carToWorkersRatio == 1.) {
-                    int carTime = (int) travelTimes.getTravelTime(dwelling, job,  properties.transportModel.peakHour_s, TransportMode.car);
                     factorForThisZone = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, carTime));
                 } else {
-                    int carTime = (int) travelTimes.getTravelTime(dwelling, job,  properties.transportModel.peakHour_s, TransportMode.car);
-                    int ptTime = (int) travelTimes.getTravelTime(dwelling, job,  properties.transportModel.peakHour_s, TransportMode.pt);
                     double factorCar = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, carTime));
                     double factorPt = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, ptTime));
                     factorForThisZone= factorCar * carToWorkersRatio + (1 - carToWorkersRatio) * factorPt;
@@ -149,6 +151,8 @@ public class LongCommutePenaltytHousingStrategyTak implements HousingStrategy {
                 workDistanceUtility *= factorForThisZone;
             }
         }
+
+        double ddPriceUtility = convertPriceToUtility(dwelling.getPrice() + penaltiesForThisDwelling, ht.getIncomeCategory());
         return dwellingUtilityStrategy.calculateSelectDwellingUtility(ht, ddSizeUtility, ddPriceUtility,
                 ddQualityUtility, ddAutoAccessibilityUtility,
                 transitAccessibilityUtility, workDistanceUtility);
