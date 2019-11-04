@@ -11,12 +11,12 @@ import de.tum.bgu.msm.matsim.noise.NoiseDataManager;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.schools.SchoolData;
 
-public class NoiseDataContainer implements de.tum.bgu.msm.matsim.noise.NoiseDataContainer {
+public class NoiseDataContainerImpl implements de.tum.bgu.msm.matsim.noise.NoiseDataContainer, DataContainerWithSchools {
 
     private final DataContainerWithSchools delegate;
     private final NoiseDataManager noiseDataManager;
 
-    public NoiseDataContainer(DataContainerWithSchools delegate, NoiseDataManager noiseDataManager) {
+    public NoiseDataContainerImpl(DataContainerWithSchools delegate, NoiseDataManager noiseDataManager) {
         this.delegate = delegate;
         this.noiseDataManager = noiseDataManager;
     }

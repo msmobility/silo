@@ -1,6 +1,5 @@
-package de.tum.bgu.msm;
+package de.tum.bgu.msm.scenarios.noise;
 
-import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
@@ -10,6 +9,7 @@ import de.tum.bgu.msm.matsim.MatsimScenarioAssembler;
 import de.tum.bgu.msm.matsim.MatsimTransportModel;
 import de.tum.bgu.msm.matsim.SimpleMatsimScenarioAssembler;
 import de.tum.bgu.msm.matsim.ZoneConnectorManager;
+import de.tum.bgu.msm.matsim.noise.NoiseScenarioAssembler;
 import de.tum.bgu.msm.mito.MitoMatsimScenarioAssembler;
 import de.tum.bgu.msm.models.EducationModelMuc;
 import de.tum.bgu.msm.models.MarriageModelMuc;
@@ -64,9 +64,9 @@ import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.matsim.core.config.Config;
 
-public class ModelBuilderMuc {
+public class ModelBuilderMucNoise {
 
-    public static ModelContainer getModelContainerForMuc(DataContainer dataContainer, Properties properties, Config config) {
+    public static ModelContainer getModelContainerForMuc(DataContainerWithSchools dataContainer, Properties properties, Config config) {
 
         PersonFactory ppFactory = dataContainer.getHouseholdDataManager().getPersonFactory();
         HouseholdFactory hhFactory = dataContainer.getHouseholdDataManager().getHouseholdFactory();
@@ -94,7 +94,7 @@ public class ModelBuilderMuc {
 
         DriversLicenseModel driversLicenseModel = new DriversLicenseModelImpl(dataContainer, properties, new DefaultDriversLicenseStrategy(), SiloUtil.provideNewRandom());
 
-        EducationModel educationModel = new EducationModelMuc((DataContainerWithSchools) dataContainer, properties, SiloUtil.provideNewRandom());
+        EducationModel educationModel = new EducationModelMuc(dataContainer, properties, SiloUtil.provideNewRandom());
 
         EmploymentModel employmentModel = new EmploymentModelImpl(dataContainer, properties, SiloUtil.provideNewRandom());
 
@@ -127,12 +127,15 @@ public class ModelBuilderMuc {
         MatsimScenarioAssembler scenarioAssembler;
         switch (properties.transportModel.transportModelIdentifier) {
             case MITO_MATSIM:
-                scenarioAssembler = new MitoMatsimScenarioAssembler(dataContainer, properties, new MitoDataConverterMuc());
+                MatsimScenarioAssembler delegate = new MitoMatsimScenarioAssembler(dataContainer, properties, new MitoDataConverterMuc());
+                scenarioAssembler= new NoiseScenarioAssembler(delegate, ((NoiseDataContainerImpl) dataContainer).getNoiseData());
                 transportModel = new MatsimTransportModel(dataContainer, config, properties, null,
                         ZoneConnectorManager.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, scenarioAssembler);
                 break;
             case MATSIM:
-                scenarioAssembler = new SimpleMatsimScenarioAssembler(dataContainer, properties);
+                delegate = new SimpleMatsimScenarioAssembler(dataContainer, properties);
+                scenarioAssembler= new NoiseScenarioAssembler(delegate, ((NoiseDataContainerImpl) dataContainer).getNoiseData());
+
                 transportModel = new MatsimTransportModel(dataContainer, config, properties, null,
                         ZoneConnectorManager.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, scenarioAssembler);
                 break;
@@ -151,6 +154,7 @@ public class ModelBuilderMuc {
                 constructionOverwrite, inOutMigration, movesModel, transportModel);
 
         modelContainer.registerModelUpdateListener(new UpdateCarOwnershipModelMuc(dataContainer, properties, SiloUtil.provideNewRandom()));
+
 
         return modelContainer;
     }

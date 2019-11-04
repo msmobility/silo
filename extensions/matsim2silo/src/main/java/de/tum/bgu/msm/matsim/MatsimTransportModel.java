@@ -39,6 +39,8 @@ import org.matsim.contrib.accessibility.AccessibilityAttributes;
 import org.matsim.contrib.accessibility.AccessibilityConfigGroup;
 import org.matsim.contrib.accessibility.AccessibilityModule;
 import org.matsim.contrib.dvrp.trafficmonitoring.TravelTimeUtils;
+import org.matsim.contrib.noise.NoiseModule;
+import org.matsim.contrib.noise.NoiseReceiverPoints;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.FacilitiesConfigGroup;
@@ -156,6 +158,9 @@ public final class MatsimTransportModel implements TransportModel {
 
         if (accessibility != null) {
             setupAccessibility(assembledScenario, controler);
+        }
+        if(assembledScenario.getScenarioElement(NoiseReceiverPoints.NOISE_RECEIVER_POINTS) != null) {
+            controler.addOverridingModule(new NoiseModule());
         }
 
         controler.run();

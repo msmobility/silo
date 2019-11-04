@@ -14,14 +14,15 @@ public class DwellingReaderMuc implements DwellingReader {
 
     private final static Logger logger = Logger.getLogger(DwellingReaderMuc.class);
     private final RealEstateDataManager dwellingData;
+    private final DwellingFactory factory;
 
-    public DwellingReaderMuc(RealEstateDataManager dwellingData) {
+    public DwellingReaderMuc(RealEstateDataManager dwellingData, DwellingFactory factory) {
         this.dwellingData= dwellingData;
+        this.factory = factory;
     }
 
     @Override
     public void readData(String path) {
-        DwellingFactory factory = DwellingUtils.getFactory();
         logger.info("Reading dwelling micro data from ascii file");
         String recString = "";
         int recCount = 0;

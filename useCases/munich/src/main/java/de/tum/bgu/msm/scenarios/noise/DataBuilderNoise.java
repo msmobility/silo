@@ -1,7 +1,5 @@
 package de.tum.bgu.msm.scenarios.noise;
 
-import de.tum.bgu.msm.DataBuilder;
-import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.accessibility.AccessibilityImpl;
 import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
@@ -26,15 +24,61 @@ public class DataBuilderNoise {
     private DataBuilderNoise() {
     }
 
-    public static DataContainer getModelDataForMuc(Properties properties, Config config) {
-        DataContainer delegate = DataBuilder.getModelDataForMuc(properties, config);
+    public static NoiseDataContainerImpl getModelDataForMuc(Properties properties, Config config) {
+        HouseholdData householdData = new HouseholdDataImpl();
+        JobData jobData = new JobDataImpl();
+        DwellingData dwellingData = new DwellingDataImpl();
+
+        GeoData geoData = new DefaultGeoData();
 
 
-        NoiseDataManager noiseDataManager = new NoiseDataManager();
-        return new NoiseDataContainer(delegate, noiseDataManager);
+        TravelTimes travelTimes = null;
+        Accessibility accessibility = null;
+
+        switch (properties.transportModel.travelTimeImplIdentifier) {
+            case SKIM:
+                travelTimes = new SkimTravelTimes();
+                accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, jobData);
+                break;
+            case MATSIM:
+                travelTimes = new MatsimTravelTimes(config);
+//                accessibility = new MatsimAccessibility(geoData);
+                accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, jobData);
+                break;
+            default:
+                throw new RuntimeException("Travel time not recognized! Please set property \"travel.time\" accordingly!");
+        }
+
+        CommutingTimeProbability commutingTimeProbability = new CommutingTimeProbability(properties);
+
+        //TODO: revise this!
+        new JobType(properties.jobData.jobTypes);
+
+
+        JobFactoryMuc jobFactory = new JobFactoryMuc();
+        jobFactory.readWorkingTimeDistributions(properties);
+
+
+        RealEstateDataManager realEstateDataManager = new RealEstateDataManagerImpl(
+                DefaultDwellingTypeImpl.values(), dwellingData, householdData, geoData, new NoiseDwellingFactory(new DwellingFactoryImpl()), properties);
+
+        JobDataManager jobDataManager = new JobDataManagerImpl(
+                properties, jobFactory, jobData, geoData, travelTimes, commutingTimeProbability);
+
+        final HouseholdFactoryMuc hhFactory = new HouseholdFactoryMuc();
+        HouseholdDataManager householdDataManager = new HouseholdDataManagerImpl(
+                householdData, dwellingData, new PersonFactoryMuc(),
+                hhFactory, properties, realEstateDataManager);
+
+        SchoolData schoolData = new SchoolDataImpl(geoData, dwellingData, properties);
+
+        DataContainerWithSchools delegate = new DataContainerWithSchoolsImpl(geoData, realEstateDataManager, jobDataManager, householdDataManager, travelTimes, accessibility,
+                commutingTimeProbability, schoolData, properties);
+        return new NoiseDataContainerImpl(delegate, new NoiseDataManager(dwellingData));
+
     }
 
-    static public void read(Properties properties, DataContainerWithSchoolsImpl dataContainer){
+    static public void read(Properties properties, NoiseDataContainerImpl dataContainer){
 
         GeoDataReader reader = new GeoDataReaderMuc(dataContainer.getGeoData());
         String pathShp = properties.main.baseDirectory + properties.geo.zoneShapeFile;
@@ -53,7 +97,7 @@ public class DataBuilderNoise {
         PersonReader personReader = new PersonReaderMuc(dataContainer.getHouseholdDataManager());
         personReader.readData(personFile);
 
-        DwellingReader ddReader = new DwellingReaderMuc(dataContainer.getRealEstateDataManager());
+        DwellingReader ddReader = new DwellingReaderMuc(dataContainer.getRealEstateDataManager(), new NoiseDwellingFactory(new DwellingFactoryImpl()));
         String dwellingsFile = properties.main.baseDirectory + properties.realEstate.dwellingsFileName + "_" + year + ".csv";
         ddReader.readData(dwellingsFile);
 

@@ -95,7 +95,7 @@ public class DataBuilder {
         PersonReader personReader = new PersonReaderMuc(dataContainer.getHouseholdDataManager());
         personReader.readData(personFile);
 
-        DwellingReader ddReader = new DwellingReaderMuc(dataContainer.getRealEstateDataManager());
+        DwellingReader ddReader = new DwellingReaderMuc(dataContainer.getRealEstateDataManager(), new DwellingFactoryImpl());
         String dwellingsFile = properties.main.baseDirectory + properties.realEstate.dwellingsFileName + "_" + year + ".csv";
         ddReader.readData(dwellingsFile);
 
