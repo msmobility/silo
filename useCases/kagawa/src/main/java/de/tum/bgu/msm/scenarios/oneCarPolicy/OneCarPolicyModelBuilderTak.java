@@ -71,7 +71,7 @@ public class OneCarPolicyModelBuilderTak {
 
         MovesModelImpl movesModel = new MovesModelImpl(
                 dataContainer, properties, new DefaultMovesStrategy(),
-                new CarOnlyHousingStrategyImpl(dataContainer,
+                new CarAndTransitHousingStrategyImpl(dataContainer,
                         properties, dataContainer.getTravelTimes(),
                         new DwellingUtilityStrategyImpl(), new DefaultDwellingProbabilityStrategy(),
                         new RegionUtilityStrategyImpl(), new RegionProbabilityStrategyImpl()), SiloUtil.provideNewRandom());
