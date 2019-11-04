@@ -4,6 +4,7 @@ import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.io.output.DefaultResultsMonitor;
+import de.tum.bgu.msm.io.output.MultiFileResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.run.DataBuilderTak;
 import de.tum.bgu.msm.scenarios.oneCarPolicy.OneCarPolicyModelBuilderTak;
@@ -31,6 +32,7 @@ public class RunLongCommutePenaltyTak {
 
         SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
         model.addResultMonitor(new DefaultResultsMonitor(dataContainer,properties));
+        model.addResultMonitor(new MultiFileResultsMonitor(dataContainer, properties));
         model.runModel();
         logger.info("Finished SILO.");
     }

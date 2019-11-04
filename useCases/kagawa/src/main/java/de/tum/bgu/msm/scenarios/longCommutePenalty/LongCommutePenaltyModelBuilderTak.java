@@ -72,7 +72,7 @@ public class LongCommutePenaltyModelBuilderTak {
 
         MovesModelImpl movesModel = new MovesModelImpl(
                 dataContainer, properties, new DefaultMovesStrategy(),
-                new CarAndTransitHousingStrategyImpl(dataContainer,
+                new LongCommutePenaltytHousingStrategyTak(dataContainer,
                         properties, dataContainer.getTravelTimes(),
                         new DwellingUtilityStrategyImpl(), new DefaultDwellingProbabilityStrategy(),
                         new RegionUtilityStrategyImpl(), new RegionProbabilityStrategyImpl()), SiloUtil.provideNewRandom());
