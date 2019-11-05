@@ -1,7 +1,9 @@
 package de.tum.bgu.msm.models.relocation.moves;
 
 import com.google.common.collect.ConcurrentHashMultiset;
+import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Multiset;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
@@ -48,6 +50,9 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
     private final Map<HouseholdType, Double> averageHousingSatisfaction = new ConcurrentHashMap<>();
     private final Map<Integer, Double> satisfactionByHousehold = new ConcurrentHashMap<>();
+    private final HashMap<Integer, Integer> householdsByZone = new HashMap<>();
+    private final HashMap<Integer, Double > sumOfSatisfactionsByZone = new HashMap<>();
+
 
     public MovesModelImpl(DataContainer dataContainer, Properties properties, MovesStrategy movesStrategy,
                           HousingStrategy housingStrategy, Random random) {
@@ -242,6 +247,8 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         logger.info("Evaluating average housing utility of " + householdDataManager.getHouseholds().size() + " households.");
         satisfactionByHousehold.clear();
         averageHousingSatisfaction.replaceAll((householdType, aDouble) -> 0.);
+        householdsByZone.clear();
+        sumOfSatisfactionsByZone.clear();
 
         final Collection<Household> households = householdDataManager.getHouseholds();
         ConcurrentHashMultiset<HouseholdType> hhByType = ConcurrentHashMultiset.create();
@@ -270,6 +277,8 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
                         Dwelling dd = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId());
                         final double util = strategy.calculateHousingUtility(hh, dd);
                         satisfactionByHousehold.put(hh.getId(), util);
+                        householdsByZone.put(dd.getZoneId(), householdsByZone.getOrDefault(dd.getZoneId(), 0) + 1);
+                        sumOfSatisfactionsByZone.put(dd.getZoneId(), sumOfSatisfactionsByZone.getOrDefault(dd.getZoneId(), 0.) + util);
                         averageHousingSatisfaction.merge(householdType, util, (oldUtil, newUtil) -> oldUtil + newUtil);
                     }
                 } catch (Exception e) {
@@ -402,5 +411,13 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
                 }
             }
         }
+    }
+
+    public HashMap<Integer, Integer> getHouseholdsByZone() {
+        return householdsByZone;
+    }
+
+    public HashMap<Integer, Double> getSumOfSatisfactionsByZone() {
+        return sumOfSatisfactionsByZone;
     }
 }
