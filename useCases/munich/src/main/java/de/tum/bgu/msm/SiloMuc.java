@@ -2,6 +2,7 @@ package de.tum.bgu.msm;
 
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.io.ResultsMonitorMuc;
+import de.tum.bgu.msm.io.output.HouseholdSatisfactionMonitor;
 import de.tum.bgu.msm.io.output.MultiFileResultsMonitor;
 import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
@@ -41,6 +42,7 @@ public class SiloMuc {
         SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
         model.addResultMonitor(new ResultsMonitorMuc(dataContainer, properties));
         model.addResultMonitor(new MultiFileResultsMonitor(dataContainer, properties));
+        model.addResultMonitor(new HouseholdSatisfactionMonitor(dataContainer, properties, modelContainer));
         model.runModel();
         logger.info("Finished SILO.");
     }
