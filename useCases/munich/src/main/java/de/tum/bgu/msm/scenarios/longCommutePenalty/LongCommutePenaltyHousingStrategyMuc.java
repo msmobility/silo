@@ -9,34 +9,37 @@ import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManagerImpl;
 import de.tum.bgu.msm.data.geo.GeoData;
-import de.tum.bgu.msm.data.household.Household;
-import de.tum.bgu.msm.data.household.HouseholdType;
-import de.tum.bgu.msm.data.household.HouseholdUtil;
-import de.tum.bgu.msm.data.household.IncomeCategory;
+import de.tum.bgu.msm.data.household.*;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobDataManager;
+import de.tum.bgu.msm.data.job.JobMuc;
+import de.tum.bgu.msm.data.person.Nationality;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
-import de.tum.bgu.msm.models.relocation.moves.*;
+import de.tum.bgu.msm.models.relocation.DwellingUtilityStrategy;
+import de.tum.bgu.msm.models.relocation.HousingStrategyMuc;
+import de.tum.bgu.msm.models.relocation.RegionUtilityStrategyMuc;
+import de.tum.bgu.msm.models.relocation.moves.DwellingProbabilityStrategy;
+import de.tum.bgu.msm.models.relocation.moves.HousingStrategy;
+import de.tum.bgu.msm.models.relocation.moves.RegionProbabilityStrategy;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
 import java.util.EnumMap;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.atomic.LongAdder;
 
 import static de.tum.bgu.msm.data.dwelling.RealEstateUtils.RENT_CATEGORIES;
 
-public class LongCommutePenaltytHousingStrategyTak implements HousingStrategy {
+public class LongCommutePenaltyHousingStrategyMuc implements HousingStrategy {
+    private final static Logger logger = Logger.getLogger(HousingStrategyMuc.class);
 
-    private final static Logger logger = Logger.getLogger(LongCommutePenaltytHousingStrategyTak.class);
-    private Map<Integer, Double> thisYearRentByRegion;
-    private int counter;
-
-    private enum Normalizer{
+    private enum Normalizer {
         /**
          * Use share of empty dwellings to calculate attraction of region
          */
@@ -52,54 +55,57 @@ public class LongCommutePenaltytHousingStrategyTak implements HousingStrategy {
         POWER_OF_POPULATION
     }
 
-    private Normalizer NORMALIZER = Normalizer.VAC_DD;
+    private static final Normalizer NORMALIZER = Normalizer.VAC_DD;
 
     private static final int PENALTY_EUR = 200;
     private final int TIME_THRESHOLD_M = 25;
-
-    private final Properties properties;
-
-    private IndexedDoubleMatrix1D hhByRegion;
+    private Map<Integer, Double> rentsByRegion;
 
     private final DataContainer dataContainer;
-    private final RealEstateDataManager realEstateDataManager;
-    private final GeoData geoData;
-    private final TravelTimes travelTimes;
-    private final Accessibility accessibility;
+    private final Properties properties;
     private final CommutingTimeProbability commutingTimeProbability;
+    private final Accessibility accessibility;
+    private final GeoData geoData;
+    private final RealEstateDataManager realEstateDataManager;
 
-    private final DwellingUtilityStrategy dwellingUtilityStrategy;
+    private final TravelTimes travelTimes;
+
     private final DwellingProbabilityStrategy dwellingProbabilityStrategy;
+    private final DwellingUtilityStrategy dwellingUtilityStrategy;
 
-    private final RegionUtilityStrategy regionUtilityStrategy;
+    private final RegionUtilityStrategyMuc regionUtilityStrategyMuc;
     private final RegionProbabilityStrategy regionProbabilityStrategy;
 
-    private EnumMap<IncomeCategory, Map<Integer, Double>> utilityByIncomeByRegion = new EnumMap<>(IncomeCategory.class);
+    private final LongAdder totalVacantDd = new LongAdder();
 
-    protected LongCommutePenaltytHousingStrategyTak(DataContainer dataContainer,
-                                                 Properties properties,
-                                                 TravelTimes travelTimes,
-                                                 DwellingUtilityStrategy dwellingUtilityStrategy,
-                                                 DwellingProbabilityStrategy dwellingProbabilityStrategy,
-                                                 RegionUtilityStrategy regionUtilityStrategy, RegionProbabilityStrategy regionProbabilityStrategy) {
+    private IndexedDoubleMatrix1D regionalShareForeigners;
+    private IndexedDoubleMatrix1D hhByRegion;
+
+    private EnumMap<IncomeCategory, EnumMap<Nationality, Map<Region, Double>>> utilityByIncomeByNationalityByRegion = new EnumMap<>(IncomeCategory.class);
+
+    public LongCommutePenaltyHousingStrategyMuc(DataContainer dataContainer,
+                                                Properties properties,
+                                                TravelTimes travelTimes,
+                                                DwellingProbabilityStrategy dwellingProbabilityStrategy,
+                                                DwellingUtilityStrategy dwellingUtilityStrategy,
+                                                RegionUtilityStrategyMuc regionUtilityStrategyMuc, RegionProbabilityStrategy regionProbabilityStrategy) {
         this.dataContainer = dataContainer;
-        geoData = dataContainer.getGeoData();
         this.properties = properties;
-        this.travelTimes = travelTimes;
-        accessibility = dataContainer.getAccessibility();
-        commutingTimeProbability = dataContainer.getCommutingTimeProbability();
-        this.dwellingUtilityStrategy = dwellingUtilityStrategy;
-        this.dwellingProbabilityStrategy = dwellingProbabilityStrategy;
-        this.regionUtilityStrategy = regionUtilityStrategy;
+        this.commutingTimeProbability = dataContainer.getCommutingTimeProbability();
+        this.accessibility = dataContainer.getAccessibility();
+        this.geoData = dataContainer.getGeoData();
         this.realEstateDataManager = dataContainer.getRealEstateDataManager();
+        this.travelTimes = travelTimes;
+        this.dwellingProbabilityStrategy = dwellingProbabilityStrategy;
+        this.dwellingUtilityStrategy = dwellingUtilityStrategy;
+        this.regionUtilityStrategyMuc = regionUtilityStrategyMuc;
         this.regionProbabilityStrategy = regionProbabilityStrategy;
     }
 
-
     @Override
     public void setup() {
+        regionalShareForeigners = new IndexedDoubleMatrix1D(geoData.getRegions().values());
         hhByRegion = new IndexedDoubleMatrix1D(geoData.getRegions().values());
-        calculateShareOfForeignersByZoneAndRegion();
     }
 
     @Override
@@ -109,21 +115,16 @@ public class LongCommutePenaltytHousingStrategyTak implements HousingStrategy {
 
     @Override
     public double calculateHousingUtility(Household hh, Dwelling dwelling) {
-        if(dwelling == null) {
-            logger.warn("Household " + hh.getId() + " has no dwelling. Setting housing satisfaction to 0");
-            return 0;
-        }
         double ddQualityUtility = convertQualityToUtility(dwelling.getQuality());
         double ddSizeUtility = convertAreaToUtility(dwelling.getBedrooms());
         double ddAutoAccessibilityUtility = convertAccessToUtility(accessibility.getAutoAccessibilityForZone(geoData.getZones().get(dwelling.getZoneId())));
         double transitAccessibilityUtility = convertAccessToUtility(accessibility.getTransitAccessibilityForZone(geoData.getZones().get(dwelling.getZoneId())));
         HouseholdType ht = hh.getHouseholdType();
 
-
-        double carToWorkersRatio = Math.min(1., ((double) hh.getAutos() / HouseholdUtil.getNumberOfWorkers(hh)));
-
         //currently this is re-filtering persons to find workers (it was done previously in select region)
         // This way looks more flexible to account for other trips, such as education, though.
+
+        double carToWorkersRatio = Math.min(1., ((double) hh.getAutos() / HouseholdUtil.getNumberOfWorkers(hh)));
 
         int penaltiesForThisDwelling = 0;
         double travelCostUtility = 1; //do not have effect at the moment;
@@ -158,6 +159,7 @@ public class LongCommutePenaltytHousingStrategyTak implements HousingStrategy {
                 transitAccessibilityUtility, workDistanceUtility);
     }
 
+
     @Override
     public double calculateSelectDwellingProbability(double util) {
         return dwellingProbabilityStrategy.calculateSelectDwellingProbability(util);
@@ -170,13 +172,50 @@ public class LongCommutePenaltytHousingStrategyTak implements HousingStrategy {
 
     @Override
     public void prepareYear() {
-        counter = 0;
+        logger.info("Calculating regional utilities");
         calculateShareOfForeignersByZoneAndRegion();
-        calculateRegionalUtilities();
+        totalVacantDd.reset();
+        rentsByRegion = dataContainer.getRealEstateDataManager().calculateRegionalPrices();
+        for (IncomeCategory incomeCategory : IncomeCategory.values()) {
+            EnumMap<Nationality, Map<Region, Double>> utilityByNationalityByRegion = new EnumMap<>(Nationality.class);
+            for (Nationality nationality : Nationality.values()) {
+                Map<Region, Double> regionUtils = new LinkedHashMap<>();
+                for (Region region : geoData.getRegions().values()) {
+                    final int averageRegionalRent = rentsByRegion.get(region.getId()).intValue();
+                    final float regAcc = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region));
+                    float priceUtil = (float) convertPriceToUtility(averageRegionalRent, incomeCategory);
+
+
+                    double utility = regionUtilityStrategyMuc.calculateRegionUtility(incomeCategory,
+                            nationality, priceUtil, regAcc, (float) regionalShareForeigners.getIndexed(region.getId()));
+                    switch (NORMALIZER) {
+                        case POPULATION:
+                            utility *= hhByRegion.getIndexed(region.getId());
+                            break;
+                        case POWER_OF_POPULATION:
+                            utility *= Math.pow(hhByRegion.getIndexed(region.getId()), 0.5);
+                            break;
+                        default:
+                            //do nothing.
+                    }
+                    regionUtils.put(region, utility);
+                }
+                utilityByNationalityByRegion.put(nationality, regionUtils);
+            }
+            utilityByIncomeByNationalityByRegion.put(incomeCategory, utilityByNationalityByRegion);
+        }
+
+        if(NORMALIZER == Normalizer.SHARE_VAC_DD) {
+            RealEstateDataManager realEstateDataManager = dataContainer.getRealEstateDataManager();
+            for (int region : geoData.getRegions().keySet()) {
+                totalVacantDd.add(realEstateDataManager.getNumberOfVacantDDinRegion(region));
+            }
+        }
     }
 
     @Override
     public double calculateRegionalUtility(Household household, Region region) {
+
         JobDataManager jobDataManager = dataContainer.getJobDataManager();
 
         int penaltyToThisHouseholdAndRegion = 0;
@@ -208,15 +247,17 @@ public class LongCommutePenaltytHousingStrategyTak implements HousingStrategy {
             }
         }
         double util;
+        HouseholdType ht = household.getHouseholdType();
+        Nationality nationality = ((HouseholdMuc) household).getNationality();
         if (penaltyToThisHouseholdAndRegion == 0){
-            util = utilityByIncomeByRegion.get(household.getHouseholdType().getIncomeCategory()).get(region.getId()) * thisRegionFactor;
+            util = utilityByIncomeByNationalityByRegion.get(ht.getIncomeCategory()).get(nationality).get(region) * thisRegionFactor;
         } else {
             //recalculate the regional utility
-            final int averageRegionalRent = thisYearRentByRegion.get(region.getId()).intValue();
+            final int averageRegionalRent = rentsByRegion.get(region.getId()).intValue();
             final float regAcc = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region));
             float priceUtil = (float) convertPriceToUtility(averageRegionalRent, household.getHouseholdType().getIncomeCategory());
-            double value = regionUtilityStrategy.calculateSelectRegionProbability(household.getHouseholdType().getIncomeCategory(),
-                    priceUtil, regAcc, 0);
+            double value = regionUtilityStrategyMuc.calculateRegionUtility(ht.getIncomeCategory(),
+                    nationality, priceUtil, regAcc, (float) regionalShareForeigners.getIndexed(region.getId()));
             switch (NORMALIZER) {
                 case POPULATION:
                     value *= hhByRegion.getIndexed(region.getId());
@@ -227,78 +268,16 @@ public class LongCommutePenaltytHousingStrategyTak implements HousingStrategy {
                 default:
                     //do nothing.
             }
-            if (counter < 10){
-                logger.info("Recalculating utility for this region, due to a penalty of " + penaltyToThisHouseholdAndRegion);
-            }
-            counter ++;
             util = value * thisRegionFactor;
         }
         return normalize(region, util);
     }
 
-    @Override
-    public HousingStrategy duplicate() {
-        TravelTimes ttCopy = travelTimes.duplicate();
-        LongCommutePenaltytHousingStrategyTak strategy = new LongCommutePenaltytHousingStrategyTak(dataContainer, properties, ttCopy,
-                dwellingUtilityStrategy, dwellingProbabilityStrategy, regionUtilityStrategy, regionProbabilityStrategy);
-        strategy.hhByRegion = hhByRegion;
-        strategy.utilityByIncomeByRegion = utilityByIncomeByRegion;
-        return strategy;
-    }
-
-    private void calculateShareOfForeignersByZoneAndRegion() {
-        final IndexedDoubleMatrix1D hhByZone = new IndexedDoubleMatrix1D(geoData.getZones().values());
-        hhByRegion.assign(0);
-        for (Household hh : dataContainer.getHouseholdDataManager().getHouseholds()) {
-            int zone;
-            Dwelling dwelling = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId());
-            if (dwelling != null) {
-                zone = dwelling.getZoneId();
-            } else {
-                logger.warn("Household " + hh.getId() + " refers to non-existing dwelling "
-                        + hh.getDwellingId() + ". Should not happen!");
-                continue;
-            }
-            final int region = geoData.getZones().get(zone).getRegion().getId();
-            hhByZone.setIndexed(zone, hhByZone.getIndexed(zone) + 1);
-            hhByRegion.setIndexed(region, hhByRegion.getIndexed(region) + 1);
-
-        }
-    }
-
-    private void calculateRegionalUtilities() {
-        logger.info("Calculating regional utilities");
-        final Map<Integer, Double> rentsByRegion = dataContainer.getRealEstateDataManager().calculateRegionalPrices();
-        thisYearRentByRegion = rentsByRegion;
-        for (IncomeCategory incomeCategory : IncomeCategory.values()) {
-            Map<Integer, Double> utilityByRegion = new HashMap<>();
-            for (Region region : geoData.getRegions().values()) {
-                final int averageRegionalRent = rentsByRegion.get(region.getId()).intValue();
-                final float regAcc = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region));
-                float priceUtil = (float) convertPriceToUtility(averageRegionalRent, incomeCategory);
-                double value = regionUtilityStrategy.calculateSelectRegionProbability(incomeCategory,
-                        priceUtil, regAcc, 0);
-                switch (NORMALIZER) {
-                    case POPULATION:
-                        value *= hhByRegion.getIndexed(region.getId());
-                        break;
-                    case POWER_OF_POPULATION:
-                        value *= Math.pow(hhByRegion.getIndexed(region.getId()), 0.5);
-                        break;
-                    default:
-                        //do nothing.
-                }
-                utilityByRegion.put(region.getId(),
-                        value);
-            }
-
-            utilityByIncomeByRegion.put(incomeCategory, utilityByRegion);
-        }
-
-    }
-
     private double normalize(Region region, double baseUtil) {
         switch (NORMALIZER) {
+            case SHARE_VAC_DD: {
+                return baseUtil * ((float) realEstateDataManager.getNumberOfVacantDDinRegion(region.getId()) / totalVacantDd.doubleValue());
+            }
             case VAC_DD: {
                 return baseUtil * realEstateDataManager.getNumberOfVacantDDinRegion(region.getId());
             }
@@ -327,6 +306,16 @@ public class LongCommutePenaltytHousingStrategyTak implements HousingStrategy {
         }
     }
 
+    @Override
+    public HousingStrategy duplicate() {
+        TravelTimes travelTimes = this.travelTimes.duplicate();
+        final LongCommutePenaltyHousingStrategyMuc housingStrategyMuc = new LongCommutePenaltyHousingStrategyMuc(dataContainer, properties, travelTimes, dwellingProbabilityStrategy, dwellingUtilityStrategy, regionUtilityStrategyMuc, regionProbabilityStrategy);
+        housingStrategyMuc.regionalShareForeigners = this.regionalShareForeigners;
+        housingStrategyMuc.hhByRegion = this.hhByRegion;
+        housingStrategyMuc.utilityByIncomeByNationalityByRegion = this.utilityByIncomeByNationalityByRegion;
+        return housingStrategyMuc;
+    }
+
     private double convertPriceToUtility(int price, IncomeCategory incCategory) {
 
         Map<Integer, Float> shares = dataContainer.getRealEstateDataManager().getRentPaymentsForIncomeGroup(incCategory);
@@ -345,11 +334,41 @@ public class LongCommutePenaltytHousingStrategyTak implements HousingStrategy {
         return (float) quality / (float) properties.main.qualityLevels;
     }
 
+    //TODO: convertAreaToUtility method name is wrong.
+    //TODO: implement method to calculate housing utility with area instead of number of rooms
     private double convertAreaToUtility(int area) {
         return (float) area / (float) RealEstateDataManagerImpl.largestNoBedrooms;
     }
 
     private double convertAccessToUtility(double accessibility) {
         return accessibility / 100f;
+    }
+
+    private void calculateShareOfForeignersByZoneAndRegion() {
+        final IndexedDoubleMatrix1D hhByZone = new IndexedDoubleMatrix1D(geoData.getZones().values());
+        regionalShareForeigners.assign(0);
+        hhByRegion.assign(0);
+        for (Household hh : dataContainer.getHouseholdDataManager().getHouseholds()) {
+            int zone = -1;
+            Dwelling dwelling = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId());
+            if (dwelling != null) {
+                zone = dwelling.getZoneId();
+            }
+            final int region = geoData.getZones().get(zone).getRegion().getId();
+            hhByZone.setIndexed(zone, hhByZone.getIndexed(zone) + 1);
+            hhByRegion.setIndexed(region, hhByRegion.getIndexed(region) + 1);
+
+            if (((HouseholdMuc) hh).getNationality() != Nationality.GERMAN) {
+                regionalShareForeigners.setIndexed(region, regionalShareForeigners.getIndexed(region) + 1);
+            }
+        }
+
+        regionalShareForeigners.assign(hhByRegion, (foreignerShare, numberOfHouseholds) -> {
+            if (numberOfHouseholds > 0) {
+                return foreignerShare / numberOfHouseholds;
+            } else {
+                return 0;
+            }
+        });
     }
 }
