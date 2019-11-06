@@ -214,7 +214,7 @@ public class LongCommutePenaltytHousingStrategyTak implements HousingStrategy {
             //recalculate the regional utility
             final int averageRegionalRent = thisYearRentByRegion.get(region.getId()).intValue();
             final float regAcc = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region));
-            float priceUtil = (float) convertPriceToUtility(averageRegionalRent, household.getHouseholdType().getIncomeCategory());
+            float priceUtil = (float) convertPriceToUtility(averageRegionalRent + penaltyToThisHouseholdAndRegion, household.getHouseholdType().getIncomeCategory());
             double value = regionUtilityStrategy.calculateSelectRegionProbability(household.getHouseholdType().getIncomeCategory(),
                     priceUtil, regAcc, 0);
             switch (NORMALIZER) {
