@@ -76,7 +76,7 @@ public class NoiseDataContainerImpl implements de.tum.bgu.msm.matsim.noise.Noise
     public void prepareYear(int year) {
         delegate.prepareYear(year);
         noiseDataManager.setup();
-        if (properties.transportModel.transportModelYears.contains(year)) {
+        if (properties.transportModel.transportModelYears.contains(year) || properties.main.startYear == year) {
             writeDwellingsWithNoise(year);
         }
     }

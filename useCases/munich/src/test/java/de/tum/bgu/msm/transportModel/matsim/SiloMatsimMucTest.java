@@ -47,7 +47,6 @@ public class SiloMatsimMucTest {
     private static final Logger log = Logger.getLogger(SiloMatsimMucTest.class);
 
     @Test
-    @Ignore
 	public final void testMain() {
 
         String path = "./test/muc/siloMatsimMucTest.properties";

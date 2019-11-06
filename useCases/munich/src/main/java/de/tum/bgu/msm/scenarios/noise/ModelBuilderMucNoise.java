@@ -55,10 +55,7 @@ import de.tum.bgu.msm.models.relocation.HousingStrategyMuc;
 import de.tum.bgu.msm.models.relocation.InOutMigrationMuc;
 import de.tum.bgu.msm.models.relocation.RegionUtilityStrategyMucImpl;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigration;
-import de.tum.bgu.msm.models.relocation.moves.DefaultDwellingProbabilityStrategy;
-import de.tum.bgu.msm.models.relocation.moves.DefaultMovesStrategy;
-import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
-import de.tum.bgu.msm.models.relocation.moves.RegionProbabilityStrategyImpl;
+import de.tum.bgu.msm.models.relocation.moves.*;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
@@ -82,13 +79,21 @@ public class ModelBuilderMucNoise {
         final NoiseModel noiseModel = new NoiseModel(dataContainer, properties, SiloUtil.provideNewRandom());
 
 
+        HousingStrategy housingStrategyDelegate
+                = new HousingStrategyMuc(dataContainer, properties,
+                dataContainer.getTravelTimes(), new DefaultDwellingProbabilityStrategy(),
+                new DwellingUtilityStrategyImpl(), new RegionUtilityStrategyMucImpl(),
+                new RegionProbabilityStrategyImpl());
+
+        HuntNoiseSensitiveDwellingUtilityStrategy housingStrategy
+                = new HuntNoiseSensitiveDwellingUtilityStrategy(dataContainer.getTravelTimes(),
+                dataContainer.getJobDataManager(), dataContainer.getRealEstateDataManager(),
+                housingStrategyDelegate);
+
         MovesModelImpl movesModel = new MovesModelImpl(
                 dataContainer, properties,
-                new DefaultMovesStrategy(),
-                new HousingStrategyNoise(dataContainer,
-                        properties,
-                        dataContainer.getTravelTimes(), new DefaultDwellingProbabilityStrategy(),
-                        new DwellingUtilityStrategyImpl(), new RegionUtilityStrategyMucImpl(), new RegionProbabilityStrategyImpl(), noiseModel), SiloUtil.provideNewRandom());
+                new HuntNoiseSensitiveMovesStrategy(),
+                housingStrategy, SiloUtil.provideNewRandom());
 
         CreateCarOwnershipModel carOwnershipModel = new CreateCarOwnershipModelMuc(dataContainer);
 
@@ -132,13 +137,13 @@ public class ModelBuilderMucNoise {
         switch (properties.transportModel.transportModelIdentifier) {
             case MITO_MATSIM:
                 MatsimScenarioAssembler delegate = new MitoMatsimScenarioAssembler(dataContainer, properties, new MitoDataConverterMuc());
-                scenarioAssembler= new NoiseScenarioAssembler(delegate, ((NoiseDataContainerImpl) dataContainer).getNoiseData());
+                scenarioAssembler = new NoiseScenarioAssembler(delegate, ((NoiseDataContainerImpl) dataContainer).getNoiseData());
                 transportModel = new MatsimTransportModel(dataContainer, config, properties, null,
                         ZoneConnectorManager.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, scenarioAssembler);
                 break;
             case MATSIM:
                 delegate = new SimpleMatsimScenarioAssembler(dataContainer, properties);
-                scenarioAssembler= new NoiseScenarioAssembler(delegate, ((NoiseDataContainerImpl) dataContainer).getNoiseData());
+                scenarioAssembler = new NoiseScenarioAssembler(delegate, ((NoiseDataContainerImpl) dataContainer).getNoiseData());
 
                 transportModel = new MatsimTransportModel(dataContainer, config, properties, null,
                         ZoneConnectorManager.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, scenarioAssembler);
