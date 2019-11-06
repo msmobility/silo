@@ -74,7 +74,7 @@ public class DataBuilderNoise {
 
         DataContainerWithSchools delegate = new DataContainerWithSchoolsImpl(geoData, realEstateDataManager, jobDataManager, householdDataManager, travelTimes, accessibility,
                 commutingTimeProbability, schoolData, properties);
-        return new NoiseDataContainerImpl(delegate, new NoiseDataManager(dwellingData));
+        return new NoiseDataContainerImpl(delegate, new NoiseDataManager(dwellingData, properties), properties);
 
     }
 

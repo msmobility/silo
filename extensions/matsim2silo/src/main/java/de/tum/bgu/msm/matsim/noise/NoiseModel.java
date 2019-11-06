@@ -34,6 +34,7 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
     }
 
     private void updateNoiseImmissions() {
+        logger.info("Updating noise immisisons.");
         //Transport model ran at end of last year
         final NoiseReceiverPoints noiseReceiverPoints = noiseDataManager.getNoiseReceiverPoints();
         int counter65 = 0;

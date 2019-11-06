@@ -2,6 +2,7 @@ package de.tum.bgu.msm.matsim.noise;
 
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingData;
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.simulator.UpdateListener;
 import org.matsim.api.core.v01.Id;
 import org.matsim.contrib.noise.NoiseReceiverPoint;
@@ -13,9 +14,11 @@ public class NoiseDataManager implements UpdateListener {
 
     private final NoiseReceiverPoints noiseReceiverPoints;
     private final DwellingData dwellingData;
+    private final Properties properties;
 
-    public NoiseDataManager(DwellingData dwellingData) {
+    public NoiseDataManager(DwellingData dwellingData, Properties properties) {
         this.dwellingData = dwellingData;
+        this.properties = properties;
         this.noiseReceiverPoints = new NoiseReceiverPoints();
     }
 
@@ -26,12 +29,10 @@ public class NoiseDataManager implements UpdateListener {
 
     @Override
     public void prepareYear(int year) {
-
     }
 
     @Override
     public void endYear(int year) {
-
     }
 
     @Override

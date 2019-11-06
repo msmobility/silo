@@ -29,7 +29,6 @@ public class SiloMucNoise {
         NoiseDataContainerImpl dataContainer = DataBuilderNoise.getModelDataForMuc(properties, config);
         DataBuilderNoise.read(properties, dataContainer);
         ModelContainer modelContainer = ModelBuilderMuc.getModelContainerForMuc(dataContainer, properties, config);
-        modelContainer.registerModelUpdateListener(new NoiseModel(dataContainer, properties, SiloUtil.provideNewRandom()));
         ResultsMonitor resultsMonitor = new ResultsMonitorMuc(dataContainer, properties);
         SiloModel model = new SiloModel(properties, dataContainer, modelContainer, resultsMonitor);
         model.runModel();
