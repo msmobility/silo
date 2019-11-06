@@ -34,6 +34,7 @@ public final class SummarizeData {
 
 
     private static PrintWriter spatialResultWriter;
+    private static PrintWriter spatialResultWriter_2;
 
     private static TableDataSet scalingControlTotals;
     private static final String RESULT_FILE_SPATIAL = "resultFileSpatial";
@@ -65,6 +66,23 @@ public final class SummarizeData {
         }
     }
 
+    public static void resultFileSpatial_2(String action) {
+        // handle summary file
+        switch (action) {
+            case "open":
+                String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
+                spatialResultWriter_2 = SiloUtil.openFileForSequentialWriting(directory + "/" + RESULT_FILE_SPATIAL +
+                        "_2.csv", Properties.get().main.startYear != Properties.get().main.baseYear);
+                break;
+            case "close":
+                spatialResultWriter_2.close();
+                break;
+            default:
+                spatialResultWriter_2.println(action);
+                break;
+        }
+    }
+
     public static void summarizeSpatially(int year, DataContainer dataContainer) {
         // write out results by zone
 
@@ -76,6 +94,19 @@ public final class SummarizeData {
         for (DwellingType dwellingType : dwellingTypes){
             hd = hd.concat(",dd_" + dwellingType.toString());
         }
+
+        if(year == Properties.get().main.baseYear) {
+            String hd_2 = "year,zone,autoAccessibility,transitAccessibility,population,households,hhInc_<" + Properties.get().main.incomeBrackets[0];
+            for (int inc = 0; inc < Properties.get().main.incomeBrackets.length; inc++) {
+                hd_2 = hd_2.concat(",hhInc_>" + Properties.get().main.incomeBrackets[inc]);
+            }
+            for (DwellingType dwellingType : dwellingTypes) {
+                hd_2 = hd_2.concat(",dd_" + dwellingType.toString());
+            }
+            hd_2 = hd_2.concat(",availLand,avePrice,jobs,shWhite,shBlack,shHispanic,shOther");
+            resultFileSpatial_2(hd_2);
+        }
+
 
         hd = hd.concat(",availLand,avePrice,jobs,shWhite,shBlack,shHispanic,shOther");
         resultFileSpatial(hd);
@@ -132,7 +163,9 @@ public final class SummarizeData {
 //                    modelContainer.getMove().getZonalRacialShare(taz, Race.hispanic) + "," +
 //                    modelContainer.getMove().getZonalRacialShare(taz, Race.other));
 //            String txt = f.toString();
+            String txt_2 = String.valueOf(year).concat(",").concat(txt);
             resultFileSpatial(txt);
+            resultFileSpatial_2(txt_2);
         }
     }
 

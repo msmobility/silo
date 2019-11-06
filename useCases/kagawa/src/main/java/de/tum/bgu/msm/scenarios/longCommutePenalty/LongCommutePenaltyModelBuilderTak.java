@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.scenarios.oneCarPolicy;
+package de.tum.bgu.msm.scenarios.longCommutePenalty;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
@@ -13,6 +13,7 @@ import de.tum.bgu.msm.mito.MitoMatsimScenarioAssembler;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipStrategyTakImpl;
 import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipTak;
+import de.tum.bgu.msm.models.carOwnership.UpdateCarOwnershipTak;
 import de.tum.bgu.msm.models.demography.birth.BirthModelImpl;
 import de.tum.bgu.msm.models.demography.birth.DefaultBirthStrategy;
 import de.tum.bgu.msm.models.demography.birthday.BirthdayModel;
@@ -53,12 +54,13 @@ import de.tum.bgu.msm.models.relocation.moves.*;
 import de.tum.bgu.msm.models.transport.MitoDataConverterTak;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.scenarios.oneCarPolicy.OneCarPolicyCarOwnerTak;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.matsim.core.config.Config;
 
-public class OneCarPolicyModelBuilderTak {
-    public static ModelContainer getTakModels(DataContainer dataContainer, Properties properties, Config config) {
+public class LongCommutePenaltyModelBuilderTak {
 
+    public static ModelContainer getTakModels(DataContainer dataContainer, Properties properties, Config config){
         PersonFactory ppFactory = dataContainer.getHouseholdDataManager().getPersonFactory();
         HouseholdFactory hhFactory = dataContainer.getHouseholdDataManager().getHouseholdFactory();
         DwellingFactory ddFactory = dataContainer.getRealEstateDataManager().getDwellingFactory();
@@ -71,7 +73,7 @@ public class OneCarPolicyModelBuilderTak {
 
         MovesModelImpl movesModel = new MovesModelImpl(
                 dataContainer, properties, new DefaultMovesStrategy(),
-                new CarAndTransitHousingStrategyImpl(dataContainer,
+                new LongCommutePenaltytHousingStrategyTak(dataContainer,
                         properties, dataContainer.getTravelTimes(),
                         new DwellingUtilityStrategyImpl(), new DefaultDwellingProbabilityStrategy(),
                         new RegionUtilityStrategyImpl(), new RegionProbabilityStrategyImpl()), SiloUtil.provideNewRandom());
@@ -137,7 +139,7 @@ public class OneCarPolicyModelBuilderTak {
                 leaveParentsModel, jobMarketUpdateModel,
                 construction, demolition, pricing, renovation,
                 constructionOverwrite, inOutMigration, movesModel, transportModel);
-        modelContainer.registerModelUpdateListener(new OneCarPolicyCarOwnerTak(dataContainer, properties, SiloUtil.provideNewRandom()));
+        modelContainer.registerModelUpdateListener(new UpdateCarOwnershipTak(dataContainer, properties, SiloUtil.provideNewRandom()));
         return modelContainer;
     }
 }

@@ -31,8 +31,8 @@ public class SiloCT {
         DataBuilderCapeTown.read(properties, dataContainer);
         ModelContainer modelContainer = ModelBuilderCapeTown.getModelContainerForCapeTown(
                 dataContainer, properties, config);
-        ResultsMonitor resultsMonitor = new DefaultResultsMonitor(dataContainer, properties);
-        SiloModel model = new SiloModel(properties, dataContainer, modelContainer, resultsMonitor);
+        SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
+        model.addResultMonitor(new DefaultResultsMonitor(dataContainer, properties));
         model.runModel();
         logger.info("Finished SILO.");
     }

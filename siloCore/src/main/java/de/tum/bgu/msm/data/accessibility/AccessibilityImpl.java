@@ -84,8 +84,13 @@ public class AccessibilityImpl implements Accessibility {
         logger.info("  Calculating accessibilities for " + year);
         final Map<Integer, List<Job>> jobsByZone = jobData.getJobs().stream().collect(Collectors.groupingBy(Location::getZoneId));
         IndexedDoubleMatrix1D employment = new IndexedDoubleMatrix1D(geoData.getZones().values());
-        for(Map.Entry<Integer, List<Job>> entry: jobsByZone.entrySet()) {
-            employment.setIndexed(entry.getKey(), entry.getValue().size());
+        for(int zoneId : geoData.getZones().keySet()){
+            if (jobsByZone.keySet().contains(zoneId)){
+                employment.setIndexed(zoneId, jobsByZone.get(zoneId).size());
+            } else {
+                employment.setIndexed(zoneId, 0.);
+            }
+
         }
 
         final Map<Integer, List<Dwelling>> dwellingsByZone = dwellingData.getDwellings().stream().collect(Collectors.groupingBy(Location::getZoneId));
@@ -128,13 +133,16 @@ public class AccessibilityImpl implements Accessibility {
      */
     static IndexedDoubleMatrix1D calculateRegionalAccessibility(Collection<Region> regions, IndexedDoubleMatrix1D autoAccessibilities, IndexedDoubleMatrix1D population) {
         final IndexedDoubleMatrix1D matrix = new IndexedDoubleMatrix1D(regions);
+
         regions.stream().forEach(r -> {
-            double sum = r.getZones().stream().mapToDouble(z -> {
-                double accessibility = autoAccessibilities.getIndexed(z.getZoneId());
-                double weight = population.getIndexed(z.getZoneId());
-                return accessibility * weight;
-            }).sum() / r.getZones().size();
-            matrix.setIndexed(r.getId(), sum);
+            double weightSum = 0;
+            double accessibilitySum = 0;
+            for(Zone zone: r.getZones()) {
+                double weight = population.getIndexed(zone.getZoneId());
+                accessibilitySum += autoAccessibilities.getIndexed(zone.getZoneId()) * weight;
+                weightSum += weight;
+            }
+            matrix.setIndexed(r.getId(), accessibilitySum / weightSum);
         });
         return matrix;
     }
