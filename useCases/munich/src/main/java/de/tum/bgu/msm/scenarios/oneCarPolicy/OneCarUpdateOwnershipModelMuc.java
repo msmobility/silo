@@ -139,13 +139,13 @@ public class OneCarUpdateOwnershipModelMuc extends AbstractModel implements Mode
                 int action = SiloUtil.select(prob, random);
 
                 if (action == 1){ //add one car
-                    if (newHousehold.getAutos() < 3) { //maximum number of cars is equal to 3
-                        newHousehold.setAutos(newHousehold.getAutos() + 1);
+                    if (newHousehold.getAutos() == 0) { //maximum number of cars is equal to 3
+                        newHousehold.setAutos(1);
                         counter[0]++;
                     }
                 } else if (action == 2) { //remove one car
                     if (newHousehold.getAutos() > 0){ //cannot have less than zero cars
-                        newHousehold.setAutos(newHousehold.getAutos() - 1);
+                        newHousehold.setAutos(0);
                         counter[1]++;
                         // update number of AVs if necessary after household relinquishes a car
                         if (newHousehold.getAutonomous() > newHousehold.getAutos()) { // no. of AVs cannot exceed total no. of autos
