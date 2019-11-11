@@ -10,7 +10,6 @@ import de.tum.bgu.msm.matsim.MatsimTransportModel;
 import de.tum.bgu.msm.matsim.SimpleMatsimScenarioAssembler;
 import de.tum.bgu.msm.matsim.ZoneConnectorManager;
 import de.tum.bgu.msm.matsim.noise.NoiseModel;
-import de.tum.bgu.msm.matsim.noise.NoiseScenarioAssembler;
 import de.tum.bgu.msm.mito.MitoMatsimScenarioAssembler;
 import de.tum.bgu.msm.models.EducationModelMuc;
 import de.tum.bgu.msm.models.MarriageModelMuc;
@@ -56,9 +55,7 @@ import de.tum.bgu.msm.models.relocation.InOutMigrationMuc;
 import de.tum.bgu.msm.models.relocation.RegionUtilityStrategyMucImpl;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigration;
 import de.tum.bgu.msm.models.relocation.moves.*;
-import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.matsim.core.config.Config;
 
@@ -76,8 +73,6 @@ public class ModelBuilderMucNoise {
 
         DeathModel deathModel = new DeathModelImpl(dataContainer, properties, new DefaultDeathStrategy(), SiloUtil.provideNewRandom());
 
-        final NoiseModel noiseModel = new NoiseModel(dataContainer, properties, SiloUtil.provideNewRandom());
-
 
         HousingStrategy housingStrategyDelegate
                 = new HousingStrategyMuc(dataContainer, properties,
@@ -92,7 +87,7 @@ public class ModelBuilderMucNoise {
 
         MovesModelImpl movesModel = new MovesModelImpl(
                 dataContainer, properties,
-                new HuntNoiseSensitiveMovesStrategy(),
+                new DefaultMovesStrategy(),
                 housingStrategy, SiloUtil.provideNewRandom());
 
         CreateCarOwnershipModel carOwnershipModel = new CreateCarOwnershipModelMuc(dataContainer);
@@ -132,26 +127,26 @@ public class ModelBuilderMucNoise {
                 carOwnershipModel, hhFactory, properties, new DefaultMarriageStrategy(), SiloUtil.provideNewRandom());
 
 
-        TransportModel transportModel;
-        MatsimScenarioAssembler scenarioAssembler;
+        MatsimTransportModel transportModel;
         switch (properties.transportModel.transportModelIdentifier) {
             case MITO_MATSIM:
                 MatsimScenarioAssembler delegate = new MitoMatsimScenarioAssembler(dataContainer, properties, new MitoDataConverterMuc());
-                scenarioAssembler = new NoiseScenarioAssembler(delegate, ((NoiseDataContainerImpl) dataContainer).getNoiseData());
                 transportModel = new MatsimTransportModel(dataContainer, config, properties, null,
-                        ZoneConnectorManager.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, scenarioAssembler);
+                        ZoneConnectorManager.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, delegate);
                 break;
             case MATSIM:
                 delegate = new SimpleMatsimScenarioAssembler(dataContainer, properties);
-                scenarioAssembler = new NoiseScenarioAssembler(delegate, ((NoiseDataContainerImpl) dataContainer).getNoiseData());
 
                 transportModel = new MatsimTransportModel(dataContainer, config, properties, null,
-                        ZoneConnectorManager.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, scenarioAssembler);
+                        ZoneConnectorManager.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, delegate);
                 break;
             case NONE:
             default:
                 transportModel = null;
         }
+        NoiseModel noiseModel  = new NoiseModel(dataContainer, properties, SiloUtil.provideNewRandom(), transportModel.getMatsimData());
+
+
 
         final ModelContainer modelContainer = new ModelContainer(
                 birthModel, birthdayModel,

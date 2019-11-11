@@ -31,7 +31,8 @@ public class SiloMucNoise {
         ModelContainer modelContainer = ModelBuilderMucNoise.getModelContainerForMuc(dataContainer, properties, config);
 //        modelContainer.registerModelUpdateListener(new NoiseModel(dataContainer, properties, SiloUtil.provideNewRandom()));
         ResultsMonitor resultsMonitor = new ResultsMonitorMuc(dataContainer, properties);
-        SiloModel model = new SiloModel(properties, dataContainer, modelContainer, resultsMonitor);
+        SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
+        model.addResultMonitor(resultsMonitor);
         model.runModel();
         logger.info("Finished SILO.");
     }

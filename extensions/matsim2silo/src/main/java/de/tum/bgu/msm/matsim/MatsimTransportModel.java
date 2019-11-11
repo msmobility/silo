@@ -159,9 +159,6 @@ public final class MatsimTransportModel implements TransportModel {
         if (accessibility != null) {
             setupAccessibility(assembledScenario, controler);
         }
-        if(assembledScenario.getScenarioElement(NoiseReceiverPoints.NOISE_RECEIVER_POINTS) != null) {
-            controler.addOverridingModule(new NoiseModule());
-        }
 
         controler.run();
         logger.warn("Running MATSim transport model for year " + year + " finished.");
@@ -272,5 +269,9 @@ public final class MatsimTransportModel implements TransportModel {
             ((SkimTravelTimes) mainTravelTimes).updateRegionalTravelTimes(dataContainer.getGeoData().getRegions().values(),
                     dataContainer.getGeoData().getZones().values());
         }
+    }
+
+    public MatsimData getMatsimData() {
+        return matsimData;
     }
 }

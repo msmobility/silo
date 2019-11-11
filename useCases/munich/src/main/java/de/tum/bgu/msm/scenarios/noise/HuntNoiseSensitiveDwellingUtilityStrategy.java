@@ -92,7 +92,7 @@ public class HuntNoiseSensitiveDwellingUtilityStrategy implements HousingStrateg
     private final JobDataManager jobDataManager;
     private final RealEstateDataManager realEstateDataManager;
 
-    //use delegate for regional decisions
+    //use delegate for regional and current satisfaction decisions
     private final HousingStrategy delegate;
 
     public HuntNoiseSensitiveDwellingUtilityStrategy(TravelTimes travelTimes,
@@ -120,7 +120,7 @@ public class HuntNoiseSensitiveDwellingUtilityStrategy implements HousingStrateg
     public double calculateHousingUtility(Household hh, Dwelling dwelling) {
         NoiseDwelling oldDwelling = (NoiseDwelling) realEstateDataManager.getDwelling(hh.getDwellingId());
         if(oldDwelling == null || oldDwelling.equals(dwelling)) {
-            return calculateCurrentUtility(hh, (NoiseDwelling) dwelling);
+            return delegate.calculateHousingUtility(hh, dwelling);
         } else {
             return calculateUtilityAlternative(hh, oldDwelling, (NoiseDwelling) dwelling);
         }

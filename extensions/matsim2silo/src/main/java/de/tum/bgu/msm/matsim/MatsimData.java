@@ -74,11 +74,11 @@ public final class MatsimData {
         return zoneConnectorManager;
     }
 
-    Network getCarNetwork() {
+    public Network getCarNetwork() {
         return carNetwork;
     }
 
-    Network getPtNetwork() {
+    public Network getPtNetwork() {
         return ptNetwork;
     }
 
@@ -176,5 +176,7 @@ public final class MatsimData {
     RaptorParameters getRaptorParameters() {
         return raptorParameters;
     }
+
+
 
 }
