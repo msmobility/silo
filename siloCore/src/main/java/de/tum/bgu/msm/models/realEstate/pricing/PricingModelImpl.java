@@ -58,7 +58,7 @@ public final class PricingModelImpl extends AbstractModel implements PricingMode
         int[] cnt = new int[dwellingTypes.size()];
         double[] sumOfPrices = new double[dwellingTypes.size()];
         for (Dwelling dd: dataContainer.getRealEstateDataManager().getDwellings()) {
-            if (!strategy.shouldUpdatePrice(dd)) {
+            if (!strategy.isPriceUpdateAllowed(dd)) {
                 continue;
             }
             int dto = dwellingTypes.indexOf(dd.getType());

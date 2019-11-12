@@ -35,7 +35,7 @@ public class DefaultPricingStrategy extends JavaScriptCalculator<Double> impleme
     }
 
 
-    public boolean shouldUpdatePrice(Dwelling dd) {
+    public boolean isPriceUpdateAllowed(Dwelling dd) {
         return true;
     }
 

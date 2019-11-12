@@ -38,8 +38,6 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
 
     private int currentYear = -1;
 
-
-
     private float betaForZoneChoice;
     private float priceIncreaseForNewDwelling;
 
