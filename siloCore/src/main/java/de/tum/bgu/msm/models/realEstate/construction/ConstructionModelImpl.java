@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Build new dwellings based on current demand. Model works in two steps. At the end of each simulation period,
@@ -40,6 +41,7 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
 
     private float betaForZoneChoice;
     private float priceIncreaseForNewDwelling;
+    private Map<Integer, List<Dwelling>> dwellingsByRegion;
 
     public ConstructionModelImpl(DataContainer dataContainer, DwellingFactory factory,
                                  Properties properties, ConstructionLocationStrategy locationStrategy,
@@ -61,6 +63,9 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
 
     @Override
     public void prepareYear(int year) {
+        dwellingsByRegion = dataContainer.getRealEstateDataManager().getDwellings()
+                .stream().collect(Collectors.groupingBy(d -> geoData.getZones().get(d.getZoneId()).getRegion().getId()
+        ));
     }
 
     @Override
@@ -80,10 +85,12 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
         double[][] avePriceByTypeAndZone = calculateScaledAveragePriceByZone(100);
         double[][] avePriceByTypeAndRegion = calculateScaledAveragePriceByRegion(100);
         float[][] aveSizeByTypeAndRegion = calculateAverageSizeByTypeAndByRegion();
+
+
         for (DwellingType dt : dwellingTypes) {
             int dto = dwellingTypes.indexOf(dt);
             for (int region : geoData.getRegions().keySet()) {
-                demandByRegion[dto][region] = demandStrategy.calculateConstructionDemand(vacancyByRegion[dto][region], dt);
+                demandByRegion[dto][region] = demandStrategy.calculateConstructionDemand(vacancyByRegion[dto][region], dt, dwellingsByRegion.get(region).size());
             }
         }
         // try to satisfy demand, build more housing in zones with particularly low vacancy rates, if available land use permits
@@ -152,7 +159,7 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
                     int zone = allocateUnrealizedDemandInDifferentRegion(realEstate, dt, dto,
                             avePriceByTypeAndZone, avePriceByTypeAndRegion, utilitiesByDwellingTypeByZone);
 
-                    if(zone > -1) {
+                    if (zone > -1) {
                         events.add(createNewDwelling(realEstate, aveSizeByTypeAndRegion, avePriceByTypeAndZone,
                                 avePriceByTypeAndRegion, dt, dto, region, zone));
                     } else {
