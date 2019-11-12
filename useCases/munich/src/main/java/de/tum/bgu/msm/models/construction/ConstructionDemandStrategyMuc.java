@@ -43,7 +43,7 @@ public class ConstructionDemandStrategyMuc implements ConstructionDemandStrategy
 
         double maxRate;
         if(numberOfExistingDwellings < 10000) {
-            maxRate = (-0.47622 + 5.38618 * numberOfExistingDwellings) / 100;
+            maxRate = (-0.47622 * Math.log(numberOfExistingDwellings) + 5.38618) / 100;
         } else {
             maxRate = 0.01;
         }
