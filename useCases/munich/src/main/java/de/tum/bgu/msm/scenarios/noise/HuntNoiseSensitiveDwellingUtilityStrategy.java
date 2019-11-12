@@ -33,6 +33,21 @@ public class HuntNoiseSensitiveDwellingUtilityStrategy implements HousingStrateg
     private static final double MEDIUM_NOISE_DISCOUNT = 0.056;
     private static final double LOUD_NOISE_DISCOUNT = 0.096;
 
+    private static final int LOW_INCOME = 1;
+    private static final int HIGH_INCOME = 2;
+    private static final int AVERAGE_INCOME = 0;
+
+    private static final int NO_NOISE = 0;
+    private static final int OCCASIONALLY_NOTICEABLE_NOISE = 1;
+    private static final int CONSTANT_HUM_NOISE = 2;
+    private static final int SOMETIMES_DISTURBING_NOISE = 3;
+    private static final int FREQUENTLY_DISTURBING_NOISE = 4;
+
+    private static final int SINGLE_FAMILY = 0;
+    private static final int DUPLEX = 1;
+    private static final int TOWNHOUSE = 2;
+    private static final int HIGHRISE = 4;
+
     //----------------------------------------------------------------------
 
     /**
@@ -244,42 +259,45 @@ public class HuntNoiseSensitiveDwellingUtilityStrategy implements HousingStrateg
         final DwellingType type = dwelling.getType();
 
         if(type.equals(DefaultDwellingTypeImpl.SFD)) {
-            return 0;
+            return SINGLE_FAMILY;
         } else if( type.equals(DefaultDwellingTypeImpl.SFA)) {
-            return 1;
+            return DUPLEX;
         } else if(type.equals(DefaultDwellingTypeImpl.MF234)) {
-            return 2;
+            return TOWNHOUSE;
         } else if(type.equals(DefaultDwellingTypeImpl.MF5plus)) {
-            return 4;
+            return HIGHRISE;
         } else {
             //can only happen for mobile home which shouldn't exist in muc
-            return 4;
+            return HIGHRISE;
         }
     }
 
 
     private int translateLdenToNoiseCategory(double lden) {
         if (lden < 30) {
-            return 0;
+            return NO_NOISE;
         } else if (lden < 45) {
-            return 1;
+            return OCCASIONALLY_NOTICEABLE_NOISE;
         } else if (lden < 55) {
-            return 2;
+            return CONSTANT_HUM_NOISE;
         } else if (lden < 65) {
-            return 3;
+            return SOMETIMES_DISTURBING_NOISE;
         } else {
-            return 4;
+            return FREQUENTLY_DISTURBING_NOISE;
         }
     }
 
+    /**
+     * Adjusted to euro (1CAD ~ 0.68€)
+     */
     private int translateHouseholdType(Household household) {
         final int annualHhIncome = HouseholdUtil.getAnnualHhIncome(household);
-        if (annualHhIncome < 20000) {
-            return 1;
-        } else if (annualHhIncome < 100000) {
-            return 0;
+        if (annualHhIncome < 15000) {
+            return LOW_INCOME;
+        } else if (annualHhIncome < 68500) {
+            return AVERAGE_INCOME;
         } else {
-            return 2;
+            return HIGH_INCOME;
         }
     }
 }
