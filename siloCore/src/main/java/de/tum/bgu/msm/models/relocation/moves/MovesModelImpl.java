@@ -1,9 +1,7 @@
 package de.tum.bgu.msm.models.relocation.moves;
 
 import com.google.common.collect.ConcurrentHashMultiset;
-import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Multiset;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
@@ -12,6 +10,7 @@ import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdType;
 import de.tum.bgu.msm.events.impls.household.MoveEvent;
+import de.tum.bgu.msm.io.output.YearByYearCsvModelTracker;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
@@ -22,6 +21,8 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -52,6 +53,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
     private final Map<Integer, Double> satisfactionByHousehold = new ConcurrentHashMap<>();
     private final HashMap<Integer, Integer> householdsByZone = new HashMap<>();
     private final HashMap<Integer, Double > sumOfSatisfactionsByZone = new HashMap<>();
+    private YearByYearCsvModelTracker relocationTracker;
 
 
     public MovesModelImpl(DataContainer dataContainer, Properties properties, MovesStrategy movesStrategy,
@@ -72,6 +74,9 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
     @Override
     public void setup() {
         housingStrategy.setup();
+        String header = new StringJoiner(",").add("hh").add("oldDdd").add("newDd").toString();
+        Path basePath = Paths.get(properties.main.baseDirectory).resolve("scenOutput").resolve(properties.main.scenarioName).resolve("siloResults/relocation");
+        relocationTracker = new YearByYearCsvModelTracker(basePath, "relocation", header);
     }
 
     @Override
@@ -80,6 +85,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         track = false;
         calculateAverageHousingUtility();
         track = true;
+        relocationTracker.newYear(year);
     }
 
     @Override
@@ -104,6 +110,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
     @Override
     public void endSimulation() {
+        relocationTracker.end();
 //        try {
 //            fileWriter.close();
 //        } catch (IOException e) {
@@ -137,6 +144,11 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
             // Step 3: Move household
             dataContainer.getHouseholdDataManager().saveHouseholdMemento(household);
+            relocationTracker.trackRecord(new StringJoiner(",")
+                    .add(String.valueOf(hhId))
+                    .add(String.valueOf(household.getDwellingId()))
+                    .add(String.valueOf(idNewDD))
+                    .toString());
             moveHousehold(household, household.getDwellingId(), idNewDD);
             if (hhId == SiloUtil.trackHh) {
                 SiloUtil.trackWriter.println("Household " + hhId + " has moved to dwelling " +

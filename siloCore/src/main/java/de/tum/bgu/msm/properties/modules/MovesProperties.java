@@ -4,7 +4,7 @@ import de.tum.bgu.msm.properties.PropertiesUtil;
 
 import java.util.ResourceBundle;
 
-public class MovesProperties {
+public final class MovesProperties {
 
     public final double racialRelevanceInZone;
     public final boolean provideLowIncomeSubsidy;
@@ -14,6 +14,8 @@ public class MovesProperties {
     public final String populationCOntrolTotalFile;
     public final String migrationFile;
     public final double populationGrowthRateInPercentage;
+
+    public final boolean trackRelocations;
 
     public enum PopulationControlTotalMethod {
         POPULATION, MIGRATION, RATE;
@@ -31,6 +33,7 @@ public class MovesProperties {
         racialRelevanceInZone = PropertiesUtil.getDoubleProperty(bundle, "relevance.of.race.in.zone.of.dwelling", 0.5);
         provideLowIncomeSubsidy = PropertiesUtil.getBooleanProperty(bundle, "provide.housing.subsidy.to.low.inc", false);
 
+        trackRelocations = PropertiesUtil.getBooleanProperty(bundle, "track.relocations", true);
 
     }
 }
