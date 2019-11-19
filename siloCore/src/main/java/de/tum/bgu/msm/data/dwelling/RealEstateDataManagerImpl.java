@@ -16,6 +16,8 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -302,6 +304,7 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
 
     private void calculateRegionWidePriceAndVacancyByDwellingType() {
         // calculate region-wide average dwelling costs and vacancy by dwelling type
+        logger.info("Updating region-wide average dwelling costs and vacancies:");
 
         int distinctDdTypes = dwellingTypes.size();
         int[][] vacOcc = SiloUtil.setArrayToValue(new int[2][distinctDdTypes], 0);
@@ -320,6 +323,8 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
         aveVac = new double[distinctDdTypes];
         avePrice = new double[distinctDdTypes];
 
+        DecimalFormat df = new DecimalFormat("#.##");
+        df.setRoundingMode(RoundingMode.HALF_UP);
         for (DwellingType dt : dwellingTypes) {
             int dto = dwellingTypes.indexOf(dt);
 
@@ -331,6 +336,7 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
                 aveVac[dto] = 0;
                 avePrice[dto] = 0;
             }
+            logger.info(dt + ": " + df.format(aveVac[dto]) + "% vacancy | " + df.format(avePrice[dto]) + " price");
         }
     }
 

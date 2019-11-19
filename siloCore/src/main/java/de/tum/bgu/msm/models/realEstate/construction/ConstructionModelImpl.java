@@ -168,8 +168,11 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
                 }
             }
         }
-        logger.warn("There have been " + unrealizedDemandCounter + " dwellings that could not be built " +
-                "due to lack of developable land.");
+        logger.info("Planning of construction done. Planned " + events.size() + " dwellings.");
+        if(unrealizedDemandCounter > 0) {
+            logger.warn("There have been " + unrealizedDemandCounter + " dwellings that could not be built " +
+                    "due to lack of developable land.");
+        }
         return events;
     }
 
