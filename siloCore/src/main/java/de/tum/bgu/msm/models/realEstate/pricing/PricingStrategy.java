@@ -4,7 +4,7 @@ import de.tum.bgu.msm.data.dwelling.Dwelling;
 
 public interface PricingStrategy {
 
-    boolean shouldUpdatePrice(Dwelling dd);
+    boolean isPriceUpdateAllowed(Dwelling dd);
 
     double getPriceChangeRate(double vacancyRateAtThisRegion, double structuralVacancyRate);
 }

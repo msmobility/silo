@@ -25,7 +25,7 @@ var calculateConstructionDemand = function(vacancyByRegion, dwellingType) {
     }
 
     if (vacancyByRegion <= alpha) {
-        return gamma + vacancyByRegion * ((beta - gamma) / alpha);
+        return gamma + -1 * vacancyByRegion;
     } else {
         return gamma / Math.exp(slope * vacancyByRegion);
     }
