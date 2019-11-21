@@ -18,6 +18,8 @@ package de.tum.bgu.msm.data.job;
 
 import de.tum.bgu.msm.data.Id;
 import de.tum.bgu.msm.data.MicroLocation;
+import de.tum.bgu.msm.data.Zone;
+import org.locationtech.jts.geom.Coordinate;
 
 /**
  * Job interface
@@ -30,5 +32,7 @@ import de.tum.bgu.msm.data.MicroLocation;
      String getType();
 
      void setWorkerID(int personID);
+
+     void relocateJob(Zone newZone, Coordinate newCoordinate);
 
 }

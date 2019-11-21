@@ -101,7 +101,7 @@ public class DraconicResettlementModelBuilder {
         LeaveParentHhModel leaveParentsModel = new LeaveParentHhModelImpl(dataContainer, movesModel,
                 carOwnershipModel, hhFactory, properties, new DefaultLeaveParentalHouseholdStrategy(), SiloUtil.provideNewRandom());
 
-        JobMarketUpdate jobMarketUpdateModel = new JobMarketUpdateImpl(dataContainer, properties, SiloUtil.provideNewRandom());
+        JobMarketUpdate jobMarketUpdateModel = new DraconicResettlementJobMarketUpdate(dataContainer, properties, SiloUtil.provideNewRandom());
 
         ConstructionModel construction = new ConstructionModelImpl(dataContainer, ddFactory,
                 properties, new DefaultConstructionLocationStrategy(), new ConstructionDemandStrategyMuc(), SiloUtil.provideNewRandom());
