@@ -10,8 +10,8 @@ public class ConstructionDemandStrategyMucTest {
     @Test
     public void testConstructionDemandStrategyMuc() {
         final ConstructionDemandStrategyMuc constructionDemandStrategyMuc = new ConstructionDemandStrategyMuc();
-        Assert.assertEquals(0.035, constructionDemandStrategyMuc.calculateConstructionDemand(0.015, DefaultDwellingTypeImpl.SFD, 1), 0.00001);
-        Assert.assertEquals(0.00465, constructionDemandStrategyMuc.calculateConstructionDemand(0.05, DefaultDwellingTypeImpl.SFD, 11000), 0.00001);
+        Assert.assertEquals(0.0149999, constructionDemandStrategyMuc.calculateConstructionDemand(0.015, DefaultDwellingTypeImpl.SFD, 1), 0.00001);
+        Assert.assertEquals(0, constructionDemandStrategyMuc.calculateConstructionDemand(0.05, DefaultDwellingTypeImpl.SFD, 11000), 0.00001);
         Assert.assertEquals(0.01, constructionDemandStrategyMuc.calculateConstructionDemand(0.001, DefaultDwellingTypeImpl.SFD, 11000), 0.00001);
     }
 }
