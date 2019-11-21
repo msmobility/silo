@@ -19,6 +19,7 @@ import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Build new dwellings based on current demand. Model works in two steps. At the end of each simulation period,
@@ -45,6 +46,7 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
     private float restrictionForAffordableDd;
 
     private int currentYear = -1;
+    private Map<Integer, List<Dwelling>> dwellingsByRegion;
 
     public ConstructionModelMstm(DataContainer dataContainer, DwellingFactory factory,
                                  Properties properties, ConstructionLocationStrategy locationStrategy,
@@ -73,6 +75,9 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
 
     @Override
     public void prepareYear(int year) {
+        dwellingsByRegion = dataContainer.getRealEstateDataManager().getDwellings()
+                .stream().collect(Collectors.groupingBy(d -> geoData.getZones().get(d.getZoneId()).getRegion().getId()
+                ));
     }
 
     @Override
@@ -95,7 +100,9 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
         for (DwellingType dt : dwellingTypes) {
             int dto = dwellingTypes.indexOf(dt);
             for (int region : geoData.getRegions().keySet()) {
-                demandByRegion[dto][region] = demandStrategy.calculateConstructionDemand(vacancyByRegion[dto][region], dt);
+                final int size = dwellingsByRegion.getOrDefault(region, Collections.emptyList()).size();
+                final double v = demandStrategy.calculateConstructionDemand(vacancyByRegion[dto][region], dt, size);
+                demandByRegion[dto][region] = v;
             }
         }
         // try to satisfy demand, build more housing in zones with particularly low vacancy rates, if available land use permits

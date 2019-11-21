@@ -58,7 +58,7 @@ public final class PricingModelImpl extends AbstractModel implements PricingMode
         int[] cnt = new int[dwellingTypes.size()];
         double[] sumOfPrices = new double[dwellingTypes.size()];
         for (Dwelling dd: dataContainer.getRealEstateDataManager().getDwellings()) {
-            if (!strategy.shouldUpdatePrice(dd)) {
+            if (!strategy.isPriceUpdateAllowed(dd)) {
                 continue;
             }
             int dto = dwellingTypes.indexOf(dd.getType());
@@ -91,9 +91,11 @@ public final class PricingModelImpl extends AbstractModel implements PricingMode
 
         }
         double[] averagePrice = new double[dwellingTypes.size()];
+        logger.info("Updated average real-estate prices by dwelling type:");
         for (DwellingType dt: dwellingTypes) {
             int dto = dwellingTypes.indexOf(dt);
             averagePrice[dto] = sumOfPrices[dto] / cnt[dto];
+            logger.info(dt + ": " + averagePrice[dto]);
         }
         dataContainer.getRealEstateDataManager().setAvePriceByDwellingType(averagePrice);
     }

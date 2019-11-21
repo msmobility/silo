@@ -53,7 +53,7 @@ public class HousingStrategyMuc implements HousingStrategy {
         POWER_OF_POPULATION
     }
 
-    private static final Normalizer NORMALIZER = Normalizer.POWER_OF_POPULATION;
+    private static final Normalizer NORMALIZER = Normalizer.VAC_DD;
 
     private final DataContainer dataContainer;
     private final Properties properties;

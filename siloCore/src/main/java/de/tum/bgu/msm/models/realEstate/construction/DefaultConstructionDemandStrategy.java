@@ -15,7 +15,8 @@ public class DefaultConstructionDemandStrategy extends JavaScriptCalculator<Doub
         super(reader);
     }
 
-    public double calculateConstructionDemand(double vacancyByRegion, DwellingType dwellingType) {
+    @Override
+    public double calculateConstructionDemand(double vacancyByRegion, DwellingType dwellingType, int numberOfExistingDwellings) {
         return super.calculate("calculateConstructionDemand", vacancyByRegion, dwellingType);
     }
 }

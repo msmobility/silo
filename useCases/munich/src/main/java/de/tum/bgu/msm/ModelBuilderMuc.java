@@ -4,6 +4,7 @@ import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.matsim.MatsimScenarioAssembler;
 import de.tum.bgu.msm.matsim.SimpleMatsimScenarioAssembler;
 import de.tum.bgu.msm.mito.MitoMatsimScenarioAssembler;
+import de.tum.bgu.msm.models.construction.ConstructionDemandStrategyMuc;
 import de.tum.bgu.msm.models.relocation.moves.RegionProbabilityStrategyImpl;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
@@ -103,7 +104,7 @@ public class ModelBuilderMuc {
         JobMarketUpdate jobMarketUpdateModel = new JobMarketUpdateImpl(dataContainer, properties, SiloUtil.provideNewRandom());
 
         ConstructionModel construction = new ConstructionModelImpl(dataContainer, ddFactory,
-                properties, new DefaultConstructionLocationStrategy(), new DefaultConstructionDemandStrategy(), SiloUtil.provideNewRandom());
+                properties, new DefaultConstructionLocationStrategy(), new ConstructionDemandStrategyMuc(), SiloUtil.provideNewRandom());
 
 
         PricingModel pricing = new PricingModelImpl(dataContainer, properties, new DefaultPricingStrategy(), SiloUtil.provideNewRandom());

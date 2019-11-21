@@ -10,6 +10,7 @@ import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdType;
 import de.tum.bgu.msm.events.impls.household.MoveEvent;
+import de.tum.bgu.msm.io.output.YearByYearCsvModelTracker;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
@@ -20,6 +21,8 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -48,6 +51,10 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
     private final Map<HouseholdType, Double> averageHousingSatisfaction = new ConcurrentHashMap<>();
     private final Map<Integer, Double> satisfactionByHousehold = new ConcurrentHashMap<>();
+    private final HashMap<Integer, Integer> householdsByZone = new HashMap<>();
+    private final HashMap<Integer, Double > sumOfSatisfactionsByZone = new HashMap<>();
+    private YearByYearCsvModelTracker relocationTracker;
+
 
     public MovesModelImpl(DataContainer dataContainer, Properties properties, MovesStrategy movesStrategy,
                           HousingStrategy housingStrategy, Random random) {
@@ -67,6 +74,9 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
     @Override
     public void setup() {
         housingStrategy.setup();
+        String header = new StringJoiner(",").add("hh").add("oldDdd").add("newDd").toString();
+        Path basePath = Paths.get(properties.main.baseDirectory).resolve("scenOutput").resolve(properties.main.scenarioName).resolve("siloResults/relocation");
+        relocationTracker = new YearByYearCsvModelTracker(basePath, "relocation", header);
     }
 
     @Override
@@ -75,6 +85,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         track = false;
         calculateAverageHousingUtility();
         track = true;
+        relocationTracker.newYear(year);
     }
 
     @Override
@@ -99,6 +110,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
     @Override
     public void endSimulation() {
+        relocationTracker.end();
 //        try {
 //            fileWriter.close();
 //        } catch (IOException e) {
@@ -132,6 +144,11 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
             // Step 3: Move household
             dataContainer.getHouseholdDataManager().saveHouseholdMemento(household);
+            relocationTracker.trackRecord(new StringJoiner(",")
+                    .add(String.valueOf(hhId))
+                    .add(String.valueOf(household.getDwellingId()))
+                    .add(String.valueOf(idNewDD))
+                    .toString());
             moveHousehold(household, household.getDwellingId(), idNewDD);
             if (hhId == SiloUtil.trackHh) {
                 SiloUtil.trackWriter.println("Household " + hhId + " has moved to dwelling " +
@@ -242,6 +259,8 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         logger.info("Evaluating average housing utility of " + householdDataManager.getHouseholds().size() + " households.");
         satisfactionByHousehold.clear();
         averageHousingSatisfaction.replaceAll((householdType, aDouble) -> 0.);
+        householdsByZone.clear();
+        sumOfSatisfactionsByZone.clear();
 
         final Collection<Household> households = householdDataManager.getHouseholds();
         ConcurrentHashMultiset<HouseholdType> hhByType = ConcurrentHashMultiset.create();
@@ -270,6 +289,8 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
                         Dwelling dd = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId());
                         final double util = strategy.calculateHousingUtility(hh, dd);
                         satisfactionByHousehold.put(hh.getId(), util);
+                        householdsByZone.put(dd.getZoneId(), householdsByZone.getOrDefault(dd.getZoneId(), 0) + 1);
+                        sumOfSatisfactionsByZone.put(dd.getZoneId(), sumOfSatisfactionsByZone.getOrDefault(dd.getZoneId(), 0.) + util);
                         averageHousingSatisfaction.merge(householdType, util, (oldUtil, newUtil) -> oldUtil + newUtil);
                     }
                 } catch (Exception e) {
@@ -402,5 +423,13 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
                 }
             }
         }
+    }
+
+    public HashMap<Integer, Integer> getHouseholdsByZone() {
+        return householdsByZone;
+    }
+
+    public HashMap<Integer, Double> getSumOfSatisfactionsByZone() {
+        return sumOfSatisfactionsByZone;
     }
 }
