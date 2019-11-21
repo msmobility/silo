@@ -30,7 +30,7 @@ public class OneCarUpdateOwnershipModelMuc extends AbstractModel implements Mode
 
     private double[][][][][][][][] carUpdateProb; // [previousCars][hhSize+][hhSize-][income+][income-][license+][changeRes][three probabilities]
 
-    private final Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("UpdateCarOwnershipCalc"));
+    private final Reader reader = new InputStreamReader(UpdateCarOwnershipModelMuc.class.getResourceAsStream("UpdateCarOwnershipCalc"));
 
     public OneCarUpdateOwnershipModelMuc(DataContainer dataContainer, Properties properties, Random rnd) {
         super(dataContainer, properties, rnd);
