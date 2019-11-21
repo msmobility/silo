@@ -109,7 +109,7 @@ public class DraconicResettlementJobMarketUpdate extends AbstractModel implement
         Map<String, List<Job>> jobsByType = jobDataManager.getJobs().stream().collect(Collectors.groupingBy(Job::getType));
 
         for(String jt: JobType.getJobTypes()) {
-            int newJobs = (int) (jobsByType.get(jt).size() * properties.jobData.growthRateInPercentByJobType.get(jt));
+            int newJobs = (int) (jobsByType.get(jt).size() * properties.jobData.growthRateInPercentByJobType.get(jt)) / 100;
             for (int i = 0; i < newJobs; i++) {
                 try {
                     Zone zone = zoneSampler.sampleObject();
