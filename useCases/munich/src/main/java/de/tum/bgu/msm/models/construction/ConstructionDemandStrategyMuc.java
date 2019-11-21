@@ -10,7 +10,7 @@ public class ConstructionDemandStrategyMuc implements ConstructionDemandStrategy
      * beta = 0.01 means that when the vacancy rate is at the level alpha, 1% additional
      * dwellings are added (if land use permits)
      */
-    private static final double BETA = 0.02;
+    private static final double BETA = 0;
 
     @Override
     public double calculateConstructionDemand(double vacancyRate, DwellingType dt, int numberOfExistingDwellings) {
@@ -29,7 +29,7 @@ public class ConstructionDemandStrategyMuc implements ConstructionDemandStrategy
         // values of this function were derived heuristically to make curve look nice
         double slope = -18.33 * Math.log(alpha) - 16.79;
 
-        if (vacancyRate > 1){
+        if (vacancyRate > 1) {
             vacancyRate = 1;
             //this checks that very large vacancy rates (generally in tests with subsamples of sp) do not result in  infinity
         }
@@ -38,17 +38,17 @@ public class ConstructionDemandStrategyMuc implements ConstructionDemandStrategy
         if (vacancyRate <= alpha) {
             demandRate = gamma + -1 * vacancyRate;
         } else {
-            demandRate = gamma / Math.exp(slope * vacancyRate);
+            //the following commented code should go at some point once we agree it is not necessary
+            //demandRate = gamma / Math.exp(slope * vacancyRate);
+            return 0;
         }
 
         double maxRate;
-        if(numberOfExistingDwellings < 10000) {
+        if (numberOfExistingDwellings < 10000) {
             maxRate = (-0.47622 * Math.log(numberOfExistingDwellings) + 5.38618) / 100;
         } else {
             maxRate = 0.01;
         }
-
         return Math.min(demandRate, maxRate);
-
     }
 }
