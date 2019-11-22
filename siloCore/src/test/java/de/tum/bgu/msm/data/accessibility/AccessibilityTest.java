@@ -137,8 +137,8 @@ public class AccessibilityTest {
 
 
         Assert.assertEquals(52.3879, accessibility.getRegionalAccessibility(region1), 0.001);
-        Assert.assertEquals(43.1301, accessibility.getRegionalAccessibility(region2), 0.001);
-        Assert.assertEquals(86.7784, accessibility.getRegionalAccessibility(region3), 0.001);
+        Assert.assertEquals(86.2602, accessibility.getRegionalAccessibility(region2), 0.001);
+        Assert.assertEquals(65.0838, accessibility.getRegionalAccessibility(region3), 0.001);
 
     }
 
@@ -231,7 +231,7 @@ public class AccessibilityTest {
 
 
         Assert.assertEquals(52.3879, accessibility.getRegionalAccessibility(region1), 0.001);
-        Assert.assertEquals(43.1301, accessibility.getRegionalAccessibility(region2), 0.001);
-        Assert.assertEquals(86.7784, accessibility.getRegionalAccessibility(region3), 0.001);
+        Assert.assertEquals(86.2602, accessibility.getRegionalAccessibility(region2), 0.001);
+        Assert.assertEquals(65.0838, accessibility.getRegionalAccessibility(region3), 0.001);
     }
 }
