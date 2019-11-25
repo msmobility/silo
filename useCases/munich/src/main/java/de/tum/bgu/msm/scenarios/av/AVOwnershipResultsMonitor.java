@@ -63,7 +63,7 @@ public class AVOwnershipResultsMonitor implements ResultsMonitor {
         resultWriter.print(",");
         resultWriter.print(summaryForThisYear.get("avs"));
         resultWriter.print(",");
-        resultWriter.print(summaryForThisYear.get("avs"));
+        resultWriter.print(summaryForThisYear.get("events"));
         resultWriter.println();
 
         resultWriter.flush();

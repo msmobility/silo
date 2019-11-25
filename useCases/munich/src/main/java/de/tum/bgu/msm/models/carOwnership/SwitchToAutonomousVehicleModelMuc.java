@@ -62,9 +62,10 @@ public class SwitchToAutonomousVehicleModelMuc extends AbstractModel implements 
 
     private void switchToAV(int year) {
 
-        int event_counter = 0;
-        int autos_counter = 0;
-        int av_counter = 0;
+        int event_counter = 0; // number of events change to AV
+        int autos_counter = 0; //number of cars (all)
+        int av_counter = 0; //numbre of avs
+
         HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
 
         // return HashMap<Household, ArrayOfHouseholdAttributes>. These are the households eligible for switching
@@ -86,14 +87,13 @@ public class SwitchToAutonomousVehicleModelMuc extends AbstractModel implements 
         }
 
 
-        int hh = dataContainer.getHouseholdDataManager().getHouseholds().size();
+        int hh = dataContainer.getHouseholdDataManager().getHouseholds().size(); // number of hh
         summary.put("hh", hh);
         summary.put("autos", autos_counter);
         summary.put("avs", av_counter);
-        summary.put("events", event_counter);
+        summary.put("", event_counter);
 
 
-        //todo reconsider to print out model results and how to pass them to the ResultsMonitor
         logger.info(" Simulated household switched to AV " + event_counter + " (" +
                 SiloUtil.rounder((100. * event_counter / hh), 0) + "% of hh)");
     }
