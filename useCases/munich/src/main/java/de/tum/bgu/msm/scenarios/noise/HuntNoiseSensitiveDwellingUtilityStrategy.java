@@ -57,7 +57,7 @@ public class HuntNoiseSensitiveDwellingUtilityStrategy implements HousingStrateg
      * [1] low inc
      * [2] high inc
      */
-    static double[][] dwellingTypeUtil = {
+    private static double[][] dwellingTypeUtil = {
             {0, -1.0570, -1.1130, -1.6340, -1.7940},
             {0, -0.8783, -0.9566, -0.9895, -0.9514},
             {0, -1.0570, -1.1130, -1.6340, -1.7940}
@@ -73,7 +73,7 @@ public class HuntNoiseSensitiveDwellingUtilityStrategy implements HousingStrateg
      * [1] low inc
      * [2] high inc
      */
-    static double[][] airQualityUtilAvg = {
+    private static double[][] airQualityUtilAvg = {
             {0, -0.2446, -0.5092, -0.9796},
             {0, -0.2299, -0.5264, -0.8504},
             {0, -0.3073, -0.2879, -1.3150}
@@ -87,7 +87,7 @@ public class HuntNoiseSensitiveDwellingUtilityStrategy implements HousingStrateg
      * [1] low inc
      * [2] high inc
      */
-    static double[][] trafficNoiseUtil = {
+    private static double[][] trafficNoiseUtil = {
             {0, -0.1694, -0.7165, -0.5348, -1.35},
             {0, -0.2758, -0.8354, -0.6934, -1.0250},
             {0, -0.3192, -0.9886, -1.0180, -1.8230}
@@ -97,11 +97,11 @@ public class HuntNoiseSensitiveDwellingUtilityStrategy implements HousingStrateg
 
     //----------------------------------------------------------------------
 
-    final static double[] rentUtilPer100Increase = {-0.8033, -1.2260, -0.6665};
+    private final static double[] rentUtilPer100Increase = {-0.8033, -1.2260, -0.6665};
 
-    final static double[] travelTimeUtilPer10minIncreaseAvg = {-0.1890, -0.1170, -0.3613};
+    private final static double[] travelTimeUtilPer10minIncreaseAvg = {-0.1890, -0.1170, -0.3613};
 
-    final static double[] travelTimeTransitUtilPer10minIncreaseAvg = {-0.0974, -0.1253, -0.1246};
+    private final static double[] travelTimeTransitUtilPer10minIncreaseAvg = {-0.0974, -0.1253, -0.1246};
 
     private final TravelTimes travelTimes;
     private final JobDataManager jobDataManager;
@@ -169,7 +169,7 @@ public class HuntNoiseSensitiveDwellingUtilityStrategy implements HousingStrateg
         return duplicate;
     }
 
-    double calculateUtilityAlternative(Household household, NoiseDwelling oldDwelling, NoiseDwelling newDwelling) {
+    private double calculateUtilityAlternative(Household household, NoiseDwelling oldDwelling, NoiseDwelling newDwelling) {
         final double oldPrice = getNoiseAdjustedPrice(oldDwelling);
         final double newPrice = getNoiseAdjustedPrice(newDwelling);
 

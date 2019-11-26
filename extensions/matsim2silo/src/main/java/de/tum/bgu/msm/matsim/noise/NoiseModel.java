@@ -1,39 +1,44 @@
 package de.tum.bgu.msm.matsim.noise;
 
+import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.matsim.MatsimData;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
-import org.matsim.contrib.noise.NoiseConfigGroup;
-import org.matsim.contrib.noise.NoiseOfflineCalculation;
-import org.matsim.contrib.noise.NoiseReceiverPoints;
-import org.matsim.contrib.noise.ReceiverPoint;
+import org.matsim.contrib.noise.*;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.population.io.PopulationReader;
 import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.core.utils.geometry.CoordUtils;
 
 import java.util.Random;
 
 public class NoiseModel extends AbstractModel implements ModelUpdateListener {
 
     private static final Logger logger = Logger.getLogger(NoiseModel.class);
-    private final NoiseDataManager noiseDataManager;
+    private final RealEstateDataManager realEstateDataManager;
     private final MatsimData matsimData;
+    private int latestMatsimYear = -1;
 
-    public NoiseModel(NoiseDataContainer data, Properties properties, Random random, MatsimData matsimData) {
+    private final NoiseReceiverPoints noiseReceiverPoints;
+
+
+    public NoiseModel(DataContainer data, Properties properties, Random random, MatsimData matsimData) {
         super(data, properties, random);
-        this.noiseDataManager = data.getNoiseData();
+        this.realEstateDataManager = data.getRealEstateDataManager();
         this.matsimData = matsimData;
+        this.noiseReceiverPoints = new NoiseReceiverPoints();
     }
 
     @Override
     public void setup() {
-        updateNoiseImmissions(properties.main.baseYear);
+        updateImmissions(properties.main.baseYear);
     }
 
     @Override
@@ -41,11 +46,47 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
 
     }
 
-    private void updateNoiseImmissions(int year) {
+    @Override
+    public void endYear(int year) {
+        updateImmissions(year);
+    }
+
+    @Override
+    public void endSimulation() {
+    }
+
+    private void updateImmissions(int year) {
         logger.info("Updating noise immisisons for year " + year + ".");
-        //Transport model ran at end of last year
-        calculateNoiseOffline(year);
-        final NoiseReceiverPoints noiseReceiverPoints = noiseDataManager.getNoiseReceiverPoints();
+
+        NoiseReceiverPoints newNoiseReceiverPoints = new NoiseReceiverPoints();
+        NoiseReceiverPoints existingNoiseReceiverPoints = new NoiseReceiverPoints();
+
+        for(Dwelling dwelling: realEstateDataManager.getDwellings()) {
+            Id<ReceiverPoint> id = Id.create(dwelling.getId(), ReceiverPoint.class);
+            final NoiseReceiverPoint existing = noiseReceiverPoints.remove(id);
+            if(existing == null) {
+                newNoiseReceiverPoints.put(id, new NoiseReceiverPoint(id, CoordUtils.createCoord(dwelling.getCoordinate())));
+            } else {
+                existingNoiseReceiverPoints.put(id, existing);
+            }
+        }
+
+        this.noiseReceiverPoints.clear();
+        this.noiseReceiverPoints.putAll(newNoiseReceiverPoints);
+        this.noiseReceiverPoints.putAll(existingNoiseReceiverPoints);
+
+        if (properties.transportModel.transportModelYears.contains(year + 1) || properties.main.startYear == year) {
+            if (properties.transportModel.transportModelYears.contains(year + 1)) {
+                latestMatsimYear = year + 1;
+            } else {
+                latestMatsimYear = year;
+            }
+            calculateNoiseOffline(noiseReceiverPoints);
+        } else if(latestMatsimYear > 0) {
+            calculateNoiseOffline(newNoiseReceiverPoints);
+            this.noiseReceiverPoints.putAll(newNoiseReceiverPoints);
+        }
+
         int counter65 = 0;
         int counter55 = 0;
         for (Dwelling dwelling: dataContainer.getRealEstateDataManager().getDwellings()) {
@@ -69,34 +110,22 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
         logger.info("Dwellings >65dB(A) : " + counter65 + " (" + ((double) counter65) / total + "%)");
     }
 
-    @Override
-    public void endYear(int year) {
-        if (properties.transportModel.transportModelYears.contains(year + 1)) {
-            updateNoiseImmissions(year+1);
-        }
-    }
 
-    @Override
-    public void endSimulation() {
-    }
-
-
-    private void calculateNoiseOffline(int year) {
+    private void calculateNoiseOffline(NoiseReceiverPoints noiseReceiverPoints) {
         final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/"
-                + properties.main.scenarioName + "/matsim/" + year +"/";
+                + properties.main.scenarioName + "/matsim/" + latestMatsimYear +"/";
 
-        String populationPath = outputDirectoryRoot +year+".output_plans.xml.gz";
+        String populationPath = outputDirectoryRoot + latestMatsimYear +".output_plans.xml.gz";
 
         Config config = ConfigUtils.createConfig();
         config.controler().setOutputDirectory(outputDirectoryRoot);
-        config.controler().setRunId(String.valueOf(year));
+        config.controler().setRunId(String.valueOf(latestMatsimYear));
         final MutableScenario scenario = ScenarioUtils.createMutableScenario(config);
 
         new PopulationReader(scenario).readFile(populationPath);
 
         scenario.setNetwork(matsimData.getCarNetwork());
 
-        NoiseReceiverPoints noiseReceiverPoints = noiseDataManager.getNoiseReceiverPoints();
         scenario.addScenarioElement(NoiseReceiverPoints.NOISE_RECEIVER_POINTS, noiseReceiverPoints);
 
         NoiseConfigGroup noiseParameters = ConfigUtils.addOrGetModule(scenario.getConfig(), NoiseConfigGroup.class);

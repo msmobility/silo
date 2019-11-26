@@ -14,7 +14,6 @@ import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.io.input.*;
 import de.tum.bgu.msm.matsim.MatsimTravelTimes;
-import de.tum.bgu.msm.matsim.noise.NoiseDataManager;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.*;
 import org.matsim.core.config.Config;
@@ -74,7 +73,7 @@ public class DataBuilderNoise {
 
         DataContainerWithSchools delegate = new DataContainerWithSchoolsImpl(geoData, realEstateDataManager, jobDataManager, householdDataManager, travelTimes, accessibility,
                 commutingTimeProbability, schoolData, properties);
-        return new NoiseDataContainerImpl(delegate, new NoiseDataManager(dwellingData, properties), properties);
+        return new NoiseDataContainerImpl(delegate, properties);
 
     }
 

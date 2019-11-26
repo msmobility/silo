@@ -4,7 +4,6 @@ import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.io.output.DefaultDwellingWriter;
 import de.tum.bgu.msm.io.output.DwellingWriter;
-import de.tum.bgu.msm.matsim.noise.NoiseDataContainer;
 import de.tum.bgu.msm.matsim.noise.NoiseDwelling;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -13,9 +12,6 @@ import java.io.PrintWriter;
 
 public class NoiseDwellingWriter implements DwellingWriter {
 
-    public NoiseDwellingWriter(NoiseDataContainer noiseDataContainer) {
-        this.realEstateDataManager = noiseDataContainer.getRealEstateDataManager();
-    }
 
     private final static Logger logger = Logger.getLogger(DefaultDwellingWriter.class);
     private final RealEstateDataManager realEstateDataManager;

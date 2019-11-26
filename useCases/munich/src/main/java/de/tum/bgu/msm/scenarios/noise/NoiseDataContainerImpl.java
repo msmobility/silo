@@ -7,22 +7,20 @@ import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
-import de.tum.bgu.msm.matsim.noise.NoiseDataManager;
+import de.tum.bgu.msm.io.PersonWriterMuc;
+import de.tum.bgu.msm.io.output.DefaultHouseholdWriter;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.schools.SchoolData;
 
-public class NoiseDataContainerImpl implements de.tum.bgu.msm.matsim.noise.NoiseDataContainer, DataContainerWithSchools {
+public class NoiseDataContainerImpl implements DataContainerWithSchools {
 
     private final DataContainerWithSchools delegate;
-    private final NoiseDataManager noiseDataManager;
     private final Properties properties;
 
     public NoiseDataContainerImpl(DataContainerWithSchools delegate,
-                                  NoiseDataManager noiseDataManager,
                                   Properties properties) {
         this.delegate = delegate;
-        this.noiseDataManager = noiseDataManager;
         this.properties = properties;
     }
 
@@ -69,13 +67,11 @@ public class NoiseDataContainerImpl implements de.tum.bgu.msm.matsim.noise.Noise
     @Override
     public void setup() {
         delegate.setup();
-        noiseDataManager.setup();
     }
 
     @Override
     public void prepareYear(int year) {
         delegate.prepareYear(year);
-        noiseDataManager.setup();
         if (properties.transportModel.transportModelYears.contains(year) || properties.main.startYear == year) {
             writeDwellingsWithNoise(year);
         }
@@ -88,24 +84,32 @@ public class NoiseDataContainerImpl implements de.tum.bgu.msm.matsim.noise.Noise
                 + "Noise_"
                 + year
                 + ".csv";
-        new NoiseDwellingWriter(this).writeDwellings(filedd);
+        new NoiseDwellingWriter(delegate.getRealEstateDataManager()).writeDwellings(filedd);
+        String fileHh = outputDirectory
+                + properties.householdData.householdFinalFileName
+                + "_"
+                + year
+                + ".csv";
+        new DefaultHouseholdWriter(delegate.getHouseholdDataManager()).writeHouseholds(fileHh);
+
+        String filePp = outputDirectory
+                + properties.householdData.personFinalFileName
+                + "_"
+                + year
+                + ".csv";
+        new PersonWriterMuc(delegate.getHouseholdDataManager()).writePersons(filePp);
+
     }
 
     @Override
     public void endYear(int year) {
         delegate.endYear(year);
-        noiseDataManager.setup();
     }
 
     @Override
     public void endSimulation() {
         delegate.endSimulation();
-        noiseDataManager.endSimulation();
         writeDwellingsWithNoise(properties.main.endYear);
     }
 
-    @Override
-    public NoiseDataManager getNoiseData() {
-        return noiseDataManager;
-    }
 }
