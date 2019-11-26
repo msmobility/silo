@@ -73,12 +73,13 @@ public class ZoneConnectorManager {
             for (Dwelling dwelling : dwellings) {
                 final Coordinate coordinate = dwelling.getCoordinate();
                 final Household household = householdData.getHouseholdFromId(dwelling.getResidentId());
+                int weight = 1;
                 if(household!=null) {
-                    int weight = household.getHhSize();
+                    weight += household.getHhSize();
                     xSum += (weight * coordinate.x);
                     ySum += (weight * coordinate.y);
-                    weightedCount += weight;
                 }
+                weightedCount += weight;
             }
             double avgX = xSum / weightedCount;
             double avgY = ySum / weightedCount;

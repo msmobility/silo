@@ -57,7 +57,7 @@ public class MatsimSkimCreator {
 
                     ImaginaryNode aggregatedToNodes = MultiNodeDijkstra.createImaginaryNode(toNodes);
 
-                    for (Zone origin : partition) {
+                        for (Zone origin : partition) {
                         Node originNode = NetworkUtils.getNearestNode(carNetwork, matsimData.getZoneConnectorManager().getCoordsForZone(origin).get(0));
                         calculator.calcLeastCostPath(originNode, aggregatedToNodes, Properties.get().transportModel.peakHour_s, null, null);
                         for (Zone destination : zones) {

@@ -312,7 +312,11 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         if (idOldDD > 0) {
             dataContainer.getRealEstateDataManager().vacateDwelling(idOldDD);
         }
-        dataContainer.getRealEstateDataManager().removeDwellingFromVacancyList(idNewDD);
+        try {
+            dataContainer.getRealEstateDataManager().removeDwellingFromVacancyList(idNewDD);
+        } catch (NullPointerException e){
+            logger.warn("eh");
+        }
         dataContainer.getRealEstateDataManager().getDwelling(idNewDD).setResidentID(hh.getId());
         hh.setDwelling(idNewDD);
         if (hh.getId() == SiloUtil.trackHh) {

@@ -99,7 +99,7 @@ public class HousingStrategyMuc implements HousingStrategy {
         this.dwellingUtilityStrategy = dwellingUtilityStrategy;
         this.regionUtilityStrategyMuc = regionUtilityStrategyMuc;
         this.regionProbabilityStrategy = regionProbabilityStrategy;
-        simpleCommuteModeChoice = new SimpleCommuteModeChoice(commutingTimeProbability, dataContainer.getJobDataManager(), properties, SiloUtil.provideNewRandom());
+        simpleCommuteModeChoice = new SimpleCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom());
     }
 
     @Override
@@ -125,14 +125,7 @@ public class HousingStrategyMuc implements HousingStrategy {
         //currently this is re-filtering persons to find workers (it was done previously in select region)
         // This way looks more flexible to account for other trips, such as education, though.
 
-        double travelCostUtility = 1; //do not have effect at the moment;
-
         double workDistanceUtility = 1;
-        JobDataManager jobDataManager = dataContainer.getJobDataManager();
-        Zone ddZone = geoData.getZones().get(dd.getZoneId());
-
-        double carToWorkersRatio = Math.min(1., ((double) hh.getAutos() / HouseholdUtil.getNumberOfWorkers(hh)));
-        double factorForThisZone = 0;
 
         CommuteModeChoiceMapping commuteModeChoiceMapping = simpleCommuteModeChoice.assignCommuteModeChoice(dd, travelTimes, hh);
 
@@ -141,7 +134,6 @@ public class HousingStrategyMuc implements HousingStrategy {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
 
                 workDistanceUtility *= commuteModeChoiceMapping.getMode(pp).utility;
-
 
                /* if(MovesModelImpl.track) {
                     Zone workZone = geoData.getZones().get(workLocation.getZoneId());
@@ -182,7 +174,6 @@ public class HousingStrategyMuc implements HousingStrategy {
                         e.printStackTrace();
                     }
                 }*/
-                workDistanceUtility *= factorForThisZone;
             }
         }
         return dwellingUtilityStrategy.calculateSelectDwellingUtility(ht, ddSizeUtility, ddPriceUtility,
@@ -211,13 +202,22 @@ public class HousingStrategyMuc implements HousingStrategy {
             for (Nationality nationality : Nationality.values()) {
                 Map<Region, Double> regionUtils = new LinkedHashMap<>();
                 for (Region region : geoData.getRegions().values()) {
-                    final int averageRegionalRent = rentsByRegion.get(region.getId()).intValue();
-                    final float regAcc = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region));
-                    float priceUtil = (float) convertPriceToUtility(averageRegionalRent, incomeCategory);
-
+                    final int averageRegionalRent;
+                    final float regAcc;
+                    float priceUtil;
+                    if (rentsByRegion.containsKey(region)) {
+                        averageRegionalRent = rentsByRegion.get(region.getId()).intValue();
+                        priceUtil = (float) convertPriceToUtility(averageRegionalRent, incomeCategory);
+                        regAcc = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region));
+                    } else {
+                        //when there is not a single dwelling the housing strategy should avoid this region (scale down scenarios)
+                        priceUtil = 0;
+                        regAcc = 0;
+                    }
 
                     double utility = regionUtilityStrategyMuc.calculateRegionUtility(incomeCategory,
                             nationality, priceUtil, regAcc, (float) regionalShareForeigners.getIndexed(region.getId()));
+
                     switch (NORMALIZER) {
                         case POPULATION:
                             utility *= hhByRegion.getIndexed(region.getId());
@@ -246,28 +246,12 @@ public class HousingStrategyMuc implements HousingStrategy {
     @Override
     public double calculateRegionalUtility(Household household, Region region) {
 
-        JobDataManager jobDataManager = dataContainer.getJobDataManager();
         double thisRegionFactor = 1;
-        double carToWorkersRatio = Math.min(1., ((double) household.getAutos() / HouseholdUtil.getNumberOfWorkers(household)));
+        CommuteModeChoiceMapping commuteModeChoiceMapping = simpleCommuteModeChoice.assignRegionalCommuteModeChoice(region, travelTimes, household);
 
         for (Person pp : household.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
-                final JobMuc job = (JobMuc) jobDataManager.getJobFromId(pp.getJobId());
-                Zone workZone = geoData.getZones().get(job.getZoneId());
-                if (carToWorkersRatio <= 0.) {
-                    int ptTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds().get(), TransportMode.pt);
-                    thisRegionFactor = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, ptTime));
-                } else if (carToWorkersRatio >= 1.) {
-                    int carTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds().get(), TransportMode.car);
-                    thisRegionFactor = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, carTime));
-                } else {
-                    int carTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds().get(), TransportMode.car);
-                    int ptTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds().get(), TransportMode.pt);
-                    double factorCar = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, carTime));
-                    double factorPt = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, ptTime));
-
-                    thisRegionFactor = factorCar * carToWorkersRatio + (1 - carToWorkersRatio) * factorPt;
-                }
+                thisRegionFactor *= commuteModeChoiceMapping.getMode(pp).utility;
             }
         }
 
