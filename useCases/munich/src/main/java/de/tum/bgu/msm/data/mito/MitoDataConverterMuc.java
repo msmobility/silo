@@ -127,8 +127,8 @@ public class MitoDataConverterMuc implements MitoDataConverter {
                         coordinate = zone.getRandomCoord();
                     }
                     mitoOccupation = new MitoJob(zone, coordinate, job.getId());
-                    mitoOccupation.setStartTime_min((int) (job.getStartTimeInSeconds() / 60.));
-                    mitoOccupation.setEndTime_min((int) ((job.getStartTimeInSeconds() + job.getWorkingTimeInSeconds()) / 60.));
+                    mitoOccupation.setStartTime_min((int) (job.getStartTimeInSeconds().get() / 60.));
+                    mitoOccupation.setEndTime_min((int) ((job.getStartTimeInSeconds().get() + job.getWorkingTimeInSeconds().get()) / 60.));
                 }
                 break;
             case UNEMPLOYED:

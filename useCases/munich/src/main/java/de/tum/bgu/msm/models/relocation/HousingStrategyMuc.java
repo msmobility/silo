@@ -17,11 +17,14 @@ import de.tum.bgu.msm.data.person.Nationality;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.models.modeChoice.CommuteModeChoiceMapping;
+import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
 import de.tum.bgu.msm.models.relocation.moves.DwellingProbabilityStrategy;
 import de.tum.bgu.msm.models.relocation.moves.HousingStrategy;
 import de.tum.bgu.msm.models.relocation.moves.RegionProbabilityStrategy;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
@@ -75,6 +78,8 @@ public class HousingStrategyMuc implements HousingStrategy {
     private IndexedDoubleMatrix1D regionalShareForeigners;
     private IndexedDoubleMatrix1D hhByRegion;
 
+    private final SimpleCommuteModeChoice simpleCommuteModeChoice;
+
     private EnumMap<IncomeCategory, EnumMap<Nationality, Map<Region, Double>>> utilityByIncomeByNationalityByRegion = new EnumMap<>(IncomeCategory.class);
 
     public HousingStrategyMuc(DataContainer dataContainer,
@@ -94,6 +99,7 @@ public class HousingStrategyMuc implements HousingStrategy {
         this.dwellingUtilityStrategy = dwellingUtilityStrategy;
         this.regionUtilityStrategyMuc = regionUtilityStrategyMuc;
         this.regionProbabilityStrategy = regionProbabilityStrategy;
+        simpleCommuteModeChoice = new SimpleCommuteModeChoice(commutingTimeProbability, dataContainer.getJobDataManager(), properties, SiloUtil.provideNewRandom());
     }
 
     @Override
@@ -127,24 +133,15 @@ public class HousingStrategyMuc implements HousingStrategy {
 
         double carToWorkersRatio = Math.min(1., ((double) hh.getAutos() / HouseholdUtil.getNumberOfWorkers(hh)));
         double factorForThisZone = 0;
+
+        CommuteModeChoiceMapping commuteModeChoiceMapping = simpleCommuteModeChoice.assignCommuteModeChoice(dd, travelTimes, hh);
+
+
         for (Person pp : hh.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
-                JobMuc workLocation = Objects.requireNonNull((JobMuc) jobDataManager.getJobFromId(pp.getJobId()));
 
-                if(carToWorkersRatio == 0.) {
-                    int ptTime = (int) travelTimes.getTravelTime(dd, workLocation, workLocation.getStartTimeInSeconds(), TransportMode.pt);
-                    factorForThisZone = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, ptTime));
-                } else if( carToWorkersRatio == 1.) {
-                    int carTime = (int) travelTimes.getTravelTime(dd, workLocation, workLocation.getStartTimeInSeconds(), TransportMode.car);
-                    factorForThisZone = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, carTime));
-                } else {
-                    int carTime = (int) travelTimes.getTravelTime(dd, workLocation, workLocation.getStartTimeInSeconds(), TransportMode.car);
-                    int ptTime = (int) travelTimes.getTravelTime(dd, workLocation, workLocation.getStartTimeInSeconds(), TransportMode.pt);
-                    double factorCar = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, carTime));
-                    double factorPt = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, ptTime));
+                workDistanceUtility *= commuteModeChoiceMapping.getMode(pp).utility;
 
-                    factorForThisZone= factorCar * carToWorkersRatio + (1 - carToWorkersRatio) * factorPt;
-                }
 
                /* if(MovesModelImpl.track) {
                     Zone workZone = geoData.getZones().get(workLocation.getZoneId());
@@ -238,7 +235,7 @@ public class HousingStrategyMuc implements HousingStrategy {
             utilityByIncomeByNationalityByRegion.put(incomeCategory, utilityByNationalityByRegion);
         }
 
-        if(NORMALIZER == Normalizer.SHARE_VAC_DD) {
+        if (NORMALIZER == Normalizer.SHARE_VAC_DD) {
             RealEstateDataManager realEstateDataManager = dataContainer.getRealEstateDataManager();
             for (int region : geoData.getRegions().keySet()) {
                 totalVacantDd.add(realEstateDataManager.getNumberOfVacantDDinRegion(region));
@@ -257,19 +254,19 @@ public class HousingStrategyMuc implements HousingStrategy {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
                 final JobMuc job = (JobMuc) jobDataManager.getJobFromId(pp.getJobId());
                 Zone workZone = geoData.getZones().get(job.getZoneId());
-                if(carToWorkersRatio <= 0.) {
-                    int ptTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds(), TransportMode.pt);
+                if (carToWorkersRatio <= 0.) {
+                    int ptTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds().get(), TransportMode.pt);
                     thisRegionFactor = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, ptTime));
-                } else if( carToWorkersRatio >= 1.) {
-                    int carTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds(), TransportMode.car);
+                } else if (carToWorkersRatio >= 1.) {
+                    int carTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds().get(), TransportMode.car);
                     thisRegionFactor = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, carTime));
                 } else {
-                    int carTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds(), TransportMode.car);
-                    int ptTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds(), TransportMode.pt);
+                    int carTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds().get(), TransportMode.car);
+                    int ptTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds().get(), TransportMode.pt);
                     double factorCar = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, carTime));
                     double factorPt = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, ptTime));
 
-                    thisRegionFactor= factorCar * carToWorkersRatio + (1 - carToWorkersRatio) * factorPt;
+                    thisRegionFactor = factorCar * carToWorkersRatio + (1 - carToWorkersRatio) * factorPt;
                 }
             }
         }
