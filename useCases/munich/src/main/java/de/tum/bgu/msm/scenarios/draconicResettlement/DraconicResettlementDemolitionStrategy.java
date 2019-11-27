@@ -30,7 +30,6 @@ public class DraconicResettlementDemolitionStrategy implements DemolitionStrateg
     }
 
     private double calculateUrbanDomilitionProb(Dwelling dd, int currentYear) {
-        int quality = dd.getQuality();
         double vacantModifier = 0.9;
         int yearBuilt = dd.getYearBuilt();
         if(dd.getResidentId() > 0) {
