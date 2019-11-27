@@ -131,7 +131,7 @@ public class ModelBuilderMuc {
                 break;
             case MATSIM:
                 SimpleCommuteModeChoice commuteModeChoice = new SimpleCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom());
-                scenarioAssembler = new SimpleMatsimScenarioAssembler(dataContainer, properties);
+                scenarioAssembler = new SimpleCommuteModeChoiceMatsimScenarioAssembler(dataContainer, properties, commuteModeChoice);
                 transportModel = new MatsimTransportModel(dataContainer, config, properties, null,
                         ZoneConnectorManager.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, scenarioAssembler);
                 break;

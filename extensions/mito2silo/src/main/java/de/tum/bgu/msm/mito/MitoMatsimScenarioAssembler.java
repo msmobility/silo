@@ -44,7 +44,7 @@ public class MitoMatsimScenarioAssembler implements MatsimScenarioAssembler {
     }
 
     @Override
-    public Scenario assembleScenario(Config initialMatsimConfig, int year) {
+    public Scenario assembleScenario(Config initialMatsimConfig, int year, TravelTimes travelTimes) {
 
         logger.info("  Running travel demand model MITO for the year " + year);
 
