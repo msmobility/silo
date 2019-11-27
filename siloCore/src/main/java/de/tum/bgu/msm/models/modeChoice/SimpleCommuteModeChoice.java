@@ -66,7 +66,7 @@ public class SimpleCommuteModeChoice implements CommuteModeChoice {
                     utilityByMode.put(TransportMode.pt, ptUtility);
                     commuteModesByPerson.put(pp.getId(), utilityByMode);
                     double probabilityAsKey = carUtility / (carUtility + ptUtility);
-                    if (personByProbability.containsKey(probabilityAsKey)){
+                    while (personByProbability.containsKey(probabilityAsKey)){
                         //more than one hh member has exactly the same probability, so it would be replaced in the treemap
                         probabilityAsKey += random.nextDouble();
                     }
