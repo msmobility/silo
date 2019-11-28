@@ -77,7 +77,7 @@ public class GenerateVacantDwellings {
                 int quality = selectQualityVacant(municipality, extractYear(buildingYearSize));
                 int groundPrice = dataSetSynPop.getDwellingPriceByTypeAndZone().get(tazSelected).get(type);
                 int price = microDataManager.guessPrice(groundPrice, quality, floorSpace, DwellingUsage.VACANT);
-                Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, tazSelected, null, -1, DefaultDwellingTypeImpl.MF234, bedRooms, quality, price, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
+                Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, tazSelected, null, -1, type, bedRooms, quality, price, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
                 realEstateData.addDwelling(dwell);
                 dwell.setUsage(DwellingUsage.VACANT);
                 dwell.setFloorSpace(floorSpace);
@@ -188,7 +188,7 @@ public class GenerateVacantDwellings {
 
     private DwellingType extractDwellingType (int buildingYear, float ddType1Prob, float ddType3Prob){
 
-        DwellingType type = DefaultDwellingTypeImpl.SFA;
+        DwellingType type = DefaultDwellingTypeImpl.MF234;
 
         if (buildingYear < 10){
             if (SiloUtil.getRandomNumberAsFloat() < ddType1Prob){
