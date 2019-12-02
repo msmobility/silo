@@ -17,11 +17,14 @@ import de.tum.bgu.msm.data.person.Nationality;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.models.modeChoice.CommuteModeChoiceMapping;
+import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
 import de.tum.bgu.msm.models.relocation.moves.DwellingProbabilityStrategy;
 import de.tum.bgu.msm.models.relocation.moves.HousingStrategy;
 import de.tum.bgu.msm.models.relocation.moves.RegionProbabilityStrategy;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
@@ -57,7 +60,6 @@ public class HousingStrategyMuc implements HousingStrategy {
 
     private final DataContainer dataContainer;
     private final Properties properties;
-    private final CommutingTimeProbability commutingTimeProbability;
     private final Accessibility accessibility;
     private final GeoData geoData;
     private final RealEstateDataManager realEstateDataManager;
@@ -75,6 +77,8 @@ public class HousingStrategyMuc implements HousingStrategy {
     private IndexedDoubleMatrix1D regionalShareForeigners;
     private IndexedDoubleMatrix1D hhByRegion;
 
+    private final SimpleCommuteModeChoice simpleCommuteModeChoice;
+
     private EnumMap<IncomeCategory, EnumMap<Nationality, Map<Region, Double>>> utilityByIncomeByNationalityByRegion = new EnumMap<>(IncomeCategory.class);
 
     public HousingStrategyMuc(DataContainer dataContainer,
@@ -85,7 +89,6 @@ public class HousingStrategyMuc implements HousingStrategy {
                               RegionUtilityStrategyMuc regionUtilityStrategyMuc, RegionProbabilityStrategy regionProbabilityStrategy) {
         this.dataContainer = dataContainer;
         this.properties = properties;
-        this.commutingTimeProbability = dataContainer.getCommutingTimeProbability();
         this.accessibility = dataContainer.getAccessibility();
         this.geoData = dataContainer.getGeoData();
         this.realEstateDataManager = dataContainer.getRealEstateDataManager();
@@ -94,6 +97,7 @@ public class HousingStrategyMuc implements HousingStrategy {
         this.dwellingUtilityStrategy = dwellingUtilityStrategy;
         this.regionUtilityStrategyMuc = regionUtilityStrategyMuc;
         this.regionProbabilityStrategy = regionProbabilityStrategy;
+        simpleCommuteModeChoice = new SimpleCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom());
     }
 
     @Override
@@ -119,32 +123,15 @@ public class HousingStrategyMuc implements HousingStrategy {
         //currently this is re-filtering persons to find workers (it was done previously in select region)
         // This way looks more flexible to account for other trips, such as education, though.
 
-        double travelCostUtility = 1; //do not have effect at the moment;
-
         double workDistanceUtility = 1;
-        JobDataManager jobDataManager = dataContainer.getJobDataManager();
-        Zone ddZone = geoData.getZones().get(dd.getZoneId());
 
-        double carToWorkersRatio = Math.min(1., ((double) hh.getAutos() / HouseholdUtil.getNumberOfWorkers(hh)));
-        double factorForThisZone = 0;
+        CommuteModeChoiceMapping commuteModeChoiceMapping = simpleCommuteModeChoice.assignCommuteModeChoice(dd, travelTimes, hh);
+
+
         for (Person pp : hh.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
-                JobMuc workLocation = Objects.requireNonNull((JobMuc) jobDataManager.getJobFromId(pp.getJobId()));
 
-                if(carToWorkersRatio == 0.) {
-                    int ptTime = (int) travelTimes.getTravelTime(dd, workLocation, workLocation.getStartTimeInSeconds(), TransportMode.pt);
-                    factorForThisZone = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, ptTime));
-                } else if( carToWorkersRatio == 1.) {
-                    int carTime = (int) travelTimes.getTravelTime(dd, workLocation, workLocation.getStartTimeInSeconds(), TransportMode.car);
-                    factorForThisZone = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, carTime));
-                } else {
-                    int carTime = (int) travelTimes.getTravelTime(dd, workLocation, workLocation.getStartTimeInSeconds(), TransportMode.car);
-                    int ptTime = (int) travelTimes.getTravelTime(dd, workLocation, workLocation.getStartTimeInSeconds(), TransportMode.pt);
-                    double factorCar = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, carTime));
-                    double factorPt = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, ptTime));
-
-                    factorForThisZone= factorCar * carToWorkersRatio + (1 - carToWorkersRatio) * factorPt;
-                }
+                workDistanceUtility *= commuteModeChoiceMapping.getMode(pp).utility;
 
                /* if(MovesModelImpl.track) {
                     Zone workZone = geoData.getZones().get(workLocation.getZoneId());
@@ -185,7 +172,6 @@ public class HousingStrategyMuc implements HousingStrategy {
                         e.printStackTrace();
                     }
                 }*/
-                workDistanceUtility *= factorForThisZone;
             }
         }
         return dwellingUtilityStrategy.calculateSelectDwellingUtility(ht, ddSizeUtility, ddPriceUtility,
@@ -214,13 +200,22 @@ public class HousingStrategyMuc implements HousingStrategy {
             for (Nationality nationality : Nationality.values()) {
                 Map<Region, Double> regionUtils = new LinkedHashMap<>();
                 for (Region region : geoData.getRegions().values()) {
-                    final int averageRegionalRent = rentsByRegion.get(region.getId()).intValue();
-                    final float regAcc = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region));
-                    float priceUtil = (float) convertPriceToUtility(averageRegionalRent, incomeCategory);
-
+                    final int averageRegionalRent;
+                    final float regAcc;
+                    float priceUtil;
+                    if (rentsByRegion.containsKey(region)) {
+                        averageRegionalRent = rentsByRegion.get(region.getId()).intValue();
+                        priceUtil = (float) convertPriceToUtility(averageRegionalRent, incomeCategory);
+                        regAcc = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region));
+                    } else {
+                        //when there is not a single dwelling the housing strategy should avoid this region (scale down scenarios)
+                        priceUtil = 0;
+                        regAcc = 0;
+                    }
 
                     double utility = regionUtilityStrategyMuc.calculateRegionUtility(incomeCategory,
                             nationality, priceUtil, regAcc, (float) regionalShareForeigners.getIndexed(region.getId()));
+
                     switch (NORMALIZER) {
                         case POPULATION:
                             utility *= hhByRegion.getIndexed(region.getId());
@@ -238,7 +233,7 @@ public class HousingStrategyMuc implements HousingStrategy {
             utilityByIncomeByNationalityByRegion.put(incomeCategory, utilityByNationalityByRegion);
         }
 
-        if(NORMALIZER == Normalizer.SHARE_VAC_DD) {
+        if (NORMALIZER == Normalizer.SHARE_VAC_DD) {
             RealEstateDataManager realEstateDataManager = dataContainer.getRealEstateDataManager();
             for (int region : geoData.getRegions().keySet()) {
                 totalVacantDd.add(realEstateDataManager.getNumberOfVacantDDinRegion(region));
@@ -249,28 +244,12 @@ public class HousingStrategyMuc implements HousingStrategy {
     @Override
     public double calculateRegionalUtility(Household household, Region region) {
 
-        JobDataManager jobDataManager = dataContainer.getJobDataManager();
         double thisRegionFactor = 1;
-        double carToWorkersRatio = Math.min(1., ((double) household.getAutos() / HouseholdUtil.getNumberOfWorkers(household)));
+        CommuteModeChoiceMapping commuteModeChoiceMapping = simpleCommuteModeChoice.assignRegionalCommuteModeChoice(region, travelTimes, household);
 
         for (Person pp : household.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
-                final JobMuc job = (JobMuc) jobDataManager.getJobFromId(pp.getJobId());
-                Zone workZone = geoData.getZones().get(job.getZoneId());
-                if(carToWorkersRatio <= 0.) {
-                    int ptTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds(), TransportMode.pt);
-                    thisRegionFactor = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, ptTime));
-                } else if( carToWorkersRatio >= 1.) {
-                    int carTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds(), TransportMode.car);
-                    thisRegionFactor = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, carTime));
-                } else {
-                    int carTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds(), TransportMode.car);
-                    int ptTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, job.getStartTimeInSeconds(), TransportMode.pt);
-                    double factorCar = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, carTime));
-                    double factorPt = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, ptTime));
-
-                    thisRegionFactor= factorCar * carToWorkersRatio + (1 - carToWorkersRatio) * factorPt;
-                }
+                thisRegionFactor *= commuteModeChoiceMapping.getMode(pp).utility;
             }
         }
 

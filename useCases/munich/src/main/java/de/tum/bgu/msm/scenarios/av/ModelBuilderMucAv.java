@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.scenarios.longCommutePenalty;
+package de.tum.bgu.msm.scenarios.av;
 
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
@@ -11,6 +11,7 @@ import de.tum.bgu.msm.models.EducationModelMuc;
 import de.tum.bgu.msm.models.MarriageModelMuc;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipModelMuc;
+import de.tum.bgu.msm.models.carOwnership.SwitchToAutonomousVehicleModelMuc;
 import de.tum.bgu.msm.models.carOwnership.UpdateCarOwnershipModelMuc;
 import de.tum.bgu.msm.models.construction.ConstructionDemandStrategyMuc;
 import de.tum.bgu.msm.models.demography.birth.BirthModelImpl;
@@ -63,9 +64,9 @@ import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.matsim.core.config.Config;
 
-public class LongCommutePenaltyModelBuilderMuc {
+public class ModelBuilderMucAv {
 
-    public static ModelContainer getModelContainerForMuc(DataContainerWithSchools dataContainer, Properties properties, Config config) {
+    public static ModelContainer getModelContainerAvForMuc(DataContainerWithSchools dataContainer, Properties properties, Config config) {
 
         PersonFactory ppFactory = dataContainer.getHouseholdDataManager().getPersonFactory();
         HouseholdFactory hhFactory = dataContainer.getHouseholdDataManager().getHouseholdFactory();
@@ -80,7 +81,7 @@ public class LongCommutePenaltyModelBuilderMuc {
         MovesModelImpl movesModel = new MovesModelImpl(
                 dataContainer, properties,
                 new DefaultMovesStrategy(),
-                new LongCommutePenaltyHousingStrategyMuc(dataContainer,
+                new HousingStrategyMuc(dataContainer,
                         properties,
                         dataContainer.getTravelTimes(), new DefaultDwellingProbabilityStrategy(),
                         new DwellingUtilityStrategyImpl(), new RegionUtilityStrategyMucImpl(), new RegionProbabilityStrategyImpl()), SiloUtil.provideNewRandom());
@@ -151,6 +152,9 @@ public class LongCommutePenaltyModelBuilderMuc {
                 constructionOverwrite, inOutMigration, movesModel, transportModel);
 
         modelContainer.registerModelUpdateListener(new UpdateCarOwnershipModelMuc(dataContainer, properties, SiloUtil.provideNewRandom()));
+        modelContainer.registerModelUpdateListener(new SwitchToAutonomousVehicleModelMuc(dataContainer,
+                properties,
+                SwitchToAutonomousVehicleModelMuc.class.getResourceAsStream("SwitchToAutonomousVehicleCalc"), SiloUtil.provideNewRandom()));
 
         return modelContainer;
     }

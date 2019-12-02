@@ -1,6 +1,5 @@
 package de.tum.bgu.msm.matsim;
 
-import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.Region;

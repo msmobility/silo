@@ -146,8 +146,15 @@ public final class MatsimTransportModel implements TransportModel {
 
     private void runTransportModel(int year) {
         logger.warn("Running MATSim transport model for year " + year + ".");
-
-        Scenario assembledScenario = scenarioAssembler.assembleScenario(initialMatsimConfig, year);
+        Scenario assembledScenario;
+        TravelTimes travelTimes = dataContainer.getTravelTimes();
+        if (year == properties.main.baseYear){
+            //if using the SimpleCommuteModeChoiceScenarioAssembler, we need some intial travel times (this will use an unlodaded network)
+            TravelTime myTravelTime = SiloMatsimUtils.getAnEmptyNetworkTravelTime();
+            TravelDisutility myTravelDisutility = SiloMatsimUtils.getAnEmptyNetworkTravelDisutility();
+            updateTravelTimes(myTravelTime, myTravelDisutility);
+        }
+        assembledScenario = scenarioAssembler.assembleScenario(initialMatsimConfig, year, travelTimes);
 
         ConfigUtils.setVspDefaults(assembledScenario.getConfig());
         finalizeConfig(assembledScenario.getConfig(), year);
@@ -268,4 +275,5 @@ public final class MatsimTransportModel implements TransportModel {
                     dataContainer.getGeoData().getZones().values());
         }
     }
+
 }
