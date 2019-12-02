@@ -60,7 +60,6 @@ public class HousingStrategyMuc implements HousingStrategy {
 
     private final DataContainer dataContainer;
     private final Properties properties;
-    private final CommutingTimeProbability commutingTimeProbability;
     private final Accessibility accessibility;
     private final GeoData geoData;
     private final RealEstateDataManager realEstateDataManager;
@@ -90,7 +89,6 @@ public class HousingStrategyMuc implements HousingStrategy {
                               RegionUtilityStrategyMuc regionUtilityStrategyMuc, RegionProbabilityStrategy regionProbabilityStrategy) {
         this.dataContainer = dataContainer;
         this.properties = properties;
-        this.commutingTimeProbability = dataContainer.getCommutingTimeProbability();
         this.accessibility = dataContainer.getAccessibility();
         this.geoData = dataContainer.getGeoData();
         this.realEstateDataManager = dataContainer.getRealEstateDataManager();

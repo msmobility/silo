@@ -280,9 +280,9 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
                 " with partitions of size " + partitionSize);
 
         for (final List<Household> partition : partitions) {
+            HousingStrategy strategy = housingStrategy.duplicate();
             executor.addTaskToQueue(() -> {
                 try {
-                    HousingStrategy strategy = housingStrategy.duplicate();
                     for (Household hh : partition) {
                         final HouseholdType householdType = hh.getHouseholdType();
                         hhByType.add(householdType);
