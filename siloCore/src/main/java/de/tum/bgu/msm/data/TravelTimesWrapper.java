@@ -78,7 +78,7 @@ public class TravelTimesWrapper implements TravelTimes, ModelUpdateListener {
     }
 
     private void updateSkims(int year) {
-        if (properties.transportModel.transportModelIdentifier == TransportModelPropertiesModule.TransportModelIdentifier.NONE) {
+        if (properties.transportModel.transportModelIdentifier != TransportModelPropertiesModule.TransportModelIdentifier.MATSIM) {
             TravelTimeUtil.updateCarSkim((SkimTravelTimes) delegate, year, properties);
             TravelTimeUtil.updateTransitSkim((SkimTravelTimes) delegate, year, properties);
             ((SkimTravelTimes) delegate).updateRegionalTravelTimes(geoData.getRegions().values(), geoData.getZones().values());
