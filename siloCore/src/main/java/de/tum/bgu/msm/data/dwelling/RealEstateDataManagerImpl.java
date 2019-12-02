@@ -450,8 +450,10 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
             for (DwellingType dwellingType : dwellingTypes) {
                 constraints.put(dwellingType, constraintData.get(dwellingType)[i] == 1);
             }
+            int thisZoneCapacity = (int) (dwellingCapacityData[i] * properties.main.scaleFactor);
+            double thisZoneLandUse = landUseData[i]  * properties.main.scaleFactor;
 
-            Development development = new DevelopmentImpl(landUseData[i], dwellingCapacityData[i], constraints, Properties.get().geo.useCapacityForDwellings);
+            Development development = new DevelopmentImpl(thisZoneLandUse, thisZoneCapacity, constraints, Properties.get().geo.useCapacityForDwellings);
             geoData.getZones().get(zoneIdData[i]).setDevelopment(development);
         }
 
