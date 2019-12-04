@@ -65,8 +65,13 @@ public class SimpleCommuteModeChoice implements CommuteModeChoice {
                     utilityByMode.put(TransportMode.car, carUtility);
                     utilityByMode.put(TransportMode.pt, ptUtility);
                     commuteModesByPerson.put(pp.getId(), utilityByMode);
-                    double probabilityAsKey = carUtility / (carUtility + ptUtility);
-                    while (personByProbability.containsKey(probabilityAsKey)){
+                    double probabilityAsKey;
+                    if(carUtility == 0 && ptUtility == 0) {
+                        probabilityAsKey = 0.5;
+                    } else {
+                        probabilityAsKey = carUtility / (carUtility + ptUtility);
+                    }
+                    while (personByProbability.containsKey(probabilityAsKey)) {
                         //more than one hh member has exactly the same probability, so it would be replaced in the treemap
                         probabilityAsKey += random.nextDouble();
                     }
@@ -125,8 +130,13 @@ public class SimpleCommuteModeChoice implements CommuteModeChoice {
                     utilityByMode.put(TransportMode.car, carUtility);
                     utilityByMode.put(TransportMode.pt, ptUtility);
                     commuteModesByPerson.put(pp.getId(), utilityByMode);
-                    double probabilityAsKey = carUtility / (carUtility + ptUtility);
-                    if (personByProbability.containsKey(probabilityAsKey)){
+                    double probabilityAsKey;
+                    if(carUtility == 0 && ptUtility == 0) {
+                        probabilityAsKey = 0.5;
+                    } else {
+                        probabilityAsKey = carUtility / (carUtility + ptUtility);
+                    }
+                    while (personByProbability.containsKey(probabilityAsKey)) {
                         //more than one hh member has exactly the same probability, so it would be replaced in the treemap
                         probabilityAsKey += random.nextDouble();
                     }
