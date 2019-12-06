@@ -36,6 +36,9 @@ import de.tum.bgu.msm.models.demography.marriage.MarriageModel;
 import de.tum.bgu.msm.models.demography.marriage.MarriageModelImpl;
 import de.tum.bgu.msm.models.jobmography.JobMarketUpdate;
 import de.tum.bgu.msm.models.jobmography.JobMarketUpdateImpl;
+import de.tum.bgu.msm.models.modeChoice.CommuteModeChoice;
+import de.tum.bgu.msm.models.modeChoice.CommuteModeChoiceMapping;
+import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
 import de.tum.bgu.msm.models.realEstate.construction.*;
 import de.tum.bgu.msm.models.realEstate.demolition.DefaultDemolitionStrategy;
 import de.tum.bgu.msm.models.realEstate.demolition.DemolitionModel;
@@ -71,7 +74,7 @@ public class ModelBuilderTak {
 
         MovesModelImpl movesModel = new MovesModelImpl(
                 dataContainer, properties, new DefaultMovesStrategy(),
-                new CarAndTransitHousingStrategyImpl(dataContainer,
+                new SimpleCommuteModeChoiceHousingStrategyImpl(dataContainer,
                         properties, dataContainer.getTravelTimes(),
                         new DwellingUtilityStrategyImpl(), new DefaultDwellingProbabilityStrategy(),
                         new RegionUtilityStrategyImpl(), new RegionProbabilityStrategyImpl()), SiloUtil.provideNewRandom());
@@ -117,7 +120,7 @@ public class ModelBuilderTak {
         MatsimData matsimData = null;
         if (config != null) {
             final Scenario scenario = ScenarioUtils.loadScenario(config);
-            matsimData = new MatsimData(config, properties, ZoneConnectorManager.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
+            matsimData = new MatsimData(config, properties, ZoneConnectorManager.ZoneConnectorMethod.RANDOM, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
         }
         switch (properties.transportModel.transportModelIdentifier) {
             case MITO_MATSIM:
@@ -125,7 +128,8 @@ public class ModelBuilderTak {
                 transportModel = new MatsimTransportModel(dataContainer, config, properties, scenarioAssembler, matsimData);
                 break;
             case MATSIM:
-                scenarioAssembler = new SimpleMatsimScenarioAssembler(dataContainer, properties);
+                CommuteModeChoice simpleCommuteModeChoice = new SimpleCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom());
+                scenarioAssembler = new SimpleCommuteModeChoiceMatsimScenarioAssembler(dataContainer, properties, simpleCommuteModeChoice);
                 transportModel = new MatsimTransportModel(dataContainer, config, properties, scenarioAssembler, matsimData);
                 break;
             case NONE:
