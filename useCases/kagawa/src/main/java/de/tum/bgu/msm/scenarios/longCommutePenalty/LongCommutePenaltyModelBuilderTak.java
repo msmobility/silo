@@ -55,7 +55,9 @@ import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.scenarios.oneCarPolicy.OneCarPolicyCarOwnerTak;
 import de.tum.bgu.msm.utils.SiloUtil;
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
+import org.matsim.core.scenario.ScenarioUtils;
 
 public class LongCommutePenaltyModelBuilderTak {
 
@@ -115,17 +117,21 @@ public class LongCommutePenaltyModelBuilderTak {
 
         TransportModel transportModel;
         MatsimScenarioAssembler scenarioAssembler;
+        MatsimData matsimData = null;
+        if (config != null) {
+            final Scenario scenario = ScenarioUtils.loadScenario(config);
+            matsimData = new MatsimData(config, properties, ZoneConnectorManager.ZoneConnectorMethod.RANDOM, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
+        }
         switch (properties.transportModel.transportModelIdentifier) {
             case MITO_MATSIM:
                 scenarioAssembler = new MitoMatsimScenarioAssembler(dataContainer, properties, new MitoDataConverterTak());
-                transportModel = new MatsimTransportModel(dataContainer, config, properties, null,
-                        ZoneConnectorManager.ZoneConnectorMethod.RANDOM, scenarioAssembler);
+                transportModel = new MatsimTransportModel(dataContainer, config, properties, scenarioAssembler, matsimData);
                 break;
             case MATSIM:
                 CommuteModeChoice simpleCommuteModeChoice = new SimpleCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom());
                 scenarioAssembler = new SimpleCommuteModeChoiceMatsimScenarioAssembler(dataContainer, properties, simpleCommuteModeChoice);
-                transportModel = new MatsimTransportModel(dataContainer, config, properties, null,
-                        ZoneConnectorManager.ZoneConnectorMethod.RANDOM, scenarioAssembler);
+                transportModel = new MatsimTransportModel(dataContainer, config, properties, scenarioAssembler, matsimData);
+
                 break;
             case NONE:
             default:

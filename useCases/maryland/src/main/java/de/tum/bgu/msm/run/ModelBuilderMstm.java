@@ -5,6 +5,7 @@ import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.person.PersonFactory;
+import de.tum.bgu.msm.matsim.MatsimData;
 import de.tum.bgu.msm.matsim.MatsimTransportModel;
 import de.tum.bgu.msm.matsim.SimpleMatsimScenarioAssembler;
 import de.tum.bgu.msm.matsim.ZoneConnectorManager;
@@ -53,7 +54,9 @@ import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
+import org.matsim.core.scenario.ScenarioUtils;
 
 public class ModelBuilderMstm {
 
@@ -124,10 +127,13 @@ public class ModelBuilderMstm {
             case MITO_MATSIM:
                 logger.warn("Mito not implemented for Mstm. Defaulting to simple matsim transport model");
             case MATSIM:
+                MatsimData matsimData = null;
+                if (config != null) {
+                    final Scenario scenario = ScenarioUtils.loadScenario(config);
+                    matsimData = new MatsimData(config, properties, ZoneConnectorManager.ZoneConnectorMethod.RANDOM, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
+                }
                 final SimpleMatsimScenarioAssembler scenarioAssembler = new SimpleMatsimScenarioAssembler(dataContainer, properties);
-                transportModel = new MatsimTransportModel(dataContainer, config, properties,
-                        null,
-                        ZoneConnectorManager.ZoneConnectorMethod.RANDOM, scenarioAssembler);
+                transportModel = new MatsimTransportModel(dataContainer, config, properties, scenarioAssembler, matsimData);
                 break;
             case NONE:
             default:

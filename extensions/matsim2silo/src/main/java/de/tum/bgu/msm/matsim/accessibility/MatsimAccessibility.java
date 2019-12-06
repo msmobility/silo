@@ -1,9 +1,10 @@
-package de.tum.bgu.msm.data.accessibility;
+package de.tum.bgu.msm.matsim.accessibility;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import de.tum.bgu.msm.data.accessibility.Accessibility;
 import org.apache.log4j.Logger;
 import org.jfree.util.Log;
 import org.matsim.api.core.v01.Id;
