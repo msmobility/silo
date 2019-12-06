@@ -12,6 +12,7 @@ import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.TransportModeNetworkFilter;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.router.*;
+import org.matsim.core.router.costcalculators.FreespeedTravelTimeAndDisutility;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
 import org.matsim.core.router.util.TravelDisutility;
@@ -123,19 +124,25 @@ public final class MatsimData {
         return (MultiNodePathCalculator) multiNodeFactory.createPathCalculator(carNetwork, travelDisutility, travelTime);
     }
 
+    MultiNodePathCalculator createFreeSpeedMultiNodePathCalculator() {
+        FreespeedTravelTimeAndDisutility freespeed = new FreespeedTravelTimeAndDisutility(config.planCalcScore());
+        return (MultiNodePathCalculator) multiNodeFactory.createPathCalculator(carNetwork, freespeed, freespeed);
+    }
+
     TripRouter createTripRouter() {
 
         final RoutingModule networkRoutingModule = DefaultRoutingModules.createPureNetworkRouter(
                 TransportMode.car, PopulationUtils.getFactory(), carNetwork, leastCostPathCalculatorFactory.createPathCalculator(carNetwork, travelDisutility, travelTime));
-        final RoutingModule teleportationRoutingModule = DefaultRoutingModules.createTeleportationRouter(
-                TransportMode.walk, PopulationUtils.getFactory(), config.plansCalcRoute().getOrCreateModeRoutingParams(TransportMode.walk));
         final RoutingModule ptRoutingModule;
 
-        if (schedule != null) {
+        if (schedule != null && config.transit().isUseTransit()) {
+            final RoutingModule teleportationRoutingModule = DefaultRoutingModules.createTeleportationRouter(
+                    TransportMode.walk, PopulationUtils.getFactory(), config.plansCalcRoute().getOrCreateModeRoutingParams(TransportMode.walk));
             final SwissRailRaptor swissRailRaptor = createSwissRailRaptor(RaptorStaticConfig.RaptorOptimization.OneToOneRouting);
             ptRoutingModule = new SwissRailRaptorRoutingModule(swissRailRaptor, schedule, ptNetwork, teleportationRoutingModule);
         } else {
-            ptRoutingModule = teleportationRoutingModule;
+            ptRoutingModule = DefaultRoutingModules.createPseudoTransitRouter(TransportMode.pt, PopulationUtils.getFactory(), carNetwork,
+                    leastCostPathCalculatorFactory.createPathCalculator(carNetwork, travelDisutility, travelTime), config.plansCalcRoute().getOrCreateModeRoutingParams(TransportMode.pt));
         }
 
         TripRouter.Builder bd = new TripRouter.Builder(config);
@@ -159,8 +166,13 @@ public final class MatsimData {
         return leastCostPathCalculatorFactory.createPathCalculator(carNetwork, travelDisutility, travelTime);
     }
 
-    SwissRailRaptorData getRaptorData(RaptorStaticConfig.RaptorOptimization optimitzaion) {
-        switch (optimitzaion) {
+    RoutingModule getTeleportationRouter(String mode) {
+        return DefaultRoutingModules.createTeleportationRouter(
+                mode, PopulationUtils.getFactory(), config.plansCalcRoute().getOrCreateModeRoutingParams(mode));
+    }
+
+    SwissRailRaptorData getRaptorData(RaptorStaticConfig.RaptorOptimization optimization) {
+        switch (optimization) {
             case OneToAllRouting:
                 return raptorDataOneToAll;
             case OneToOneRouting:
