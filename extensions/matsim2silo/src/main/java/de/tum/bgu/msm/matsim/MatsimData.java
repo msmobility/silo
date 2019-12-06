@@ -32,10 +32,10 @@ public final class MatsimData {
     private final Properties properties;
     private Config config;
 
-    private Network carNetwork;
-    private Network ptNetwork;
+    private final Network carNetwork;
+    private final Network ptNetwork;
+    private final TransitSchedule schedule;
 
-    private TransitSchedule schedule;
     private RaptorParameters raptorParameters;
     private DefaultRaptorParametersForPerson parametersForPerson;
     private LeastCostRaptorRouteSelector routeSelector;
@@ -50,10 +50,11 @@ public final class MatsimData {
 
     public MatsimData(Config config, Properties properties,
                       ZoneConnectorManager.ZoneConnectorMethod method,
-                      DataContainer dataContainer) {
+                      DataContainer dataContainer, Network network, TransitSchedule schedule) {
         this.config = config;
         this.raptorParameters = RaptorUtils.createParameters(config);
         this.properties = properties;
+        this.schedule = schedule;
         final Collection<Zone> zones = dataContainer.getGeoData().getZones().values();
         switch (method) {
             case RANDOM:
@@ -67,25 +68,6 @@ public final class MatsimData {
             default:
                 throw new RuntimeException("No valid zone connector method defined!");
         }
-    }
-
-    ZoneConnectorManager getZoneConnectorManager() {
-        return zoneConnectorManager;
-    }
-
-    Network getCarNetwork() {
-        return carNetwork;
-    }
-
-    Network getPtNetwork() {
-        return ptNetwork;
-    }
-
-    public void update(Network network, TransitSchedule schedule,
-                       TravelDisutility travelDisutility, TravelTime travelTime) {
-        this.travelDisutility = travelDisutility;
-        this.travelTime = travelTime;
-        this.schedule = schedule;
 
         TransportModeNetworkFilter filter = new TransportModeNetworkFilter(network);
 
@@ -100,6 +82,23 @@ public final class MatsimData {
 
         this.carNetwork = carNetwork;
         this.ptNetwork = ptNetwork;
+    }
+
+    ZoneConnectorManager getZoneConnectorManager() {
+        return zoneConnectorManager;
+    }
+
+    public Network getCarNetwork() {
+        return carNetwork;
+    }
+
+    Network getPtNetwork() {
+        return ptNetwork;
+    }
+
+    public void update(TravelDisutility travelDisutility, TravelTime travelTime) {
+        this.travelDisutility = travelDisutility;
+        this.travelTime = travelTime;
 
         this.leastCostPathCalculatorFactory = new FastAStarLandmarksFactory(properties.main.numberOfThreads);
 
@@ -118,7 +117,6 @@ public final class MatsimData {
                     null);
             routeSelector = new LeastCostRaptorRouteSelector();
         }
-
     }
 
     MultiNodePathCalculator createMultiNodePathCalculator() {
@@ -176,4 +174,7 @@ public final class MatsimData {
         return raptorParameters;
     }
 
+    public TransitSchedule getSchedule() {
+        return schedule;
+    }
 }
