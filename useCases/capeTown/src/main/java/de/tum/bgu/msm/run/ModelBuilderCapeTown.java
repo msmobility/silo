@@ -5,6 +5,7 @@ import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.person.PersonFactory;
+import de.tum.bgu.msm.matsim.MatsimData;
 import de.tum.bgu.msm.matsim.MatsimTransportModel;
 import de.tum.bgu.msm.matsim.SimpleMatsimScenarioAssembler;
 import de.tum.bgu.msm.matsim.ZoneConnectorManager;
@@ -56,7 +57,9 @@ import de.tum.bgu.msm.models.relocation.moves.RegionProbabilityStrategyImpl;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
+import org.matsim.core.scenario.ScenarioUtils;
 
 public class ModelBuilderCapeTown {
 
@@ -119,11 +122,16 @@ public class ModelBuilderCapeTown {
 
 
         TransportModel transportModel;
+
         switch (properties.transportModel.transportModelIdentifier) {
             case MATSIM:
-                transportModel = new MatsimTransportModel(dataContainer, config, properties, null,
-                        ZoneConnectorManager.ZoneConnectorMethod.RANDOM,
-                        new SimpleMatsimScenarioAssembler(dataContainer, properties));
+                MatsimData matsimData = null;
+                if (config != null) {
+                    final Scenario scenario = ScenarioUtils.loadScenario(config);
+                    matsimData = new MatsimData(config, properties, ZoneConnectorManager.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
+                }
+                transportModel = new MatsimTransportModel(dataContainer, config, properties,
+                        new SimpleMatsimScenarioAssembler(dataContainer, properties), matsimData);
                 // (MatsimAccessibility) dataContainer.getAccessibility());
                 break;
             case NONE:

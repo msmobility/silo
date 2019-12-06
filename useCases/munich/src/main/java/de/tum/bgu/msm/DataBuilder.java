@@ -107,5 +107,8 @@ public class DataBuilder {
         SchoolReader ssReader = new SchoolReaderImpl(dataContainer.getSchoolData());
         String schoolsFile = properties.main.baseDirectory + properties.schoolData.schoolsFileName + "_" + year + ".csv";
         ssReader.readData(schoolsFile);
+
+        MicroDataScaler microDataScaler = new MicroDataScaler(dataContainer, properties);
+        microDataScaler.scale();
     }
 }

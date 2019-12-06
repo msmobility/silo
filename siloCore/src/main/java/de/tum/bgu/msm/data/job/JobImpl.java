@@ -3,6 +3,8 @@ package de.tum.bgu.msm.data.job;
 import de.tum.bgu.msm.data.MicroLocation;
 import org.locationtech.jts.geom.Coordinate;
 
+import java.util.Optional;
+
 public class JobImpl implements Job, MicroLocation {
 
     private final int id;
@@ -41,6 +43,16 @@ public class JobImpl implements Job, MicroLocation {
     @Override
     public void setWorkerID(int personID) {
         this.workerId = personID;
+    }
+
+    @Override
+    public Optional<Integer> getStartTimeInSeconds() {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<Integer> getWorkingTimeInSeconds() {
+        return Optional.empty();
     }
 
     @Override

@@ -1,5 +1,10 @@
-package de.tum.bgu.msm.data.accessibility;
+package de.tum.bgu.msm.matsim.accessibility;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
+import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.geo.GeoData;
@@ -42,11 +47,6 @@ public class MatsimAccessibility implements Accessibility, FacilityDataExchangeI
 	}
 
 	@Override
-	public void setFacilityAccessibilities(ActivityFacility activityFacility, Double aDouble, String s, double v) {
-
-	}
-
-	//	@Override
 	public void finish() { }
 
 	// Accessibility interface methods

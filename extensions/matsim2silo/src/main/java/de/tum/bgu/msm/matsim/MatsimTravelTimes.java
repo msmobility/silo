@@ -1,6 +1,5 @@
 package de.tum.bgu.msm.matsim;
 
-import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.Region;
@@ -67,16 +66,8 @@ public final class MatsimTravelTimes implements TravelTimes {
 
     private void updateSkims() {
         logger.info("Updating car and pt skim.");
-        final MatsimSkimCreator matsimSkimCreator = new MatsimSkimCreator(matsimData);
-        IndexedDoubleMatrix2D skimCar = matsimSkimCreator.createCarSkim(zones.values());
-        skimsByMode.put(TransportMode.car, skimCar);
-        if(config.transit().isUseTransit()) {
-            IndexedDoubleMatrix2D skimPt = matsimSkimCreator.createPtSkim(zones.values());
-            skimsByMode.put(TransportMode.pt, skimPt);
-        } else {
-            IndexedDoubleMatrix2D skimPt = matsimSkimCreator.createTeleportedSkim(this, TransportMode.pt, zones.values());
-            skimsByMode.put(TransportMode.pt, skimPt);
-        }
+        getPeakSkim(TransportMode.car);
+        getPeakSkim(TransportMode.pt);
     }
 
     private void updateRegionalTravelTimes() {
@@ -187,11 +178,14 @@ public final class MatsimTravelTimes implements TravelTimes {
                         skim = matsimSkimCreator.createPtSkim(zones.values());
                         break;
                     } else {
-                        logger.warn("No schedule/ network provided for pt.");
+                        logger.warn("No schedule/ network provided for pt. Will use freespeed factor.");
+                        skim = matsimSkimCreator.createFreeSpeedFactorSkim(zones.values(),
+                                config.plansCalcRoute().getModeRoutingParams().get(TransportMode.pt).getTeleportedModeFreespeedFactor());
+                        break;
                     }
                 default:
                     logger.warn("Defaulting to teleportation.");
-                    skim = matsimSkimCreator.createTeleportedSkim(this, mode, zones.values());
+                    skim = matsimSkimCreator.createTeleportedSkim(zones.values(), mode);
             }
             skimsByMode.put(mode, skim);
             logger.info("Obtained skim for mode " + mode);

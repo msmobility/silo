@@ -19,6 +19,8 @@ package de.tum.bgu.msm.data.job;
 import de.tum.bgu.msm.data.Id;
 import de.tum.bgu.msm.data.MicroLocation;
 
+import java.util.Optional;
+
 /**
  * Job interface
  * @author Nkuehnel
@@ -30,5 +32,9 @@ import de.tum.bgu.msm.data.MicroLocation;
      String getType();
 
      void setWorkerID(int personID);
+
+     Optional<Integer> getStartTimeInSeconds();
+
+     Optional<Integer> getWorkingTimeInSeconds();
 
 }

@@ -21,7 +21,7 @@ public class TravelTimesWrapper implements TravelTimes, ModelUpdateListener {
     private final Properties properties;
     private final GeoData geoData;
 
-    public TravelTimesWrapper(TravelTimes travelTimes, Properties properties, GeoData geoData){
+    public TravelTimesWrapper(TravelTimes travelTimes, Properties properties, GeoData geoData) {
         delegate = travelTimes;
         this.properties = properties;
         this.geoData = geoData;
@@ -55,7 +55,7 @@ public class TravelTimesWrapper implements TravelTimes, ModelUpdateListener {
 
     @Override
     public void setup() {
-        if (delegate instanceof SkimTravelTimes){
+        if (delegate instanceof SkimTravelTimes) {
             updateSkims(properties.main.startYear);
         }
     }
@@ -78,7 +78,7 @@ public class TravelTimesWrapper implements TravelTimes, ModelUpdateListener {
     }
 
     private void updateSkims(int year) {
-        if(properties.transportModel.transportModelIdentifier != TransportModelPropertiesModule.TransportModelIdentifier.MATSIM) {
+        if (properties.transportModel.transportModelIdentifier != TransportModelPropertiesModule.TransportModelIdentifier.MATSIM) {
             TravelTimeUtil.updateCarSkim((SkimTravelTimes) delegate, year, properties);
             TravelTimeUtil.updateTransitSkim((SkimTravelTimes) delegate, year, properties);
             ((SkimTravelTimes) delegate).updateRegionalTravelTimes(geoData.getRegions().values(), geoData.getZones().values());
