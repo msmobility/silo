@@ -42,6 +42,7 @@ public class DataSetSynPop {
     private Map<Integer, Map<Integer, Float>> probabilityZone;
     private Map<Integer, Map<DwellingType, Integer>> dwellingPriceByTypeAndZone;
     private Table<Integer, Integer, Integer> schoolCapacity = HashBasedTable.create();
+    private Table<Integer, String, Integer> zoneCoordinates = HashBasedTable.create();
     private Table<Integer, String, Float> tripLengthDistribution;
     private ArrayList<Integer> municipalitiesWithZeroPopulation;
 
@@ -327,5 +328,13 @@ public class DataSetSynPop {
 
     public void setMunicipalityCounty(HashMap<Integer, Integer> municipalityCounty) {
         this.municipalityCounty = municipalityCounty;
+    }
+
+    public Table<Integer, String, Integer> getZoneCoordinates() {
+        return zoneCoordinates;
+    }
+
+    public void setZoneCoordinates(Table<Integer, String, Integer> zoneCoordinates) {
+        this.zoneCoordinates = zoneCoordinates;
     }
 }

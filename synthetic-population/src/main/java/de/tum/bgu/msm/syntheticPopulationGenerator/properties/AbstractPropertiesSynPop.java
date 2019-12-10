@@ -23,6 +23,7 @@ public abstract class AbstractPropertiesSynPop {
     public TableDataSet selectedMunicipalities;
     public TableDataSet cellsMatrix;
     public TableDataSet cellsMatrixBoroughs;
+    public String zoneSystemFileName;
     public String omxFileName;
     public int[] ageBracketsPerson;
     public int[] ageBracketsPersonQuarter;
@@ -66,5 +67,6 @@ public abstract class AbstractPropertiesSynPop {
     public TableDataSet schoolLocationlist;
     public boolean runMicrolocation;
     public TableDataSet zonalDataIPU;
+    public String state;
 
 }

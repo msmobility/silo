@@ -4,6 +4,7 @@ import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.data.person.Nationality;
 import de.tum.bgu.msm.data.person.Person;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class HouseholdMuc implements Household {
@@ -11,6 +12,7 @@ public class HouseholdMuc implements Household {
     private final HouseholdImpl delegate;
     private Nationality nationality;
     private int autonomous = 0;
+    private final Map<String, Object> additionalAttributes = new HashMap<>();
 
     public HouseholdMuc(int id, int dwellingId, int autos) {
         delegate = new HouseholdImpl(id, dwellingId, autos);
@@ -96,5 +98,13 @@ public class HouseholdMuc implements Household {
             }
         }
         nationality = householdNationaliy;
+    }
+
+    public Map<String, Object> getAdditionalAttributes() {
+        return additionalAttributes;
+    }
+
+    public void setAdditionalAttributes(String key, Object value){
+        this.additionalAttributes.put(key, value);
     }
 }
