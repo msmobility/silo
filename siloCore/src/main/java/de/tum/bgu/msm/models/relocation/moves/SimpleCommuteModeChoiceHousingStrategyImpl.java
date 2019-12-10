@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.scenarios.longCommutePenalty;
+package de.tum.bgu.msm.models.relocation.moves;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Region;
@@ -21,7 +21,6 @@ import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoice;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoiceMapping;
 import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
-import de.tum.bgu.msm.models.relocation.moves.*;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -34,13 +33,11 @@ import java.util.Map;
 
 import static de.tum.bgu.msm.data.dwelling.RealEstateUtils.RENT_CATEGORIES;
 
-public class LongCommutePenaltytHousingStrategyTak implements HousingStrategy {
+public class SimpleCommuteModeChoiceHousingStrategyImpl implements HousingStrategy {
 
-    private final static Logger logger = Logger.getLogger(LongCommutePenaltytHousingStrategyTak.class);
-    private Map<Integer, Double> thisYearRentByRegion;
-    private int counter;
+    private final static Logger logger = Logger.getLogger(SimpleCommuteModeChoiceHousingStrategyImpl.class);
 
-    private enum Normalizer{
+    private enum Normalizer {
         /**
          * Use share of empty dwellings to calculate attraction of region
          */
@@ -56,11 +53,7 @@ public class LongCommutePenaltytHousingStrategyTak implements HousingStrategy {
         POWER_OF_POPULATION
     }
 
-    private Normalizer NORMALIZER = Normalizer.VAC_DD;
-
-    private static final int PENALTY_EUR = 200;
-    private final int TIME_THRESHOLD_M = 25;
-    private final double UTILITY_THRESHOLD = Math.exp(-0.2 * 25);
+    private static final Normalizer NORMALIZER = Normalizer.VAC_DD;
 
     private final Properties properties;
 
@@ -71,6 +64,7 @@ public class LongCommutePenaltytHousingStrategyTak implements HousingStrategy {
     private final GeoData geoData;
     private final TravelTimes travelTimes;
     private final Accessibility accessibility;
+
     private final CommuteModeChoice commuteModeChoice;
 
     private final DwellingUtilityStrategy dwellingUtilityStrategy;
@@ -81,12 +75,12 @@ public class LongCommutePenaltytHousingStrategyTak implements HousingStrategy {
 
     private EnumMap<IncomeCategory, Map<Integer, Double>> utilityByIncomeByRegion = new EnumMap<>(IncomeCategory.class);
 
-    protected LongCommutePenaltytHousingStrategyTak(DataContainer dataContainer,
-                                                 Properties properties,
-                                                 TravelTimes travelTimes,
-                                                 DwellingUtilityStrategy dwellingUtilityStrategy,
-                                                 DwellingProbabilityStrategy dwellingProbabilityStrategy,
-                                                 RegionUtilityStrategy regionUtilityStrategy, RegionProbabilityStrategy regionProbabilityStrategy) {
+    public SimpleCommuteModeChoiceHousingStrategyImpl(DataContainer dataContainer,
+                                                      Properties properties,
+                                                      TravelTimes travelTimes,
+                                                      DwellingUtilityStrategy dwellingUtilityStrategy,
+                                                      DwellingProbabilityStrategy dwellingProbabilityStrategy,
+                                                      RegionUtilityStrategy regionUtilityStrategy, RegionProbabilityStrategy regionProbabilityStrategy) {
         this.dataContainer = dataContainer;
         geoData = dataContainer.getGeoData();
         this.properties = properties;
@@ -123,32 +117,19 @@ public class LongCommutePenaltytHousingStrategyTak implements HousingStrategy {
         double ddAutoAccessibilityUtility = convertAccessToUtility(accessibility.getAutoAccessibilityForZone(geoData.getZones().get(dwelling.getZoneId())));
         double transitAccessibilityUtility = convertAccessToUtility(accessibility.getTransitAccessibilityForZone(geoData.getZones().get(dwelling.getZoneId())));
         HouseholdType ht = hh.getHouseholdType();
-
-
-        double carToWorkersRatio = Math.min(1., ((double) hh.getAutos() / HouseholdUtil.getNumberOfWorkers(hh)));
-
-        //currently this is re-filtering persons to find workers (it was done previously in select region)
-        // This way looks more flexible to account for other trips, such as education, though.
-
-        int penaltiesForThisDwelling = 0;
-        double travelCostUtility = 1; //do not have effect at the moment;
-
+        double ddPriceUtility = convertPriceToUtility(dwelling.getPrice(), ht.getIncomeCategory());
 
         double workDistanceUtility = 1;
-        CommuteModeChoiceMapping commuteModeChoiceMapping = commuteModeChoice.assignCommuteModeChoice(dwelling, travelTimes, hh);
 
+        CommuteModeChoiceMapping commuteModeChoiceMapping = commuteModeChoice.assignCommuteModeChoice(dwelling, travelTimes, hh);
 
         for (Person pp : hh.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
-                double thisWorkerUtility = commuteModeChoiceMapping.getMode(pp).utility;
-                workDistanceUtility *= thisWorkerUtility;
-                if (thisWorkerUtility < UTILITY_THRESHOLD){
-                    penaltiesForThisDwelling += PENALTY_EUR;
-                }
+
+                workDistanceUtility *= commuteModeChoiceMapping.getMode(pp).utility;
+
             }
         }
-
-        double ddPriceUtility = convertPriceToUtility(dwelling.getPrice() + penaltiesForThisDwelling, ht.getIncomeCategory());
         return dwellingUtilityStrategy.calculateSelectDwellingUtility(ht, ddSizeUtility, ddPriceUtility,
                 ddQualityUtility, ddAutoAccessibilityUtility,
                 transitAccessibilityUtility, workDistanceUtility);
@@ -166,63 +147,29 @@ public class LongCommutePenaltytHousingStrategyTak implements HousingStrategy {
 
     @Override
     public void prepareYear() {
-        counter = 0;
         calculateShareOfForeignersByZoneAndRegion();
         calculateRegionalUtilities();
     }
 
     @Override
     public double calculateRegionalUtility(Household household, Region region) {
-        JobDataManager jobDataManager = dataContainer.getJobDataManager();
-
-        int penaltyToThisHouseholdAndRegion = 0;
-
         double thisRegionFactor = 1;
         CommuteModeChoiceMapping commuteModeChoiceMapping = commuteModeChoice.assignRegionalCommuteModeChoice(region, travelTimes, household);
 
         for (Person pp : household.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
-                double thisWorkerUtility = commuteModeChoiceMapping.getMode(pp).utility;
-                thisRegionFactor *= thisWorkerUtility;
-                if (thisWorkerUtility < UTILITY_THRESHOLD){
-                    penaltyToThisHouseholdAndRegion += PENALTY_EUR;
-                }
+                thisRegionFactor *= commuteModeChoiceMapping.getMode(pp).utility;
             }
         }
 
-        double util;
-        if (penaltyToThisHouseholdAndRegion == 0){
-            util = utilityByIncomeByRegion.get(household.getHouseholdType().getIncomeCategory()).get(region.getId()) * thisRegionFactor;
-        } else {
-            //recalculate the regional utility
-            final int averageRegionalRent = thisYearRentByRegion.get(region.getId()).intValue();
-            final float regAcc = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region));
-            float priceUtil = (float) convertPriceToUtility(averageRegionalRent + penaltyToThisHouseholdAndRegion, household.getHouseholdType().getIncomeCategory());
-            double value = regionUtilityStrategy.calculateSelectRegionProbability(household.getHouseholdType().getIncomeCategory(),
-                    priceUtil, regAcc, 0);
-            switch (NORMALIZER) {
-                case POPULATION:
-                    value *= hhByRegion.getIndexed(region.getId());
-                    break;
-                case POWER_OF_POPULATION:
-                    value *= Math.pow(hhByRegion.getIndexed(region.getId()), 0.5);
-                    break;
-                default:
-                    //do nothing.
-            }
-            if (counter < 10){
-                logger.info("Recalculating utility for this region, due to a penalty of " + penaltyToThisHouseholdAndRegion);
-            }
-            counter ++;
-            util = value * thisRegionFactor;
-        }
+        double util = utilityByIncomeByRegion.get(household.getHouseholdType().getIncomeCategory()).get(region.getId()) * thisRegionFactor;
         return normalize(region, util);
     }
 
     @Override
     public HousingStrategy duplicate() {
         TravelTimes ttCopy = travelTimes.duplicate();
-        LongCommutePenaltytHousingStrategyTak strategy = new LongCommutePenaltytHousingStrategyTak(dataContainer, properties, ttCopy,
+        SimpleCommuteModeChoiceHousingStrategyImpl strategy = new SimpleCommuteModeChoiceHousingStrategyImpl(dataContainer, properties, ttCopy,
                 dwellingUtilityStrategy, dwellingProbabilityStrategy, regionUtilityStrategy, regionProbabilityStrategy);
         strategy.hhByRegion = hhByRegion;
         strategy.utilityByIncomeByRegion = utilityByIncomeByRegion;
@@ -252,7 +199,6 @@ public class LongCommutePenaltytHousingStrategyTak implements HousingStrategy {
     private void calculateRegionalUtilities() {
         logger.info("Calculating regional utilities");
         final Map<Integer, Double> rentsByRegion = dataContainer.getRealEstateDataManager().calculateRegionalPrices();
-        thisYearRentByRegion = rentsByRegion;
         for (IncomeCategory incomeCategory : IncomeCategory.values()) {
             Map<Integer, Double> utilityByRegion = new HashMap<>();
             for (Region region : geoData.getRegions().values()) {
