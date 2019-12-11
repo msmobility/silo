@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Simulates children that leave the parental household
@@ -53,8 +54,8 @@ public class LeaveParentHhModelImpl extends AbstractModel implements LeaveParent
 
     public LeaveParentHhModelImpl(DataContainer dataContainer, MovesModelImpl move,
                                   CreateCarOwnershipModel createCarOwnershipModel, HouseholdFactory hhFactory,
-                                  Properties properties, LeaveParentalHouseholdStrategy strategy) {
-        super(dataContainer, properties);
+                                  Properties properties, LeaveParentalHouseholdStrategy strategy, Random rnd) {
+        super(dataContainer, properties, rnd);
         this.movesModel = move;
         this.createCarOwnershipModel = createCarOwnershipModel;
         this.hhFactory = hhFactory;
@@ -87,7 +88,7 @@ public class LeaveParentHhModelImpl extends AbstractModel implements LeaveParent
         final Person per = householdDataManager.getPersonFromId(event.getPersonId());
         if (per != null && qualifiesForParentalHHLeave(per)) {
             final double prob = strategy.calculateLeaveParentsProbability(per);
-            if (SiloUtil.getRandomNumberAsDouble() < prob) {
+            if (random.nextDouble() < prob) {
                 return leaveHousehold(per);
             }
         }

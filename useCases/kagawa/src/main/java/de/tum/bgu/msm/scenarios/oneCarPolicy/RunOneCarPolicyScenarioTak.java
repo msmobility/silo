@@ -4,6 +4,7 @@ import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.io.output.DefaultResultsMonitor;
+import de.tum.bgu.msm.io.output.MultiFileResultsMonitor;
 import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.run.DataBuilderTak;
@@ -31,8 +32,10 @@ public class RunOneCarPolicyScenarioTak {
         DataBuilderTak.read(properties, dataContainer);
         ModelContainer modelContainer = OneCarPolicyModelBuilderTak.getTakModels(
                 dataContainer, properties, config);
-        ResultsMonitor resultsMonitor = new DefaultResultsMonitor(dataContainer, properties);
-        SiloModel model = new SiloModel(properties, dataContainer, modelContainer, resultsMonitor);
+
+        SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
+        model.addResultMonitor(new DefaultResultsMonitor(dataContainer,properties));
+        model.addResultMonitor(new MultiFileResultsMonitor(dataContainer,properties));
         model.runModel();
         logger.info("Finished SILO.");
     }

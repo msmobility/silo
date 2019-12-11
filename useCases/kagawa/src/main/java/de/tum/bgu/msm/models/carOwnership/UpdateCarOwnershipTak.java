@@ -10,6 +10,8 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
+import java.util.Random;
+
 /**
  * Implements car ownership level change (subsequent years) for the Kagawa Area
  * @author nkuehnel
@@ -37,8 +39,8 @@ public class UpdateCarOwnershipTak extends AbstractModel implements ModelUpdateL
      */
     private final double[][][][][][][][] carUpdateProb = new double[4][2][2][2][2][2][2][3];
 
-    public UpdateCarOwnershipTak(DataContainer dataContainer, Properties properties) {
-        super(dataContainer, properties);
+    public UpdateCarOwnershipTak(DataContainer dataContainer, Properties properties, Random rnd) {
+        super(dataContainer, properties, rnd);
     }
 
     @Override
@@ -141,7 +143,7 @@ public class UpdateCarOwnershipTak extends AbstractModel implements ModelUpdateL
 
                 double[] prob = carUpdateProb[previousCars][hhSizePlus][hhSizeMinus][hhIncomePlus][hhIncomeMinus][licensePlus][changeResidence?1:0];
 
-                int action = SiloUtil.select(prob);
+                int action = SiloUtil.select(prob, random);
 
                 if (action == ADD_ONE_CAR){
                     if (newHousehold.getAutos() < MAX_NUMBER_OF_CARS) {

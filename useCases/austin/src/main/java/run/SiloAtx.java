@@ -35,11 +35,10 @@ public class SiloAtx {
         logger.info("Starting SILO land use model for Austin");
         DataContainer dataContainer = DataBuilder.buildDataContainer(properties, config);
         DataBuilder.readInput(properties, dataContainer);
-
         ModelContainer modelContainer = ModelBuilderMstm.getModelContainerForMstm(dataContainer, properties, config);
-
         ResultsMonitor resultsMonitor = new DefaultResultsMonitor(dataContainer, properties);
-        SiloModel model = new SiloModel(properties, dataContainer, modelContainer, resultsMonitor);
+        SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
+        model.addResultMonitor(resultsMonitor);
         model.runModel();
         logger.info("Finished SILO.");
     }

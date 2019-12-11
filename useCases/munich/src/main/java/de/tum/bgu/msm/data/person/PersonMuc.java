@@ -136,4 +136,13 @@ public class PersonMuc implements PersonWithSchool {
     public boolean hasDriverLicense() {
         return delegate.hasDriverLicense();
     }
+
+    @Override
+    public String toString() {
+        return delegate.toString()
+                +"\nNationality                  " + nationality
+                +"\nSchool type               " + schoolType
+                +"\nSchool place               " + schoolPlace
+                +"\nSchool id    " + schoolId;
+    }
 }

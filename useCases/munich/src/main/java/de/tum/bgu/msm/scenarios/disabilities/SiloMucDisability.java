@@ -1,5 +1,7 @@
-package de.tum.bgu.msm;
+package de.tum.bgu.msm.scenarios.disabilities;
 
+import de.tum.bgu.msm.ModelBuilderMuc;
+import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.schools.DataContainerWithSchoolsImpl;
 import de.tum.bgu.msm.events.DisabilityEvent;
@@ -37,9 +39,10 @@ public class SiloMucDisability {
         DataBuilderDisability.read(properties, dataContainer);
         //summarizeData(dataContainer, properties);
         ModelContainer modelContainer = ModelBuilderMuc.getModelContainerForMuc(dataContainer, properties, config);
-        modelContainer.registerEventModel(DisabilityEvent.class, new DisabilityImpl(dataContainer, properties,new DefaultDisabilityStrategy()));
+        modelContainer.registerEventModel(DisabilityEvent.class, new DisabilityImpl(dataContainer, properties,new DefaultDisabilityStrategy(), SiloUtil.provideNewRandom()));
         ResultsMonitor resultsMonitor = new ResultsMonitorMuc(dataContainer, properties);
-        SiloModel model = new SiloModel(properties, dataContainer, modelContainer, resultsMonitor);
+        SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
+        model.addResultMonitor(resultsMonitor);
         model.runModel();
         logger.info("Finished SILO.");
     }

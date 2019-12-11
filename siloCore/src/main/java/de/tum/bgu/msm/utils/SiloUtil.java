@@ -57,6 +57,7 @@ public class SiloUtil {
         }
 
         SummarizeData.resultFileSpatial("open");
+        SummarizeData.resultFileSpatial_2("open");
         PropertiesUtil.writePropertiesForThisRun(propertiesPath);
 
         initializeRandomNumber(properties.main.randomSeed);
@@ -173,6 +174,10 @@ public class SiloUtil {
             rand = new Random(42);
         }
         return rand;
+    }
+
+    public static Random provideNewRandom() {
+        return new Random(getRandomObject().nextInt());
     }
 
     public static float getRandomNumberAsFloat() {
@@ -422,6 +427,10 @@ public class SiloUtil {
     public static <T> T select(Map<T, ? extends Number> mappedProbabilities) {
         // select item based on probabilities (for mapped double probabilities)
         return select(mappedProbabilities, getSum(mappedProbabilities.values()));
+    }
+
+    public static <T> T select(Map<T, ? extends Number> probabilities, Random random) {
+        return select(probabilities, getSum(probabilities.values()), random);
     }
 
     public static <T> T select(Map<T, ? extends Number> mappedProbabilities, double sum, Random random) {
@@ -1073,6 +1082,7 @@ public class SiloUtil {
         // run this method whenever SILO closes, regardless of whether SILO completed successfully or SILO crashed
         trackingFile("close");
         SummarizeData.resultFileSpatial("close");
+        SummarizeData.resultFileSpatial_2("close");
         float endTime = rounder(((System.currentTimeMillis() - startTime) / 60000), 1);
         int hours = (int) (endTime / 60);
         int min = (int) (endTime - 60 * hours);
@@ -1094,7 +1104,7 @@ public class SiloUtil {
 
     public static boolean modelStopper (String action) {
         // provide option for a clean model stop after every simulation period is completed
-        String fileName = Properties.get().main.baseDirectory + "status.csv";
+        String fileName = Properties.get().main.baseDirectory + "/scenOutput/" + Properties.get().main.scenarioName +  "/status.csv";
         if (action.equalsIgnoreCase("initialize")) {
             PrintWriter pw = openFileForSequentialWriting(fileName, false);
             pw.println("Status");
@@ -1135,4 +1145,6 @@ public class SiloUtil {
         pw.write(timeTracker.toString());
         pw.close();
     }
+
+
 }

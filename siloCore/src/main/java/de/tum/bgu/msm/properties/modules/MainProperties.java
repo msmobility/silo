@@ -71,6 +71,11 @@ public class MainProperties {
      */
     public final int numberOfThreads;
 
+    /**
+     * Returns the sub-sample of the population to be simulated in SILO
+     */
+    public final double scaleFactor;
+
     @Deprecated
     public final String prestoZoneFile;
     @Deprecated
@@ -136,5 +141,7 @@ public class MainProperties {
         housingEnvironmentImpactFile = PropertiesUtil.getStringProperty(bundle, "housing.environment.impact.file.name", "bemHousing");
 
         numberOfThreads = PropertiesUtil.getIntProperty(bundle, "number.of.threads", Runtime.getRuntime().availableProcessors());
+
+        scaleFactor = PropertiesUtil.getDoubleProperty(bundle, "scale.factor", 1.);
     }
 }

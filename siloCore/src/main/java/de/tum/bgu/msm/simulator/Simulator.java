@@ -5,6 +5,7 @@ import com.google.common.collect.Multiset;
 import com.google.common.math.LongMath;
 import de.tum.bgu.msm.events.MicroEvent;
 import de.tum.bgu.msm.io.output.ResultsMonitor;
+import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -30,7 +31,7 @@ public final class Simulator {
     private final List<MicroEvent> events = new ArrayList<>();
     private final TimeTracker timeTracker;
 
-    private ResultsMonitor resultsMonitor;
+    private Set<ResultsMonitor> resultsMonitors = new HashSet<>() ;
 
     public Simulator(TimeTracker timeTracker) {
         this.timeTracker = timeTracker;
@@ -47,7 +48,7 @@ public final class Simulator {
     }
 
     public void registerResultsMonitor(ResultsMonitor resultsMonitor) {
-        this.resultsMonitor = resultsMonitor;
+        this.resultsMonitors.add(resultsMonitor);
         logger.info("Registered results monitor " + resultsMonitor.getClass().getSimpleName());
     }
 
@@ -65,7 +66,10 @@ public final class Simulator {
             timeTracker.recordAndReset("SetupOf" + model.getClass().getSimpleName());
         }
 
-        resultsMonitor.setup();
+        for (ResultsMonitor resultsMonitor : resultsMonitors){
+            resultsMonitor.setup();
+        }
+
     }
 
     public void simulate(int year) {
@@ -102,9 +106,6 @@ public final class Simulator {
             }
 //            timeTracker.reset();
             Class<? extends MicroEvent> klass= e.getClass();
-            //unchecked is justified here, as
-            //<T extends Event> void registerEventModel(Class<T> klass, EventModel<T> model)
-            // checks for the right type of model handlers
 
             boolean success = this.models.get(klass).handleEvent(e);
             if(success) {
@@ -123,7 +124,10 @@ public final class Simulator {
             model.endYear(year);
         }
 
-        resultsMonitor.endYear(year, eventCounter);
+        for (ResultsMonitor resultsMonitor : resultsMonitors){
+            resultsMonitor.endYear(year, eventCounter);
+        }
+
         events.clear();
     }
 
@@ -134,6 +138,10 @@ public final class Simulator {
         for(EventModel model: models.values()) {
             model.endSimulation();
         }
-        resultsMonitor.endSimulation();
+
+        for (ResultsMonitor resultsMonitor : resultsMonitors){
+            resultsMonitor.endSimulation();
+        }
+
     }
 }

@@ -29,6 +29,7 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Random;
 
 import static de.tum.bgu.msm.data.person.Gender.FEMALE;
 import static de.tum.bgu.msm.data.person.Gender.MALE;
@@ -47,8 +48,8 @@ public class BirthModelImpl extends AbstractModel implements BirthModel {
 
 
     public BirthModelImpl(DataContainer dataContainer, PersonFactory factory,
-                          Properties properties, BirthStrategy strategy) {
-        super(dataContainer, properties);
+                          Properties properties, BirthStrategy strategy, Random rnd) {
+        super(dataContainer, properties, rnd);
         this.factory = factory;
         this.strategy = strategy;
     }
@@ -112,7 +113,7 @@ public class BirthModelImpl extends AbstractModel implements BirthModel {
             } else {
                 birthProb *= properties.demographics.singleScaler;
             }
-            if (SiloUtil.getRandomNumberAsDouble() < birthProb) {
+            if (random.nextDouble() < birthProb) {
                 giveBirth(person);
                 return true;
             }
@@ -126,7 +127,7 @@ public class BirthModelImpl extends AbstractModel implements BirthModel {
         householdDataManager.saveHouseholdMemento(household);
         final int id = householdDataManager.getNextPersonId();
         Gender gender = MALE;
-        if (SiloUtil.getRandomNumberAsDouble() <= getProbabilityForGirl()) {
+        if (random.nextDouble() <= getProbabilityForGirl()) {
             gender = FEMALE;
         }
         final Person child = factory.giveBirth(person, id, gender);

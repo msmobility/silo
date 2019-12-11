@@ -1,12 +1,12 @@
 package de.tum.bgu.msm.models.realEstate.demolition;
 
 import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.development.Development;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.events.impls.realEstate.DemolitionEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigration;
-import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
 import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Simulates demolition of dwellings
@@ -35,26 +36,10 @@ public class DemolitionModelImpl extends AbstractModel implements DemolitionMode
 
     public DemolitionModelImpl(DataContainer dataContainer, MovesModelImpl moves,
                                InOutMigration inOutMigration, Properties properties,
-                               DemolitionStrategy strategy) {
-        super(dataContainer, properties);
+                               DemolitionStrategy strategy, Random rnd) {
+        super(dataContainer, properties, rnd);
         this.moves = moves;
         this.inOutMigration = inOutMigration;
-//        final Reader reader;
-//        switch (properties.main.implementation) {
-//            case MUNICH:
-//                reader = new InputStreamReader(this.getClass().getResourceAsStream("DemolitionCalc"));
-//                break;
-//            case MARYLAND:
-//                reader = new InputStreamReader(this.getClass().getResourceAsStream("DemolitionCalc"));
-//                break;
-//            case PERTH:
-//                reader = new InputStreamReader(this.getClass().getResourceAsStream("DemolitionCalc"));
-//                break;
-//            case KAGAWA:
-//            case CAPE_TOWN:
-//            default:
-//                throw new RuntimeException("DemolitionModel implementation not applicable for " + properties.main.implementation);
-//        }
         this.strategy = strategy;
     }
 
@@ -82,7 +67,7 @@ public class DemolitionModelImpl extends AbstractModel implements DemolitionMode
     public boolean handleEvent(DemolitionEvent event) {
         Dwelling dd = dataContainer.getRealEstateDataManager().getDwelling(event.getDwellingId());
         if (dd != null) {
-            if (SiloUtil.getRandomNumberAsDouble() < strategy.calculateDemolitionProbability(dd, currentYear)) {
+            if (random.nextDouble() < strategy.calculateDemolitionProbability(dd, currentYear)) {
                 return demolishDwelling(dd);
             }
         }
@@ -111,6 +96,12 @@ public class DemolitionModelImpl extends AbstractModel implements DemolitionMode
             moveOutHousehold(dwellingId, hh);
         } else {
             dataContainer.getRealEstateDataManager().removeDwellingFromVacancyList(dwellingId);
+        }
+        final Development development = dataContainer.getGeoData().getZones().get(dd.getZoneId()).getDevelopment();
+        if (development.isUseDwellingCapacity()) {
+            development.changeCapacityBy(1);
+        } else {
+            development.changeAreaBy(dd.getType().getAreaPerDwelling());
         }
         dataContainer.getRealEstateDataManager().removeDwelling(dwellingId);
         if (dwellingId == SiloUtil.trackDd) {

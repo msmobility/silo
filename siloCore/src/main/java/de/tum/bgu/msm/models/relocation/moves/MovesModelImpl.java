@@ -10,6 +10,7 @@ import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdType;
 import de.tum.bgu.msm.events.impls.household.MoveEvent;
+import de.tum.bgu.msm.io.output.YearByYearCsvModelTracker;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
@@ -20,6 +21,8 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -48,9 +51,14 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
     private final Map<HouseholdType, Double> averageHousingSatisfaction = new ConcurrentHashMap<>();
     private final Map<Integer, Double> satisfactionByHousehold = new ConcurrentHashMap<>();
+    private final HashMap<Integer, Integer> householdsByZone = new HashMap<>();
+    private final HashMap<Integer, Double > sumOfSatisfactionsByZone = new HashMap<>();
+    private YearByYearCsvModelTracker relocationTracker;
 
-    public MovesModelImpl(DataContainer dataContainer, Properties properties, MovesStrategy movesStrategy, HousingStrategy housingStrategy) {
-        super(dataContainer, properties);
+
+    public MovesModelImpl(DataContainer dataContainer, Properties properties, MovesStrategy movesStrategy,
+                          HousingStrategy housingStrategy, Random random) {
+        super(dataContainer, properties, random);
 //        try {
 //            fileWriter = new BufferedWriter(new FileWriter(new File(properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/indiv_tt.csv")));
 //            fileWriter.write("ppId,hhId,ddId,jobId,jobX,jobY,ddX,ddY,jobZone,dwellingZone,min,minSkim,queryTime,ddUtil,areaDDZone,areaJJZone,minFixedTime,minFixedZone,transitSkim,transitIndiv,transitIndivFixedQuery,transitIndivFixedZone");
@@ -66,6 +74,9 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
     @Override
     public void setup() {
         housingStrategy.setup();
+        String header = new StringJoiner(",").add("hh").add("oldDdd").add("newDd").add("oldZone").add("newZone").toString();
+        Path basePath = Paths.get(properties.main.baseDirectory).resolve("scenOutput").resolve(properties.main.scenarioName).resolve("siloResults/relocation");
+        relocationTracker = new YearByYearCsvModelTracker(basePath, "relocation", header);
     }
 
     @Override
@@ -74,6 +85,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         track = false;
         calculateAverageHousingUtility();
         track = true;
+        relocationTracker.newYear(year);
     }
 
     @Override
@@ -98,6 +110,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
     @Override
     public void endSimulation() {
+        relocationTracker.end();
 //        try {
 //            fileWriter.close();
 //        } catch (IOException e) {
@@ -124,6 +137,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
             return false;
         }
 
+        final int idOldDd = household.getDwellingId();
         // Step 2: Choose new dwelling
         int idNewDD = searchForNewDwelling(household);
 
@@ -131,10 +145,19 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
             // Step 3: Move household
             dataContainer.getHouseholdDataManager().saveHouseholdMemento(household);
-            moveHousehold(household, household.getDwellingId(), idNewDD);
+            int oldZoneId = dataContainer.getRealEstateDataManager().getDwelling(idOldDd).getZoneId();
+            int newZoneId = dataContainer.getRealEstateDataManager().getDwelling(idNewDD).getZoneId();
+            relocationTracker.trackRecord(new StringJoiner(",")
+                    .add(String.valueOf(hhId))
+                    .add(String.valueOf(idOldDd))
+                    .add(String.valueOf(idNewDD))
+                    .add(String.valueOf(oldZoneId))
+                    .add(String.valueOf(newZoneId))
+                    .toString());
+            moveHousehold(household, idOldDd, idNewDD);
             if (hhId == SiloUtil.trackHh) {
                 SiloUtil.trackWriter.println("Household " + hhId + " has moved to dwelling " +
-                        household.getDwellingId());
+                        idOldDd);
             }
             return true;
         } else {
@@ -151,7 +174,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
         // Step 1: select region
         final GeoData geoData = dataContainer.getGeoData();
-        Sampler<Region> regionSampler = new Sampler<>(geoData.getRegions().size(), Region.class, SiloUtil.getRandomObject());
+        Sampler<Region> regionSampler = new Sampler<>(geoData.getRegions().size(), Region.class, this.random);
         for (Region region : geoData.getRegions().values()) {
             double utility;
             if (dataContainer.getRealEstateDataManager().getNumberOfVacantDDinRegion(region.getId()) == 0) {
@@ -186,7 +209,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
         UtilityUtils.reset();
 
-        Collections.shuffle(vacantDwellings, SiloUtil.getRandomObject());
+        Collections.shuffle(vacantDwellings, this.random);
         for (int i = 0; i < maxNumberOfDwellings; i++) {
             Dwelling dwelling = vacantDwellings.get(i);
             if (housingStrategy.isHouseholdEligibleToLiveHere(household, dwelling)) {
@@ -213,7 +236,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
             }
         }
 
-        Sampler<Dwelling> sampler = new Sampler<>(UtilityUtils.dwellings, UtilityUtils.probabilities, SiloUtil.getRandomObject());
+        Sampler<Dwelling> sampler = new Sampler<>(UtilityUtils.dwellings, UtilityUtils.probabilities, this.random);
         try {
             return sampler.sampleObject().getId();
         } catch (SampleException e) {
@@ -232,7 +255,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         final double avgSatisfaction = averageHousingSatisfaction.getOrDefault(hhType, currentUtil);
 
         final double prop = movesStrategy.getMovingProbability(avgSatisfaction, currentUtil);
-        return SiloUtil.getRandomNumberAsDouble() <= prop;
+        return this.random.nextDouble() <= prop;
     }
 
 
@@ -241,6 +264,8 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         logger.info("Evaluating average housing utility of " + householdDataManager.getHouseholds().size() + " households.");
         satisfactionByHousehold.clear();
         averageHousingSatisfaction.replaceAll((householdType, aDouble) -> 0.);
+        householdsByZone.clear();
+        sumOfSatisfactionsByZone.clear();
 
         final Collection<Household> households = householdDataManager.getHouseholds();
         ConcurrentHashMultiset<HouseholdType> hhByType = ConcurrentHashMultiset.create();
@@ -260,15 +285,17 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
                 " with partitions of size " + partitionSize);
 
         for (final List<Household> partition : partitions) {
+            HousingStrategy strategy = housingStrategy.duplicate();
             executor.addTaskToQueue(() -> {
                 try {
-                    HousingStrategy strategy = housingStrategy.duplicate();
                     for (Household hh : partition) {
                         final HouseholdType householdType = hh.getHouseholdType();
                         hhByType.add(householdType);
                         Dwelling dd = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId());
                         final double util = strategy.calculateHousingUtility(hh, dd);
                         satisfactionByHousehold.put(hh.getId(), util);
+                        householdsByZone.put(dd.getZoneId(), householdsByZone.getOrDefault(dd.getZoneId(), 0) + 1);
+                        sumOfSatisfactionsByZone.put(dd.getZoneId(), sumOfSatisfactionsByZone.getOrDefault(dd.getZoneId(), 0.) + util);
                         averageHousingSatisfaction.merge(householdType, util, (oldUtil, newUtil) -> oldUtil + newUtil);
                     }
                 } catch (Exception e) {
@@ -290,7 +317,11 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         if (idOldDD > 0) {
             dataContainer.getRealEstateDataManager().vacateDwelling(idOldDD);
         }
-        dataContainer.getRealEstateDataManager().removeDwellingFromVacancyList(idNewDD);
+        try {
+            dataContainer.getRealEstateDataManager().removeDwellingFromVacancyList(idNewDD);
+        } catch (NullPointerException e){
+            logger.warn("eh");
+        }
         dataContainer.getRealEstateDataManager().getDwelling(idNewDD).setResidentID(hh.getId());
         hh.setDwelling(idNewDD);
         if (hh.getId() == SiloUtil.trackHh) {
@@ -401,5 +432,13 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
                 }
             }
         }
+    }
+
+    public HashMap<Integer, Integer> getHouseholdsByZone() {
+        return householdsByZone;
+    }
+
+    public HashMap<Integer, Double> getSumOfSatisfactionsByZone() {
+        return sumOfSatisfactionsByZone;
     }
 }

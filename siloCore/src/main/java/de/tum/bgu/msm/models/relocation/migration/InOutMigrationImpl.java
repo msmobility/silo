@@ -18,10 +18,7 @@ import de.tum.bgu.msm.properties.modules.MovesProperties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Adds exogenously given inmigrating and outmigrating households
@@ -47,8 +44,8 @@ public class InOutMigrationImpl extends AbstractModel implements InOutMigration 
 
     public InOutMigrationImpl(DataContainer dataContainer, EmploymentModel employment,
                               MovesModelImpl movesModel, CreateCarOwnershipModel carOwnership,
-                              DriversLicenseModel driversLicense, Properties properties) {
-        super(dataContainer, properties);
+                              DriversLicenseModel driversLicense, Properties properties, Random random) {
+        super(dataContainer, properties, random);
         this.employment = employment;
         this.movesModel = movesModel;
         this.carOwnership = carOwnership;
@@ -109,7 +106,7 @@ public class InOutMigrationImpl extends AbstractModel implements InOutMigration 
         }
         int createdInmigrants = 0;
         while (createdInmigrants < inmigrants) {
-            Household hh = hhs[(int) (hhs.length * SiloUtil.getRandomNumberAsFloat())];
+            Household hh = hhs[(int) (hhs.length * this.random.nextDouble())];
             Household inmigratingHousehold = householdDataManager.duplicateHousehold(hh);
             events.add(new MigrationEvent(inmigratingHousehold, MigrationEvent.Type.IN));
             createdInmigrants += inmigratingHousehold.getHhSize();
@@ -131,7 +128,7 @@ public class InOutMigrationImpl extends AbstractModel implements InOutMigration 
 
         int createdOutMigrants = 0;
         while (createdOutMigrants < outmigrants) {
-            Household selectedHousehold = hhs[(int) (hhs.length * SiloUtil.getRandomNumberAsFloat())];
+            Household selectedHousehold = hhs[(int) (hhs.length * this.random.nextDouble())];
             events.add(new MigrationEvent(selectedHousehold, MigrationEvent.Type.OUT));
             createdOutMigrants += selectedHousehold.getHhSize();
 
@@ -215,6 +212,7 @@ public class InOutMigrationImpl extends AbstractModel implements InOutMigration 
     }
 
 
+    @Override
     public boolean outMigrateHh(int hhId, boolean overwriteEventRules) {
         // Household with ID hhId out migrates
         Household hh = dataContainer.getHouseholdDataManager().getHouseholdFromId(hhId);

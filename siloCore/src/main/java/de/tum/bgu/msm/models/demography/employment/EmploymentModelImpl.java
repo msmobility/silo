@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Simulates finding a new job and quitting a job
@@ -30,8 +31,8 @@ public class EmploymentModelImpl extends AbstractModel implements EmploymentMode
     private float[][] laborParticipationShares;
     private int missingJob;
 
-    public EmploymentModelImpl(DataContainer dataContainer, Properties properties) {
-        super(dataContainer, properties);
+    public EmploymentModelImpl(DataContainer dataContainer, Properties properties, Random rnd) {
+        super(dataContainer, properties, rnd);
     }
 
     @Override
@@ -85,13 +86,13 @@ public class EmploymentModelImpl extends AbstractModel implements EmploymentMode
 
             // find job
             if (changeRate[gen][age] > 0 && !employed) {
-                if (SiloUtil.getRandomNumberAsFloat() < changeRate[gen][age]) {
+                if (random.nextDouble() < changeRate[gen][age]) {
                     events.add(new EmploymentEvent(pp.getId(), EmploymentEvent.Type.FIND));
                 }
             }
             // lose job
             if (changeRate[gen][age] < 0 && employed) {
-                if (SiloUtil.getRandomNumberAsFloat() < Math.abs(changeRate[gen][age])) {
+                if (random.nextDouble() < Math.abs(changeRate[gen][age])) {
                     events.add(new EmploymentEvent(pp.getId(), EmploymentEvent.Type.QUIT));
                 }
             }
@@ -210,7 +211,7 @@ public class EmploymentModelImpl extends AbstractModel implements EmploymentMode
             prob[i] = (1 / (meanIncomeChange * Math.sqrt(2 * 3.1416))) *
                     Math.exp(-(Math.pow(change[i], 2) / (2 * Math.pow(meanIncomeChange, 2))));
         }
-        final int sel = SiloUtil.select(prob);
+        final int sel = SiloUtil.select(prob, random);
         float avgIncome = dataContainer.getHouseholdDataManager().getAverageIncome(gender, age, person.getOccupation());
         final int inc = Math.max((int) avgIncome + change[sel], 0);
         person.setIncome(inc);

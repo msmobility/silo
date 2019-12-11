@@ -10,6 +10,8 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
+import java.util.Random;
+
 /**
  * Implements car ownership level change (subsequent years) for the Munich Metropolitan Area
  * @author nkuehnel
@@ -18,6 +20,7 @@ import org.apache.log4j.Logger;
 public class OneCarPolicyCarOwnerTak extends AbstractModel implements ModelUpdateListener {
 
     private static final int REMOVE_ONE_CAR = 2;
+    private static final int ADD_ONE_CAR = 1;
     private static final int MAX_NUMBER_OF_CARS = 3;
 
     private static final double[] intercept = {-3.0888, -5.6650};
@@ -36,8 +39,8 @@ public class OneCarPolicyCarOwnerTak extends AbstractModel implements ModelUpdat
      */
     private final double[][][][][][][][] carUpdateProb = new double[4][2][2][2][2][2][2][3];
 
-    public OneCarPolicyCarOwnerTak(DataContainer dataContainer, Properties properties) {
-        super(dataContainer, properties);
+    protected OneCarPolicyCarOwnerTak(DataContainer dataContainer, Properties properties, Random rnd) {
+        super(dataContainer, properties, rnd);
     }
 
     @Override
@@ -145,11 +148,16 @@ public class OneCarPolicyCarOwnerTak extends AbstractModel implements ModelUpdat
 
                 double[] prob = carUpdateProb[previousCars][hhSizePlus][hhSizeMinus][hhIncomePlus][hhIncomeMinus][licensePlus][changeResidence?1:0];
 
-                int action = SiloUtil.select(prob);
+                int action = SiloUtil.select(prob, random);
 
                 if (action == REMOVE_ONE_CAR) {
                     if (newHousehold.getAutos() > 0){
-                        newHousehold.setAutos(newHousehold.getAutos() - 1);
+                        newHousehold.setAutos(0);
+                        counter[1]++;
+                    }
+                } else if (action == ADD_ONE_CAR) {
+                    if (newHousehold.getAutos() == 0){
+                        newHousehold.setAutos(1);
                         counter[1]++;
                     }
                 }

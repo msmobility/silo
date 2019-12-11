@@ -9,6 +9,7 @@ import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -42,7 +43,7 @@ public class SimpleMatsimScenarioAssembler implements MatsimScenarioAssembler {
         this.scalingFactor = properties.transportModel.matsimScaleFactor;
     }
 
-    private Population generateDemand() {
+    private Population generateDemand(TravelTimes travelTimes) {
         logger.info("Starting creating a MATSim population.");
 
         HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
@@ -130,11 +131,11 @@ public class SimpleMatsimScenarioAssembler implements MatsimScenarioAssembler {
     }
 
     @Override
-    public Scenario assembleScenario(Config initialMatsimConfig, int year) {
+    public Scenario assembleScenario(Config initialMatsimConfig, int year, TravelTimes travelTimes) {
         Config config = createMatsimConfig(initialMatsimConfig);
 
         MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(config);
-        Population population = generateDemand();
+        Population population = generateDemand(travelTimes);
         scenario.setPopulation(population);
 
         return scenario;

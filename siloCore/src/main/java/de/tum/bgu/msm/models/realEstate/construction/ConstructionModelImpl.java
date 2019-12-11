@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Build new dwellings based on current demand. Model works in two steps. At the end of each simulation period,
@@ -38,15 +39,14 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
 
     private int currentYear = -1;
 
-
-
     private float betaForZoneChoice;
     private float priceIncreaseForNewDwelling;
+    private Map<Integer, List<Dwelling>> dwellingsByRegion;
 
     public ConstructionModelImpl(DataContainer dataContainer, DwellingFactory factory,
                                  Properties properties, ConstructionLocationStrategy locationStrategy,
-                                 ConstructionDemandStrategy demandStrategy) {
-        super(dataContainer, properties);
+                                 ConstructionDemandStrategy demandStrategy, Random random) {
+        super(dataContainer, properties, random);
         this.geoData = dataContainer.getGeoData();
         this.accessibility = dataContainer.getAccessibility();
         this.factory = factory;
@@ -63,6 +63,9 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
 
     @Override
     public void prepareYear(int year) {
+        dwellingsByRegion = dataContainer.getRealEstateDataManager().getDwellings()
+                .stream().collect(Collectors.groupingBy(d -> geoData.getZones().get(d.getZoneId()).getRegion().getId()
+        ));
     }
 
     @Override
@@ -82,10 +85,18 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
         double[][] avePriceByTypeAndZone = calculateScaledAveragePriceByZone(100);
         double[][] avePriceByTypeAndRegion = calculateScaledAveragePriceByRegion(100);
         float[][] aveSizeByTypeAndRegion = calculateAverageSizeByTypeAndByRegion();
+
+
         for (DwellingType dt : dwellingTypes) {
             int dto = dwellingTypes.indexOf(dt);
             for (int region : geoData.getRegions().keySet()) {
-                demandByRegion[dto][region] = demandStrategy.calculateConstructionDemand(vacancyByRegion[dto][region], dt);
+                if (dwellingsByRegion.containsKey(region)){
+                    demandByRegion[dto][region] = demandStrategy.calculateConstructionDemand(vacancyByRegion[dto][region], dt, dwellingsByRegion.get(region).size());
+                } else {
+                    //regions that, after scaling down the population, do not have any dwelling, thus are not in the map dwellingsByRegion
+                    demandByRegion[dto][region] = 0;
+                }
+
             }
         }
         // try to satisfy demand, build more housing in zones with particularly low vacancy rates, if available land use permits
@@ -146,7 +157,7 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
                     for (int zone : zonesInThisRegion) {
                         prob[zone] = prob[zone] / probSum;
                     }
-                    int zone = SiloUtil.select(prob);
+                    int zone = SiloUtil.select(prob, random);
                     events.add(createNewDwelling(realEstate, aveSizeByTypeAndRegion, avePriceByTypeAndZone,
                             avePriceByTypeAndRegion, dt, dto, region, zone));
                 }
@@ -154,7 +165,7 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
                     int zone = allocateUnrealizedDemandInDifferentRegion(realEstate, dt, dto,
                             avePriceByTypeAndZone, avePriceByTypeAndRegion, utilitiesByDwellingTypeByZone);
 
-                    if(zone > -1) {
+                    if (zone > -1) {
                         events.add(createNewDwelling(realEstate, aveSizeByTypeAndRegion, avePriceByTypeAndZone,
                                 avePriceByTypeAndRegion, dt, dto, region, zone));
                     } else {
@@ -163,8 +174,11 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
                 }
             }
         }
-        logger.warn("There have been " + unrealizedDemandCounter + " dwellings that could not be built " +
-                "due to lack of developable land.");
+        logger.info("Planning of construction done. Planned " + events.size() + " dwellings.");
+        if(unrealizedDemandCounter > 0) {
+            logger.warn("There have been " + unrealizedDemandCounter + " dwellings that could not be built " +
+                    "due to lack of developable land.");
+        }
         return events;
     }
 
@@ -245,7 +259,7 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
 
 
         int ddId = realEstate.getNextDwellingId();
-        Coordinate coordinate = dataContainer.getGeoData().getZones().get(zone).getRandomCoordinate(SiloUtil.getRandomObject());
+        Coordinate coordinate = dataContainer.getGeoData().getZones().get(zone).getRandomCoordinate(this.random);
         Dwelling plannedDwelling = factory.createDwelling(ddId, zone, coordinate, -1,
                 dt, size, quality, price, currentYear);
         // Dwelling is created and added to events list, but dwelling it not added to realEstateDataManager yet
@@ -282,7 +296,7 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
         for (Map.Entry<Integer, Zone> zone : geoData.getZones().entrySet()) {
             prob[zone.getValue().getId()] = prob[zone.getValue().getId()] / probSum;
         }
-        return SiloUtil.select(prob);
+        return SiloUtil.select(prob, random);
     }
 
 

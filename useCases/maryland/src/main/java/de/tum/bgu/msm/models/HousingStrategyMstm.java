@@ -208,14 +208,28 @@ public class HousingStrategyMstm implements HousingStrategy<DwellingMstm> {
     public double calculateRegionalUtility(Household household, Region region) {
         Race householdRace = ((MarylandHousehold) household).getRace();
 
+
         double thisRegionFactor = 1;
+        double carToWorkersRatio = Math.min(1., ((double) household.getAutos() / HouseholdUtil.getNumberOfWorkers(household)));
+
         for (Person pp : household.getPersons().values()) {
-            // Are we sure that workplace must only not be -2? How about workplace = -1? nk/dz, july'18
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
-                Zone workZone = geoData.getZones().get(jobData.getJobFromId(pp.getJobId()).getZoneId());
-                int timeFromZoneToRegion = (int) travelTimes.getTravelTimeToRegion(
-                        workZone, region, properties.transportModel.peakHour_s, TransportMode.car);
-                thisRegionFactor = thisRegionFactor * commutingTimeProbability.getCommutingTimeProbability(timeFromZoneToRegion);
+                final Job job = dataContainer.getJobDataManager().getJobFromId(pp.getJobId());
+                Zone workZone = geoData.getZones().get(job.getZoneId());
+                if(carToWorkersRatio <= 0.) {
+                    int ptTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, properties.transportModel.peakHour_s, TransportMode.pt);
+                    thisRegionFactor = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, ptTime));
+                } else if( carToWorkersRatio >= 1.) {
+                    int carTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, properties.transportModel.peakHour_s, TransportMode.car);
+                    thisRegionFactor = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, carTime));
+                } else {
+                    int carTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, properties.transportModel.peakHour_s, TransportMode.car);
+                    int ptTime = (int) travelTimes.getTravelTimeFromRegion(region, workZone, properties.transportModel.peakHour_s, TransportMode.pt);
+                    double factorCar = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, carTime));
+                    double factorPt = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, ptTime));
+
+                    thisRegionFactor= factorCar * carToWorkersRatio + (1 - carToWorkersRatio) * factorPt;
+                }
             }
         }
         double util = thisRegionFactor * utilityByIncomeRaceRegion.get(household.getHouseholdType().getIncomeCategory()).get(householdRace).get(region.getId());

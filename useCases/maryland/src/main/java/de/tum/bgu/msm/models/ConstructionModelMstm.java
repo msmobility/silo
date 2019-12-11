@@ -19,6 +19,7 @@ import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Build new dwellings based on current demand. Model works in two steps. At the end of each simulation period,
@@ -45,11 +46,12 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
     private float restrictionForAffordableDd;
 
     private int currentYear = -1;
+    private Map<Integer, List<Dwelling>> dwellingsByRegion;
 
     public ConstructionModelMstm(DataContainer dataContainer, DwellingFactory factory,
                                  Properties properties, ConstructionLocationStrategy locationStrategy,
-                                 ConstructionDemandStrategy demandStrategy) {
-        super(dataContainer, properties);
+                                 ConstructionDemandStrategy demandStrategy, Random rnd) {
+        super(dataContainer, properties, rnd);
         this.geoData = dataContainer.getGeoData();
         this.accessibility = dataContainer.getAccessibility();
         this.factory = factory;
@@ -73,6 +75,9 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
 
     @Override
     public void prepareYear(int year) {
+        dwellingsByRegion = dataContainer.getRealEstateDataManager().getDwellings()
+                .stream().collect(Collectors.groupingBy(d -> geoData.getZones().get(d.getZoneId()).getRegion().getId()
+                ));
     }
 
     @Override
@@ -95,7 +100,9 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
         for (DwellingType dt : dwellingTypes) {
             int dto = dwellingTypes.indexOf(dt);
             for (int region : geoData.getRegions().keySet()) {
-                demandByRegion[dto][region] = demandStrategy.calculateConstructionDemand(vacancyByRegion[dto][region], dt);
+                final int size = dwellingsByRegion.getOrDefault(region, Collections.emptyList()).size();
+                final double v = demandStrategy.calculateConstructionDemand(vacancyByRegion[dto][region], dt, size);
+                demandByRegion[dto][region] = v;
             }
         }
         // try to satisfy demand, build more housing in zones with particularly low vacancy rates, if available land use permits
@@ -154,7 +161,7 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
                     for (int zone : zonesInThisRegion) {
                         prob[zone] = prob[zone] / probSum;
                     }
-                    int zone = SiloUtil.select(prob);
+                    int zone = SiloUtil.select(prob, random);
                     events.add(createNewDwelling(realEstate, aveSizeByTypeAndRegion, avePriceByTypeAndZone,
                             avePriceByTypeAndRegion, dt, dto, region, zone));
                 }
@@ -186,7 +193,7 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
         int price;
 
         if (makeSomeNewDdAffordable) {
-            if (SiloUtil.getRandomNumberAsFloat() <= shareOfAffordableDd) {
+            if (random.nextDouble() <= shareOfAffordableDd) {
                 restriction = (int) (restrictionForAffordableDd * 100);
             }
         }
@@ -248,7 +255,7 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
         for (Map.Entry<Integer, Zone> zone : geoData.getZones().entrySet()) {
             prob[zone.getValue().getId()] = prob[zone.getValue().getId()] / probSum;
         }
-        return SiloUtil.select(prob);
+        return SiloUtil.select(prob, random);
     }
 
     @Override
@@ -258,7 +265,7 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
         Dwelling dd = event.getDwelling();
         realEstate.addDwelling(dd);
 
-        Coordinate coordinate = dataContainer.getGeoData().getZones().get(dd.getZoneId()).getRandomCoordinate(SiloUtil.getRandomObject());
+        Coordinate coordinate = dataContainer.getGeoData().getZones().get(dd.getZoneId()).getRandomCoordinate(random);
         dd.setCoordinate(coordinate);
 
         realEstate.addDwellingToVacancyList(dd);

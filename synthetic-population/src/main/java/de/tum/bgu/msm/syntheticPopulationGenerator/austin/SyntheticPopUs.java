@@ -949,7 +949,7 @@ public class SyntheticPopUs implements SyntheticPopI {
     private void generateAutoOwnership (DataContainer dataContainer) {
         // select number of cars for every household
         dataContainer.getJobDataManager().setup();
-        MaryLandUpdateCarOwnershipModel ao = new MaryLandUpdateCarOwnershipModel(dataContainer, accessibility, Properties.get());   // calculate auto-ownership probabilities
+        MaryLandUpdateCarOwnershipModel ao = new MaryLandUpdateCarOwnershipModel(dataContainer, accessibility, Properties.get(), SiloUtil.provideNewRandom());   // calculate auto-ownership probabilities
         Map<Integer, int[]> households = new HashMap<>();
         for (Household hh: householdData.getHouseholds()) {
             households.put(hh.getId(), null);

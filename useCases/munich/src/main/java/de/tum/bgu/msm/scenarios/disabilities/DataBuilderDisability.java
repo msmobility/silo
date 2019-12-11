@@ -1,4 +1,4 @@
-package de.tum.bgu.msm;
+package de.tum.bgu.msm.scenarios.disabilities;
 
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.accessibility.AccessibilityImpl;
@@ -39,12 +39,12 @@ public class DataBuilderDisability {
         switch (properties.transportModel.travelTimeImplIdentifier) {
             case SKIM:
                 travelTimes = new SkimTravelTimes();
-                accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
+                accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, jobData);
                 break;
             case MATSIM:
                 travelTimes = new MatsimTravelTimes(config);
 //                accessibility = new MatsimAccessibility(geoData);
-                accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, householdData);
+                accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, jobData);
                 break;
             default:
                 break;

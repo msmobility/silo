@@ -3,17 +3,8 @@ package de.tum.bgu.msm.models.realEstate.pricing;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 
 public interface PricingStrategy {
-    double getLowInflectionPoint();
 
-    double getHighInflectionPoint();
+    boolean isPriceUpdateAllowed(Dwelling dd);
 
-    double getLowerSlope();
-
-    double getMainSlope();
-
-    double getHighSlope();
-
-    double getMaximumChange();
-
-    boolean shouldUpdatePrice(Dwelling dd);
+    double getPriceChangeRate(double vacancyRateAtThisRegion, double structuralVacancyRate);
 }

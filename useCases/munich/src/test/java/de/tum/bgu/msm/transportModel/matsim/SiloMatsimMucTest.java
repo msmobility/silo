@@ -47,7 +47,6 @@ public class SiloMatsimMucTest {
     private static final Logger log = Logger.getLogger(SiloMatsimMucTest.class);
 
     @Test
-    @Ignore
 	public final void testMain() {
 
         String path = "./test/muc/siloMatsimMucTest.properties";
@@ -73,7 +72,8 @@ public class SiloMatsimMucTest {
         ModelContainer modelContainer = ModelBuilderMuc.getModelContainerForMuc(dataContainer, properties, config);
 
         ResultsMonitor resultsMonitor = new DefaultResultsMonitor(dataContainer, properties);
-        SiloModel siloModel = new SiloModel(properties, dataContainer, modelContainer, resultsMonitor);
+        SiloModel siloModel = new SiloModel(properties, dataContainer, modelContainer);
+        siloModel.addResultMonitor(resultsMonitor);
         siloModel.runModel();
 
         checkDwellings();
@@ -90,7 +90,7 @@ public class SiloMatsimMucTest {
 
     private void checkEvents() {
         log.info("Checking MATSim events file ...");
-        final String eventsFilenameReference = "./test/muc/refOutput/matsim/test_2013/test_2013.output_events.xml.gz";
+        final String eventsFilenameReference = "./test/muc/refOutput/matsim/test_2013/2013.output_events.xml.gz";
         final String eventsFilenameNew = "./test/muc/scenOutput/test/matsim/2013/2013.output_events.xml.gz";
         assertEquals("Different event files.", EventsFileComparator.Result.FILES_ARE_EQUAL, EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew));
     }
@@ -98,7 +98,7 @@ public class SiloMatsimMucTest {
     private void checkPlans() {
         log.info("Checking MATSim plans file ...");
 
-        final String referenceFilename = "./test/muc/refOutput/matsim/test_2013/test_2013.output_plans.xml.gz";
+        final String referenceFilename = "./test/muc/refOutput/matsim/test_2013/2013.output_plans.xml.gz";
         final String outputFilename = "./test/muc/scenOutput/test/matsim/2013/2013.output_plans.xml.gz";
         Scenario scRef = ScenarioUtils.createScenario(ConfigUtils.createConfig()) ;
         Scenario scOut = ScenarioUtils.createScenario(ConfigUtils.createConfig()) ;

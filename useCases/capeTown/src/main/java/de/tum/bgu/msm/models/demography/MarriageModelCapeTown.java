@@ -51,9 +51,9 @@ public class MarriageModelCapeTown extends AbstractModel implements MarriageMode
     // performance, the person type of this person in the marriage market is not updated.
 
     public MarriageModelCapeTown(DataContainer dataContainer, MovesModelImpl movesModel,
-                             InOutMigrationImpl iomig, CreateCarOwnershipModel carOwnership,
-                             HouseholdFactory hhFactory, Properties properties, MarriageStrategy strategy) {
-        super(dataContainer, properties);
+                                 InOutMigrationImpl iomig, CreateCarOwnershipModel carOwnership,
+                                 HouseholdFactory hhFactory, Properties properties, MarriageStrategy strategy, Random rnd) {
+        super(dataContainer, properties, rnd);
         this.movesModel = movesModel;
         this.iomig = iomig;
         this.carOwnership = carOwnership;
@@ -63,24 +63,6 @@ public class MarriageModelCapeTown extends AbstractModel implements MarriageMode
 
     @Override
     public void setup() {
-
-
-//        final Reader reader;
-//        switch (properties.main.implementation) {
-//            case MUNICH:
-//                reader = new InputStreamReader(this.getClass().getResourceAsStream("MarriageProbabilityCalc"));
-//                break;
-//            case MARYLAND:
-//                reader = new InputStreamReader(this.getClass().getResourceAsStream("MarryDivorceCalcMstm"));
-//                break;
-//            case PERTH:
-//                reader = new InputStreamReader(this.getClass().getResourceAsStream("MarriageProbabilityCalc"));
-//                break;
-//            case KAGAWA:
-//            case CAPE_TOWN:
-//            default:
-//                throw new RuntimeException("Marriage model implementation not applicable for " + properties.main.implementation);
-//        }
         ageDiffProbabilityByGender = calculateAgeDiffProbabilities();
     }
 
@@ -150,7 +132,7 @@ public class MarriageModelCapeTown extends AbstractModel implements MarriageMode
         for (final Person pp : persons) {
             if (ruleGetMarried(pp)) {
                 final double marryProb = getMarryProb(pp);
-                if (SiloUtil.getRandomNumberAsDouble() <= marryProb) {
+                if (random.nextDouble() <= marryProb) {
                     activePartners.add(pp);
                 } else if (isQualifiedAsPossiblePartner(pp)) {
                     final List<Person> entry = partnersByAgeAndGender.get(pp.getAge(), pp.getGender());
@@ -191,7 +173,7 @@ public class MarriageModelCapeTown extends AbstractModel implements MarriageMode
             probabilities.put(p, prob);
         }
 
-        final Person selectedPartner = SiloUtil.select(probabilities, sum);
+        final Person selectedPartner = SiloUtil.select(probabilities, sum, random);
         possiblePartners.remove(selectedPartner);
         return selectedPartner;
     }
@@ -204,7 +186,7 @@ public class MarriageModelCapeTown extends AbstractModel implements MarriageMode
     private MarriagePreference defineMarriagePreference(Person person, MarriageMarket market) {
 
         final Gender partnerGender = person.getGender().opposite();
-        final boolean sameRace = SiloUtil.getRandomNumberAsFloat() >= interRacialMarriageShare;
+        final boolean sameRace = random.nextDouble() >= interRacialMarriageShare;
 
         final Map<Integer, Double> probabilityByAge = new LinkedHashMap<>();
 
@@ -222,7 +204,7 @@ public class MarriageModelCapeTown extends AbstractModel implements MarriageMode
             return null;
         }
 
-        final int selectedAge = SiloUtil.select(probabilityByAge, sum);
+        final int selectedAge = SiloUtil.select(probabilityByAge, sum, random);
         return new MarriagePreference(sameRace, selectedAge, partnerGender);
 
     }
@@ -246,7 +228,7 @@ public class MarriageModelCapeTown extends AbstractModel implements MarriageMode
         if (hh.getHhSize() == 1) {
             share *= properties.demographics.onePersonHhMarriageBias;
         }
-        return SiloUtil.getRandomNumberAsFloat() < share;
+        return random.nextDouble()< share;
     }
 
     private boolean marryCouple(int id1, int id2) {

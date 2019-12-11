@@ -51,8 +51,8 @@ public class RenovationModelImpl extends AbstractModel implements RenovationMode
         abstract int getChange();
     }
 
-    public RenovationModelImpl(DataContainer dataContainer, Properties properties, RenovationStrategy strategy) {
-        super(dataContainer, properties);
+    public RenovationModelImpl(DataContainer dataContainer, Properties properties, RenovationStrategy strategy, Random random) {
+        super(dataContainer, properties, random);
         this.strategy = strategy;
     }
 
@@ -88,7 +88,7 @@ public class RenovationModelImpl extends AbstractModel implements RenovationMode
         Dwelling dd = realEstateDataManager.getDwelling(event.getDwellingId());
         if (dd != null) {
             int currentQuality = dd.getQuality();
-            DdQualityChange change = SiloUtil.select(getProbabilities(currentQuality));
+            DdQualityChange change = SiloUtil.select(getProbabilities(currentQuality), random);
             dd.setQuality(currentQuality + change.getChange());
             return true;
         }

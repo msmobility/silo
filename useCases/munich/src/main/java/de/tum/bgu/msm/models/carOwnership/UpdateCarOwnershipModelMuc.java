@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.util.Random;
 
 /**
  * Implements car ownership level change (subsequent years) for the Munich Metropolitan Area
@@ -29,8 +30,8 @@ public class UpdateCarOwnershipModelMuc extends AbstractModel implements ModelUp
 
     private final Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("UpdateCarOwnershipCalc"));
 
-    public UpdateCarOwnershipModelMuc(DataContainer dataContainer, Properties properties) {
-        super(dataContainer, properties);
+    public UpdateCarOwnershipModelMuc(DataContainer dataContainer, Properties properties, Random rnd) {
+        super(dataContainer, properties, rnd);
     }
 
     @Override
@@ -128,7 +129,7 @@ public class UpdateCarOwnershipModelMuc extends AbstractModel implements ModelUp
 
                 double[] prob = carUpdateProb[previousCars][hhSizePlus][hhSizeMinus][hhIncomePlus][hhIncomeMinus][licensePlus][changeResidence?1:0];
 
-                int action = SiloUtil.select(prob);
+                int action = SiloUtil.select(prob, random);
 
                 if (action == 1){ //add one car
                     if (newHousehold.getAutos() < 3) { //maximum number of cars is equal to 3

@@ -11,5 +11,23 @@
 
     <artifactId>matsim2silo</artifactId>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.matsim.contrib</groupId>
+            <artifactId>dvrp</artifactId>
+            <version>${matsimVersion}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.media</groupId>
+                    <artifactId>jai_core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jgridshift</groupId>
+                    <artifactId>jgridshift</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
+
 
 </project>

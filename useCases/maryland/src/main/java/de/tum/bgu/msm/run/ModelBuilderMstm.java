@@ -5,6 +5,7 @@ import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.person.PersonFactory;
+import de.tum.bgu.msm.matsim.MatsimData;
 import de.tum.bgu.msm.matsim.MatsimTransportModel;
 import de.tum.bgu.msm.matsim.SimpleMatsimScenarioAssembler;
 import de.tum.bgu.msm.matsim.ZoneConnectorManager;
@@ -51,8 +52,11 @@ import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.models.relocation.moves.RegionProbabilityStrategyImpl;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
+import org.matsim.core.scenario.ScenarioUtils;
 
 public class ModelBuilderMstm {
 
@@ -66,11 +70,11 @@ public class ModelBuilderMstm {
         HouseholdFactory hhFactory = dataContainer.getHouseholdDataManager().getHouseholdFactory();
         DwellingFactory ddFactory = dataContainer.getRealEstateDataManager().getDwellingFactory();
 
-        final BirthModelImpl birthModel = new BirthModelImpl(dataContainer, ppFactory, properties, new DefaultBirthStrategy());
+        final BirthModelImpl birthModel = new BirthModelImpl(dataContainer, ppFactory, properties, new DefaultBirthStrategy(), SiloUtil.provideNewRandom());
 
-        BirthdayModel birthdayModel = new BirthdayModelImpl(dataContainer, properties);
+        BirthdayModel birthdayModel = new BirthdayModelImpl(dataContainer, properties, SiloUtil.provideNewRandom());
 
-        DeathModel deathModel = new DeathModelImpl(dataContainer, properties, new DefaultDeathStrategy());
+        DeathModel deathModel = new DeathModelImpl(dataContainer, properties, new DefaultDeathStrategy(), SiloUtil.provideNewRandom());
 
         final HousingStrategyMstm housingStrategy = new HousingStrategyMstm(
                 properties,
@@ -80,42 +84,42 @@ public class ModelBuilderMstm {
                 new DwellingUtilityStrategyMstm(),
                 new RegionUilityStrategyMstm(), new RegionProbabilityStrategyImpl());
 
-        MovesModelImpl movesModel = new MovesModelImpl(dataContainer, properties, new DefaultMovesStrategy(), housingStrategy);
+        MovesModelImpl movesModel = new MovesModelImpl(dataContainer, properties, new DefaultMovesStrategy(), housingStrategy, SiloUtil.provideNewRandom());
 
 
         DivorceModel divorceModel = new DivorceModelImpl(
                 dataContainer, movesModel, null, hhFactory,
-                properties, new DefaultDivorceStrategy());
+                properties, new DefaultDivorceStrategy(), SiloUtil.provideNewRandom());
 
-        DriversLicenseModel driversLicenseModel = new DriversLicenseModelImpl(dataContainer, properties, new DefaultDriversLicenseStrategy());
+        DriversLicenseModel driversLicenseModel = new DriversLicenseModelImpl(dataContainer, properties, new DefaultDriversLicenseStrategy(), SiloUtil.provideNewRandom());
 
-        EducationModel educationModel = new EducationModelImpl(dataContainer, properties);
+        EducationModel educationModel = new EducationModelImpl(dataContainer, properties, SiloUtil.provideNewRandom());
 
-        EmploymentModel employmentModel = new EmploymentModelImpl(dataContainer, properties);
+        EmploymentModel employmentModel = new EmploymentModelImpl(dataContainer, properties, SiloUtil.provideNewRandom());
 
         LeaveParentHhModel leaveParentsModel = new LeaveParentHhModelImpl(dataContainer, movesModel,
-                null, hhFactory, properties, new DefaultLeaveParentalHouseholdStrategy());
+                null, hhFactory, properties, new DefaultLeaveParentalHouseholdStrategy(), SiloUtil.provideNewRandom());
 
-        JobMarketUpdate jobMarketUpdateModel = new JobMarketUpdateImpl(dataContainer, properties);
+        JobMarketUpdate jobMarketUpdateModel = new JobMarketUpdateImpl(dataContainer, properties, SiloUtil.provideNewRandom());
 
         ConstructionModelMstm construction = new ConstructionModelMstm(dataContainer, ddFactory,
-                properties, new DefaultConstructionLocationStrategy(), new DefaultConstructionDemandStrategy());
+                properties, new DefaultConstructionLocationStrategy(), new DefaultConstructionDemandStrategy(), SiloUtil.provideNewRandom());
 
 
-        PricingModel pricing = new PricingModelImpl(dataContainer, properties, new DefaultPricingStrategy());
+        PricingModel pricing = new PricingModelImpl(dataContainer, properties, new DefaultPricingStrategy(), SiloUtil.provideNewRandom());
 
-        RenovationModel renovation = new RenovationModelImpl(dataContainer, properties, new DefaultRenovationStrategy());
+        RenovationModel renovation = new RenovationModelImpl(dataContainer, properties, new DefaultRenovationStrategy(), SiloUtil.provideNewRandom());
 
-        ConstructionOverwriteMstm constructionOverwrite = new ConstructionOverwriteMstm(dataContainer, ddFactory, properties);
+        ConstructionOverwriteMstm constructionOverwrite = new ConstructionOverwriteMstm(dataContainer, ddFactory, properties, SiloUtil.provideNewRandom());
 
         InOutMigrationImpl inOutMigration = new InOutMigrationImpl(dataContainer, employmentModel, movesModel,
-                null, driversLicenseModel, properties);
+                null, driversLicenseModel, properties, SiloUtil.provideNewRandom());
 
         DemolitionModel demolition = new DemolitionModelImpl(dataContainer, movesModel,
-                inOutMigration, properties, new DefaultDemolitionStrategy());
+                inOutMigration, properties, new DefaultDemolitionStrategy(), SiloUtil.provideNewRandom());
 
         MarriageModel marriageModel = new MarriageModelMstm(dataContainer, movesModel, inOutMigration,
-                null, hhFactory, properties, new DefaultMarriageStrategy());
+                null, hhFactory, properties, new DefaultMarriageStrategy(), SiloUtil.provideNewRandom());
 
 
         TransportModel transportModel;
@@ -123,10 +127,13 @@ public class ModelBuilderMstm {
             case MITO_MATSIM:
                 logger.warn("Mito not implemented for Mstm. Defaulting to simple matsim transport model");
             case MATSIM:
+                MatsimData matsimData = null;
+                if (config != null) {
+                    final Scenario scenario = ScenarioUtils.loadScenario(config);
+                    matsimData = new MatsimData(config, properties, ZoneConnectorManager.ZoneConnectorMethod.RANDOM, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
+                }
                 final SimpleMatsimScenarioAssembler scenarioAssembler = new SimpleMatsimScenarioAssembler(dataContainer, properties);
-                transportModel = new MatsimTransportModel(dataContainer, config, properties,
-                        null,
-                        ZoneConnectorManager.ZoneConnectorMethod.RANDOM, scenarioAssembler);
+                transportModel = new MatsimTransportModel(dataContainer, config, properties, scenarioAssembler, matsimData);
                 break;
             case NONE:
             default:
