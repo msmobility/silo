@@ -173,8 +173,8 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
     private Config createMatsimConfig(Config initialConfig) {
         logger.info("Stating creating a MATSim config.");
         Config config = ConfigUtils.loadConfig(initialConfig.getContext());
-        config.qsim().setFlowCapFactor(properties.transportModel.matsimScaleFactor);
-        config.qsim().setStorageCapFactor(properties.transportModel.matsimScaleFactor);
+        config.qsim().setFlowCapFactor(properties.transportModel.matsimScaleFactor * properties.main.scaleFactor);
+        config.qsim().setStorageCapFactor(properties.transportModel.matsimScaleFactor * properties.main.scaleFactor);
 
         // TODO Add some switch here like "autoGenerateSimplePlans" or similar...
         PlanCalcScoreConfigGroup.ActivityParams homeActivity = new PlanCalcScoreConfigGroup.ActivityParams("home");
