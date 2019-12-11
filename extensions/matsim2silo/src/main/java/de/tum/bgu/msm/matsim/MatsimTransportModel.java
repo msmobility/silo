@@ -39,6 +39,10 @@ import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.ScenarioUtils;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+
 import java.util.Objects;
 
 /**
@@ -64,6 +68,10 @@ public final class MatsimTransportModel implements TransportModel {
         this.dataContainer = Objects.requireNonNull(dataContainer);
         this.initialMatsimConfig = Objects.requireNonNull(matsimConfig,
                 "No initial matsim config provided to SiloModel class!");
+        logger.info("Copying initial config to output folder");
+        File file = new File(properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/matsim/initialConfig.xml");
+        file.getParentFile().mkdirs();
+        ConfigUtils.writeMinimalConfig(initialMatsimConfig, file.getAbsolutePath());
 
         final TravelTimes travelTimes = dataContainer.getTravelTimes();
         if (travelTimes instanceof MatsimTravelTimes) {
