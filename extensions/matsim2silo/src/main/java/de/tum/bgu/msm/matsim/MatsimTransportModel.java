@@ -56,6 +56,7 @@ import org.matsim.facilities.*;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.opengis.feature.simple.SimpleFeature;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -89,8 +90,9 @@ public final class MatsimTransportModel implements TransportModel {
         this.initialMatsimConfig = Objects.requireNonNull(matsimConfig,
                 "No initial matsim config provided to SiloModel class!");
         logger.info("Copying initial config to output folder");
-        String path = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/matsim/initialConfig.xml";
-        ConfigUtils.writeMinimalConfig(initialMatsimConfig, path);
+        File file = new File(properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/matsim/initialConfig.xml");
+        file.mkdirs();
+        ConfigUtils.writeMinimalConfig(initialMatsimConfig, file.getAbsolutePath());
 
         final TravelTimes travelTimes = dataContainer.getTravelTimes();
         if (travelTimes instanceof MatsimTravelTimes) {
