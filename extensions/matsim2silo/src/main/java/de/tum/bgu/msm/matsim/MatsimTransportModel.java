@@ -88,6 +88,9 @@ public final class MatsimTransportModel implements TransportModel {
         this.dataContainer = Objects.requireNonNull(dataContainer);
         this.initialMatsimConfig = Objects.requireNonNull(matsimConfig,
                 "No initial matsim config provided to SiloModel class!");
+        logger.info("Copying initial config to output folder");
+        String path = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/matsim/initialConfig.xml";
+        ConfigUtils.writeMinimalConfig(initialMatsimConfig, path);
 
         final TravelTimes travelTimes = dataContainer.getTravelTimes();
         if (travelTimes instanceof MatsimTravelTimes) {
