@@ -101,16 +101,12 @@ public class SimpleMatsimScenarioAssembler implements MatsimScenarioAssembler {
             }
             Coord jobCoord = new Coord(jobCoordinate.x, jobCoordinate.y);
 
-
-            // Note: Do not confuse the SILO Person class with the MATSim Person class here
-            org.matsim.api.core.v01.population.Person matsimPerson =
-                    matsimPopulationFactory.createPerson(Id.create(siloPerson.getId(), org.matsim.api.core.v01.population.Person.class));
+            org.matsim.api.core.v01.population.Person matsimPerson = matsimPopulationFactory.createPerson(Id.createPersonId(siloPerson.getId()));
             matsimPopulation.addPerson(matsimPerson);
 
             Plan matsimPlan = matsimPopulationFactory.createPlan();
             matsimPerson.addPlan(matsimPlan);
 
-            // TODO Add some switch here like "autoGenerateSimplePlans" or similar...
             Activity activity1 = matsimPopulationFactory.createActivityFromCoord("home", dwellingCoord);
             activity1.setEndTime(6 * 3600 + 3 * SiloUtil.getRandomNumberAsDouble() * 3600); // TODO Potentially change later
             matsimPlan.addActivity(activity1);

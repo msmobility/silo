@@ -65,7 +65,7 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
         JobDataManager jobDataManager = dataContainer.getJobDataManager();
         RealEstateDataManager realEstateDataManager = dataContainer.getRealEstateDataManager();
 
-        for(Household household: householdDataManager.getHouseholds()) {
+        for (Household household: householdDataManager.getHouseholds()) {
             if (SiloUtil.getRandomNumberAsDouble() > populationScalingFactor) {
                 continue;
             }
@@ -73,11 +73,11 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
             CommuteModeChoiceMapping commuteModeChoiceMapping = commuteModeChoice.assignCommuteModeChoice(
                     dwelling, travelTimes, household);
 
-            for(Person person: household.getPersons().values()) {
+            for (Person person: household.getPersons().values()) {
                 if (person.getOccupation() != Occupation.EMPLOYED || person.getJobId() == -2) { // i.e. person does not work
                     continue;
                 }
-                if(commuteModeChoiceMapping.getMode(person).mode.equals(TransportMode.car)) {
+                if (commuteModeChoiceMapping.getMode(person).mode.equals(TransportMode.car)) {
                     Coordinate dwellingCoordinate;
                     if (dwelling != null && dwelling.getCoordinate() != null) {
                         dwellingCoordinate = dwelling.getCoordinate();
@@ -95,8 +95,7 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
                     }
                     Coord jobCoord = new Coord(jobCoordinate.x, jobCoordinate.y);
 
-                    org.matsim.api.core.v01.population.Person matsimPerson =
-                            matsimPopulationFactory.createPerson(Id.create(person.getId(), org.matsim.api.core.v01.population.Person.class));
+                    org.matsim.api.core.v01.population.Person matsimPerson = matsimPopulationFactory.createPerson(Id.createPersonId(person.getId()));
                     matsimPopulation.addPerson(matsimPerson);
 
                     Plan matsimPlan = matsimPopulationFactory.createPlan();
