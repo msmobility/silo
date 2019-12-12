@@ -23,11 +23,6 @@ import org.matsim.api.core.v01.population.Plan;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.api.core.v01.population.PopulationFactory;
 import org.matsim.core.config.Config;
-import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
-import org.matsim.core.config.groups.VspExperimentalConfigGroup;
-import org.matsim.core.population.PopulationUtils;
-import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ScenarioUtils;
 
 import java.util.Collection;
@@ -36,26 +31,30 @@ public class SimpleMatsimScenarioAssembler implements MatsimScenarioAssembler {
 
     private final static Logger logger = Logger.getLogger(SimpleMatsimScenarioAssembler.class);
     private final DataContainer dataContainer;
-    private final double scalingFactor;
+    private final Properties properties;
 
     public SimpleMatsimScenarioAssembler(DataContainer dataContainer, Properties properties) {
         this.dataContainer = dataContainer;
-        this.scalingFactor = properties.transportModel.matsimScaleFactor;
+        this.properties = properties;
     }
 
-    private Population generateDemand(TravelTimes travelTimes) {
-        logger.info("Starting creating a MATSim population.");
+    @Override
+    public Scenario assembleScenario(Config matsimConfig, int year, TravelTimes travelTimes) {
+        logger.info("Starting creating MATSim scenario.");
+        double populationScalingFactor = properties.transportModel.matsimScaleFactor;
+        SiloMatsimUtils.checkSiloPropertiesAndMatsimConfigConsistency(matsimConfig, properties);
+
+        Scenario scenario = ScenarioUtils.loadScenario(matsimConfig);
+        Population matsimPopulation = scenario.getPopulation();
+        PopulationFactory matsimPopulationFactory = matsimPopulation.getFactory();
 
         HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
         Collection<Person> siloPersons = householdDataManager.getPersons();
 
-        Population matsimPopulation = PopulationUtils.createPopulation(ConfigUtils.createConfig());
-        PopulationFactory matsimPopulationFactory = matsimPopulation.getFactory();
-
         JobDataManager jobDataManager = dataContainer.getJobDataManager();
 
         for (Person siloPerson : siloPersons) {
-            if (SiloUtil.getRandomNumberAsDouble() > scalingFactor) {
+            if (SiloUtil.getRandomNumberAsDouble() > populationScalingFactor) {
                 // e.g. if scalingFactor = 0.01, there will be a 1% chance that the loop is not
                 // continued in the next step, i.e. that the person is added to the population
                 continue;
@@ -126,39 +125,7 @@ public class SimpleMatsimScenarioAssembler implements MatsimScenarioAssembler {
 
             matsimPlan.addActivity(activity3);
         }
-        logger.info("Finished creating a MATSim population.");
-        return matsimPopulation;
-    }
-
-    @Override
-    public Scenario assembleScenario(Config initialMatsimConfig, int year, TravelTimes travelTimes) {
-        Config config = createMatsimConfig(initialMatsimConfig);
-
-        MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(config);
-        Population population = generateDemand(travelTimes);
-        scenario.setPopulation(population);
-
+        logger.info("Finished creating MATSim scenario.");
         return scenario;
-    }
-
-    private Config createMatsimConfig(Config initialConfig) {
-        logger.info("Stating creating a MATSim config.");
-        Config config = ConfigUtils.loadConfig(initialConfig.getContext());
-        config.qsim().setFlowCapFactor(scalingFactor);
-        config.qsim().setStorageCapFactor(scalingFactor);
-
-        // TODO Add some switch here like "autoGenerateSimplePlans" or similar...
-        PlanCalcScoreConfigGroup.ActivityParams homeActivity = new PlanCalcScoreConfigGroup.ActivityParams("home");
-        homeActivity.setTypicalDuration(12*60*60);
-        config.planCalcScore().addActivityParams(homeActivity);
-
-        PlanCalcScoreConfigGroup.ActivityParams workActivity = new PlanCalcScoreConfigGroup.ActivityParams("work");
-        workActivity.setTypicalDuration(8*60*60);
-        config.planCalcScore().addActivityParams(workActivity);
-
-        config.vspExperimental().setVspDefaultsCheckingLevel(VspExperimentalConfigGroup.VspDefaultsCheckingLevel.warn);
-
-        logger.info("Finished creating a MATSim config.");
-        return config;
     }
 }
