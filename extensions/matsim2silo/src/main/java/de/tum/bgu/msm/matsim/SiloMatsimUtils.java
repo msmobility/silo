@@ -46,16 +46,16 @@ public class SiloMatsimUtils {
 		double storageCapFactor = matsimConfig.qsim().getStorageCapFactor();
 
 		if (flowCapFactor != storageCapFactor) {
-			LOG.warn("MATSim flow capacity factor is " + flowCapFactor + " and MATSim storage capacity factor is " + storageCapFactor + "." +
-					"Only use a setup with diverging factors cautiously and if you know how to interpret the effects.");
+			LOG.warn("MATSim flow capacity factor is " + flowCapFactor + ", whereas MATSim storage capacity factor is " + storageCapFactor + "." +
+					" Only use a setup with diverging factors cautiously and if you know how to interpret the effects.");
 		}
 		if (flowCapFactor != matsimScalingFactor) {
-			LOG.warn("MATSim flow capacity factor is " + flowCapFactor + " and while population scaling factor is " + matsimScalingFactor + "." +
-					"Only use a setup with diverging factors cautiously and if you know how to interpret the effects.");
+			LOG.warn("MATSim flow capacity factor is " + flowCapFactor + ", whereas population scaling factor is " + matsimScalingFactor + "." +
+					" Only use a setup with diverging factors cautiously and if you know how to interpret the effects.");
 		}
 		if (storageCapFactor != matsimScalingFactor) {
-			LOG.warn("MATSim storage capacity factor is " + storageCapFactor + " and population scaling factor is " + matsimScalingFactor + "." +
-					"Only use a setup with diverging factors cautiously and if you know how to interpret the effects.");
+			LOG.warn("MATSim storage capacity factor is " + storageCapFactor + ", whereas population scaling factor is " + matsimScalingFactor + "." +
+					" Only use a setup with diverging factors cautiously and if you know how to interpret the effects.");
 		}
 	}
 	
