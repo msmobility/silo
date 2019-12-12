@@ -39,10 +39,25 @@ import java.util.Map;
  */
 public class SiloMatsimUtils {
 	private final static Logger LOG = Logger.getLogger(SiloMatsimUtils.class);
-		
 
+	public static void checkSiloPropertiesAndMatsimConfigConsistency (Config matsimConfig, Properties properties) {
+		double matsimScalingFactor = properties.transportModel.matsimScaleFactor;
+		double flowCapFactor = matsimConfig.qsim().getFlowCapFactor();
+		double storageCapFactor = matsimConfig.qsim().getStorageCapFactor();
 
-
+		if (flowCapFactor != storageCapFactor) {
+			LOG.warn("MATSim flow capacity factor is " + flowCapFactor + " and MATSim storage capacity factor is " + storageCapFactor + "." +
+					"Only use a setup with diverging factors cautiously and if you know how to interpret the effects.");
+		}
+		if (flowCapFactor != matsimScalingFactor) {
+			LOG.warn("MATSim flow capacity factor is " + flowCapFactor + " and while population scaling factor is " + matsimScalingFactor + "." +
+					"Only use a setup with diverging factors cautiously and if you know how to interpret the effects.");
+		}
+		if (storageCapFactor != matsimScalingFactor) {
+			LOG.warn("MATSim storage capacity factor is " + storageCapFactor + " and population scaling factor is " + matsimScalingFactor + "." +
+					"Only use a setup with diverging factors cautiously and if you know how to interpret the effects.");
+		}
+	}
 	
 	public static final Matrix convertTravelTimesToImpedanceMatrix(
 			Map<Tuple<Integer, Integer>, Float> travelTimesMap, int rowCount, int columnCount, int year) {
