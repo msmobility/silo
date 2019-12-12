@@ -76,7 +76,8 @@ public class TransportModelPropertiesModule {
 
         PropertiesUtil.newPropertySubmodule("Transport - silo-matsim");
         matsimInitialEventsFile = PropertiesUtil.getStringProperty(bundle, "matsim.initial.events", null);
-        matsimScaleFactor = PropertiesUtil.getDoubleProperty(bundle, "matsim.scale.factor", 0.01);
+        // 1.0 is also the default for flow and storage cap scaling in MATSim; setting the default to 1.0 here is more consistent. dz, dec'19
+        matsimScaleFactor = PropertiesUtil.getDoubleProperty(bundle, "matsim.scale.factor", 1.);
     }
 
 }
