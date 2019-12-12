@@ -4,6 +4,8 @@ import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.Zone;
 import org.locationtech.jts.geom.Coordinate;
 
+import java.util.Optional;
+
 public class JobImpl implements Job, MicroLocation {
 
     private final int id;
@@ -48,6 +50,16 @@ public class JobImpl implements Job, MicroLocation {
     public void relocateJob(Zone newZone, Coordinate newCoordinate) {
         this.zoneId = newZone.getZoneId();
         this.coordinate = newCoordinate;
+    }
+
+    @Override
+    public Optional<Integer> getStartTimeInSeconds() {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<Integer> getWorkingTimeInSeconds() {
+        return Optional.empty();
     }
 
     @Override

@@ -74,7 +74,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
     @Override
     public void setup() {
         housingStrategy.setup();
-        String header = new StringJoiner(",").add("hh").add("oldDdd").add("newDd").toString();
+        String header = new StringJoiner(",").add("hh").add("oldDdd").add("newDd").add("oldZone").add("newZone").toString();
         Path basePath = Paths.get(properties.main.baseDirectory).resolve("scenOutput").resolve(properties.main.scenarioName).resolve("siloResults/relocation");
         relocationTracker = new YearByYearCsvModelTracker(basePath, "relocation", header);
     }
@@ -137,6 +137,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
             return false;
         }
 
+        final int idOldDd = household.getDwellingId();
         // Step 2: Choose new dwelling
         int idNewDD = searchForNewDwelling(household);
 
@@ -144,15 +145,19 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
             // Step 3: Move household
             dataContainer.getHouseholdDataManager().saveHouseholdMemento(household);
+            int oldZoneId = dataContainer.getRealEstateDataManager().getDwelling(idOldDd).getZoneId();
+            int newZoneId = dataContainer.getRealEstateDataManager().getDwelling(idNewDD).getZoneId();
             relocationTracker.trackRecord(new StringJoiner(",")
                     .add(String.valueOf(hhId))
-                    .add(String.valueOf(household.getDwellingId()))
+                    .add(String.valueOf(idOldDd))
                     .add(String.valueOf(idNewDD))
+                    .add(String.valueOf(oldZoneId))
+                    .add(String.valueOf(newZoneId))
                     .toString());
-            moveHousehold(household, household.getDwellingId(), idNewDD);
+            moveHousehold(household, idOldDd, idNewDD);
             if (hhId == SiloUtil.trackHh) {
                 SiloUtil.trackWriter.println("Household " + hhId + " has moved to dwelling " +
-                        household.getDwellingId());
+                        idOldDd);
             }
             return true;
         } else {
@@ -280,9 +285,9 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
                 " with partitions of size " + partitionSize);
 
         for (final List<Household> partition : partitions) {
+            HousingStrategy strategy = housingStrategy.duplicate();
             executor.addTaskToQueue(() -> {
                 try {
-                    HousingStrategy strategy = housingStrategy.duplicate();
                     for (Household hh : partition) {
                         final HouseholdType householdType = hh.getHouseholdType();
                         hhByType.add(householdType);
@@ -312,7 +317,11 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         if (idOldDD > 0) {
             dataContainer.getRealEstateDataManager().vacateDwelling(idOldDD);
         }
-        dataContainer.getRealEstateDataManager().removeDwellingFromVacancyList(idNewDD);
+        try {
+            dataContainer.getRealEstateDataManager().removeDwellingFromVacancyList(idNewDD);
+        } catch (NullPointerException e){
+            logger.warn("eh");
+        }
         dataContainer.getRealEstateDataManager().getDwelling(idNewDD).setResidentID(hh.getId());
         hh.setDwelling(idNewDD);
         if (hh.getId() == SiloUtil.trackHh) {

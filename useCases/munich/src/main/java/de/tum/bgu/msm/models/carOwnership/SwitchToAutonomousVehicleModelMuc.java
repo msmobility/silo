@@ -14,6 +14,8 @@ import org.apache.log4j.Logger;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -24,6 +26,11 @@ public class SwitchToAutonomousVehicleModelMuc extends AbstractModel implements 
     private final static Logger logger = Logger.getLogger(SwitchToAutonomousVehicleModelMuc.class);
     private SwitchToAutonomousVehicleJSCalculatorMuc calculator;
     private final Reader reader;
+
+    /**
+     * this variable stores a summary for print out purposes
+     */
+    private Map<String, Integer> summary = new HashMap<>();
 
     public SwitchToAutonomousVehicleModelMuc(DataContainer dataContainer, Properties properties, InputStream inputStream, Random rnd) {
         super(dataContainer, properties, rnd);
@@ -37,11 +44,15 @@ public class SwitchToAutonomousVehicleModelMuc extends AbstractModel implements 
     }
 
     @Override
-    public void prepareYear(int year) {}
+    public void prepareYear(int year) {
+        summary.clear();
+
+    }
 
     @Override
     public void endYear(int year) {
         switchToAV(year);
+
     }
 
     @Override
@@ -51,26 +62,43 @@ public class SwitchToAutonomousVehicleModelMuc extends AbstractModel implements 
 
     private void switchToAV(int year) {
 
-        int counter = 0;
+        int event_counter = 0; // number of events change to AV
+        int autos_counter = 0; //number of cars (all)
+        int av_counter = 0; //numbre of avs
+
         HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
 
         // return HashMap<Household, ArrayOfHouseholdAttributes>. These are the households eligible for switching
         // to autonomous cars. currently income is the only household attribute used but room is left for additional
         // attributes in the future
         for (Household hh : householdDataManager.getHouseholds()) {
-            if (hh.getAutos() > ((HouseholdMuc)hh).getAutonomous()) {
-                int income = HouseholdUtil.getAnnualHhIncome(hh) / 12;
+            int autonomous = ((HouseholdMuc) hh).getAutonomous();
+            av_counter += autonomous;
+            autos_counter += hh.getAutos();
+            if (hh.getAutos() > autonomous) {
+                int income = HouseholdUtil.getAnnualHhIncome(hh);
                 double[] prob = calculator.calculate(income, year);
                 int action = SiloUtil.select(prob, random);
                 if (action == 1) {
-                    ((HouseholdMuc)hh).setAutonomous(((HouseholdMuc)hh).getAutonomous() + 1);
-                    counter++;
+                    ((HouseholdMuc)hh).setAutonomous(autonomous + 1);
+                    event_counter++;
                 }
             }
         }
-        double hh = dataContainer.getHouseholdDataManager().getHouseholds().size();
-        //todo reconsider to print out model results and how to pass them to the ResultsMonitor
-        logger.info(" Simulated household switched to AV" + counter + " (" +
-                SiloUtil.rounder((100. * counter / hh), 0) + "% of hh)");
+
+
+        int hh = dataContainer.getHouseholdDataManager().getHouseholds().size(); // number of hh
+        summary.put("hh", hh);
+        summary.put("autos", autos_counter);
+        summary.put("avs", av_counter);
+        summary.put("", event_counter);
+
+
+        logger.info(" Simulated household switched to AV " + event_counter + " (" +
+                SiloUtil.rounder((100. * event_counter / hh), 0) + "% of hh)");
+    }
+
+    public Map<String, Integer> getSummaryForThisYear() {
+        return summary;
     }
 }

@@ -90,7 +90,13 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
         for (DwellingType dt : dwellingTypes) {
             int dto = dwellingTypes.indexOf(dt);
             for (int region : geoData.getRegions().keySet()) {
-                demandByRegion[dto][region] = demandStrategy.calculateConstructionDemand(vacancyByRegion[dto][region], dt, dwellingsByRegion.get(region).size());
+                if (dwellingsByRegion.containsKey(region)){
+                    demandByRegion[dto][region] = demandStrategy.calculateConstructionDemand(vacancyByRegion[dto][region], dt, dwellingsByRegion.get(region).size());
+                } else {
+                    //regions that, after scaling down the population, do not have any dwelling, thus are not in the map dwellingsByRegion
+                    demandByRegion[dto][region] = 0;
+                }
+
             }
         }
         // try to satisfy demand, build more housing in zones with particularly low vacancy rates, if available land use permits

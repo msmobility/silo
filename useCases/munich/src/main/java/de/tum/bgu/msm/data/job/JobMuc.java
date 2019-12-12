@@ -4,6 +4,8 @@ import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.Zone;
 import org.locationtech.jts.geom.Coordinate;
 
+import java.util.Optional;
+
 public class JobMuc implements Job, MicroLocation {
 
     private final int id;
@@ -53,12 +55,12 @@ public class JobMuc implements Job, MicroLocation {
         this.workingTimeInSeconds = workingTimeInSeconds;
     }
 
-    public int getStartTimeInSeconds() {
-        return startTimeInSeconds;
+    public Optional<Integer> getStartTimeInSeconds() {
+        return Optional.of(startTimeInSeconds);
     }
 
-    public int getWorkingTimeInSeconds() {
-        return workingTimeInSeconds;
+    public Optional<Integer> getWorkingTimeInSeconds() {
+        return Optional.of(workingTimeInSeconds);
     }
 
     @Override

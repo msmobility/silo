@@ -100,7 +100,9 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
         for (DwellingType dt : dwellingTypes) {
             int dto = dwellingTypes.indexOf(dt);
             for (int region : geoData.getRegions().keySet()) {
-                demandByRegion[dto][region] = demandStrategy.calculateConstructionDemand(vacancyByRegion[dto][region], dt, dwellingsByRegion.get(region).size());
+                final int size = dwellingsByRegion.getOrDefault(region, Collections.emptyList()).size();
+                final double v = demandStrategy.calculateConstructionDemand(vacancyByRegion[dto][region], dt, size);
+                demandByRegion[dto][region] = v;
             }
         }
         // try to satisfy demand, build more housing in zones with particularly low vacancy rates, if available land use permits

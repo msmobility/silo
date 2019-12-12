@@ -195,10 +195,14 @@ public class DefaultResultsMonitor implements ResultsMonitor {
                 if (dwelling != null) {
                     zone = dataContainer.getGeoData().getZones().get(dwelling.getZoneId());
                 }
-                Zone destination = dataContainer.getGeoData().getZones().get(dataContainer.getJobDataManager().getJobFromId(per.getJobId()).getZoneId());
-                double ds = dataContainer.getTravelTimes().getPeakSkim(TransportMode.car).getIndexed(zone.getZoneId(), destination.getZoneId());
-                commDist[0][zone.getRegion().getId()] += ds;
-                commDist[1][zone.getRegion().getId()]++;
+                try {
+                    Zone destination = dataContainer.getGeoData().getZones().get(dataContainer.getJobDataManager().getJobFromId(per.getJobId()).getZoneId());
+                    double ds = dataContainer.getTravelTimes().getPeakSkim(TransportMode.car).getIndexed(zone.getZoneId(), destination.getZoneId());
+                    commDist[0][zone.getRegion().getId()] += ds;
+                    commDist[1][zone.getRegion().getId()]++;
+                } catch (NullPointerException e){
+                    logger.warn("Error found since hh does not have a dd? hh: " + household.getId());
+                }
             }
         }
         resultWriter.println("aveCommuteDistByRegion,minutes");
