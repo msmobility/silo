@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.properties;
 
+import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.properties.PropertiesUtil;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.commons.math.distribution.GammaDistributionImpl;
@@ -78,11 +79,11 @@ public class GermanyPropertiesSynPop extends AbstractPropertiesSynPop {
         errorsMunicipalityFileName = PropertiesUtil.getStringProperty(bundle, "errors.IPU.municipality.matrix", "microData/" + state +  "/interimFiles/errorsIPUmunicipality.csv");
         errorsCountyFileName = PropertiesUtil.getStringProperty(bundle, "errors.IPU.county.matrix", "microData/" + state + "/interimFiles/errorsIPUcounty.csv");
         errorsSummaryFileName = PropertiesUtil.getStringProperty(bundle, "errors.IPU.summary.matrix", "microData/" + state + "/interimFiles/errorsIPUsummary.csv");
+        frequencyMatrixFileName = PropertiesUtil.getStringProperty(bundle,"frequency.matrix.file","microData/" + state +  "/interimFiles/frequencyMatrix.csv");
 
         buildingLocationlist = null;
         jobLocationlist = null;
         schoolLocationlist = null;
-
 
         microPersonsFileName = PropertiesUtil.getStringProperty(bundle, "micro.persons", "microData/" + state +  "/interimFiles/microPersons.csv");
         microHouseholdsFileName = PropertiesUtil.getStringProperty(bundle, "micro.households", "microData/" + state +  "/interimFiles/microHouseholds.csv");
@@ -95,6 +96,16 @@ public class GermanyPropertiesSynPop extends AbstractPropertiesSynPop {
         householdsStateFileName = PropertiesUtil.getStringProperty(bundle, "household.file.ascii.sp", "microData/" + state +  "/hh");
         personsStateFileName = PropertiesUtil.getStringProperty(bundle, "person.file.ascii.sp", "microData/" + state +  "/pp");
         dwellingsStateFileName = PropertiesUtil.getStringProperty(bundle, "dwelling.file.ascii.sp", "microData/" + state +  "/dd");
+
+        if (boroughIPU) {
+            attributesBorough = PropertiesUtil.getStringPropertyArray(bundle, "attributes.borough", new String[]{"Agr", "Ind", "Srv"});
+            marginalsBorough = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle, "marginals.borough", "input/syntheticPopulation/" + state + "/marginalsBorough.csv"));
+            marginalsBorough.buildIndex(marginalsBorough.getColumnPosition("ID_borough"));
+            selectedBoroughs = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"municipalities.list.borough","input/syntheticPopulation/" + state + "/municipalitiesListBorough.csv"));
+            selectedBoroughs.buildIndex(selectedBoroughs.getColumnPosition("ID_borough"));
+            cellsMatrixBoroughs = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"taz.definition ","input/syntheticPopulation/" + state + "/zoneAttributesBorough.csv"));
+            cellsMatrixBoroughs.buildIndex(cellsMatrixBoroughs.getColumnPosition("ID_cell"));
+        }
     }
 
 }

@@ -42,7 +42,7 @@ public class ReadZonalData {
         int[] cityID;
         int[] countyID;
         HashMap<Integer, ArrayList> municipalitiesByCounty;
-        //List of municipalities and counties that are used for IPU and de.tum.bgu.msm.syntheticPopulationGenerator.germany.disability
+        //List of municipalities and counties that are used for IPU and allocation
         ArrayList<Integer> municipalities = new ArrayList<>();
         ArrayList<Integer> counties = new ArrayList<>();
         municipalitiesByCounty = new HashMap<>();

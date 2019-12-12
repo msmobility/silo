@@ -71,5 +71,6 @@ public abstract class AbstractPropertiesSynPop {
     public String householdsStateFileName;
     public String personsStateFileName;
     public String dwellingsStateFileName;
+    public String frequencyMatrixFileName;
 
 }

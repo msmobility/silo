@@ -31,6 +31,7 @@ public class PrepareFrequencyMatrix {
             frequencyMatrix.setValueAt(i,"hhTotal",1);
             int hhSize = dataSetSynPop.getHouseholdTable().get(i,"hhSize");
             updateHhSize(hhSize, i);
+            updateHouseholdsBorough(hhSize, i);
             for (int j = 0; j < hhSize; j++){
                 int row = dataSetSynPop.getHouseholdTable().get(i,"personCount") + j;
                 int age = dataSetSynPop.getPersonTable().get(row,"age");
@@ -39,14 +40,12 @@ public class PrepareFrequencyMatrix {
                 int sector = dataSetSynPop.getPersonTable().get(row,"sector");
                 updateHhAgeGender(age, gender, i);
                 updateHhWorkers(gender,occupation, sector, i);
+                updatePersonsBorough(age,gender,occupation,i);
             }
             frequencyMatrix.setValueAt(i,"population",hhSize);
-            if (PropertiesSynPop.get().main.boroughIPU) {
-                frequencyMatrix.setValueAt(i, "MUChhTotal", 1);
-                frequencyMatrix.setValueAt(i, "MUCpopulation", hhSize);
-            }
         }
         dataSetSynPop.setFrequencyMatrix(frequencyMatrix);
+        SiloUtil.writeTableDataSet(frequencyMatrix,PropertiesSynPop.get().main.frequencyMatrixFileName);
         logger.info("   Finished creating the frequency matrix");
 
     }
@@ -71,7 +70,6 @@ public class PrepareFrequencyMatrix {
                 int value = 1 + (int) frequencyMatrix.getValueAt(i,"femaleWorkers");
                 frequencyMatrix.setValueAt(i,"femaleWorkers",value);
             }
-
             if (sector == 1){
                 int value = 1 + (int) frequencyMatrix.getValueAt(i,"agrWorkers");
                 frequencyMatrix.setValueAt(i,"agrWorkers",value);
@@ -81,16 +79,6 @@ public class PrepareFrequencyMatrix {
             } else if (sector == 3){
                 int value = 1 + (int) frequencyMatrix.getValueAt(i,"serWorkers");
                 frequencyMatrix.setValueAt(i,"serWorkers",value);
-            }
-
-            if (PropertiesSynPop.get().main.boroughIPU) {
-                if (gender == 1) {
-                    int value = 1 + (int) frequencyMatrix.getValueAt(i, "MUCmaleWorkers");
-                    frequencyMatrix.setValueAt(i, "MUCmaleWorkers", value);
-                } else {
-                    int value = 1 + (int) frequencyMatrix.getValueAt(i, "MUCfemaleWorkers");
-                    frequencyMatrix.setValueAt(i, "MUCfemaleWorkers", value);
-                }
             }
         }
     }
@@ -112,21 +100,6 @@ public class PrepareFrequencyMatrix {
             int value2 = 1 + (int) frequencyMatrix.getValueAt(i,"females");
             frequencyMatrix.setValueAt(i,"females",value2);
         }
-        if (PropertiesSynPop.get().main.boroughIPU) {
-            int row1 = 0;
-            if (age < 18) {
-                frequencyMatrix.setValueAt(i, "MUChhWithChildren", 1);
-            }
-            if (gender == 2) {
-                int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "MUCfemale");
-                frequencyMatrix.setValueAt(i, "MUCfemale", value1);
-            }
-            while (age > PropertiesSynPop.get().main.ageBracketsBorough[row1]){
-                row1++;
-            }
-            int value = 1 + (int) frequencyMatrix.getValueAt(i, "MUCage" + PropertiesSynPop.get().main.ageBracketsBorough[row1]);
-            frequencyMatrix.setValueAt(i, "MUCage" + PropertiesSynPop.get().main.ageBracketsBorough[row1], value);
-        }
     }
 
 
@@ -136,9 +109,92 @@ public class PrepareFrequencyMatrix {
             hhSize = PropertiesSynPop.get().main.householdSizes[PropertiesSynPop.get().main.householdSizes.length - 1];
         }
         frequencyMatrix.setValueAt(i,"hhSize"+ hhSize, 1);
+    }
+
+    private void updateHouseholdsBorough(int hhSize, int i) {
         if (PropertiesSynPop.get().main.boroughIPU) {
-            if (hhSize == 1) {
-                frequencyMatrix.setValueAt(i, "MUChhSize1", 1);
+            frequencyMatrix.setValueAt(i, "borough_hhTotal", 1);
+            frequencyMatrix.setValueAt(i, "borough_population", hhSize);
+            //attributes specific for each city implemented
+            switch (PropertiesSynPop.get().main.state){
+                case "02_Hamburg":
+                    if (hhSize == 1) {
+                        frequencyMatrix.setValueAt(i, "borough_hhSize1", 1);
+                    } else if (hhSize == 2){
+                        frequencyMatrix.setValueAt(i, "borough_hhSize2", 1);
+                    } else if (hhSize == 3){
+                        frequencyMatrix.setValueAt(i, "borough_hhSize3", 1);
+                    } else if (hhSize == 4){
+                        frequencyMatrix.setValueAt(i, "borough_hhSize4", 1);
+                    } else if (hhSize > 4){
+                        frequencyMatrix.setValueAt(i, "borough_hhSize5", 1);
+                    }
+                    break;
+
+                case "09_Munich":
+                    if (hhSize == 1) {
+                        frequencyMatrix.setValueAt(i, "borough_hhSize1", 1);
+                    }
+                    break;
+                default:
+            }
+        }
+    }
+
+
+    private void updatePersonsBorough(int age, int gender, int occupation, int i) {
+        if (PropertiesSynPop.get().main.boroughIPU) {
+            switch (PropertiesSynPop.get().main.state) {
+                case "02_Hamburg":
+                    if (gender == 2) {
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_females");
+                        frequencyMatrix.setValueAt(i, "borough_females", value1);
+                    } else {
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_males");
+                        frequencyMatrix.setValueAt(i, "borough_males", value1);
+                    }
+                    if (age < 19){
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_age18");
+                        frequencyMatrix.setValueAt(i, "borough_age18", value1);
+                    } else if (age < 30){
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_age29");
+                        frequencyMatrix.setValueAt(i, "borough_age29", value1);
+                    } else if (age < 50){
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_age49");
+                        frequencyMatrix.setValueAt(i, "borough_age49", value1);
+                    } else if (age < 65){
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_age64");
+                        frequencyMatrix.setValueAt(i, "borough_age64", value1);
+                    } else {
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_age99");
+                        frequencyMatrix.setValueAt(i, "borough_age99", value1);
+                    }
+                    break;
+
+                case "09_Munich":
+                    int row1 = 0;
+                    if (age < 18) {
+                        frequencyMatrix.setValueAt(i, "MUChhWithChildren", 1);
+                    }
+                    if (gender == 2) {
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "MUCfemale");
+                        frequencyMatrix.setValueAt(i, "MUCfemale", value1);
+                    }
+                    while (age > PropertiesSynPop.get().main.ageBracketsBorough[row1]) {
+                        row1++;
+                    }
+                    int value = 1 + (int) frequencyMatrix.getValueAt(i, "MUCage" + PropertiesSynPop.get().main.ageBracketsBorough[row1]);
+                    frequencyMatrix.setValueAt(i, "MUCage" + PropertiesSynPop.get().main.ageBracketsBorough[row1], value);
+                    if (gender == 1) {
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "MUCmaleWorkers");
+                        frequencyMatrix.setValueAt(i, "MUCmaleWorkers", value1);
+                    } else {
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "MUCfemaleWorkers");
+                        frequencyMatrix.setValueAt(i, "MUCfemaleWorkers", value1);
+                    }
+
+                    break;
+                default:
             }
         }
     }

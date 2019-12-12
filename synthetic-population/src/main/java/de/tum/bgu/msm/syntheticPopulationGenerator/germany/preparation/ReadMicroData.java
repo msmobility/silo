@@ -109,8 +109,6 @@ public class ReadMicroData {
         dataSetSynPop.setHouseholdTable(householdTable);
         dataSetSynPop.setPersonDataSet(personDataSet);
         dataSetSynPop.setHouseholdDataSet(householdDataSet);
-        SiloUtil.writeTableDataSet(personDataSet,"microData/interimFiles/persons.csv");
-        SiloUtil.writeTableDataSet(householdDataSet,"microData/interimFiles/households.csv");
     }
 
 

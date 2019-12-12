@@ -105,7 +105,6 @@ public class MicroDataManager {
         noIncome.put("exceptionIf", 99);
         exceptionsMicroData.put("noIncome", noIncome);
         int state = 1;
-        stateString = "03_01";
         if (stateString.length() == 2) {
             state = Integer.parseInt(stateString);
         } else {

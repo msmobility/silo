@@ -56,8 +56,6 @@ public class GenerateHouseholdsPersons {
         householdData = dataContainer.getHouseholdDataManager();
         for (int municipality : dataSetSynPop.getMunicipalities()){
             initializeMunicipalityData(municipality);
-            double logging = 2;
-            int it = 12;
             List<Integer> hhSelection = selectMultipleHouseholds(totalHouseholds);
             List<Integer> tazSelection = selectMultipleTAZ(totalHouseholds);
             for (int draw = 0; draw < totalHouseholds; draw++) {
@@ -65,12 +63,8 @@ public class GenerateHouseholdsPersons {
                 int tazSelected = tazSelection.get(draw);
                 Household household = generateHousehold(tazSelected);
                 generatePersons(hhSelected, household);
-                if (draw == logging & draw > 2) {
-                    logger.info("   Municipality " + municipality + ". Generated household " + draw);
-                    it++;
-                    logging = Math.pow(2, it);
-                }
             }
+            logger.info("   Municipality " + municipality + ". Generated " + householdCounter  + " households.");
         }
     }
 
@@ -139,25 +133,29 @@ public class GenerateHouseholdsPersons {
     private void initializeMunicipalityData(int municipality){
 
         logger.info("   Municipality " + municipality + ". Starting to generate households and persons");
-        totalHouseholds = (int) PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, "hhTotal");
+        if (!PropertiesSynPop.get().main.boroughIPU) {
+            totalHouseholds = (int) PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, "hhTotal");
+        } else {
+            totalHouseholds = (int) PropertiesSynPop.get().main.marginalsBorough.getIndexedValueAt(municipality, "borough_hhTotal");
+        }
         probTAZ = dataSetSynPop.getProbabilityZone().get(municipality);
         probMicroData = new HashMap<>();
         probabilityId = new double[dataSetSynPop.getWeights().getRowCount()];
         ids = new int[probabilityId.length];
         sumProbabilities = 0;
-        for (int id : dataSetSynPop.getWeights().getColumnAsInt("ID")){
+        for (int id : dataSetSynPop.getWeights().getColumnAsInt("ID")) {
             probMicroData.put(id, dataSetSynPop.getWeights().getValueAt(id, Integer.toString(municipality)));
         }
-        for (int i = 0; i < probabilityId.length; i++){
-            sumProbabilities = sumProbabilities + dataSetSynPop.getWeights().getValueAt(i+1, Integer.toString(municipality));
-            probabilityId[i] = dataSetSynPop.getWeights().getValueAt(i+1, Integer.toString(municipality));
-            ids[i] = (int) dataSetSynPop.getWeights().getValueAt(i+1, "ID");
+        for (int i = 0; i < probabilityId.length; i++) {
+            sumProbabilities = sumProbabilities + dataSetSynPop.getWeights().getValueAt(i + 1, Integer.toString(municipality));
+            probabilityId[i] = dataSetSynPop.getWeights().getValueAt(i + 1, Integer.toString(municipality));
+            ids[i] = (int) dataSetSynPop.getWeights().getValueAt(i + 1, "ID");
         }
         probabilityTAZ = new double[dataSetSynPop.getProbabilityZone().get(municipality).keySet().size()];
         sumTAZs = 0;
         probabilityTAZ = dataSetSynPop.getProbabilityZone().get(municipality).values().stream().mapToDouble(Number::doubleValue).toArray();
-        for (int i = 1; i < probabilityTAZ.length; i++){
-            probabilityTAZ[i] = probabilityTAZ[i] + probabilityTAZ[i-1];
+        for (int i = 1; i < probabilityTAZ.length; i++) {
+            probabilityTAZ[i] = probabilityTAZ[i] + probabilityTAZ[i - 1];
         }
         idTAZs = dataSetSynPop.getProbabilityZone().get(municipality).keySet().stream().mapToInt(Number::intValue).toArray();
         sumTAZs = dataSetSynPop.getProbabilityZone().get(municipality).values().stream().mapToDouble(Number::doubleValue).sum();
