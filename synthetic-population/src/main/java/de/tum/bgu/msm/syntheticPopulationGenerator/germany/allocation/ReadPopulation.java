@@ -1,19 +1,16 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.germany.allocation;
 
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
-import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.data.dwelling.DwellingUtils;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
-import de.tum.bgu.msm.data.household.Household;
-import de.tum.bgu.msm.data.household.HouseholdDataManager;
-import de.tum.bgu.msm.data.household.HouseholdFactory;
-import de.tum.bgu.msm.data.household.HouseholdMuc;
+import de.tum.bgu.msm.data.household.*;
 import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.job.JobFactoryMuc;
 import de.tum.bgu.msm.data.job.JobMuc;
-import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.syntheticPopulationGenerator.germany.io.DwellingReaderMucMito;
+import de.tum.bgu.msm.syntheticPopulationGenerator.germany.io.HouseholdReaderMucMito;
+import de.tum.bgu.msm.syntheticPopulationGenerator.germany.io.PersonReaderMucMito;
+import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
@@ -21,7 +18,6 @@ import org.locationtech.jts.geom.Coordinate;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
 
 public class ReadPopulation {
 
@@ -36,8 +32,8 @@ public class ReadPopulation {
         logger.info("   Running module: read population");
         readHouseholdData(Properties.get().main.startYear);
         readPersonData(Properties.get().main.startYear);
-        /*readDwellingData(Properties.get().main.startYear);
-        readJobData(Properties.get().main.startYear);*/
+        readDwellingData(Properties.get().main.startYear);
+        //readJobData(Properties.get().main.startYear);
     }
 
 
@@ -46,42 +42,9 @@ public class ReadPopulation {
 
         HouseholdDataManager householdData = dataContainer.getHouseholdDataManager();
         HouseholdFactory householdFactory = householdData.getHouseholdFactory();
-        String fileName = Properties.get().main.baseDirectory + Properties.get().householdData.householdFileName;
-        fileName += "_" + year + ".csv";
-
-        String recString = "";
-        int recCount = 0;
-        try {
-            BufferedReader in = new BufferedReader(new FileReader(fileName));
-            recString = in.readLine();
-
-            // read header
-            String[] header = recString.split(",");
-            int posId    = SiloUtil.findPositionInArray("id", header);
-            int posDwell = SiloUtil.findPositionInArray("dwelling",header);
-            int posTaz   = SiloUtil.findPositionInArray("zone",header);
-            int posAutos = SiloUtil.findPositionInArray("autos",header);
-
-            // read line
-            while ((recString = in.readLine()) != null) {
-                recCount++;
-                String[] lineElements = recString.split(",");
-                int id         = Integer.parseInt(lineElements[posId]);
-                int dwellingID = Integer.parseInt(lineElements[posDwell]);
-                int autos      = Integer.parseInt(lineElements[posAutos]);
-                int zone       = Integer.parseInt(lineElements[posTaz]);
-                Household household = householdFactory.createHousehold(id, dwellingID, autos);  // this automatically puts it in id->household map in Household class
-                householdData.addHousehold(household);
-                ((HouseholdMuc) household).setAdditionalAttributes("zone", zone);
-                if (id == SiloUtil.trackHh) {
-                    SiloUtil.trackWriter.println("Read household with following attributes from " + fileName);
-                }
-            }
-        } catch (IOException e) {
-            logger.fatal("IO Exception caught reading synpop household file: " + fileName);
-            logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
-        }
-        logger.info("Finished reading " + recCount + " households.");
+        String fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.householdsStateFileName + "_" + year + ".csv";
+        HouseholdReaderMucMito hhReader = new HouseholdReaderMucMito(householdData, (HouseholdFactoryMuc) householdFactory);
+        hhReader.readData(fileName);
     }
 
 
@@ -89,138 +52,19 @@ public class ReadPopulation {
         logger.info("Reading person micro data from ascii file");
 
         HouseholdDataManager householdData = dataContainer.getHouseholdDataManager();
-        String fileName = Properties.get().main.baseDirectory +  Properties.get().householdData.personFileName;
-        fileName += "_" + year + ".csv";
-
-        String recString = "";
-        int recCount = 0;
-        try {
-            BufferedReader in = new BufferedReader(new FileReader(fileName));
-            recString = in.readLine();
-
-            // read header
-            String[] header = recString.split(",");
-            int posId = SiloUtil.findPositionInArray("id", header);
-            int posHhId = SiloUtil.findPositionInArray("hhid",header);
-            int posAge = SiloUtil.findPositionInArray("age",header);
-            int posGender = SiloUtil.findPositionInArray("gender",header);
-            int posOccupation = SiloUtil.findPositionInArray("occupation",header);
-            int posLicense = SiloUtil.findPositionInArray("driversLicense",header);
-            int posWorkplace = SiloUtil.findPositionInArray("workplace",header);
-            int posIncome = SiloUtil.findPositionInArray("income",header);
-
-            int posjobType = SiloUtil.findPositionInArray("jobType",header);
-            int posdisability = SiloUtil.findPositionInArray("disability",header);
-            int posschoolId = SiloUtil.findPositionInArray("schoolId",header);
-            int posschoolType = SiloUtil.findPositionInArray("schoolType",header);
-
-            // read line
-            PersonFactoryMuc ppFactory = new PersonFactoryMuc();;
-            while ((recString = in.readLine()) != null) {
-                recCount++;
-                String[] lineElements = recString.split(",");
-                int id         = Integer.parseInt(lineElements[posId]);
-                int hhid       = Integer.parseInt(lineElements[posHhId]);
-                int age        = Integer.parseInt(lineElements[posAge]);
-                Gender gender     = Gender.valueOf(Integer.parseInt(lineElements[posGender]));
-                Occupation occupation = Occupation.valueOf(Integer.parseInt(lineElements[posOccupation]));
-                int workplace  = Integer.parseInt(lineElements[posWorkplace]);
-                int income     = Integer.parseInt(lineElements[posIncome]);
-                PersonMuc pp = (PersonMuc) ppFactory.createPerson(id, age, gender, occupation, PersonRole.SINGLE, workplace, income); //this automatically puts it in id->person map in Person class
-                householdData.addPerson(pp);
-                householdData.addPersonToHousehold(pp, householdData.getHouseholdFromId(hhid));
-                String licenseStr = lineElements[posLicense];
-                boolean license = false;
-                if (licenseStr.equals("true")){
-                    license = true;
-                }
-                pp.setDriverLicense(license);
-                String jobType =  lineElements[posjobType];
-                pp.setAdditionalAttributes("jobType",jobType);
-                String disability = lineElements[posdisability];
-                pp.setAdditionalAttributes("diability",disability);
-                int schoolId = Integer.parseInt(lineElements[posschoolId]);
-                pp.setSchoolId(schoolId);
-                int schoolType = Integer.parseInt(lineElements[posschoolType]);
-                pp.setAdditionalAttributes("schoolType",schoolType);
-
-                if (id == SiloUtil.trackPp) {
-                    SiloUtil.trackWriter.println("Read person with following attributes from " + fileName);
-                }
-            }
-        } catch (IOException e) {
-            logger.fatal("IO Exception caught reading synpop household file: " + fileName);
-            logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
-        }
-        logger.info("Finished reading " + recCount + " persons.");
+        String fileName = Properties.get().main.baseDirectory +  PropertiesSynPop.get().main.personsStateFileName + "_" + year + ".csv";
+        PersonReaderMucMito ppReader = new PersonReaderMucMito(householdData);
+        ppReader.readData(fileName);
     }
 
 
     private void readDwellingData(int year) {
-        // read dwelling micro data from ascii file
-
         logger.info("Reading dwelling micro data from ascii file");
+
         RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
-        String fileName = Properties.get().main.baseDirectory + Properties.get().realEstate.dwellingsFileName;
-        fileName += "_" + year + ".csv";
-
-        String recString = "";
-        int recCount = 0;
-        try {
-            BufferedReader in = new BufferedReader(new FileReader(fileName));
-            recString = in.readLine();
-
-            // read header
-            String[] header = recString.split(",");
-            int posId      = SiloUtil.findPositionInArray("id", header);
-            int posZone    = SiloUtil.findPositionInArray("zone",header);
-            int posHh      = SiloUtil.findPositionInArray("hhId",header);
-            int posType    = SiloUtil.findPositionInArray("type",header);
-            int posRooms   = SiloUtil.findPositionInArray("bedrooms",header);
-            int posQuality = SiloUtil.findPositionInArray("quality",header);
-            int posCosts   = SiloUtil.findPositionInArray("monthlyCost",header);
-            int posYear    = SiloUtil.findPositionInArray("yearBuilt",header);
-            int posUse     = SiloUtil.findPositionInArray("usage",header);
-            int posCoordX = -1;
-            int posCoordY = -1;
-            try {
-                posCoordX = SiloUtil.findPositionInArray("coordX", header);
-                posCoordY = SiloUtil.findPositionInArray("coordY", header);
-            } catch (Exception e) {
-                logger.warn("No coords given in dwelling input file. Models using microlocations will not work.");
-            }
-
-            // read line
-            while ((recString = in.readLine()) != null) {
-                recCount++;
-                String[] lineElements = recString.split(",");
-                int id        = Integer.parseInt(lineElements[posId]);
-                int zoneId      = Integer.parseInt(lineElements[posZone]);
-                int hhId      = Integer.parseInt(lineElements[posHh]);
-                String tp     = lineElements[posType].replace("\"", "");
-                DefaultDwellingTypeImpl type = DefaultDwellingTypeImpl.valueOf(tp);
-                int price     = Integer.parseInt(lineElements[posCosts]);
-                int area      = Integer.parseInt(lineElements[posRooms]);
-                int quality   = Integer.parseInt(lineElements[posQuality]);
-                int yearBuilt = Integer.parseInt(lineElements[posYear]);
-                Coordinate coordinate = null;
-                if (posCoordX >= 0 && posCoordY >= 0) {
-                    try {
-                        coordinate = new Coordinate(Double.parseDouble(lineElements[posCoordX]), Double.parseDouble(lineElements[posCoordY]));
-                    } catch (Exception e) {
-                    }
-                }
-                Dwelling dd = DwellingUtils.getFactory().createDwelling(id, zoneId, coordinate, hhId, type, area, quality, price, yearBuilt);   // this automatically puts it in id->dwelling map in Dwelling class
-                realEstate.addDwelling(dd);
-                if (id == SiloUtil.trackDd) {
-                    SiloUtil.trackWriter.println("Read dwelling with following attributes from " + fileName);
-                }
-            }
-        } catch (IOException e) {
-            logger.fatal("IO Exception caught reading synpop dwelling file: " + fileName);
-            logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
-        }
-        logger.info("Finished reading " + recCount + " dwellings.");
+        String fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.dwellingsStateFileName + "_" + year + ".csv";
+        DwellingReaderMucMito ddReader = new DwellingReaderMucMito(realEstate);
+        ddReader.readData(fileName);
     }
 
 

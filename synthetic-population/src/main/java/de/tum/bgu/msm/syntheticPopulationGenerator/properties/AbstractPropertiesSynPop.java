@@ -68,5 +68,8 @@ public abstract class AbstractPropertiesSynPop {
     public boolean runMicrolocation;
     public TableDataSet zonalDataIPU;
     public String state;
+    public String householdsStateFileName;
+    public String personsStateFileName;
+    public String dwellingsStateFileName;
 
 }

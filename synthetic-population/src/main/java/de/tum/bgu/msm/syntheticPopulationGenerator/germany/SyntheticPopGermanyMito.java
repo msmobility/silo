@@ -80,60 +80,15 @@ public class SyntheticPopGermanyMito implements SyntheticPopI {
 
     private void createDirectoryForOutput() {
         SiloUtil.createDirectoryIfNotExistingYet("microData");
-        SiloUtil.createDirectoryIfNotExistingYet("microData/interimFiles");
+        SiloUtil.createDirectoryIfNotExistingYet("microData/" +  PropertiesSynPop.get().main.state);
         SiloUtil.createDirectoryIfNotExistingYet("microData/" +  PropertiesSynPop.get().main.state + "/interimFiles");
-    }
-
-    private void summarizeData(DataContainerWithSchools dataContainer){
-
-        String filehh = properties.main.baseDirectory
-                + properties.householdData.householdFileName
-                + "_"
-                + properties.main.baseYear
-                + ".csv";
-        HouseholdWriter hhwriter = new DefaultHouseholdWriter(dataContainer.getHouseholdDataManager());
-        hhwriter.writeHouseholds(filehh);
-
-        String filepp = properties.main.baseDirectory
-                + properties.householdData.personFileName
-                + "_"
-                + properties.main.baseYear
-                + ".csv";
-        PersonWriter ppwriter = new PersonWriterMuc(dataContainer.getHouseholdDataManager());
-        ppwriter.writePersons(filepp);
-
-        String filedd = properties.main.baseDirectory
-                + properties.realEstate.dwellingsFileName
-                + "_"
-                + properties.main.baseYear
-                + ".csv";
-        DwellingWriter ddwriter = new DefaultDwellingWriter(dataContainer.getRealEstateDataManager());
-        ddwriter.writeDwellings(filedd);
-
-        String filejj = properties.main.baseDirectory
-                + properties.jobData.jobsFileName
-                + "_"
-                + properties.main.baseYear
-                + ".csv";
-        JobWriter jjwriter = new JobWriterMuc(dataContainer.getJobDataManager());
-        jjwriter.writeJobs(filejj);
-
-
-        String fileee = properties.main.baseDirectory
-                + properties.schoolData.schoolsFileName
-                + "_"
-                + properties.main.baseYear
-                + ".csv";
-        SchoolsWriter eewriter = new SchoolsWriter(dataContainer.getSchoolData());
-        eewriter.writeSchools(fileee);
-
     }
 
 
     private void summarizeMitoData(DataContainerWithSchools dataContainer){
 
         String filehh = properties.main.baseDirectory
-                + PropertiesSynPop.get().main.householdsFileName
+                + PropertiesSynPop.get().main.householdsStateFileName
                 + "_"
                 + properties.main.baseYear
                 + ".csv";
@@ -141,7 +96,7 @@ public class SyntheticPopGermanyMito implements SyntheticPopI {
         hhwriter.writeHouseholds(filehh);
 
         String filepp = properties.main.baseDirectory
-                + PropertiesSynPop.get().main.personsFileName
+                + PropertiesSynPop.get().main.personsStateFileName
                 + "_"
                 + properties.main.baseYear
                 + ".csv";
@@ -149,7 +104,7 @@ public class SyntheticPopGermanyMito implements SyntheticPopI {
         ppwriter.writePersons(filepp);
 
         String filedd = properties.main.baseDirectory
-                + PropertiesSynPop.get().main.dwellingsFileName
+                + PropertiesSynPop.get().main.dwellingsStateFileName
                 + "_"
                 + properties.main.baseYear
                 + ".csv";

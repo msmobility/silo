@@ -74,24 +74,27 @@ public class GermanyPropertiesSynPop extends AbstractPropertiesSynPop {
         incomeGammaDistribution = new GammaDistributionImpl(incomeShape, 1 / incomeRate);
 
         //todo this properties will be doubled with silo model run properties
-        weightsFileName = PropertiesUtil.getStringProperty(bundle, "weights.matrix", "microData/interimFiles/" + state +  "/weigthsMatrix.csv");
-        errorsMunicipalityFileName = PropertiesUtil.getStringProperty(bundle, "errors.IPU.municipality.matrix", "microData/interimFiles/" + state +  "/errorsIPUmunicipality.csv");
-        errorsCountyFileName = PropertiesUtil.getStringProperty(bundle, "errors.IPU.county.matrix", "microData/interimFiles/" + state + "/errorsIPUcounty.csv");
-        errorsSummaryFileName = PropertiesUtil.getStringProperty(bundle, "errors.IPU.summary.matrix", "microData/interimFiles/" + state + "/errorsIPUsummary.csv");
+        weightsFileName = PropertiesUtil.getStringProperty(bundle, "weights.matrix", "microData/" + state +  "/interimFiles/weigthsMatrix.csv");
+        errorsMunicipalityFileName = PropertiesUtil.getStringProperty(bundle, "errors.IPU.municipality.matrix", "microData/" + state +  "/interimFiles/errorsIPUmunicipality.csv");
+        errorsCountyFileName = PropertiesUtil.getStringProperty(bundle, "errors.IPU.county.matrix", "microData/" + state + "/interimFiles/errorsIPUcounty.csv");
+        errorsSummaryFileName = PropertiesUtil.getStringProperty(bundle, "errors.IPU.summary.matrix", "microData/" + state + "/interimFiles/errorsIPUsummary.csv");
 
         buildingLocationlist = null;
         jobLocationlist = null;
         schoolLocationlist = null;
 
 
-        microPersonsFileName = PropertiesUtil.getStringProperty(bundle, "micro.persons", "microData/interimFiles/" + state +  "/microPersons.csv");
-        microHouseholdsFileName = PropertiesUtil.getStringProperty(bundle, "micro.households", "microData/interimFiles/" + state +  "/microHouseholds.csv");
+        microPersonsFileName = PropertiesUtil.getStringProperty(bundle, "micro.persons", "microData/" + state +  "/interimFiles/microPersons.csv");
+        microHouseholdsFileName = PropertiesUtil.getStringProperty(bundle, "micro.households", "microData/" + state +  "/interimFiles/microHouseholds.csv");
         zonalDataIPU = null;
 
-        householdsFileName = PropertiesUtil.getStringProperty(bundle, "household.file.ascii", "microData/" + state +  "/hh");
-        personsFileName = PropertiesUtil.getStringProperty(bundle, "person.file.ascii", "microData/" + state +  "/pp");
-        dwellingsFileName = PropertiesUtil.getStringProperty(bundle, "dwelling.file.ascii", "microData/" + state +  "/dd");
+        householdsFileName = PropertiesUtil.getStringProperty(bundle, "household.file.ascii", "microData/hh");
+        personsFileName = PropertiesUtil.getStringProperty(bundle, "person.file.ascii", "microData/pp");
+        dwellingsFileName = PropertiesUtil.getStringProperty(bundle, "dwelling.file.ascii", "microData/dd");
 
+        householdsStateFileName = PropertiesUtil.getStringProperty(bundle, "household.file.ascii.sp", "microData/" + state +  "/hh");
+        personsStateFileName = PropertiesUtil.getStringProperty(bundle, "person.file.ascii.sp", "microData/" + state +  "/pp");
+        dwellingsStateFileName = PropertiesUtil.getStringProperty(bundle, "dwelling.file.ascii.sp", "microData/" + state +  "/dd");
     }
 
 }
