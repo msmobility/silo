@@ -5,10 +5,7 @@ import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.mito.MitoDataConverterMuc;
 import de.tum.bgu.msm.data.person.PersonFactory;
-import de.tum.bgu.msm.matsim.MatsimScenarioAssembler;
-import de.tum.bgu.msm.matsim.MatsimTransportModel;
-import de.tum.bgu.msm.matsim.SimpleMatsimScenarioAssembler;
-import de.tum.bgu.msm.matsim.ZoneConnectorManager;
+import de.tum.bgu.msm.matsim.*;
 import de.tum.bgu.msm.mito.MitoMatsimScenarioAssembler;
 import de.tum.bgu.msm.models.EducationModelMuc;
 import de.tum.bgu.msm.models.MarriageModelMuc;
@@ -39,6 +36,7 @@ import de.tum.bgu.msm.models.demography.marriage.DefaultMarriageStrategy;
 import de.tum.bgu.msm.models.demography.marriage.MarriageModel;
 import de.tum.bgu.msm.models.jobmography.JobMarketUpdate;
 import de.tum.bgu.msm.models.jobmography.JobMarketUpdateImpl;
+import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
 import de.tum.bgu.msm.models.realEstate.construction.*;
 import de.tum.bgu.msm.models.realEstate.demolition.DemolitionModel;
 import de.tum.bgu.msm.models.realEstate.demolition.DemolitionModelImpl;
@@ -62,7 +60,9 @@ import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.utils.SiloUtil;
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
+import org.matsim.core.scenario.ScenarioUtils;
 
 public class DraconicResettlementModelBuilder {
 
@@ -123,19 +123,22 @@ public class DraconicResettlementModelBuilder {
         MarriageModel marriageModel = new MarriageModelMuc(dataContainer, movesModel, inOutMigration,
                 carOwnershipModel, hhFactory, properties, new DefaultMarriageStrategy(), SiloUtil.provideNewRandom());
 
-
         TransportModel transportModel;
         MatsimScenarioAssembler scenarioAssembler;
+        MatsimData matsimData = null;
+        if (config != null) {
+            final Scenario scenario = ScenarioUtils.loadScenario(config);
+            matsimData = new MatsimData(config, properties, ZoneConnectorManager.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
+        }
         switch (properties.transportModel.transportModelIdentifier) {
             case MITO_MATSIM:
                 scenarioAssembler = new MitoMatsimScenarioAssembler(dataContainer, properties, new MitoDataConverterMuc());
-                transportModel = new MatsimTransportModel(dataContainer, config, properties, null,
-                        ZoneConnectorManager.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, scenarioAssembler);
+                transportModel = new MatsimTransportModel(dataContainer, config, properties, scenarioAssembler, matsimData);
                 break;
             case MATSIM:
-                scenarioAssembler = new SimpleMatsimScenarioAssembler(dataContainer, properties);
-                transportModel = new MatsimTransportModel(dataContainer, config, properties, null,
-                        ZoneConnectorManager.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, scenarioAssembler);
+                SimpleCommuteModeChoice commuteModeChoice = new SimpleCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom());
+                scenarioAssembler = new SimpleCommuteModeChoiceMatsimScenarioAssembler(dataContainer, properties, commuteModeChoice);
+                transportModel = new MatsimTransportModel(dataContainer, config, properties, scenarioAssembler, matsimData);
                 break;
             case NONE:
             default:
