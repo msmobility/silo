@@ -64,8 +64,8 @@ public class SyntheticPopGermanyMito implements SyntheticPopI {
             logger.info("Running Module: Allocation");
             new Allocation(dataSetSynPop, dataContainer).run();
 
-/*            logger.info("Running Module: Car ownership");
-            new CreateCarOwnershipModelMuc(dataContainer).run();*/
+           logger.info("Running Module: Car ownership");
+            new CreateCarOwnershipModelMuc(dataContainer).run();
 
 /*            logger.info("Running Module: Disability");
             new DisabilityBase(dataSetSynPop, dataContainer).run();*/
