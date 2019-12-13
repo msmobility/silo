@@ -36,11 +36,13 @@ public class SimpleMatsimScenarioAssembler implements MatsimScenarioAssembler {
 
     private final static Logger logger = Logger.getLogger(SimpleMatsimScenarioAssembler.class);
     private final DataContainer dataContainer;
-    private final double scalingFactor;
+    private final double matsimScaleFactor;
+    private final double siloScaleFactor;
 
     public SimpleMatsimScenarioAssembler(DataContainer dataContainer, Properties properties) {
         this.dataContainer = dataContainer;
-        this.scalingFactor = properties.transportModel.matsimScaleFactor;
+        this.matsimScaleFactor = properties.transportModel.matsimScaleFactor;
+        this.siloScaleFactor = properties.main.scaleFactor;
     }
 
     private Population generateDemand(TravelTimes travelTimes) {
@@ -55,8 +57,8 @@ public class SimpleMatsimScenarioAssembler implements MatsimScenarioAssembler {
         JobDataManager jobDataManager = dataContainer.getJobDataManager();
 
         for (Person siloPerson : siloPersons) {
-            if (SiloUtil.getRandomNumberAsDouble() > scalingFactor) {
-                // e.g. if scalingFactor = 0.01, there will be a 1% chance that the loop is not
+            if (SiloUtil.getRandomNumberAsDouble() > matsimScaleFactor) {
+                // e.g. if matsimScaleFactor = 0.01, there will be a 1% chance that the loop is not
                 // continued in the next step, i.e. that the person is added to the population
                 continue;
             }
@@ -144,8 +146,8 @@ public class SimpleMatsimScenarioAssembler implements MatsimScenarioAssembler {
     private Config createMatsimConfig(Config initialConfig) {
         logger.info("Stating creating a MATSim config.");
         Config config = ConfigUtils.loadConfig(initialConfig.getContext());
-        config.qsim().setFlowCapFactor(scalingFactor);
-        config.qsim().setStorageCapFactor(scalingFactor);
+        config.qsim().setFlowCapFactor(matsimScaleFactor*siloScaleFactor);
+        config.qsim().setStorageCapFactor(matsimScaleFactor*siloScaleFactor);
 
         // TODO Add some switch here like "autoGenerateSimplePlans" or similar...
         PlanCalcScoreConfigGroup.ActivityParams homeActivity = new PlanCalcScoreConfigGroup.ActivityParams("home");
