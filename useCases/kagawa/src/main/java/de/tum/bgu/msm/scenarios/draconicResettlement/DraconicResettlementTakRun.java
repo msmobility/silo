@@ -8,7 +8,6 @@ import de.tum.bgu.msm.io.output.HouseholdSatisfactionMonitor;
 import de.tum.bgu.msm.io.output.MultiFileResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.run.DataBuilderTak;
-import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
@@ -20,9 +19,9 @@ import org.matsim.core.config.ConfigUtils;
  * @author Rolf Moeckel and Ana Moreno
  * Created on May 12, 2016 in Munich, Germany
  */
-public class DraconicResettlementMuc {
+public class DraconicResettlementTakRun {
 
-    private final static Logger logger = Logger.getLogger(DraconicResettlementMuc.class);
+    private final static Logger logger = Logger.getLogger(DraconicResettlementTakRun.class);
 
     public static void main(String[] args) {
 
@@ -35,7 +34,7 @@ public class DraconicResettlementMuc {
         logger.info("Started SILO land use model for the Munich Metropolitan Area");
         DataContainer dataContainer = DataBuilderTak.getTakModelData(properties, config);
         DataBuilderTak.read(properties, dataContainer);
-        ModelContainer modelContainer = DraconicResettlementModelBuilder.getModelContainerForMuc(dataContainer, properties, config);
+        ModelContainer modelContainer = DraconicResettlementModelBuilderTak.getModelContainerForTak(dataContainer, properties, config);
 
         SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
         model.addResultMonitor(new DefaultResultsMonitor(dataContainer, properties));
