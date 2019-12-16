@@ -86,7 +86,7 @@ public class OneCarPolicyModelBuilderMuc {
                         dataContainer.getTravelTimes(), new DefaultDwellingProbabilityStrategy(),
                         new DwellingUtilityStrategyImpl(), new RegionUtilityStrategyMucImpl(), new RegionProbabilityStrategyImpl()), SiloUtil.provideNewRandom());
 
-        CreateCarOwnershipModel carOwnershipModel = new CreateCarOwnershipModelMuc(dataContainer);
+        CreateCarOwnershipModel carOwnershipModel = new OneCarCreateCarOwnershipModelMuc(dataContainer);
 
         DivorceModel divorceModel = new DivorceModelImpl(
                 dataContainer, movesModel, carOwnershipModel, hhFactory,
