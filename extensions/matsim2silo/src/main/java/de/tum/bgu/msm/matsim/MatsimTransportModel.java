@@ -124,7 +124,6 @@ public final class MatsimTransportModel implements TransportModel {
         }
         assembledScenario = scenarioAssembler.assembleScenario(initialMatsimConfig, year, travelTimes);
 
-        ConfigUtils.setVspDefaults(assembledScenario.getConfig());
         finalizeConfig(assembledScenario.getConfig(), year);
 
         final Controler controler = new Controler(assembledScenario);
@@ -148,8 +147,6 @@ public final class MatsimTransportModel implements TransportModel {
         config.controler().setWriteEventsInterval(Math.max(config.controler().getLastIteration(), 1));
         config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
         config.transit().setUsingTransitInMobsim(false);
-
-        config.vspExperimental().setWritingOutputEvents(true);
     }
 
     /**

@@ -8,6 +8,7 @@ import de.tum.bgu.msm.properties.Properties;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.TransportModeNetworkFilter;
 import org.matsim.core.population.PopulationUtils;
@@ -52,6 +53,7 @@ public final class MatsimData {
     public MatsimData(Config config, Properties properties,
                       ZoneConnectorManager.ZoneConnectorMethod method,
                       DataContainer dataContainer, Network network, TransitSchedule schedule) {
+        ConfigUtils.setVspDefaults(config); // Needs to be done before config becomes locked for those changes
         this.config = config;
         this.raptorParameters = RaptorUtils.createParameters(config);
         this.properties = properties;
