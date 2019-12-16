@@ -3,9 +3,10 @@ package de.tum.bgu.msm.io;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.person.*;
-import de.tum.bgu.msm.events.DisabilityEvent;
 import de.tum.bgu.msm.io.input.PersonReader;
 import de.tum.bgu.msm.models.disability.DefaultDisabilityStrategy;
+import de.tum.bgu.msm.scenarios.disabilities.PersonFactoryMucDisability;
+import de.tum.bgu.msm.scenarios.disabilities.PersonMucDisability;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 

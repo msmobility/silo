@@ -2,7 +2,7 @@ package de.tum.bgu.msm.io;
 
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.person.Person;
-import de.tum.bgu.msm.data.person.PersonMucDisability;
+import de.tum.bgu.msm.scenarios.disabilities.PersonMucDisability;
 import de.tum.bgu.msm.io.output.PersonWriter;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;

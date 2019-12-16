@@ -23,7 +23,7 @@ import java.util.Map;
 /**
  * @author dziemke
  **/
-public class MatsimAccessibility implements Accessibility, FacilityDataExchangeInterface {
+public class MatsimAccessibility implements Accessibility {
 	private static final Logger logger = Logger.getLogger(MatsimAccessibility.class);
 
 	private final GeoData geoData;
@@ -46,7 +46,7 @@ public class MatsimAccessibility implements Accessibility, FacilityDataExchangeI
 		}
 	}
 
-	@Override
+
 	public void finish() { }
 
 	// Accessibility interface methods

@@ -15,7 +15,7 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.contrib.accessibility.AccessibilityAttributes;
 import org.matsim.contrib.accessibility.AccessibilityConfigGroup;
-import org.matsim.contrib.accessibility.interfaces.FacilityDataExchangeInterface;
+//import org.matsim.contrib.accessibility.interfaces.FacilityDataExchangeInterface;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.FacilitiesConfigGroup;
 import org.matsim.core.controler.Controler;
@@ -108,7 +108,7 @@ public class AccessibilityModule {
         // Accessibility module
 
         org.matsim.contrib.accessibility.AccessibilityModule module = new org.matsim.contrib.accessibility.AccessibilityModule();
-        module.addFacilityDataExchangeListener((FacilityDataExchangeInterface) dataContainer.getAccessibility());
+//        module.addFacilityDataExchangeListener((FacilityDataExchangeInterface) dataContainer.getAccessibility());
         controler.addOverridingModule(module);
         // End accessibility module
     }

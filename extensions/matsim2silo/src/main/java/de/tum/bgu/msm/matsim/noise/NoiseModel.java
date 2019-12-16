@@ -17,6 +17,9 @@ import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.geometry.CoordUtils;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Random;
 
 public class NoiseModel extends AbstractModel implements ModelUpdateListener {
@@ -61,10 +64,10 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
         NoiseReceiverPoints newNoiseReceiverPoints = new NoiseReceiverPoints();
         NoiseReceiverPoints existingNoiseReceiverPoints = new NoiseReceiverPoints();
 
-        for(Dwelling dwelling: realEstateDataManager.getDwellings()) {
+        for (Dwelling dwelling : realEstateDataManager.getDwellings()) {
             Id<ReceiverPoint> id = Id.create(dwelling.getId(), ReceiverPoint.class);
             final NoiseReceiverPoint existing = noiseReceiverPoints.remove(id);
-            if(existing == null) {
+            if (existing == null) {
                 newNoiseReceiverPoints.put(id, new NoiseReceiverPoint(id, CoordUtils.createCoord(dwelling.getCoordinate())));
             } else {
                 existingNoiseReceiverPoints.put(id, existing);
@@ -75,27 +78,50 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
         this.noiseReceiverPoints.putAll(newNoiseReceiverPoints);
         this.noiseReceiverPoints.putAll(existingNoiseReceiverPoints);
 
-        if (properties.transportModel.transportModelYears.contains(year + 1) || properties.main.startYear == year) {
-            if (properties.transportModel.transportModelYears.contains(year + 1)) {
-                latestMatsimYear = year + 1;
+        //First year
+        if(properties.main.startYear == year) {
+            if(properties.transportModel.matsimInitialPlansFile != null
+                    && properties.transportModel.matsimInitialEventsFile != null) {
+                //initial files provided -> replay
+                if(existingNoiseReceiverPoints.isEmpty()) {
+                    replayFromEvents(noiseReceiverPoints);
+                } else {
+                    replayFromEvents(newNoiseReceiverPoints);
+                }
             } else {
+                //matsim transport model must have run at this stage for the start year
                 latestMatsimYear = year;
+                calculateNoiseOffline(noiseReceiverPoints);
             }
-            calculateNoiseOffline(noiseReceiverPoints);
-        } else if(latestMatsimYear > 0) {
+        } else if(latestMatsimYear == -1) {
+            //not the first year and no matsim run has happened yet...
+            if(properties.transportModel.transportModelYears.contains(year + 1)) {
+                //...this means that matsim either has to run and update all receiver points for the next year...
+                latestMatsimYear = year + 1;
+                calculateNoiseOffline(noiseReceiverPoints);
+            } else if(properties.transportModel.matsimInitialPlansFile != null
+                    && properties.transportModel.matsimInitialEventsFile != null) {
+                //...or the initial files are available. update new receiver points.
+                replayFromEvents(newNoiseReceiverPoints);
+            } else {
+                //one of the above options have to be true.
+                throw new RuntimeException("Should not happen!");
+            }
+        } else {
+            //matsim has run before. update new receiver points.
             calculateNoiseOffline(newNoiseReceiverPoints);
-            this.noiseReceiverPoints.putAll(newNoiseReceiverPoints);
         }
+
 
         int counter65 = 0;
         int counter55 = 0;
-        for (Dwelling dwelling: dataContainer.getRealEstateDataManager().getDwellings()) {
+        for (Dwelling dwelling : dataContainer.getRealEstateDataManager().getDwellings()) {
             final Id<ReceiverPoint> id = Id.create(dwelling.getId(), ReceiverPoint.class);
-            if(noiseReceiverPoints.containsKey(id)) {
+            if (noiseReceiverPoints.containsKey(id)) {
                 double lden = noiseReceiverPoints.get(id).getLden();
                 ((NoiseDwelling) dwelling).setNoiseImmision(lden);
-                if(lden > 55) {
-                    if(lden > 65) {
+                if (lden > 55) {
+                    if (lden > 65) {
                         counter65++;
                     } else {
                         counter55++;
@@ -113,9 +139,9 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
 
     private void calculateNoiseOffline(NoiseReceiverPoints noiseReceiverPoints) {
         final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/"
-                + properties.main.scenarioName + "/matsim/" + latestMatsimYear +"/";
+                + properties.main.scenarioName + "/matsim/" + latestMatsimYear + "/";
 
-        String populationPath = outputDirectoryRoot + latestMatsimYear +".output_plans.xml.gz";
+        String populationPath = outputDirectoryRoot + latestMatsimYear + ".output_plans.xml.gz";
 
         Config config = ConfigUtils.createConfig();
         config.controler().setOutputDirectory(outputDirectoryRoot);
@@ -138,9 +164,62 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
         noiseParameters.setThrowNoiseEventsAffected(false);
         noiseParameters.setWriteOutputIteration(0);
         noiseParameters.setScaleFactor(20);
-        config.qsim().setEndTime(24*60*60);
+        config.qsim().setEndTime(24 * 60 * 60);
 
         NoiseOfflineCalculation noiseOfflineCalculation = new NoiseOfflineCalculation(scenario, outputDirectoryRoot);
+        noiseOfflineCalculation.run();
+    }
+
+
+    private void replayFromEvents(NoiseReceiverPoints noiseReceiverPoints) {
+
+        final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
+        String outputDirectory = outputDirectoryRoot + "/matsim/" + properties.main.startYear +"_warm" + "/";
+
+        try {
+            final Path events = Paths.get(outputDirectory + "/"+ Paths.get(properties.transportModel.matsimInitialEventsFile).getFileName());
+            final Path plans = Paths.get(outputDirectory + "/" + Paths.get(properties.transportModel.matsimInitialPlansFile).getFileName());
+
+            Files.createDirectories(events.getParent());
+            Files.createDirectories(plans.getParent());
+
+            Files.copy(Paths.get(properties.main.baseDirectory + properties.transportModel.matsimInitialEventsFile), events);
+            Files.copy(Paths.get(properties.main.baseDirectory + properties.transportModel.matsimInitialPlansFile), plans);
+
+        } catch (Exception e) {
+            logger.error(e);
+        }
+
+
+        String eventsFile = properties.main.baseDirectory + properties.transportModel.matsimInitialEventsFile;
+        final Path path = Paths.get(eventsFile);
+
+        String plansFile = properties.main.baseDirectory + properties.transportModel.matsimInitialPlansFile;
+
+
+        Config config = ConfigUtils.createConfig();
+        config.controler().setOutputDirectory(outputDirectory);
+        String runId = eventsFile.substring(eventsFile.lastIndexOf("/") + 1, eventsFile.indexOf(".output_events"));
+        config.controler().setRunId(runId);
+        final MutableScenario scenario = ScenarioUtils.createMutableScenario(config);
+        new PopulationReader(scenario).readFile(plansFile);
+
+        scenario.setNetwork(matsimData.getCarNetwork());
+        scenario.addScenarioElement(NoiseReceiverPoints.NOISE_RECEIVER_POINTS, noiseReceiverPoints);
+
+        NoiseConfigGroup noiseParameters = ConfigUtils.addOrGetModule(scenario.getConfig(), NoiseConfigGroup.class);
+        noiseParameters.setInternalizeNoiseDamages(false);
+        noiseParameters.setComputeCausingAgents(false);
+        noiseParameters.setComputeNoiseDamages(false);
+        noiseParameters.setComputePopulationUnits(false);
+        noiseParameters.setComputeAvgNoiseCostPerLinkAndTime(false);
+        noiseParameters.setThrowNoiseEventsCaused(false);
+        noiseParameters.setThrowNoiseEventsAffected(false);
+        noiseParameters.setWriteOutputIteration(0);
+        noiseParameters.setScaleFactor(20);
+        config.qsim().setEndTime(24 * 60 * 60);
+
+        NoiseOfflineCalculation noiseOfflineCalculation = new NoiseOfflineCalculation(scenario, path.getParent().toString());
         noiseOfflineCalculation.run();
     }
 }

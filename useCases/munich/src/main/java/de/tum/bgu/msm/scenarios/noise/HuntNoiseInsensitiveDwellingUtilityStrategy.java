@@ -18,8 +18,6 @@ import org.matsim.api.core.v01.TransportMode;
 
 import java.util.Objects;
 
-import static de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl.MF234;
-
 /**
  * This relocation model is based on a stated preference study by J.D. Hunt
  * <p>
@@ -30,7 +28,7 @@ import static de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl.MF234;
  *
  * @author Nico
  */
-public class HuntNoiseSensitiveDwellingUtilityStrategy implements HousingStrategy {
+public class HuntNoiseInsensitiveDwellingUtilityStrategy implements HousingStrategy {
 
     private static final double MEDIUM_NOISE_DISCOUNT = 0.056;
     private static final double LOUD_NOISE_DISCOUNT = 0.096;
@@ -62,7 +60,7 @@ public class HuntNoiseSensitiveDwellingUtilityStrategy implements HousingStrateg
     private static double[][] dwellingTypeUtil = {
             {0, -1.0570, -1.1130, -1.6340, -1.7940},
             {0, -0.8783, -0.9566, -0.9895, -0.9514},
-            {0, -1.922, -2.035, -2.841, -2.729}
+            {0, -1.0570, -1.1130, -1.6340, -1.7940}
     };
 
 
@@ -112,9 +110,9 @@ public class HuntNoiseSensitiveDwellingUtilityStrategy implements HousingStrateg
     //use delegate for regional and current satisfaction decisions
     private final HousingStrategy delegate;
 
-    public HuntNoiseSensitiveDwellingUtilityStrategy(TravelTimes travelTimes,
-                                                     JobDataManager jobDataManager,
-                                                     RealEstateDataManager realEstateDataManager, HousingStrategy delegate) {
+    public HuntNoiseInsensitiveDwellingUtilityStrategy(TravelTimes travelTimes,
+                                                       JobDataManager jobDataManager,
+                                                       RealEstateDataManager realEstateDataManager, HousingStrategy delegate) {
         this.travelTimes = travelTimes;
         this.jobDataManager = jobDataManager;
         this.realEstateDataManager = realEstateDataManager;
@@ -128,10 +126,9 @@ public class HuntNoiseSensitiveDwellingUtilityStrategy implements HousingStrateg
 
     @Override
     public boolean isHouseholdEligibleToLiveHere(Household household, Dwelling dd) {
-//        int numberOfPersons = household.getHhSize();
-////        int numberOfBedrooms = dd.getBedrooms();
-////        return (numberOfBedrooms + 1 >= numberOfPersons);
-        return true;
+        int numberOfPersons = household.getHhSize();
+        int numberOfBedrooms = dd.getBedrooms();
+        return (numberOfBedrooms + 1 >= numberOfPersons);
     }
 
     @Override
@@ -166,8 +163,8 @@ public class HuntNoiseSensitiveDwellingUtilityStrategy implements HousingStrateg
 
     @Override
     public HousingStrategy duplicate() {
-        HuntNoiseSensitiveDwellingUtilityStrategy duplicate =
-                new HuntNoiseSensitiveDwellingUtilityStrategy(this.travelTimes.duplicate(),
+        HuntNoiseInsensitiveDwellingUtilityStrategy duplicate =
+                new HuntNoiseInsensitiveDwellingUtilityStrategy(this.travelTimes.duplicate(),
                         jobDataManager, realEstateDataManager, delegate.duplicate());
         return duplicate;
     }
@@ -204,18 +201,7 @@ public class HuntNoiseSensitiveDwellingUtilityStrategy implements HousingStrateg
     }
 
     private double getNoiseAdjustedPrice(NoiseDwelling dwelling) {
-        double price = dwelling.getPrice() / 0.68;
-        final double noiseImmission = dwelling.getNoiseImmission();
-//        if (noiseImmission > 55) {
-//            if (noiseImmission > 65) {
-//                price *= (1 - LOUD_NOISE_DISCOUNT);
-//            } else {
-//                price *= (1 - MEDIUM_NOISE_DISCOUNT);
-//            }
-//        }
-        if(noiseImmission > 50) {
-            price -= price * ((noiseImmission - 50) * 0.004);
-        }
+        double price = dwelling.getPrice();
         return price;
     }
 
@@ -223,13 +209,12 @@ public class HuntNoiseSensitiveDwellingUtilityStrategy implements HousingStrateg
 
         double price = dwelling.getPrice();
         final double noiseImmission = dwelling.getNoiseImmission();
-        if (noiseImmission > 50) {
-            price -= price * ((noiseImmission - 50) * 0.004);
-//            if (noiseImmission > 65) {
-//                price *= (1 - LOUD_NOISE_DISCOUNT);
-//            } else {
-//                price *= (1 - MEDIUM_NOISE_DISCOUNT);
-//            }
+        if (noiseImmission > 55) {
+            if (noiseImmission > 65) {
+                price *= (1 - LOUD_NOISE_DISCOUNT);
+            } else {
+                price *= (1 - MEDIUM_NOISE_DISCOUNT);
+            }
         }
 
         double carTravelTime = 0;
@@ -263,15 +248,13 @@ public class HuntNoiseSensitiveDwellingUtilityStrategy implements HousingStrateg
     }
 
     private int translateDwellingType(Dwelling dwelling) {
-//        final DwellingType type = dwelling.getType();
-        final DwellingType type = MF234;
-
+        final DwellingType type = dwelling.getType();
 
         if(type.equals(DefaultDwellingTypeImpl.SFD)) {
             return SINGLE_FAMILY;
         } else if( type.equals(DefaultDwellingTypeImpl.SFA)) {
             return DUPLEX;
-        } else if(type.equals(MF234)) {
+        } else if(type.equals(DefaultDwellingTypeImpl.MF234)) {
             return TOWNHOUSE;
         } else if(type.equals(DefaultDwellingTypeImpl.MF5plus)) {
             return HIGHRISE;
@@ -283,19 +266,7 @@ public class HuntNoiseSensitiveDwellingUtilityStrategy implements HousingStrateg
 
 
     private int translateLdenToNoiseCategory(double lden) {
-        if (lden < 30) {
-            return NO_NOISE;
-        } else if (lden < 50) {
-            return OCCASIONALLY_NOTICEABLE_NOISE;
-        } else if (lden < 60) {
-            return CONSTANT_HUM_NOISE;
-        }
-//        else if (lden < 65) {
-//            return SOMETIMES_DISTURBING_NOISE;
-//        }
-        else {
-            return FREQUENTLY_DISTURBING_NOISE;
-        }
+        return NO_NOISE;
     }
 
     /**

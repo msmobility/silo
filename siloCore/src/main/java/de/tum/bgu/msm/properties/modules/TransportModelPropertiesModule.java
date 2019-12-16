@@ -40,6 +40,11 @@ public class TransportModelPropertiesModule {
     public final String matsimInitialEventsFile;
 
     /**
+     * PLans file at the base year for warm start of travel times based on MATSim.
+     */
+    public final String matsimInitialPlansFile;
+
+    /**
      * Scale factor for MATSim transport model.
      */
     public final double matsimScaleFactor;
@@ -76,6 +81,8 @@ public class TransportModelPropertiesModule {
 
         PropertiesUtil.newPropertySubmodule("Transport - silo-matsim");
         matsimInitialEventsFile = PropertiesUtil.getStringProperty(bundle, "matsim.initial.events", null);
+        matsimInitialPlansFile = PropertiesUtil.getStringProperty(bundle, "matsim.initial.plans", null);
+
         matsimScaleFactor = PropertiesUtil.getDoubleProperty(bundle, "matsim.scale.factor", 0.01);
     }
 

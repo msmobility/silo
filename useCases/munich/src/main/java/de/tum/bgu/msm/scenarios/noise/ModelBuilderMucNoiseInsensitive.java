@@ -59,7 +59,7 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
 import org.matsim.core.scenario.ScenarioUtils;
 
-public class ModelBuilderMucNoise {
+public class ModelBuilderMucNoiseInsensitive {
 
     public static ModelContainer getModelContainerForMuc(NoiseDataContainerImpl dataContainer, Properties properties, Config config) {
 
@@ -80,8 +80,8 @@ public class ModelBuilderMucNoise {
                 new DwellingUtilityStrategyImpl(), new RegionUtilityStrategyMucImpl(),
                 new RegionProbabilityStrategyImpl());
 
-        HuntNoiseSensitiveDwellingUtilityStrategy housingStrategy
-                = new HuntNoiseSensitiveDwellingUtilityStrategy(dataContainer.getTravelTimes(),
+        HuntNoiseInsensitiveDwellingUtilityStrategy housingStrategy
+                = new HuntNoiseInsensitiveDwellingUtilityStrategy(dataContainer.getTravelTimes(),
                 dataContainer.getJobDataManager(), dataContainer.getRealEstateDataManager(),
                 housingStrategyDelegate);
 
@@ -111,11 +111,11 @@ public class ModelBuilderMucNoise {
                 properties, new DefaultConstructionLocationStrategy(), new ConstructionDemandStrategyMuc(), SiloUtil.provideNewRandom());
 
 
-//        PricingModel pricing = new PricingModelImpl(dataContainer, properties, new DefaultPricingStrategy(), SiloUtil.provideNewRandom());
+        PricingModel pricing = new PricingModelImpl(dataContainer, properties, new DefaultPricingStrategy(), SiloUtil.provideNewRandom());
 
         RenovationModel renovation = new RenovationModelImpl(dataContainer, properties, new DefaultRenovationStrategy(), SiloUtil.provideNewRandom());
 
-//        ConstructionOverwrite constructionOverwrite = new ConstructionOverwriteImpl(dataContainer, ddFactory, properties, SiloUtil.provideNewRandom());
+        ConstructionOverwrite constructionOverwrite = new ConstructionOverwriteImpl(dataContainer, ddFactory, properties, SiloUtil.provideNewRandom());
 
         InOutMigration inOutMigration = new InOutMigrationMuc(dataContainer, employmentModel, movesModel,
                 carOwnershipModel, driversLicenseModel, properties);
@@ -157,8 +157,8 @@ public class ModelBuilderMucNoise {
                 divorceModel, driversLicenseModel,
                 educationModel, employmentModel,
                 leaveParentsModel, jobMarketUpdateModel,
-                construction, demolition, null, renovation,
-                null, inOutMigration, movesModel, transportModel);
+                construction, demolition, pricing, renovation,
+                constructionOverwrite, inOutMigration, movesModel, transportModel);
 
         modelContainer.registerModelUpdateListener(new UpdateCarOwnershipModelMuc(dataContainer, properties, SiloUtil.provideNewRandom()));
         modelContainer.registerModelUpdateListener(noiseModel);
