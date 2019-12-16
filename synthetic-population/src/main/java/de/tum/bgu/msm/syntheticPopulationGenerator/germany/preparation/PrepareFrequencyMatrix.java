@@ -130,6 +130,24 @@ public class PrepareFrequencyMatrix {
                         frequencyMatrix.setValueAt(i, "borough_hhSize5", 1);
                     }
                     break;
+                case "03_Hannover":
+                    if (hhSize == 1) {
+                        frequencyMatrix.setValueAt(i, "borough_hhSize1", 1);
+                    }
+                    break;
+                case "04_Bremen":
+                    if (hhSize == 1) {
+                        frequencyMatrix.setValueAt(i, "borough_hhSize1", 1);
+                    } else if (hhSize == 2){
+                        frequencyMatrix.setValueAt(i, "borough_hhSize2", 1);
+                    } else if (hhSize == 3){
+                        frequencyMatrix.setValueAt(i, "borough_hhSize3", 1);
+                    } else if (hhSize == 4){
+                        frequencyMatrix.setValueAt(i, "borough_hhSize4", 1);
+                    } else if (hhSize > 4){
+                        frequencyMatrix.setValueAt(i, "borough_hhSize5", 1);
+                    }
+                    break;
                 case "05_Koeln":
                     if (hhSize == 1) {
                         frequencyMatrix.setValueAt(i, "borough_hhSize1", 1);
@@ -148,7 +166,7 @@ public class PrepareFrequencyMatrix {
                         frequencyMatrix.setValueAt(i, "borough_hhSize1", 1);
                     }
                     break;
-                    case "05_Duesseldorf":
+                case "05_Duesseldorf":
                     if (hhSize == 1) {
                         frequencyMatrix.setValueAt(i, "borough_hhSize1", 1);
                     }
@@ -171,12 +189,45 @@ public class PrepareFrequencyMatrix {
                         frequencyMatrix.setValueAt(i, "borough_hhSize5", 1);
                     }
                     break;
+                case "8_Stuttgart":
+                    if (hhSize == 1) {
+                        frequencyMatrix.setValueAt(i, "borough_hhSize1", 1);
+                    }
+                    break;
                 case "09_Munich":
                     if (hhSize == 1) {
                         frequencyMatrix.setValueAt(i, "borough_hhSize1", 1);
                     }
                     break;
+                case "09_Duisburg":
+                    if (hhSize == 1) {
+                        frequencyMatrix.setValueAt(i, "borough_hhSize1", 1);
+                    } else if (hhSize == 2){
+                        frequencyMatrix.setValueAt(i, "borough_hhSize2", 1);
+                    } else if (hhSize == 3){
+                        frequencyMatrix.setValueAt(i, "borough_hhSize3", 1);
+                    } else if (hhSize == 4){
+                        frequencyMatrix.setValueAt(i, "borough_hhSize4", 1);
+                    } else if (hhSize > 4){
+                        frequencyMatrix.setValueAt(i, "borough_hhSize5", 1);
+                    }
+                    break;
                 case "11_Berlin":
+                    break;
+                case "14_Dresden":
+                    if (hhSize == 1) {
+                        frequencyMatrix.setValueAt(i, "borough_hhSize1", 1);
+                    } else if (hhSize == 2){
+                        frequencyMatrix.setValueAt(i, "borough_hhSize2", 1);
+                    } else if (hhSize == 3){
+                        frequencyMatrix.setValueAt(i, "borough_hhSize3", 1);
+                    } else if (hhSize == 4){
+                        frequencyMatrix.setValueAt(i, "borough_hhSize4", 1);
+                    } else if (hhSize > 4){
+                        frequencyMatrix.setValueAt(i, "borough_hhSize5", 1);
+                    }
+                    break;
+                case "14_Leipzig":
                     break;
                 default:
             }
@@ -213,8 +264,57 @@ public class PrepareFrequencyMatrix {
                     }
                     break;
 
-                case "05_Koeln":
-                    if (age < 18) {
+                case "03_Hannover":
+                    if (age < 19){
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_age18");
+                        frequencyMatrix.setValueAt(i, "borough_age18", value1);
+                        frequencyMatrix.setValueAt(i, "borough_hhWithChildren", 1);
+                    } else if (age < 60){
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_age59");
+                        frequencyMatrix.setValueAt(i, "borough_age30", value1);
+                    } else {
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_age99");
+                        frequencyMatrix.setValueAt(i, "borough_age99", value1);
+                    }
+                    break;
+
+                    case "04_Bremen":
+                    if (gender == 2) {
+                        if (age < 19){
+                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_females_18");
+                            frequencyMatrix.setValueAt(i, "borough_females_18", value1);
+                        } else if (age < 36){
+                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_females_35");
+                            frequencyMatrix.setValueAt(i, "borough_females_35", value1);
+                        } else if (age < 66){
+                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_females_65");
+                            frequencyMatrix.setValueAt(i, "borough_females_65", value1);
+                        } else {
+                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_females_99");
+                            frequencyMatrix.setValueAt(i, "borough_females_99", value1);
+                        }
+                    } else {
+                        if (age < 19){
+                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_females_18");
+                            frequencyMatrix.setValueAt(i, "borough_females_18", value1);
+                        } else if (age < 36){
+                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_females_35");
+                            frequencyMatrix.setValueAt(i, "borough_females_35", value1);
+                        } else if (age < 66){
+                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_females_65");
+                            frequencyMatrix.setValueAt(i, "borough_females_65", value1);
+                        } else {
+                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_females_99");
+                            frequencyMatrix.setValueAt(i, "borough_females_99", value1);
+                        }
+                    }
+                    if (age < 19) {
+                        frequencyMatrix.setValueAt(i, "borough_hhWithChildren", 1);
+                    }
+                    break;
+
+                    case "05_Koeln":
+                    if (age < 19) {
                         frequencyMatrix.setValueAt(i, "borough_hhWithChildren", 1);
                     }
                     if (gender == 2) {
@@ -302,26 +402,69 @@ public class PrepareFrequencyMatrix {
                     }
                     break;
 
+                case "08_Stuttgart":
+                    if (gender == 2) {
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_females");
+                        frequencyMatrix.setValueAt(i, "borough_females", value1);
+                    }
+                    if (age < 19){
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_age18");
+                        frequencyMatrix.setValueAt(i, "borough_age18", value1);
+                    } else if (age < 66){
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_age65");
+                        frequencyMatrix.setValueAt(i, "borough_age65", value1);
+                    } else {
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_age99");
+                        frequencyMatrix.setValueAt(i, "borough_age99", value1);
+                    }
+                    break;
+
                 case "09_Munich":
-                    int row1 = 0;
-                    if (age < 18) {
+                    if (age < 19) {
                         frequencyMatrix.setValueAt(i, "borough_hhWithChildren", 1);
                     }
                     if (gender == 2) {
                         int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_females");
                         frequencyMatrix.setValueAt(i, "borough_females", value1);
                     }
-                    while (age > PropertiesSynPop.get().main.ageBracketsBorough[row1]) {
-                        row1++;
-                    }
-                    int value = 1 + (int) frequencyMatrix.getValueAt(i, "MUCage" + PropertiesSynPop.get().main.ageBracketsBorough[row1]);
-                    frequencyMatrix.setValueAt(i, "MUCage" + PropertiesSynPop.get().main.ageBracketsBorough[row1], value);
-                    if (gender == 1) {
-                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "MUCmaleWorkers");
-                        frequencyMatrix.setValueAt(i, "MUCmaleWorkers", value1);
+                    if (age < 6){
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_age5");
+                        frequencyMatrix.setValueAt(i, "borough_age5", value1);
+                    } else if (age < 18){
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_age17");
+                        frequencyMatrix.setValueAt(i, "borough_age17", value1);
+                    } else if (age < 65){
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_age64");
+                        frequencyMatrix.setValueAt(i, "borough_age64", value1);
                     } else {
-                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "MUCfemaleWorkers");
-                        frequencyMatrix.setValueAt(i, "MUCfemaleWorkers", value1);
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_age99");
+                        frequencyMatrix.setValueAt(i, "borough_age99", value1);
+                    }
+                    break;
+
+                case "09_Duisburg":
+                    if (gender == 2) {
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_females");
+                        frequencyMatrix.setValueAt(i, "borough_females", value1);
+                    } else {
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_males");
+                        frequencyMatrix.setValueAt(i, "borough_males", value1);
+                    }
+                    if (age < 19){
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_age18");
+                        frequencyMatrix.setValueAt(i, "borough_age18", value1);
+                    } else if (age < 31){
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_age30");
+                        frequencyMatrix.setValueAt(i, "borough_age30", value1);
+                    } else if (age < 51){
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_age50");
+                        frequencyMatrix.setValueAt(i, "borough_age50", value1);
+                    } else if (age < 66){
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_age65");
+                        frequencyMatrix.setValueAt(i, "borough_age65", value1);
+                    } else {
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_age99");
+                        frequencyMatrix.setValueAt(i, "borough_age99", value1);
                     }
                     break;
 
@@ -360,6 +503,25 @@ public class PrepareFrequencyMatrix {
                         }
                     }
                     break;
+
+                case "14_Dresden":
+                    if (age < 19) {
+                        frequencyMatrix.setValueAt(i, "borough_hhWithChildren", 1);
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_females_18");
+                        frequencyMatrix.setValueAt(i, "borough_females_18", value1);
+                    }
+                    break;
+
+                case "14_Leipzig":
+                    if (gender == 2) {
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_females");
+                        frequencyMatrix.setValueAt(i, "borough_females", value1);
+                    } else {
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_males");
+                        frequencyMatrix.setValueAt(i, "borough_males", value1);
+                    }
+                    break;
+
                 default:
             }
         }
