@@ -5,7 +5,7 @@ import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.geo.DefaultGeoData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
-import de.tum.bgu.msm.data.geo.MunichZone;
+import de.tum.bgu.msm.data.geo.ZoneMuc;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -56,7 +56,7 @@ public class CreateCarOwnershipModelMuc implements CreateCarOwnershipModel {
         int license = HouseholdUtil.getHHLicenseHolders(hh);
         int workers = HouseholdUtil.getNumberOfWorkers(hh);
         int income = HouseholdUtil.getAnnualHhIncome(hh)/12;  // convert yearly into monthly income
-        MunichZone zone = (MunichZone) geoData.getZones().get(dataContainer.getRealEstateDataManager().
+        ZoneMuc zone = (ZoneMuc) geoData.getZones().get(dataContainer.getRealEstateDataManager().
                 getDwelling(hh.getDwellingId()).getZoneId());
 
         double logDistanceToTransit = Math.log(zone.getPTDistance_m() + 1); // add 1 to avoid taking log of 0
