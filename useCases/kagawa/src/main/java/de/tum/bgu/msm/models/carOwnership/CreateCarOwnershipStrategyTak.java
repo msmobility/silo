@@ -5,7 +5,7 @@ import de.tum.bgu.msm.utils.SiloUtil;
 
 import java.util.Random;
 
-public class CreateCarOwnershipStrategyTakImpl implements CreateCarOwnershipStrategyImpl {
+public class CreateCarOwnershipStrategyTak implements CreateCarOwnershipStrategy {
 
     private final static Integer[] options = {0,1,2,3};
     private final static double[] betaLicense = {3.11410, 4.65460, 5.71850};
@@ -22,7 +22,7 @@ public class CreateCarOwnershipStrategyTakImpl implements CreateCarOwnershipStra
 
     private final Random random;
 
-    public CreateCarOwnershipStrategyTakImpl() {
+    public CreateCarOwnershipStrategyTak() {
         this.random = SiloUtil.getRandomObject();
     }
 

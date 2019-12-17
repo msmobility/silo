@@ -4,7 +4,7 @@ import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
-import de.tum.bgu.msm.data.geo.MunichZone;
+import de.tum.bgu.msm.data.geo.ZoneMuc;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.Job;
@@ -37,7 +37,7 @@ public class MitoDataConverterMuc implements MitoDataConverter {
 
     private void convertZones(DataSet dataSet, DataContainer dataContainer) {
         for (Zone siloZone : dataContainer.getGeoData().getZones().values()) {
-            MitoZone zone = new MitoZone(siloZone.getZoneId(), ((MunichZone) siloZone).getAreaTypeSG());
+            MitoZone zone = new MitoZone(siloZone.getZoneId(), ((ZoneMuc) siloZone).getAreaTypeSG());
             zone.setShapeFeature(siloZone.getZoneFeature());
             dataSet.addZone(zone);
         }

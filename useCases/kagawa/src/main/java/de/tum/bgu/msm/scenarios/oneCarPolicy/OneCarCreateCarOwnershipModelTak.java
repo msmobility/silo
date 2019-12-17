@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.models.carOwnership;
+package de.tum.bgu.msm.scenarios.oneCarPolicy;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.AreaTypes;
@@ -7,11 +7,14 @@ import de.tum.bgu.msm.data.geo.DefaultGeoData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
+import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipStrategy;
+import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipStrategyTak;
+import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipTak;
 import de.tum.bgu.msm.utils.SampleException;
 import de.tum.bgu.msm.utils.Sampler;
 import org.apache.log4j.Logger;
 
-public class CreateCarOwnershipTak implements CreateCarOwnershipModel {
+public class OneCarCreateCarOwnershipModelTak implements CreateCarOwnershipModel {
 
     private static Logger logger = Logger.getLogger(CreateCarOwnershipTak.class);
 
@@ -19,8 +22,8 @@ public class CreateCarOwnershipTak implements CreateCarOwnershipModel {
     private final DefaultGeoData geoData;
     private final CreateCarOwnershipStrategy strategy;
 
-    public CreateCarOwnershipTak(DataContainer dataContainer, CreateCarOwnershipStrategy strategy) {
-        this.strategy = strategy;
+    public OneCarCreateCarOwnershipModelTak(DataContainer dataContainer) {
+        this.strategy = new CreateCarOwnershipStrategyTak();
         logger.info(" Setting up probabilities for car ownership model");
         this.dataContainer = dataContainer;
         this.geoData = (DefaultGeoData) dataContainer.getGeoData();
@@ -59,7 +62,7 @@ public class CreateCarOwnershipTak implements CreateCarOwnershipModel {
 
         Sampler<Integer> sampler = strategy.getSampler(license, workers, income, logDistanceToTransit, areaType);
         try {
-            hh.setAutos(sampler.sampleObject());
+            hh.setAutos(Math.min(1,sampler.sampleObject()));
         } catch (SampleException e) {
             throw new RuntimeException(e);
         }

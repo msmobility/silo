@@ -67,10 +67,10 @@ public class RegionalTravelTimesTest {
         MatsimTravelTimes travelTimes = new MatsimTravelTimes(config);
         DefaultDataContainer dataContainer = new DefaultDataContainer(geoData, null,
                 null, null, travelTimes, null, null, properties);
-        final MatsimData matsimData = new MatsimData(config, properties, ZoneConnectorManager.ZoneConnectorMethod.RANDOM, dataContainer);
         final Network network = getNetwork();
+        final MatsimData matsimData = new MatsimData(config, properties, ZoneConnectorManager.ZoneConnectorMethod.RANDOM, dataContainer, network, null);
 
-        matsimData.update(network, null, new TravelDisutility() {
+        matsimData.update(new TravelDisutility() {
             @Override
             public double getLinkTravelDisutility(Link link, double v, Person person, Vehicle vehicle) {
                 return link.getLength();
@@ -122,7 +122,7 @@ public class RegionalTravelTimesTest {
             final Link link = factory.createLink(Id.createLinkId(i),
                     network.getNodes().get(Id.createNodeId(i - 1)),
                     network.getNodes().get(Id.createNodeId(i)));
-            final Link linkR = factory.createLink(Id.createLinkId(i+"r"),
+            final Link linkR = factory.createLink(Id.createLinkId(i + "r"),
                     network.getNodes().get(Id.createNodeId(i)),
                     network.getNodes().get(Id.createNodeId(i - 1)));
             network.addLink(link);

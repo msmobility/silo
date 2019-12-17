@@ -12,9 +12,13 @@ import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.network.Link;
+import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.core.config.Config;
+import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.router.FreespeedFactorRoutingModule;
 import org.matsim.core.router.TripRouter;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.facilities.ActivityFacilitiesFactory;
@@ -66,16 +70,8 @@ public final class MatsimTravelTimes implements TravelTimes {
 
     private void updateSkims() {
         logger.info("Updating car and pt skim.");
-        final MatsimSkimCreator matsimSkimCreator = new MatsimSkimCreator(matsimData);
-        IndexedDoubleMatrix2D skimCar = matsimSkimCreator.createCarSkim(zones.values());
-        skimsByMode.put(TransportMode.car, skimCar);
-        if(config.transit().isUseTransit()) {
-            IndexedDoubleMatrix2D skimPt = matsimSkimCreator.createPtSkim(zones.values());
-            skimsByMode.put(TransportMode.pt, skimPt);
-        } else {
-            IndexedDoubleMatrix2D skimPt = matsimSkimCreator.createTeleportedSkim(this, TransportMode.pt, zones.values());
-            skimsByMode.put(TransportMode.pt, skimPt);
-        }
+        getPeakSkim(TransportMode.car);
+        getPeakSkim(TransportMode.pt);
     }
 
     private void updateRegionalTravelTimes() {
@@ -126,6 +122,8 @@ public final class MatsimTravelTimes implements TravelTimes {
     // TODO Use travel costs?
     @Override
     public double getTravelTime(Location origin, Location destination, double timeOfDay_s, String mode) {
+
+
         Coord originCoord;
         Coord destinationCoord;
         if (origin instanceof MicroLocation && destination instanceof MicroLocation) {
@@ -140,9 +138,17 @@ public final class MatsimTravelTimes implements TravelTimes {
             throw new IllegalArgumentException("Origin and destination have to be consistent in location type!");
         }
 
+        Id<Link> fromLink = null;
+        Id<Link> toLink = null;
+        if(tripRouter.getRoutingModule(mode) instanceof FreespeedFactorRoutingModule) {
+            final Network carNetwork = matsimData.getCarNetwork();
+            fromLink = NetworkUtils.getNearestLink(carNetwork, originCoord).getId();
+            toLink = NetworkUtils.getNearestLink(carNetwork, destinationCoord).getId();
+        }
+
         ActivityFacilitiesFactoryImpl activityFacilitiesFactory = new ActivityFacilitiesFactoryImpl();
-        Facility fromFacility = ((ActivityFacilitiesFactory) activityFacilitiesFactory).createActivityFacility(Id.create(1, ActivityFacility.class), originCoord);
-        Facility toFacility = ((ActivityFacilitiesFactory) activityFacilitiesFactory).createActivityFacility(Id.create(2, ActivityFacility.class), destinationCoord);
+        Facility fromFacility = ((ActivityFacilitiesFactory) activityFacilitiesFactory).createActivityFacility(Id.create(1, ActivityFacility.class), originCoord, fromLink);
+        Facility toFacility = ((ActivityFacilitiesFactory) activityFacilitiesFactory).createActivityFacility(Id.create(2, ActivityFacility.class), destinationCoord, toLink);
         List<? extends PlanElement> planElements = tripRouter.calcRoute(mode, fromFacility, toFacility, timeOfDay_s, null);
         double arrivalTime = timeOfDay_s;
 
@@ -186,11 +192,14 @@ public final class MatsimTravelTimes implements TravelTimes {
                         skim = matsimSkimCreator.createPtSkim(zones.values());
                         break;
                     } else {
-                        logger.warn("No schedule/ network provided for pt.");
+                        logger.warn("No schedule/ network provided for pt. Will use freespeed factor.");
+                        skim = matsimSkimCreator.createFreeSpeedFactorSkim(zones.values(),
+                                config.plansCalcRoute().getModeRoutingParams().get(TransportMode.pt).getTeleportedModeFreespeedFactor());
+                        break;
                     }
                 default:
                     logger.warn("Defaulting to teleportation.");
-                    skim = matsimSkimCreator.createTeleportedSkim(this, mode, zones.values());
+                    skim = matsimSkimCreator.createTeleportedSkim(zones.values(), mode);
             }
             skimsByMode.put(mode, skim);
             logger.info("Obtained skim for mode " + mode);
