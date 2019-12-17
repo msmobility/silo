@@ -17,14 +17,11 @@ import java.io.Reader;
 public class OneCarCreateCarOwnershipModelMuc implements CreateCarOwnershipModel {
 
     private static Logger logger = Logger.getLogger(CreateCarOwnershipModelMuc.class);
-    private final CreateCarOwnershipJSCalculatorMuc calculator;
     private final DataContainer dataContainer;
     private final DefaultGeoData geoData;
 
     public OneCarCreateCarOwnershipModelMuc(DataContainer dataContainer) {
         logger.info(" Setting up probabilities for car ownership model");
-        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("CreateCarOwnershipCalc"));
-        calculator = new CreateCarOwnershipJSCalculatorMuc(reader);
         this.dataContainer = dataContainer;
         this.geoData = (DefaultGeoData) dataContainer.getGeoData();
     }
