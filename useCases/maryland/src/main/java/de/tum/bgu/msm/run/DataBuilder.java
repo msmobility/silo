@@ -7,6 +7,7 @@ import de.tum.bgu.msm.data.RealEstateDataManagerMstm;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.accessibility.AccessibilityImpl;
 import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
+import de.tum.bgu.msm.data.accessibility.CommutingTimeProbabilityImpl;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.geo.GeoDataMstm;
 import de.tum.bgu.msm.data.household.HouseholdData;
@@ -57,7 +58,7 @@ public final class DataBuilder {
                 break;
         }
 
-        CommutingTimeProbability commutingTimeProbability = new CommutingTimeProbability(properties);
+        CommutingTimeProbability commutingTimeProbability = new CommutingTimeProbabilityImpl(properties);
 
         //TODO: revise this!
         new JobType(properties.jobData.jobTypes);

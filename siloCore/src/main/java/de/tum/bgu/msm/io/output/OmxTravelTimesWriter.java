@@ -1,8 +1,7 @@
-package de.tum.bgu.msm.io;
+package de.tum.bgu.msm.io.output;
 
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
-import de.tum.bgu.msm.io.output.OmxMatrixWriter;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix2D;
 
 import java.util.Collection;

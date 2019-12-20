@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.io;
+package de.tum.bgu.msm.io.output;
 
 public interface TravelTimesWriter {
     /**

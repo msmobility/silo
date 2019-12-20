@@ -2807,7 +2807,7 @@ public class SyntheticPopCTrace implements SyntheticPopI {
                 + "_"
                 + properties.main.baseYear+ 100
                 + ".csv";
-        DwellingWriter ddwriter = new DefaultDwellingWriter(dataContainer.getRealEstateDataManager());
+        DwellingWriter ddwriter = new DefaultDwellingWriter(dataContainer.getRealEstateDataManager().getDwellings());
         ddwriter.writeDwellings(filedd);
 
         String filejj = properties.main.baseDirectory
