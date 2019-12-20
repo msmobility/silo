@@ -72,14 +72,14 @@ public class CreatePopulation {
                 ppId++;
                 Person p2 = ppFactory.createPerson(ppId,age2, Gender.FEMALE, occupation2, PersonRole.MARRIED, -1, 500);
                 ppId++;
-                Person p3 = ppFactory.createPerson(ppId, age3,)
-                ppId++;
+//                Person p3 = ppFactory.createPerson(ppId, age3,)
+//                ppId++;
             }
-            Person pp = ppFactory.
+//            Person pp = ppFactory.
 
 
-                    hhId++;
-            ddId++;
+//                    hhId++;
+//            ddId++;
         }
 
 
