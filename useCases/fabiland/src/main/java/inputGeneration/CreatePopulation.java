@@ -108,6 +108,7 @@ public class CreatePopulation {
                         if(job1 != null) {
                             p1.setOccupation(Occupation.EMPLOYED);
                             p1.setIncome(2000);
+                            p1.setDriverLicense(true);
                             job1.setWorkerID(p1.getId());
                             p1.setWorkplace(job1.getId());
                             jobData.addJob(job1);
@@ -120,6 +121,7 @@ public class CreatePopulation {
                             p2.setOccupation(Occupation.EMPLOYED);
                             p2.setIncome(2000);
                             job2.setWorkerID(p2.getId());
+                            p2.setDriverLicense(true);
                             p2.setWorkplace(job2.getId());
                             jobData.addJob(job2);
                             jjId++;
@@ -153,6 +155,7 @@ public class CreatePopulation {
                             p1.setOccupation(Occupation.EMPLOYED);
                             job1.setWorkerID(p1.getId());
                             p1.setWorkplace(job1.getId());
+                            p1.setDriverLicense(true);
                             jobData.addJob(job1);
                             p1.setIncome(2000);
                             jjId++;
@@ -164,6 +167,7 @@ public class CreatePopulation {
                             p2.setOccupation(Occupation.EMPLOYED);
                             job2.setWorkerID(p2.getId());
                             p2.setWorkplace(job2.getId());
+                            p2.setDriverLicense(true);
                             jjId++;
                             jobData.addJob(job2);
                             p2.setIncome(2000);
@@ -189,6 +193,7 @@ public class CreatePopulation {
                             p1.setOccupation(Occupation.EMPLOYED);
                             job1.setWorkerID(p1.getId());
                             p1.setWorkplace(job1.getId());
+                            p1.setDriverLicense(true);
                             jjId++;
                             jobData.addJob(job1);
                             p1.setIncome(2000);
@@ -256,10 +261,10 @@ public class CreatePopulation {
         }
 
 
-        new DefaultDwellingWriter(dwellingData.getDwellings()).writeDwellings("input/base/microData/dd.csv");
-        new DefaultHouseholdWriter(householdData.getHouseholds()).writeHouseholds("input/base/microData/hh.csv");
-        new DefaultPersonWriter(householdData).writePersons("input/base/microData/pp.csv");
-        new DefaultJobWriter(jobData).writeJobs("input/base/microData/jj.csv");
+        new DefaultDwellingWriter(dwellingData.getDwellings()).writeDwellings("input/base/microData/dd_0.csv");
+        new DefaultHouseholdWriter(householdData.getHouseholds()).writeHouseholds("input/base/microData/hh_0.csv");
+        new DefaultPersonWriter(householdData).writePersons("input/base/microData/pp_0.csv");
+        new DefaultJobWriter(jobData).writeJobs("input/base/microData/jj_0.csv");
     }
 
     public static Job getJob(JobFactory jjFactory, int jjId, int ppId) {

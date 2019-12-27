@@ -23,7 +23,7 @@ public class RunFabiland {
         if (args.length > 1 && args[1] != null) {
             config = ConfigUtils.loadConfig(args[1]);
         }
-        logger.info("Started SILO land use model for the Maryland Statewide Model Area");
+        logger.info("Started SILO Fabiland sandbox model");
         DataContainer dataContainer = DataBuilderFabiland.buildDataContainer(properties, config);
         DataBuilderFabiland.readInput(properties, dataContainer);
 

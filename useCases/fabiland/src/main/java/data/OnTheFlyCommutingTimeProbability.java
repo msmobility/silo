@@ -4,7 +4,7 @@ import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
 
 public class OnTheFlyCommutingTimeProbability implements CommutingTimeProbability {
 
-    public final static double DEFAULT_BETA = 0.2;
+    public final static double DEFAULT_BETA = -0.2;
 
     private final double beta;
 

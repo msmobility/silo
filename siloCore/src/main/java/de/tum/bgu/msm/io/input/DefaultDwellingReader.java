@@ -14,8 +14,16 @@ public class DefaultDwellingReader implements DwellingReader {
     private final static Logger logger = Logger.getLogger(DefaultDwellingReader.class);
     private final RealEstateDataManager realEstateDataManager;
 
+    private final DwellingTypeAdapter dwellingTypeAdapter;
+
     public DefaultDwellingReader(RealEstateDataManager realEstate) {
         this.realEstateDataManager = realEstate;
+        dwellingTypeAdapter = new DefaultDwellingTypeAdapter();
+    }
+
+    public DefaultDwellingReader(RealEstateDataManager realEstate, DwellingTypeAdapter dwellingTypeAdapter) {
+        this.realEstateDataManager = realEstate;
+        this.dwellingTypeAdapter = dwellingTypeAdapter;
     }
 
     @Override
@@ -54,7 +62,7 @@ public class DefaultDwellingReader implements DwellingReader {
                 int zoneId = Integer.parseInt(lineElements[posZone]);
                 int hhId = Integer.parseInt(lineElements[posHh]);
                 String tp = lineElements[posType].replace("\"", "");
-                DwellingType type = DefaultDwellingTypeImpl.valueOf(tp);
+                DwellingType type = dwellingTypeAdapter.valueOf(tp);
                 int price = Integer.parseInt(lineElements[posCosts]);
                 int area = Integer.parseInt(lineElements[posRooms]);
                 int quality = Integer.parseInt(lineElements[posQuality]);
