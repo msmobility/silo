@@ -13,9 +13,6 @@
 	</module>
 	<module name="transit">
 		<param name="transitScheduleFile" value="input/matsim/schedule.xml" />
-		<param name="transitModes" value="pt" />
-		<param name="useTransit" value="true" />
-		<param name="vehiclesFile" value="input/matsim/transitVehicles.xml" />
 	</module>
 	<module name="qsim" >
 		<param name="trafficDynamics" value="withHoles" />
