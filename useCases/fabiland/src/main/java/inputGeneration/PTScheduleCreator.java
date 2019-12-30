@@ -13,21 +13,20 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
-import org.matsim.core.network.io.NetworkWriter;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.population.routes.RouteUtils;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.pt.transitSchedule.TransitScheduleFactoryImpl;
 import org.matsim.pt.transitSchedule.api.Departure;
 import org.matsim.pt.transitSchedule.api.TransitLine;
 import org.matsim.pt.transitSchedule.api.TransitRoute;
 import org.matsim.pt.transitSchedule.api.TransitRouteStop;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.transitSchedule.api.TransitScheduleFactory;
-import org.matsim.pt.transitSchedule.api.TransitScheduleReader;
 import org.matsim.pt.transitSchedule.api.TransitScheduleWriter;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
+import org.matsim.pt.utils.CreateVehiclesForSchedule;
 import org.matsim.pt.utils.TransitScheduleValidator;
+import org.matsim.vehicles.VehicleWriterV1;
 
 public class PTScheduleCreator {
 	
@@ -43,20 +42,22 @@ public class PTScheduleCreator {
 
         String inputNetwork = "useCases/fabiland/input/base/input/matsim/network.xml";
         String outputSchedule = "useCases/fabiland/input/base/input/matsim/schedule.xml";
+        String outputTransitVehicles = "useCases/fabiland/input/base/input/matsim/transitvehicles.xml";
 //        String inputNetwork = "scenarios/fabiland/network.xml";
 //        String outputSchedule = "scenarios/fabiland/schedule.xml";
+//        String outputTransitVehicles = "scenarios/fabiland/transitvehicles.xml";
 
-        createGridSchedule(outputSchedule, inputNetwork);
+        createGridSchedule(outputSchedule, inputNetwork, outputTransitVehicles);
     }
 
-    private static void createGridSchedule(String outputSchedule, String inputNetwork) {
+    private static void createGridSchedule(String outputSchedule, String inputNetwork, String outputTransitVehicles) {
         Scenario scenario = ScenarioUtils.loadScenario(ConfigUtils.createConfig());
 
         MatsimNetworkReader matsimNetworkReader = new MatsimNetworkReader(scenario.getNetwork());
         matsimNetworkReader.readFile(inputNetwork);
 
-        TransitScheduleFactory tsf = new TransitScheduleFactoryImpl();
-        TransitSchedule ts = tsf.createTransitSchedule();
+        TransitSchedule ts = scenario.getTransitSchedule();
+        TransitScheduleFactory tsf = ts.getFactory();
 
         Network network = scenario.getNetwork();
 
@@ -297,6 +298,11 @@ public class PTScheduleCreator {
 
         TransitScheduleWriter transitScheduleWriter = new TransitScheduleWriter(ts);
         transitScheduleWriter.writeFile(outputSchedule);
+        
+        
+        // create transit vehicles
+        new CreateVehiclesForSchedule(ts, scenario.getTransitVehicles());
+        new VehicleWriterV1(scenario.getTransitVehicles()).writeFile(outputTransitVehicles);
     }
     
     private static void addDepartures(TransitScheduleFactory tsf, TransitRoute tr, double beginning, double end, double interval) {
