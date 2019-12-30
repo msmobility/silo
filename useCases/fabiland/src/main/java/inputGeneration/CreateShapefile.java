@@ -55,14 +55,14 @@ public class CreateShapefile {
         b.setSRS( "EPSG:31468" );
         b.setName("fabiland");
         b.add("the_geom", Polygon.class); // Fails if it is not called "the_geom"
-        b.add("id", Integer.class);
+        b.add("Id", Integer.class);
         SimpleFeatureType type = b.buildFeatureType();
         SimpleFeatureBuilder fbuilder = new SimpleFeatureBuilder(type);
 
         for (Integer id : polygons.keySet()) {
             fbuilder.add(polygons.get(id));
             SimpleFeature feature = fbuilder.buildFeature(id.toString());
-            feature.setAttribute("id", id);
+            feature.setAttribute("Id", id);
             features.add(feature);
         }
         return features;
