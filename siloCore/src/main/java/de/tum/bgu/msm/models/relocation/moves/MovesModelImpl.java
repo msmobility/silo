@@ -9,6 +9,7 @@ import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdType;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.events.impls.household.MoveEvent;
 import de.tum.bgu.msm.io.output.YearByYearCsvModelTracker;
 import de.tum.bgu.msm.models.AbstractModel;
@@ -74,7 +75,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
     @Override
     public void setup() {
         housingStrategy.setup();
-        String header = new StringJoiner(",").add("hh").add("oldDdd").add("newDd").add("oldZone").add("newZone").toString();
+        String header = new StringJoiner(",").add("hh").add("oldDdd").add("newDd").add("oldZone").add("newZone").add("autos").add("licenses").add("workers").toString();
         Path basePath = Paths.get(properties.main.baseDirectory).resolve("scenOutput").resolve(properties.main.scenarioName).resolve("siloResults/relocation");
         relocationTracker = new YearByYearCsvModelTracker(basePath, "relocation", header);
     }
@@ -153,6 +154,9 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
                     .add(String.valueOf(idNewDD))
                     .add(String.valueOf(oldZoneId))
                     .add(String.valueOf(newZoneId))
+                    .add(String.valueOf(household.getAutos()))
+                    .add(String.valueOf(HouseholdUtil.getHHLicenseHolders(household)))
+                    .add(String.valueOf(HouseholdUtil.getNumberOfWorkers(household)))
                     .toString());
             moveHousehold(household, idOldDd, idNewDD);
             if (hhId == SiloUtil.trackHh) {
