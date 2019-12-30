@@ -48,7 +48,7 @@ public class CreatePopulation {
 
     public static void main(String[] args) {
 
-        Properties.initializeProperties("input/base/base.properties");
+        Properties.initializeProperties("useCases/fabiland/input/base/base.properties");
         DwellingFactory ddFactory = new DwellingFactoryImpl();
         HouseholdFactory hhFactory = new HouseholdFactoryImpl();
         PersonFactory ppFactory = new PersonFactoryImpl();
@@ -70,16 +70,16 @@ public class CreatePopulation {
             int row = (zoneId - 1) / 5;
             int col = (zoneId - 1) % 5;
 
-            double x1 = col * 5000;
-            double y1 = 20000 - row * 5000;
+            double x1 = col * 5000 - 12500;
+            double y1 = 20000 - 12500 - row * 5000;
 
             Random rnd = new Random();
             int population = populationByZone[row][col];
 
             Counter counter1 = new Counter("Household ");
             for (int i = 0; i < population; i++) {
-                double x = x1 + rnd.nextInt(5000);
-                double y = y1 + rnd.nextInt(5000);
+                double x = x1 + 2000 + rnd.nextInt(1000);
+                double y = y1 + 2000 + rnd.nextInt(1000);
                 DwellingType type = SandboxDwellingType.SF;
                 int price = 1000;
                 if (i >= population / 2) {
@@ -221,14 +221,14 @@ public class CreatePopulation {
         }
 
 
-        logger.warn("Adding vcant jobs and dwellings");
+        logger.warn("Adding vacant jobs and dwellings");
         for (int zoneId = 1; zoneId <= 25; zoneId++) {
 
             int row = (zoneId - 1) / 5;
             int col = (zoneId - 1) % 5;
 
-            double x1 = col * 5000;
-            double y1 = 20000 - row * 5000;
+            double x1 = col * 5000 - 12500;
+            double y1 = 20000 - 12500 - row * 5000;
 
             Random rnd = new Random();
             int population = populationByZone[row][col];
@@ -236,8 +236,8 @@ public class CreatePopulation {
             int vacantJj = (int) (0.05 * jobsByZoneTotal[row][col]);
 
             for (int i = 0; i < vacantDd; i++) {
-                double x = x1 + rnd.nextInt(5000);
-                double y = y1 + rnd.nextInt(5000);
+                double x = x1 + 2000 + rnd.nextInt(1000);
+                double y = y1 + 2000 + rnd.nextInt(1000);
                 DwellingType type = SandboxDwellingType.MF;
                 int price = 500;
                 if (rnd.nextDouble() < 0.5) {
@@ -251,8 +251,8 @@ public class CreatePopulation {
             }
 
             for (int i = 0; i < vacantJj; i++) {
-                double x = x1 + rnd.nextInt(5000);
-                double y = y1 + rnd.nextInt(5000);
+                double x = x1 + 2000 + rnd.nextInt(1000);
+                double y = y1 + 2000 + rnd.nextInt(1000);
                 Job job = jjFactory.createJob(jjId, zoneId, new Coordinate(x, y), -1, "IND");
                 jobData.addJob(job);
                 jjId++;
@@ -261,10 +261,10 @@ public class CreatePopulation {
         }
 
 
-        new DefaultDwellingWriter(dwellingData.getDwellings()).writeDwellings("input/base/microData/dd_0.csv");
-        new DefaultHouseholdWriter(householdData.getHouseholds()).writeHouseholds("input/base/microData/hh_0.csv");
-        new DefaultPersonWriter(householdData).writePersons("input/base/microData/pp_0.csv");
-        new DefaultJobWriter(jobData).writeJobs("input/base/microData/jj_0.csv");
+        new DefaultDwellingWriter(dwellingData.getDwellings()).writeDwellings("useCases/fabiland/input/base/microData/dd_0.csv");
+        new DefaultHouseholdWriter(householdData.getHouseholds()).writeHouseholds("useCases/fabiland/input/base/microData/hh_0.csv");
+        new DefaultPersonWriter(householdData).writePersons("useCases/fabiland/input/base/microData/pp_0.csv");
+        new DefaultJobWriter(jobData).writeJobs("useCases/fabiland/input/base/microData/jj_0.csv");
     }
 
     public static Job getJob(JobFactory jjFactory, int jjId, int ppId) {
@@ -282,8 +282,8 @@ public class CreatePopulation {
             int row = (zoneId - 1) / 5;
             int col = (zoneId - 1) % 5;
 
-            double x1 = col * 5000;
-            double y1 = 20000 - row * 5000;
+            double x1 = col * 5000 - 12500;
+            double y1 = 20000 - 12500 - row * 5000;
 
             double x = x1 + rnd.nextInt(5000);
             double y = y1 + rnd.nextInt(5000);
