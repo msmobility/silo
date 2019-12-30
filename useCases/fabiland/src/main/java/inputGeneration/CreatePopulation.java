@@ -22,12 +22,12 @@ public class CreatePopulation {
 
     private final static Logger logger = Logger.getLogger(CreatePopulation.class);
 
-    private final static int[][] populationByZone = {
-            {500, 0, 0, 0, 500},
-            {0, 0, 1000, 0, 0},
-            {0, 1000, 10000, 1000, 0},
-            {0, 0, 1000, 0, 0},
-            {500, 0, 0, 0, 500}
+    private final static int[][] householdsByZone = {
+            {250, 0, 0, 0, 250},
+            {0, 0, 500, 0, 0},
+            {0, 500, 5000, 500, 0},
+            {0, 0, 500, 0, 0},
+            {250, 0, 0, 0, 250}
     };
 
     private final static int[][] currentJobsByZone = {
@@ -74,7 +74,7 @@ public class CreatePopulation {
             double y1 = 20000 - 12500 - row * 5000;
 
             Random rnd = new Random();
-            int population = populationByZone[row][col];
+            int population = householdsByZone[row][col];
 
             Counter counter1 = new Counter("Household ");
             for (int i = 0; i < population; i++) {
@@ -88,7 +88,7 @@ public class CreatePopulation {
                 }
                 Dwelling dwelling = ddFactory.createDwelling(ddId, zoneId, new Coordinate(x, y), hhId, type, 2, 4, price, 0);
                 Household household = hhFactory.createHousehold(hhId, ddId, rnd.nextInt(3));
-                if (rnd.nextDouble() < 1. / 6) {
+                if (rnd.nextDouble() <= 1. / 3.) {
                     int age1 = rnd.nextInt(60) + 20;
                     int age2 = age1 - rnd.nextInt(6);
                     //no negative age, maximum 18, try to have at least 18 years less than mom
@@ -103,7 +103,7 @@ public class CreatePopulation {
                     Person p3 = ppFactory.createPerson(ppId, age3, Gender.valueOf(rnd.nextInt(2) + 1), Occupation.STUDENT, PersonRole.CHILD, -1, 0);
                     p3.setHousehold(household);
                     ppId++;
-                    if (rnd.nextDouble() < 0.35) {
+                    if (rnd.nextDouble() < 2./3.) {
                         Job job1 = getJob(jjFactory, jjId, p1.getId());
                         if(job1 != null) {
                             p1.setOccupation(Occupation.EMPLOYED);
@@ -115,7 +115,7 @@ public class CreatePopulation {
                             jjId++;
                         }
                     }
-                    if (rnd.nextDouble() < 0.33) {
+                    if (rnd.nextDouble() < 0.5) {
                         Job job2 = getJob(jjFactory, jjId, p2.getId());
                         if(job2 != null) {
                             p2.setOccupation(Occupation.EMPLOYED);
@@ -138,7 +138,7 @@ public class CreatePopulation {
                     householdData.addPerson(p2);
                     householdData.addPerson(p3);
 
-                } else if (rnd.nextDouble() < 1. / 3) {
+                } else if (rnd.nextDouble() <= 1. / 3.) {
                     int age1 = rnd.nextInt(60) + 20;
                     int age2 = age1 - rnd.nextInt(6);
 
@@ -149,7 +149,7 @@ public class CreatePopulation {
                     ppId++;
                     p2.setHousehold(household);
 
-                    if (rnd.nextDouble() < 0.35) {
+                    if (rnd.nextDouble() < 2./3.) {
                         Job job1 = getJob(jjFactory, jjId, p1.getId());
                         if(job1 != null) {
                             p1.setOccupation(Occupation.EMPLOYED);
@@ -161,7 +161,7 @@ public class CreatePopulation {
                             jjId++;
                         }
                     }
-                    if (rnd.nextDouble() < 0.33) {
+                    if (rnd.nextDouble() < 0.5) {
                         Job job2 = getJob(jjFactory, jjId, p2.getId());
                         if(job2 != null) {
                             p2.setOccupation(Occupation.EMPLOYED);
@@ -187,7 +187,7 @@ public class CreatePopulation {
                     ppId++;
                     p1.setHousehold(household);
 
-                    if (rnd.nextDouble() < 0.35) {
+                    if (rnd.nextDouble() < 2./3.) {
                         Job job1 = getJob(jjFactory, jjId, p1.getId());
                         if(job1 != null) {
                             p1.setOccupation(Occupation.EMPLOYED);
@@ -231,7 +231,7 @@ public class CreatePopulation {
             double y1 = 20000 - 12500 - row * 5000;
 
             Random rnd = new Random();
-            int population = populationByZone[row][col];
+            int population = householdsByZone[row][col];
             int vacantDd = (int) (0.05 * population);
             int vacantJj = (int) (0.05 * jobsByZoneTotal[row][col]);
 
