@@ -301,7 +301,7 @@ public class PTScheduleCreator {
         
         
         // create transit vehicles
-        new CreateVehiclesForSchedule(ts, scenario.getTransitVehicles());
+        new CreateVehiclesForSchedule(ts, scenario.getTransitVehicles()).run();
         new VehicleWriterV1(scenario.getTransitVehicles()).writeFile(outputTransitVehicles);
     }
     
