@@ -20,7 +20,8 @@ public class CreateShapefile {
 
         Map<Integer, Polygon> polygons = new HashMap<>();
 
-        int sideLength = 5000;
+        int sideLength = 1000;
+        int offset = 4000;
         int id = 1;
 
         int centerY = 10000;
@@ -37,13 +38,13 @@ public class CreateShapefile {
                 polygons.put(id, square);
 
                 id++;
-                centerX = centerX + sideLength;
+                centerX = centerX + sideLength + offset;
             }
-            centerY = centerY - sideLength;
+            centerY = centerY - sideLength - offset;
         }
 
         Collection<SimpleFeature> features = createFeaturesFromPolygons(polygons);
-        ShapeFileWriter.writeGeometries(features, "/Users/dominik/fabiland.shp");
+        ShapeFileWriter.writeGeometries(features, "useCases/fabiland/input/base/input/zonesShapefile/fabiland-small-zones.shp");
     }
 
     static Collection<SimpleFeature> createFeaturesFromPolygons(Map<Integer, Polygon> polygons) {
