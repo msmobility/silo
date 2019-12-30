@@ -6,7 +6,7 @@
 	</module>
 
 	<module name="controler" >
-		<param name="lastIteration" value="2" />
+		<param name="lastIteration" value="30" />
 		<param name="overwriteFiles" value="deleteDirectoryIfExists" />
 	</module>
 
@@ -15,9 +15,10 @@
 	</module>
 
 	<module name="transit">
-	<!--	<param name="transitScheduleFile" value="schedule2018.xml" /> -->
+		<param name="transitScheduleFile" value="input/matsim/schedule.xml" />
 		<param name="transitModes" value="pt" />
-		<param name="useTransit" value="false" />
+		<param name="useTransit" value="true" />
+		<param name="vehiclesFile" value="input/matsim/transitVehicles.xml" />
 	</module>
 
 	<module name="qsim" >
@@ -49,11 +50,16 @@
 
 		<parameterset type="strategysettings" >
 			<param name="strategyName" value="ChangeExpBeta" />
-			<param name="weight" value="0.8" />
+			<param name="weight" value="0.6" />
 		</parameterset>
 
 		<parameterset type="strategysettings" >
 			<param name="strategyName" value="ReRoute" />
+			<param name="weight" value="0.2" />
+		</parameterset>
+		
+		<parameterset type="strategysettings" >
+			<param name="strategyName" value="SubtourModeChoice" />
 			<param name="weight" value="0.2" />
 		</parameterset>
 	</module>
