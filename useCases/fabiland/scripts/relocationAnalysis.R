@@ -2,7 +2,7 @@ library(readr)
 library(dplyr)
 
 #sets working directory to script location, only works in rstudio
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+#setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
 
 # read zone system file
