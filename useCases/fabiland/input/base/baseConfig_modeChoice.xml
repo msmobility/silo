@@ -13,6 +13,7 @@
 	</module>
 	<module name="transit">
 		<param name="transitScheduleFile" value="input/matsim/schedule.xml" />
+		<param name="useTransit" value="true" />
 	</module>
 	<module name="qsim" >
 		<param name="trafficDynamics" value="withHoles" />
@@ -32,17 +33,36 @@
 			<param name="activityType" value="work" />
 			<param name="typicalDuration" value="08:00:00" />
 		</parameterset>
+		<parameterset type="modeParams" >
+			<param name="constant" value="-0.0" />
+			<param name="mode" value="car" />
+			<param name="monetaryDistanceRate" value="-0.0002" />
+			<param name="dailyMonetaryConstant" value="-5.0" />
+		</parameterset>
+		<parameterset type="modeParams" >
+			<param name="constant" value="-0.0" />
+			<param name="mode" value="pt" />
+			<param name="dailyMonetaryConstant" value="-2.0" />
+		</parameterset>
 	</module>
 	<module name="strategy" >
 		<param name="fractionOfIterationsToDisableInnovation" value="0.8" />
 		<parameterset type="strategysettings" >
 			<param name="strategyName" value="ChangeExpBeta" />
-			<param name="weight" value="0.8" />
+			<param name="weight" value="0.7" />
 		</parameterset>
 		<parameterset type="strategysettings" >
 			<param name="strategyName" value="ReRoute" />
-			<param name="weight" value="0.2" />
+			<param name="weight" value="0.15" />
 		</parameterset>
+		<parameterset type="strategysettings" >
+			<param name="strategyName" value="SubtourModeChoice" />
+			<param name="weight" value="0.15" />
+		</parameterset>
+	</module>
+	<module name="subtourModeChoice" >
+		<param name="chainBasedModes" value="car" />
+		<param name="modes" value="car,pt" />
 	</module>
 	<module name="transitRouter" >
 		<param name="extensionRadius" value="500.0" />
