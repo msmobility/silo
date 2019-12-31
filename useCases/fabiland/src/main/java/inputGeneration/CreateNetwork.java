@@ -35,9 +35,9 @@ public class CreateNetwork {
      * (21)====(22)-----(23)-----(24)-----(25)
      */
     public static void main(String[] args) {
-        String networkFileName = "/Users/dominik/network.xml";
+        String networkFileName = "useCases/fabiland/input/base/input/matsim/network_cap150.xml";
         double freespeed = 50./3.6;
-        double capacity = 500.;
+        double capacity = 150.;
         double numLanes = 1.;
         double length = 5000.;
 
