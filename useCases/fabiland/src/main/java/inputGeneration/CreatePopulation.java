@@ -285,8 +285,8 @@ public class CreatePopulation {
             double x1 = col * 5000 - 12500;
             double y1 = 20000 - 12500 - row * 5000;
 
-            double x = x1 + rnd.nextInt(1000);
-            double y = y1 + rnd.nextInt(1000);
+            double x = x1 + 2000 + rnd.nextInt(1000);
+            double y = y1 + 2000 + rnd.nextInt(1000);
 
             currentJobsByZone[row][col] = Math.max(0, currentJobsByZone[row][col]-1);
 
