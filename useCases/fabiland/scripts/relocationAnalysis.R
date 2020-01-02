@@ -10,7 +10,13 @@ zones <- read.csv("../input/base/input/zoneSystem.csv", sep=",")
 
 # read relocation for specific year
 year <- 0
-relocation <- read_csv(paste("../input/base/scenOutput/base/siloResults/relocation/relocation",year,".csv", sep=""))
+scenarioName <- 'basecorrectedsmall'
+relocation <- read_csv(paste("../input/base/scenOutput/",scenarioName,"/siloResults/relocation/relocation",year,".csv", sep=""))
+
+
+# number of relocations to zone 13
+nrow(relocation[relocation$newZone == 13,])
+
 
 # filter relocations by workers and number of cars
 relocationWithcarAndWorkers <- relocation %>% filter(relocation$autos > 0 & relocation$workers > 0)
@@ -26,13 +32,61 @@ relocationDriversLicense2 <- relocation %>% filter(relocation$licenses == reloca
 par(mfrow=c(3,2))
 
 # plot relative frequencies of target zones of relocation
-hist(relocationWithcarAndWorkers$newZone, breaks = 25, freq = FALSE)
-hist(relocationWithoutcarAndWorkers$newZone, breaks = 25, freq = FALSE)
-hist(relocationWithcarNoWorkers$newZone, breaks = 25, freq = FALSE)
-hist(relocationWithoutcarNoWorkers$newZone, breaks = 25, freq = FALSE)
+hist(relocationWithcarAndWorkers$newZone, breaks = c(0.5:25.5),
+freq = FALSE,xaxt="n", xlab="Zone id", ylab = "Density", main ="Distribution of Relocations by Zone - Workers with car")
+xtick<-seq(1, 25, by=1)
+text(x=xtick,  par("usr")[3], labels = xtick, srt = 0, pos = 1, xpd = TRUE)
 
-hist(relocationDriversLicense$newZone, breaks = 25, freq = FALSE)
-hist(relocationDriversLicense2$newZone, breaks = 25, freq = FALSE)
+hist(relocationWithoutcarAndWorkers$newZone, breaks = c(0.5:25.5), freq = FALSE,xaxt="n", xlab="Zone id", ylab = "Density", main ="Distribution of Relocations by Zone - Workers without car")
+xtick<-seq(1, 25, by=1)
+text(x=xtick,  par("usr")[3], labels = xtick, srt = 0, pos = 1, xpd = TRUE)
+
+hist(relocationWithcarNoWorkers$newZone, breaks = c(0.5:25.5), freq = FALSE,xaxt="n",xlab="Zone id", ylab = "Density", main ="Distribution of Relocations by Zone - Non-workers with car")
+xtick<-seq(1, 25, by=1)
+text(x=xtick,  par("usr")[3], labels = xtick, srt = 0, pos = 1, xpd = TRUE)
+
+hist(relocationWithoutcarNoWorkers$newZone, breaks = c(0.5:25.5), freq = FALSE,xaxt="n",xlab="Zone id", ylab = "Density", main ="Distribution of Relocations by Zone - Non-workers without car")
+xtick<-seq(1, 25, by=1)
+text(x=xtick,  par("usr")[3], labels = xtick, srt = 0, pos = 1, xpd = TRUE)
+
+
+
+hist(relocationDriversLicense$newZone, breaks = c(0.5:25.5), freq = FALSE,xaxt="n", xlab="Zone id", ylab = "Density", main ="Distribution of ...")
+xtick<-seq(1, 25, by=1)
+text(x=xtick,  par("usr")[3], labels = xtick, srt = 0, pos = 1, xpd = TRUE)
+
+hist(relocationDriversLicense2$newZone, breaks = c(0.5:25.5), freq = FALSE,xaxt="n", xlab="Zone id", ylab = "Density", main ="Distribution of ...")
+xtick<-seq(1, 25, by=1)
+text(x=xtick,  par("usr")[3], labels = xtick, srt = 0, pos = 1, xpd = TRUE)
+
+######################################################################
+
+library(ggplot2)
+library(gridExtra)
+
+relocation$class <- ifelse(relocation$autos > 0 & relocation$workers> 0 , "Workers with cars", ifelse(relocation$workers>0 & relocation$autos == 0, "Workers without cars", "Non-Workers"))
+
+# Histogram on a Continuous (Numeric) Variable
+g1 <- ggplot(relocation, aes(relocation$newZone)) + scale_fill_brewer(palette = "Spectral")
+
+
+g1 <- g1 + geom_histogram(aes(fill=class),
+bins=25,
+col="black",
+size=.1) +  # change binwidth
+    labs(title="Histogram relocation destinations. Grouped by household characteristics",
+    subtitle="") + xlab('Zone id') + ylab('Number of relocations') + scale_x_continuous(breaks=seq(1,25,by=1))
+g1
+
+g2 <- ggplot(relocation, aes(relocation$newZone))
+g2 <- g2 + geom_density(aes(fill=factor(class)), alpha=0.5) + theme(text = element_text(size=10))+
+    labs(title="",
+    subtitle="",
+    x="Zone id",
+    y = "Density",
+    fill="Household type")  + scale_x_continuous(breaks=seq(1,25,by=1))
+g2
+
 
 ######################################################################
 
