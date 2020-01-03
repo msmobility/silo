@@ -9,10 +9,10 @@
 		<param name="overwriteFiles" value="deleteDirectoryIfExists" />
 	</module>
 	<module name="network" >
-		<param name="inputNetworkFile" value="input/matsim/network_cap150.xml" />
+		<param name="inputNetworkFile" value="matsimInput/network.xml" />
 	</module>
 	<module name="transit">
-		<param name="transitScheduleFile" value="input/matsim/schedule.xml" />
+		<param name="transitScheduleFile" value="matsimInput/schedule.xml" />
 		<param name="useTransit" value="true" />
 	</module>
 	<module name="qsim" >
