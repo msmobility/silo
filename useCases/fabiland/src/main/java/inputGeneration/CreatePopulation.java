@@ -19,36 +19,66 @@ import org.matsim.core.utils.misc.Counter;
 import java.util.Random;
 
 public class CreatePopulation {
-
     private final static Logger logger = Logger.getLogger(CreatePopulation.class);
+
+    private final static String scenarioFolderRoot = "useCases/fabiland/scenarios/unrestricted-dev";
+
+    private final static int sideLengthHorizonal = 5000;
+    private final static int sideLengthVertical = 5000;
+    private final static int centroidOffset = 5000;
+
+
+//    private final static int[][] householdsByZone = {
+//            {250, 0, 0, 0, 250},
+//            {0, 0, 500, 0, 0},
+//            {0, 500, 5000, 500, 0},
+//            {0, 0, 500, 0, 0},
+//            {250, 0, 0, 0, 250}
+//    };
+//
+//    private final static int[][] currentJobsByZone = {
+//            {200, 100, 100, 100, 200},
+//            {100, 100, 400, 100, 100},
+//            {100, 400, 4000, 400, 100},
+//            {100, 100, 400, 100, 100},
+//            {200, 100, 100, 100, 200}
+//    };
+//
+//    private final static int[][] jobsByZoneTotal = {
+//            {200, 100, 100, 100, 200},
+//            {100, 100, 400, 100, 100},
+//            {100, 400, 4000, 400, 100},
+//            {100, 100, 400, 100, 100},
+//            {200, 100, 100, 100, 200}
+//    };
 
     private final static int[][] householdsByZone = {
             {250, 0, 0, 0, 250},
             {0, 0, 500, 0, 0},
-            {0, 500, 5000, 500, 0},
-            {0, 0, 500, 0, 0},
-            {250, 0, 0, 0, 250}
+            {0, 500, 3000, 500, 0},
+            {0, 0, 0, 0, 0},
+            {500, 0, 500, 0, 0}
     };
 
     private final static int[][] currentJobsByZone = {
-            {200, 100, 100, 100, 200},
+            {200, 100, 100, 100, 500},
             {100, 100, 400, 100, 100},
-            {100, 400, 4000, 400, 100},
-            {100, 100, 400, 100, 100},
-            {200, 100, 100, 100, 200}
+            {100, 400, 2000, 400, 100},
+            {100, 100, 400, 0, 0},
+            {200, 100, 100, 0, 200}
     };
 
     private final static int[][] jobsByZoneTotal = {
-            {200, 100, 100, 100, 200},
+            {200, 100, 100, 100, 500},
             {100, 100, 400, 100, 100},
-            {100, 400, 4000, 400, 100},
-            {100, 100, 400, 100, 100},
-            {200, 100, 100, 100, 200}
+            {100, 400, 2000, 400, 100},
+            {100, 100, 400, 0, 0},
+            {200, 100, 100, 0, 200}
     };
 
     public static void main(String[] args) {
 
-        Properties.initializeProperties("useCases/fabiland/input/base/base.properties");
+        Properties.initializeProperties(scenarioFolderRoot + "/base.properties");
         DwellingFactory ddFactory = new DwellingFactoryImpl();
         HouseholdFactory hhFactory = new HouseholdFactoryImpl();
         PersonFactory ppFactory = new PersonFactoryImpl();
@@ -70,16 +100,16 @@ public class CreatePopulation {
             int row = (zoneId - 1) / 5;
             int col = (zoneId - 1) % 5;
 
-            double x1 = col * 5000 - 12500;
-            double y1 = 20000 - 12500 - row * 5000;
+            double x1 = col * centroidOffset - 12500;
+            double y1 = 20000 - 12500 - row * centroidOffset;
 
-            Random rnd = new Random();
+            Random rnd = new Random(4711);
             int population = householdsByZone[row][col];
 
             Counter counter1 = new Counter("Household ");
             for (int i = 0; i < population; i++) {
-                double x = x1 + 2000 + rnd.nextInt(1000);
-                double y = y1 + 2000 + rnd.nextInt(1000);
+                double x = x1 + ((centroidOffset - sideLengthHorizonal) / 2.) + rnd.nextInt(sideLengthHorizonal);
+                double y = y1 + ((centroidOffset - sideLengthVertical) / 2.) + rnd.nextInt(sideLengthVertical);
                 DwellingType type = SandboxDwellingType.SF;
                 int price = 1000;
                 if (i >= population / 2) {
@@ -227,17 +257,17 @@ public class CreatePopulation {
             int row = (zoneId - 1) / 5;
             int col = (zoneId - 1) % 5;
 
-            double x1 = col * 5000 - 12500;
-            double y1 = 20000 - 12500 - row * 5000;
+            double x1 = col * centroidOffset - 12500;
+            double y1 = 20000 - 12500 - row * centroidOffset;
 
-            Random rnd = new Random();
+            Random rnd = new Random(4712);
             int population = householdsByZone[row][col];
             int vacantDd = (int) (0.05 * population);
             int vacantJj = (int) (0.05 * jobsByZoneTotal[row][col]);
 
             for (int i = 0; i < vacantDd; i++) {
-                double x = x1 + 2000 + rnd.nextInt(1000);
-                double y = y1 + 2000 + rnd.nextInt(1000);
+                double x = x1 + ((centroidOffset - sideLengthHorizonal) / 2.) + rnd.nextInt(sideLengthHorizonal);
+                double y = y1 + ((centroidOffset - sideLengthVertical) / 2.) + rnd.nextInt(sideLengthVertical);
                 DwellingType type = SandboxDwellingType.MF;
                 int price = 500;
                 if (rnd.nextDouble() < 0.5) {
@@ -251,8 +281,8 @@ public class CreatePopulation {
             }
 
             for (int i = 0; i < vacantJj; i++) {
-                double x = x1 + 2000 + rnd.nextInt(1000);
-                double y = y1 + 2000 + rnd.nextInt(1000);
+                double x = x1 + ((centroidOffset - sideLengthHorizonal) / 2.) + rnd.nextInt(sideLengthHorizonal);
+                double y = y1 + ((centroidOffset - sideLengthVertical) / 2.) + rnd.nextInt(sideLengthVertical);
                 Job job = jjFactory.createJob(jjId, zoneId, new Coordinate(x, y), -1, "IND");
                 jobData.addJob(job);
                 jjId++;
@@ -261,10 +291,10 @@ public class CreatePopulation {
         }
 
 
-        new DefaultDwellingWriter(dwellingData.getDwellings()).writeDwellings("useCases/fabiland/input/base/microData/dd_0.csv");
-        new DefaultHouseholdWriter(householdData.getHouseholds()).writeHouseholds("useCases/fabiland/input/base/microData/hh_0.csv");
-        new DefaultPersonWriter(householdData).writePersons("useCases/fabiland/input/base/microData/pp_0.csv");
-        new DefaultJobWriter(jobData).writeJobs("useCases/fabiland/input/base/microData/jj_0.csv");
+        new DefaultDwellingWriter(dwellingData.getDwellings()).writeDwellings(scenarioFolderRoot + "/microData/dd_0.csv");
+        new DefaultHouseholdWriter(householdData.getHouseholds()).writeHouseholds(scenarioFolderRoot + "/microData/hh_0.csv");
+        new DefaultPersonWriter(householdData).writePersons(scenarioFolderRoot + "/microData/pp_0.csv");
+        new DefaultJobWriter(jobData).writeJobs(scenarioFolderRoot + "/microData/jj_0.csv");
     }
 
     public static Job getJob(JobFactory jjFactory, int jjId, int ppId) {
@@ -282,11 +312,11 @@ public class CreatePopulation {
             int row = (zoneId - 1) / 5;
             int col = (zoneId - 1) % 5;
 
-            double x1 = col * 5000 - 12500;
-            double y1 = 20000 - 12500 - row * 5000;
+            double x1 = col * centroidOffset - 12500;
+            double y1 = 20000 - 12500 - row * centroidOffset;
 
-            double x = x1 + 2000 + rnd.nextInt(1000);
-            double y = y1 + 2000 + rnd.nextInt(1000);
+            double x = x1 + ((centroidOffset - sideLengthHorizonal) / 2.) + rnd.nextInt(sideLengthHorizonal);
+            double y = y1 + ((centroidOffset - sideLengthVertical) / 2.) + rnd.nextInt(sideLengthVertical);
 
             currentJobsByZone[row][col] = Math.max(0, currentJobsByZone[row][col]-1);
 
