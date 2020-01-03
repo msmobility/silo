@@ -8,8 +8,8 @@ getwd()
 # read relocation for specific year
 year <- 0
 # scenarioName <- 'base'
-scenarioName <- 'unrestrictedDev'
-# scenarioName <- 'base_less-pop'
+# scenarioName <- 'unrestrictedDev'
+scenarioName <- 'pt-1line'
 
 zones <- read.csv(paste("../scenarios/",scenarioName,"/input/zoneSystem.csv", sep=","))
 
@@ -32,42 +32,39 @@ relocationDriversLicense2 <- relocation %>% filter(relocation$licenses == reloca
 par(mfrow=c(3,2))
 
 # plot relative frequencies of target zones of relocation
-abc <- relocationWithcarAndWorkers$newZone
-hist(abc, breaks = c(0.5:25.5), freq = FALSE, xaxt="n", ylim=c(0,0.8), xlab="Zone id", ylab = "Share of Relocations", main ="Distribution of Relocations by Zone - Workers with car")
+hist(relocationWithcarAndWorkers$newZone, breaks = c(0.5:25.5), freq = FALSE, xaxt="n", ylim=c(0,0.7), xlab="Zone id", ylab = "Share of Relocations", main ="Distribution of Relocations by Zone - Workers with car")
 xtick<-seq(1, 25, by=1)
 text(x=xtick,  par("usr")[3], labels = xtick, srt = 0, pos = 1, xpd = TRUE)
 
-hist(relocationWithoutcarAndWorkers$newZone, breaks = c(0.5:25.5), freq = FALSE,xaxt="n", ylim=c(0,0.8), xlab="Zone id", ylab = "Share of Relocations", main ="Distribution of Relocations by Zone - Workers without car")
+hist(relocationWithoutcarAndWorkers$newZone, breaks = c(0.5:25.5), freq = FALSE,xaxt="n", ylim=c(0,0.7), xlab="Zone id", ylab = "Share of Relocations", main ="Distribution of Relocations by Zone - Workers without car")
 xtick<-seq(1, 25, by=1)
 text(x=xtick,  par("usr")[3], labels = xtick, srt = 0, pos = 1, xpd = TRUE)
 
-hist(relocationWithcarNoWorkers$newZone, breaks = c(0.5:25.5), freq = FALSE,xaxt="n", ylim=c(0,0.8), xlab="Zone id", ylab = "Share of Relocations", main ="Distribution of Relocations by Zone - Non-workers with car")
+hist(relocationWithcarNoWorkers$newZone, breaks = c(0.5:25.5), freq = FALSE,xaxt="n", ylim=c(0,0.7), xlab="Zone id", ylab = "Share of Relocations", main ="Distribution of Relocations by Zone - Non-workers with car")
 xtick<-seq(1, 25, by=1)
 text(x=xtick,  par("usr")[3], labels = xtick, srt = 0, pos = 1, xpd = TRUE)
 
-hist(relocationWithoutcarNoWorkers$newZone, breaks = c(0.5:25.5), freq = FALSE,xaxt="n",ylim=c(0,0.8), xlab="Zone id", ylab = "Share of Relocations", main ="Distribution of Relocations by Zone - Non-workers without car")
+hist(relocationWithoutcarNoWorkers$newZone, breaks = c(0.5:25.5), freq = FALSE,xaxt="n",ylim=c(0,0.7), xlab="Zone id", ylab = "Share of Relocations", main ="Distribution of Relocations by Zone - Non-workers without car")
 xtick<-seq(1, 25, by=1)
 text(x=xtick,  par("usr")[3], labels = xtick, srt = 0, pos = 1, xpd = TRUE)
-
-
 
 # 3 rows, 2 columns of plots
 par(mfrow=c(3,2))
 
 # plot absolute numbers of target zones of relocation
-hist(relocationWithcarAndWorkers$newZone, breaks = c(0.5:25.5), xaxt="n", ylim=c(0,50), xlab="Zone id", ylab = "Relocations", main ="Distribution of Relocations by Zone - Workers with car")
+hist(relocationWithcarAndWorkers$newZone, breaks = c(0.5:25.5), xaxt="n", ylim=c(0,60), xlab="Zone id", ylab = "Relocations", main ="Distribution of Relocations by Zone - Workers with car")
 xtick<-seq(1, 25, by=1)
 text(x=xtick,  par("usr")[3], labels = xtick, srt = 0, pos = 1, xpd = TRUE)
 
-hist(relocationWithoutcarAndWorkers$newZone, breaks = c(0.5:25.5), xaxt="n", ylim=c(0,50), xlab="Zone id", ylab = "Relocations", main ="Distribution of Relocations by Zone - Workers without car")
+hist(relocationWithoutcarAndWorkers$newZone, breaks = c(0.5:25.5), xaxt="n", ylim=c(0,60), xlab="Zone id", ylab = "Relocations", main ="Distribution of Relocations by Zone - Workers without car")
 xtick<-seq(1, 25, by=1)
 text(x=xtick,  par("usr")[3], labels = xtick, srt = 0, pos = 1, xpd = TRUE)
 
-hist(relocationWithcarNoWorkers$newZone, breaks = c(0.5:25.5), xaxt="n", ylim=c(0,50), xlab="Zone id", ylab = "Relocations", main ="Distribution of Relocations by Zone - Non-workers with car")
+hist(relocationWithcarNoWorkers$newZone, breaks = c(0.5:25.5), xaxt="n", ylim=c(0,60), xlab="Zone id", ylab = "Relocations", main ="Distribution of Relocations by Zone - Non-workers with car")
 xtick<-seq(1, 25, by=1)
 text(x=xtick,  par("usr")[3], labels = xtick, srt = 0, pos = 1, xpd = TRUE)
 
-hist(relocationWithoutcarNoWorkers$newZone, breaks = c(0.5:25.5), xaxt="n",ylim=c(0,50), xlab="Zone id", ylab = "Relocations", main ="Distribution of Relocations by Zone - Non-workers without car")
+hist(relocationWithoutcarNoWorkers$newZone, breaks = c(0.5:25.5), xaxt="n",ylim=c(0,60), xlab="Zone id", ylab = "Relocations", main ="Distribution of Relocations by Zone - Non-workers without car")
 xtick<-seq(1, 25, by=1)
 text(x=xtick,  par("usr")[3], labels = xtick, srt = 0, pos = 1, xpd = TRUE)
 
@@ -94,13 +91,14 @@ relocationWithoutcarNoWorkersMatrix = matrix(relocationWithoutcarNoWorkersCounts
 # z[1] <- 100
 
 # box types: “b”, “b2”, “f”, “g”, “bl”, “bl2”, “u”, “n”
-hist3D(x,y,relocationWithcarAndWorkersMatrix, zlim=c(0,50), clim=c(0,50), theta=25, phi=15, axes=FALSE,label=FALSE, nticks=5, 
+zExtent = c(0,120)
+hist3D(x,y,relocationWithcarAndWorkersMatrix, zlim=zExtent, clim=zExtent, theta=25, phi=15, axes=FALSE,label=FALSE, nticks=5, 
        ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="a) Workers with car")
-hist3D(x,y,relocationWithoutcarAndWorkersMatrix, zlim=c(0,50), clim=c(0,50), theta=25, phi=15, axes=FALSE,label=FALSE, nticks=5, 
+hist3D(x,y,relocationWithoutcarAndWorkersMatrix, zlim=zExtent, clim=zExtent, theta=25, phi=15, axes=FALSE,label=FALSE, nticks=5, 
        ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="b) Workers without car")
-hist3D(x,y,relocationWithcarNoWorkersMatrix, zlim=c(0,50), clim=c(0,50), theta=25, phi=15, axes=FALSE,label=FALSE, nticks=5, 
+hist3D(x,y,relocationWithcarNoWorkersMatrix, zlim=zExtent, clim=zExtent, theta=25, phi=15, axes=FALSE,label=FALSE, nticks=5, 
        ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="c) Non-workers with car")
-hist3D(x,y,relocationWithoutcarNoWorkersMatrix, zlim=c(0,50), clim=c(0,50), theta=25, phi=15, axes=FALSE,label=FALSE, nticks=5, 
+hist3D(x,y,relocationWithoutcarNoWorkersMatrix, zlim=zExtent, clim=zExtent, theta=25, phi=15, axes=FALSE,label=FALSE, nticks=5, 
        ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="d) Non-workers without car")
 
 
