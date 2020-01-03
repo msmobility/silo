@@ -21,10 +21,10 @@ import java.util.Random;
 public class CreatePopulation {
     private final static Logger logger = Logger.getLogger(CreatePopulation.class);
 
-    private final static String scenarioFolderRoot = "useCases/fabiland/scenarios/unrestricted-dev";
+    private final static String scenarioFolderRoot = "useCases/fabiland/scenarios/base";
 
-    private final static int sideLengthHorizonal = 5000;
-    private final static int sideLengthVertical = 5000;
+    private final static int sideLengthHorizonal = 1000;
+    private final static int sideLengthVertical = 1000;
     private final static int centroidOffset = 5000;
 
 
@@ -79,6 +79,7 @@ public class CreatePopulation {
     public static void main(String[] args) {
 
         Properties.initializeProperties(scenarioFolderRoot + "/base.properties");
+        //Properties.initializeProperties(scenarioFolderRoot + "/unrestrictedDev.properties");
         DwellingFactory ddFactory = new DwellingFactoryImpl();
         HouseholdFactory hhFactory = new HouseholdFactoryImpl();
         PersonFactory ppFactory = new PersonFactoryImpl();
