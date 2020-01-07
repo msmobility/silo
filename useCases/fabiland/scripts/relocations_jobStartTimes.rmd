@@ -1,0 +1,162 @@
+---
+title: Relocations in 2011 for different job start times
+output: html_document
+---
+
+
+```{r echo = FALSE, warning = FALSE, error = FALSE, message = FALSE}
+library(readr)
+library(dplyr)
+library(ggplot2)
+
+###############################################################################
+getPieChart <- function(df, title) {
+  pie <- ggplot(df, aes(x = "", fill = factor(zoneclass))) + 
+    geom_bar(width = 1) +
+    theme(axis.line = element_blank(), 
+          plot.title = element_text(hjust=0.5)) + 
+    labs(fill="class", 
+         x=NULL, 
+         y=NULL, 
+         title=title)
+  
+  pie <- pie + coord_polar(theta = "y", start=0)
+  return (pie)
+}
+
+###############################################################################
+
+
+# read zone system file
+zones <- read.csv("C:/Users/Nico/tum/fabilut/svn/fabilut/muc/sm-ssa50/input/zoneSystem.csv", sep=",")
+zonesMuc <- zones %>% filter(zones$Name == "München-Landeshauptstadt")
+
+zonesAug <- zones %>% filter(zones$Landkreis_ID == 9761)
+zonesRos <- zones %>% filter(zones$Landkreis_ID == 9187)
+zonesLands <- zones %>% filter(zones$Landkreis_ID == 9261)
+zonesIng <- zones %>% filter(zones$Landkreis_ID == 9161)
+
+
+###############################################################################
+
+
+hhbase <- read_csv("C:/Users/Nico/tum/fabilut/svn/fabilut/muc/sm-b50/microData/hh_2011.csv")
+ddbase <- read_csv("C:/Users/Nico/tum/fabilut/svn/fabilut/muc/sm-b50/microData/dd_2011.csv")
+ppbase <- read_csv("C:/Users/Nico/tum/fabilut/svn/fabilut/muc/sm-b50/microData/pp_2011.csv")
+jjbase <- read_csv("C:/Users/Nico/tum/fabilut/svn/fabilut/muc/sm-b50/microData/jj_2011.csv")
+
+year <- 2011
+relocation <- read_csv(paste("C:/Users/Nico/tum/fabilut/svn/fabilut/muc/sm-b50/scenOutput/sm-b50/siloResults/relocation/relocation",year,".csv", sep=""))
+relocation <- relocation %>% inner_join(ddbase, by=c("newDd"="id"))
+
+relocation$zoneclass <- ifelse(relocation$zone %in% zonesMuc$Zone, 'Munich',ifelse(relocation$zone %in% zonesAug$Zone,'Augsburg', ifelse(relocation$zone %in% zonesIng$Zone, 'Ingolstadt', ifelse( relocation$zone %in% zonesLands$Zone, 'Landshut', ifelse(relocation$zone %in% zonesRos$Zone, 'Rosenheim', 'Rural')))))
+relocation <- relocation %>% inner_join(hhbase, by = c("hh"="id"))
+
+ppjj <- ppbase %>% inner_join(jjbase, by=c("id"="personId"))
+ppjjfruh <- ppjj %>% filter(ppjj$startTime < 14400)
+ppjjspat <- ppjj %>% filter(ppjj$startTime > 72000)
+ppjjsonst <- ppjj %>% filter(ppjj$startTime < 72000 & ppjj$startTime > 14400)
+
+ppjjfruh <- ppjjfruh %>% group_by(hhid) %>% summarise(n()) 
+ppjjspat <- ppjjspat %>% group_by(hhid) %>% summarise(n()) 
+ppjjsonst <- ppjjsonst %>% group_by(hhid) %>% summarise(n()) 
+
+
+hhppjjfruh <- ppjjfruh %>% inner_join(relocation, by = c("hhid"="hh"))
+hhppjjspat <- ppjjspat %>% inner_join(relocation, by = c("hhid"="hh"))
+hhppjjsonst <- ppjjsonst %>% inner_join(relocation, by = c("hhid"="hh"))
+
+hhppjjfruhnocar <- hhppjjfruh %>% filter(hhppjjfruh$autos == 0)
+hhppjjspatnocar <- hhppjjspat %>% filter(hhppjjspat$autos == 0)
+hhppjjsonstnocar <- hhppjjsonst %>% filter(hhppjjsonst$autos == 0)
+
+pie1 <- getPieChart(hhppjjsonst, "Relocations 4am - 8pm")
+pie2 <- getPieChart(hhppjjfruh, "Relocations 12am - 4am")
+pie3 <- getPieChart(hhppjjspat, "Relocations 8pm - 12am")
+pie4 <- getPieChart(hhppjjsonstnocar, "Relocations 4am - 8pm | No car")
+pie5 <- getPieChart(hhppjjfruhnocar, "Relocations 12am - 4am | No car")
+pie6 <- getPieChart(hhppjjspatnocar, "Relocations 8pm - 12am | No car")
+
+library(gridExtra)
+```
+
+```{r fig.width=12}
+grid.arrange(pie1,pie2,pie3,pie4,pie5,pie6, nrow = 2)
+```
+```{r echo = FALSE, warning = FALSE, error = FALSE, message = FALSE}
+nrow(hhppjjfruh[hhppjjfruh$zoneclass == "Munich",])/nrow(hhppjjfruh)
+nrow(hhppjjfruh[hhppjjfruh$zoneclass == "Rural",])/nrow(hhppjjfruh)
+nrow(hhppjjfruhnocar[hhppjjfruhnocar$zoneclass == "Munich",])/nrow(hhppjjfruhnocar)
+nrow(hhppjjfruhnocar[hhppjjfruhnocar$zoneclass == "Rural",])/nrow(hhppjjfruhnocar)
+
+
+
+nrow(hhppjjsonst[hhppjjsonst$zoneclass == "Munich",])/nrow(hhppjjsonst)
+nrow(hhppjjsonst[hhppjjsonst$zoneclass == "Rural",])/nrow(hhppjjsonst)
+nrow(hhppjjsonstnocar[hhppjjsonstnocar$zoneclass == "Munich",])/nrow(hhppjjsonstnocar)
+nrow(hhppjjsonstnocar[hhppjjsonstnocar$zoneclass == "Rural",])/nrow(hhppjjsonstnocar)
+
+nrow(hhppjjspat[hhppjjspat$zoneclass == "Munich",])/nrow(hhppjjspat)
+nrow(hhppjjspat[hhppjjspat$zoneclass == "Rural",])/nrow(hhppjjspat)
+
+
+
+###########################################################################
+
+hhbase <- read_csv("C:/Users/Nico/tum/fabilut/svn/fabilut/muc/sm-ssa50/microData/hh_2011.csv")
+ddbase <- read_csv("C:/Users/Nico/tum/fabilut/svn/fabilut/muc/sm-ssa50/microData/dd_2011.csv")
+ppbase <- read_csv("C:/Users/Nico/tum/fabilut/svn/fabilut/muc/sm-ssa50/microData/pp_2011.csv")
+jjbase <- read_csv("C:/Users/Nico/tum/fabilut/svn/fabilut/muc/sm-ssa50/microData/jj_2011.csv")
+
+year <- 2011
+relocation <- read_csv(paste("C:/Users/Nico/tum/fabilut/svn/fabilut/muc/sm-ssa50/scenOutput/sm-ssla50/siloResults/relocation/relocation",year,".csv", sep=""))
+relocation <- relocation %>% inner_join(ddbase, by=c("newDd"="id"))
+
+relocation$zoneclass <- ifelse(relocation$zone %in% zonesMuc$Zone, 'Munich',ifelse(relocation$zone %in% zonesAug$Zone,'Augsburg', ifelse(relocation$zone %in% zonesIng$Zone, 'Ingolstadt', ifelse( relocation$zone %in% zonesLands$Zone, 'Landshut', ifelse(relocation$zone %in% zonesRos$Zone, 'Rosenheim', 'Rural')))))
+relocation <- relocation %>% inner_join(hhbase, by = c("hh"="id"))
+
+ppjj <- ppbase %>% inner_join(jjbase, by=c("id"="personId"))
+ppjjfruh <- ppjj %>% filter(ppjj$startTime < 14400)
+ppjjspat <- ppjj %>% filter(ppjj$startTime > 72000)
+ppjjsonst <- ppjj %>% filter(ppjj$startTime < 72000 & ppjj$startTime > 14400)
+
+ppjjfruh <- ppjjfruh %>% group_by(hhid) %>% summarise(n()) 
+ppjjspat <- ppjjspat %>% group_by(hhid) %>% summarise(n()) 
+ppjjsonst <- ppjjsonst %>% group_by(hhid) %>% summarise(n()) 
+
+
+hhppjjfruh <- ppjjfruh %>% inner_join(relocation, by = c("hhid"="hh"))
+hhppjjspat <- ppjjspat %>% inner_join(relocation, by = c("hhid"="hh"))
+hhppjjsonst <- ppjjsonst %>% inner_join(relocation, by = c("hhid"="hh"))
+
+hhppjjfruhnocar <- hhppjjfruh %>% filter(hhppjjfruh$autos == 0)
+hhppjjspatnocar <- hhppjjspat %>% filter(hhppjjspat$autos == 0)
+hhppjjsonstnocar <- hhppjjsonst %>% filter(hhppjjsonst$autos == 0)
+
+theme_set(theme_bw())
+pie7 <- getPieChart(hhppjjsonst, "Relocations 4am - 8pm")
+pie8 <- getPieChart(hhppjjfruh, "Relocations 12am - 4am")
+pie9 <- getPieChart(hhppjjspat, "Relocations 8pm - 12am")
+pie10 <- getPieChart(hhppjjsonstnocar, "Relocations 4am - 8pm | No car")
+pie11 <- getPieChart(hhppjjfruhnocar, "Relocations 12am - 4am | No car")
+pie12 <- getPieChart(hhppjjspatnocar, "Relocations 8pm - 12am | No car")
+
+library(gridExtra)
+
+grid.arrange(pie1,pie2,pie3,pie4,pie5,pie6,pie7,pie8,pie9,pie10,pie11,pie12, nrow = 4)
+
+nrow(hhppjjfruh[hhppjjfruh$zoneclass == "Munich",])/nrow(hhppjjfruh)
+nrow(hhppjjfruh[hhppjjfruh$zoneclass == "Rural",])/nrow(hhppjjfruh)
+nrow(hhppjjfruhnocar[hhppjjfruhnocar$zoneclass == "Munich",])/nrow(hhppjjfruhnocar)
+nrow(hhppjjfruhnocar[hhppjjfruhnocar$zoneclass == "Rural",])/nrow(hhppjjfruhnocar)
+
+
+
+nrow(hhppjjsonst[hhppjjsonst$zoneclass == "Munich",])/nrow(hhppjjsonst)
+nrow(hhppjjsonst[hhppjjsonst$zoneclass == "Rural",])/nrow(hhppjjsonst)
+nrow(hhppjjsonstnocar[hhppjjsonstnocar$zoneclass == "Munich",])/nrow(hhppjjsonstnocar)
+nrow(hhppjjsonstnocar[hhppjjsonstnocar$zoneclass == "Rural",])/nrow(hhppjjsonstnocar)
+
+
+```
+
