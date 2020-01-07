@@ -91,7 +91,7 @@ public class SiloNoiseTest {
         avg.addPerson(new PersonMuc(1, 23, Gender.MALE, Occupation.UNEMPLOYED, PersonRole.MARRIED, -1, 15000));
         avg.addPerson(new PersonMuc(2, 23, Gender.FEMALE, Occupation.UNEMPLOYED, PersonRole.MARRIED, -1, 15000));
 
-        HuntNoiseSensitiveDwellingUtilityStrategy strategy = new HuntNoiseSensitiveDwellingUtilityStrategy(new TravelTimes() {
+        final TravelTimes travelTimes = new TravelTimes() {
             @Override
             public double getTravelTime(Location location, Location location1, double v, String s) {
                 return 10;
@@ -116,10 +116,13 @@ public class SiloNoiseTest {
             public TravelTimes duplicate() {
                 return null;
             }
-        }, dataContainer.getJobDataManager(), dataContainer.getRealEstateDataManager(), null);
+        };
 
-        BufferedWriter writer = new BufferedWriter(new FileWriter("C:/users/nico/desktop/noiseutil6.csv"));
-        writer.write("noise,price,type,poorUitl,mediumUtil,richUtil");
+        HuntNoiseSensitiveDwellingUtilityStrategy strategy = new HuntNoiseSensitiveDwellingUtilityStrategy(travelTimes, dataContainer.getJobDataManager(), dataContainer.getRealEstateDataManager(), null);
+        HuntNoiseInsensitiveDwellingUtilityStrategy strategyIns = new HuntNoiseInsensitiveDwellingUtilityStrategy(travelTimes, dataContainer.getJobDataManager(), dataContainer.getRealEstateDataManager(), null);
+
+        BufferedWriter writer = new BufferedWriter(new FileWriter("C:/users/nico/desktop/noiseutil9.csv"));
+        writer.write("noise,price,type,poorUitl,mediumUtil,richUtil,poorUitlIn,mediumUtilIn,richUtilIn");
         writer.newLine();
 
         Random random = new Random(42);
@@ -135,8 +138,12 @@ public class SiloNoiseTest {
             final double v = strategy.calculateHousingUtility(poor, dwelling);
             final double v2 = strategy.calculateHousingUtility(avg, dwelling);
             final double v3 = strategy.calculateHousingUtility(rich, dwelling);
+
+            final double v4 = strategyIns.calculateHousingUtility(poor, dwelling);
+            final double v5 = strategyIns.calculateHousingUtility(avg, dwelling);
+            final double v6 = strategyIns.calculateHousingUtility(rich, dwelling);
             writer.write(((NoiseDwelling)dwelling).getNoiseImmission()+","+dwelling.getPrice()
-                    +","+dwelling.getType()+","+v+","+v2+","+v3);
+                    +","+dwelling.getType()+","+v+","+v2+","+v3+","+v4+","+v5+","+v6);
             writer.newLine();
         }
         writer.flush();

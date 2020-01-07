@@ -166,6 +166,11 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
         noiseParameters.setScaleFactor(20);
         config.qsim().setEndTime(24 * 60 * 60);
 
+        noiseParameters.setConsiderNoiseBarriers(true);
+        noiseParameters.setNoiseBarriersFilePath("C:\\Users\\Nico\\tum\\diss\\noise\\aggBuildingPoly.geojson");
+        noiseParameters.setNoiseBarriersSourceCRS("EPSG:31468");
+        config.global().setCoordinateSystem("EPSG:31468");
+
         NoiseOfflineCalculation noiseOfflineCalculation = new NoiseOfflineCalculation(scenario, outputDirectoryRoot);
         noiseOfflineCalculation.run();
     }
@@ -218,6 +223,12 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
         noiseParameters.setWriteOutputIteration(0);
         noiseParameters.setScaleFactor(20);
         config.qsim().setEndTime(24 * 60 * 60);
+
+        noiseParameters.setConsiderNoiseBarriers(true);
+        noiseParameters.setNoiseBarriersFilePath("C:\\Users\\Nico\\tum\\diss\\noise\\aggBuildingPoly.geojson");
+        noiseParameters.setNoiseBarriersSourceCRS("EPSG:31468");
+        config.global().setCoordinateSystem("EPSG:31468");
+
 
         NoiseOfflineCalculation noiseOfflineCalculation = new NoiseOfflineCalculation(scenario, path.getParent().toString());
         noiseOfflineCalculation.run();

@@ -68,18 +68,6 @@ public class HuntNoiseSensitiveDwellingUtilityStrategy implements HousingStrateg
 
     //----------------------------------------------------------------------
 
-    /**
-     * Indices:
-     * [0] Never bad  [1] Bad 1 day per year [2] Bad 1 day per month [3] Bad 1 day per week
-     * [0] average
-     * [1] low inc
-     * [2] high inc
-     */
-    private static double[][] airQualityUtilAvg = {
-            {0, -0.2446, -0.5092, -0.9796},
-            {0, -0.2299, -0.5264, -0.8504},
-            {0, -0.3073, -0.2879, -1.3150}
-    };
 
 
     /**
@@ -206,15 +194,12 @@ public class HuntNoiseSensitiveDwellingUtilityStrategy implements HousingStrateg
     private double getNoiseAdjustedPrice(NoiseDwelling dwelling) {
         double price = dwelling.getPrice() / 0.68;
         final double noiseImmission = dwelling.getNoiseImmission();
-//        if (noiseImmission > 55) {
-//            if (noiseImmission > 65) {
-//                price *= (1 - LOUD_NOISE_DISCOUNT);
-//            } else {
-//                price *= (1 - MEDIUM_NOISE_DISCOUNT);
-//            }
-//        }
-        if(noiseImmission > 50) {
-            price -= price * ((noiseImmission - 50) * 0.004);
+        if (noiseImmission > 55) {
+            if (noiseImmission > 65) {
+                price *= (1 - LOUD_NOISE_DISCOUNT);
+            } else {
+                price *= (1 - MEDIUM_NOISE_DISCOUNT);
+            }
         }
         return price;
     }
@@ -263,8 +248,8 @@ public class HuntNoiseSensitiveDwellingUtilityStrategy implements HousingStrateg
     }
 
     private int translateDwellingType(Dwelling dwelling) {
-//        final DwellingType type = dwelling.getType();
-        final DwellingType type = MF234;
+        final DwellingType type = dwelling.getType();
+//        final DwellingType type = MF234;
 
 
         if(type.equals(DefaultDwellingTypeImpl.SFD)) {

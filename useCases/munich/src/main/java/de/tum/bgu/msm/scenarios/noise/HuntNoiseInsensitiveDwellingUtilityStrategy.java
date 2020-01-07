@@ -30,18 +30,9 @@ import java.util.Objects;
  */
 public class HuntNoiseInsensitiveDwellingUtilityStrategy implements HousingStrategy {
 
-    private static final double MEDIUM_NOISE_DISCOUNT = 0.056;
-    private static final double LOUD_NOISE_DISCOUNT = 0.096;
-
     private static final int LOW_INCOME = 1;
     private static final int HIGH_INCOME = 2;
     private static final int AVERAGE_INCOME = 0;
-
-    private static final int NO_NOISE = 0;
-    private static final int OCCASIONALLY_NOTICEABLE_NOISE = 1;
-    private static final int CONSTANT_HUM_NOISE = 2;
-    private static final int SOMETIMES_DISTURBING_NOISE = 3;
-    private static final int FREQUENTLY_DISTURBING_NOISE = 4;
 
     private static final int SINGLE_FAMILY = 0;
     private static final int DUPLEX = 1;
@@ -60,40 +51,9 @@ public class HuntNoiseInsensitiveDwellingUtilityStrategy implements HousingStrat
     private static double[][] dwellingTypeUtil = {
             {0, -1.0570, -1.1130, -1.6340, -1.7940},
             {0, -0.8783, -0.9566, -0.9895, -0.9514},
-            {0, -1.0570, -1.1130, -1.6340, -1.7940}
+            {0, -1.922, -2.035, -2.841, -2.729}
     };
 
-
-    //----------------------------------------------------------------------
-
-    /**
-     * Indices:
-     * [0] Never bad  [1] Bad 1 day per year [2] Bad 1 day per month [3] Bad 1 day per week
-     * [0] average
-     * [1] low inc
-     * [2] high inc
-     */
-    private static double[][] airQualityUtilAvg = {
-            {0, -0.2446, -0.5092, -0.9796},
-            {0, -0.2299, -0.5264, -0.8504},
-            {0, -0.3073, -0.2879, -1.3150}
-    };
-
-
-    /**
-     * Indices:
-     * [0] None [1] Occasionally just noticeable [2] Constant faint hum [3] Sometimes Disturbing [4] Frequently disturbing
-     * [0] average
-     * [1] low inc
-     * [2] high inc
-     */
-    private static double[][] trafficNoiseUtil = {
-            {0, -0.1694, -0.7165, -0.5348, -1.35},
-            {0, -0.2758, -0.8354, -0.6934, -1.0250},
-            {0, -0.3192, -0.9886, -1.0180, -1.8230}
-    };
-
-    //----------------------------------------------------------------------
 
     //----------------------------------------------------------------------
 
@@ -126,9 +86,7 @@ public class HuntNoiseInsensitiveDwellingUtilityStrategy implements HousingStrat
 
     @Override
     public boolean isHouseholdEligibleToLiveHere(Household household, Dwelling dd) {
-        int numberOfPersons = household.getHhSize();
-        int numberOfBedrooms = dd.getBedrooms();
-        return (numberOfBedrooms + 1 >= numberOfPersons);
+        return true;
     }
 
     @Override
@@ -201,54 +159,26 @@ public class HuntNoiseInsensitiveDwellingUtilityStrategy implements HousingStrat
     }
 
     private double getNoiseAdjustedPrice(NoiseDwelling dwelling) {
-        double price = dwelling.getPrice();
-        return price;
-    }
-
-    double calculateCurrentUtility(Household household, NoiseDwelling dwelling) {
-
-        double price = dwelling.getPrice();
-        final double noiseImmission = dwelling.getNoiseImmission();
-        if (noiseImmission > 55) {
-            if (noiseImmission > 65) {
-                price *= (1 - LOUD_NOISE_DISCOUNT);
-            } else {
-                price *= (1 - MEDIUM_NOISE_DISCOUNT);
-            }
-        }
-
-        double carTravelTime = 0;
-        double ptTravelTime = 0;
-        for (Person pp : household.getPersons().values()) {
-            if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
-                JobMuc workLocation = Objects.requireNonNull((JobMuc) jobDataManager.getJobFromId(pp.getJobId()));
-                carTravelTime = (int) travelTimes.getTravelTime(dwelling, workLocation, workLocation.getStartTimeInSeconds().get(), TransportMode.car);
-                ptTravelTime = (int) travelTimes.getTravelTime(dwelling, workLocation, workLocation.getStartTimeInSeconds().get(), TransportMode.pt);
-                break;
-            }
-        }
-
-        final double util = calculateUtilityForAlternative(household, dwelling, price, carTravelTime, ptTravelTime);
-        return util;
+        return dwelling.getPrice() /0.68;
     }
 
     private double calculateUtilityForAlternative(Household household, NoiseDwelling dwelling,
                                     double priceDiff, double carTravelTimeDiff, double ptTravelTimeDiff) {
         int hhType = translateHouseholdType(household);
         int ddType = translateDwellingType(dwelling);
-        int noiseCat = translateLdenToNoiseCategory(dwelling.getNoiseImmission());
 
         double dwellingUtil = dwellingTypeUtil[hhType][ddType];
-        double noiseUtil = trafficNoiseUtil[hhType][noiseCat];
+        double noiseUtil = 0;
         double priceUtil = (priceDiff / 100.) * rentUtilPer100Increase[hhType];
         double carTravelTimeUtil = travelTimeUtilPer10minIncreaseAvg[hhType] * (carTravelTimeDiff / 10.);
         double ptTravelTimeUtil = travelTimeTransitUtilPer10minIncreaseAvg[hhType] * (ptTravelTimeDiff / 10.);
-        final double airQualityUtil = 0;
-        return dwellingUtil + airQualityUtil + noiseUtil + priceUtil + carTravelTimeUtil + ptTravelTimeUtil;
+        return dwellingUtil + noiseUtil + priceUtil + carTravelTimeUtil + ptTravelTimeUtil;
     }
 
     private int translateDwellingType(Dwelling dwelling) {
         final DwellingType type = dwelling.getType();
+//        final DwellingType type = MF234;
+
 
         if(type.equals(DefaultDwellingTypeImpl.SFD)) {
             return SINGLE_FAMILY;
@@ -262,11 +192,6 @@ public class HuntNoiseInsensitiveDwellingUtilityStrategy implements HousingStrat
             //can only happen for mobile home which shouldn't exist in muc
             return HIGHRISE;
         }
-    }
-
-
-    private int translateLdenToNoiseCategory(double lden) {
-        return NO_NOISE;
     }
 
     /**
