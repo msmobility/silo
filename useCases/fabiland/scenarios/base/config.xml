@@ -5,7 +5,7 @@
 		<param name="numberOfThreads" value="1" />
 	</module>
 	<module name="controler" >
-		<param name="lastIteration" value="30" />
+		<param name="lastIteration" value="10" />
 		<param name="overwriteFiles" value="deleteDirectoryIfExists" />
 	</module>
 	<module name="network" >
