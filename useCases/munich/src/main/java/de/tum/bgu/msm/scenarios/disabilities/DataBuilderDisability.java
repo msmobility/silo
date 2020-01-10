@@ -3,6 +3,7 @@ package de.tum.bgu.msm.scenarios.disabilities;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.accessibility.AccessibilityImpl;
 import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
+import de.tum.bgu.msm.data.accessibility.CommutingTimeProbabilityImpl;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.geo.DefaultGeoData;
 import de.tum.bgu.msm.data.geo.GeoData;
@@ -50,7 +51,7 @@ public class DataBuilderDisability {
                 break;
         }
 
-        CommutingTimeProbability commutingTimeProbability = new CommutingTimeProbability(properties);
+        CommutingTimeProbability commutingTimeProbability = new CommutingTimeProbabilityImpl(properties);
 
         //TODO: revise this!
         new JobType(properties.jobData.jobTypes);
