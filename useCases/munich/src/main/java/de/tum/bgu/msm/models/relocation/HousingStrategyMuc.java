@@ -86,7 +86,7 @@ public class HousingStrategyMuc implements HousingStrategy {
                               TravelTimes travelTimes,
                               DwellingProbabilityStrategy dwellingProbabilityStrategy,
                               DwellingUtilityStrategy dwellingUtilityStrategy,
-                              RegionUtilityStrategyMuc regionUtilityStrategyMuc, RegionProbabilityStrategy regionProbabilityStrategy) {
+                              RegionUtilityStrategyMuc regionUtilityStrategyMuc, RegionProbabilityStrategy regionProbabilityStrategy, SimpleCommuteModeChoice simpleCommuteModeChoice) {
         this.dataContainer = dataContainer;
         this.properties = properties;
         this.accessibility = dataContainer.getAccessibility();
@@ -97,7 +97,7 @@ public class HousingStrategyMuc implements HousingStrategy {
         this.dwellingUtilityStrategy = dwellingUtilityStrategy;
         this.regionUtilityStrategyMuc = regionUtilityStrategyMuc;
         this.regionProbabilityStrategy = regionProbabilityStrategy;
-        simpleCommuteModeChoice = new SimpleCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom());
+        this.simpleCommuteModeChoice = simpleCommuteModeChoice;
     }
 
     @Override
@@ -299,7 +299,7 @@ public class HousingStrategyMuc implements HousingStrategy {
     @Override
     public HousingStrategy duplicate() {
         TravelTimes travelTimes = this.travelTimes.duplicate();
-        final HousingStrategyMuc housingStrategyMuc = new HousingStrategyMuc(dataContainer, properties, travelTimes, dwellingProbabilityStrategy, dwellingUtilityStrategy, regionUtilityStrategyMuc, regionProbabilityStrategy);
+        final HousingStrategyMuc housingStrategyMuc = new HousingStrategyMuc(dataContainer, properties, travelTimes, dwellingProbabilityStrategy, dwellingUtilityStrategy, regionUtilityStrategyMuc, regionProbabilityStrategy, simpleCommuteModeChoice);
         housingStrategyMuc.regionalShareForeigners = this.regionalShareForeigners;
         housingStrategyMuc.hhByRegion = this.hhByRegion;
         housingStrategyMuc.utilityByIncomeByNationalityByRegion = this.utilityByIncomeByNationalityByRegion;

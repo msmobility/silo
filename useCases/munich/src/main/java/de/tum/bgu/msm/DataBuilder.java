@@ -16,6 +16,7 @@ import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.io.input.*;
 import de.tum.bgu.msm.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.scenarios.av.FlexibleCommuteTimeProbability;
 import de.tum.bgu.msm.schools.*;
 import org.matsim.core.config.Config;
 
@@ -50,7 +51,7 @@ public class DataBuilder {
                 throw new RuntimeException("Travel time not recognized! Please set property \"travel.time\" accordingly!");
         }
 
-        CommutingTimeProbability commutingTimeProbability = new CommutingTimeProbabilityImpl(properties);
+        CommutingTimeProbability commutingTimeProbability = new FlexibleCommuteTimeProbability();
 
         //TODO: revise this!
         new JobType(properties.jobData.jobTypes);

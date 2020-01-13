@@ -134,7 +134,7 @@ public class ModelBuilderMucAv {
         }
         switch (properties.transportModel.transportModelIdentifier) {
             case MITO_MATSIM:
-                scenarioAssembler = new MitoMatsimScenarioAssembler(dataContainer, properties, new MitoDataConverterMuc());
+                scenarioAssembler = new MitoMatsimScenarioAssembler(dataContainer, properties, new MitoDataConverterMucWithAVs());
                 transportModel = new MatsimTransportModel(dataContainer, config, properties, scenarioAssembler, matsimData);
                 break;
             case MATSIM:
