@@ -86,7 +86,8 @@ public class ModelBuilderMucAv {
                 new HousingStrategyMuc(dataContainer,
                         properties,
                         dataContainer.getTravelTimes(), new DefaultDwellingProbabilityStrategy(),
-                        new DwellingUtilityStrategyImpl(), new RegionUtilityStrategyMucImpl(), new RegionProbabilityStrategyImpl()), SiloUtil.provideNewRandom());
+                        new DwellingUtilityStrategyImpl(), new RegionUtilityStrategyMucImpl(), new RegionProbabilityStrategyImpl(),
+                        new AVSimpleCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom())), SiloUtil.provideNewRandom());
 
         CreateCarOwnershipModel carOwnershipModel = new CreateCarOwnershipModelMuc(dataContainer);
 

@@ -27,15 +27,15 @@ public class RunSiloMucAv {
             config = ConfigUtils.loadConfig(args[1]);
         }
         logger.info("Started SILO land use model for the Munich Metropolitan Area");
-        DataContainerWithSchools dataContainer = DataBuilder.getModelDataForMuc(properties, config);
-        DataBuilder.read(properties, dataContainer);
+        DataContainerWithSchools dataContainer = DataBuilderForAV.getModelDataForMuc(properties, config);
+        DataBuilderForAV.read(properties, dataContainer);
         ModelContainer modelContainer = ModelBuilderMucAv.getModelContainerAvForMuc(dataContainer, properties, config);
 
         SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
         model.addResultMonitor(new ResultsMonitorMuc(dataContainer, properties));
         model.addResultMonitor(new MultiFileResultsMonitor(dataContainer, properties));
         model.addResultMonitor(new HouseholdSatisfactionMonitor(dataContainer, properties, modelContainer));
-        model.addResultMonitor(new AVOwnershipResultsMonitor(modelContainer, properties));
+        model.addResultMonitor(new AVOwnershipResultsMonitor(modelContainer, dataContainer, properties));
         model.runModel();
         logger.info("Finished SILO.");
     }

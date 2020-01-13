@@ -1,4 +1,4 @@
-package de.tum.bgu.msm;
+package de.tum.bgu.msm.scenarios.av;
 
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.accessibility.AccessibilityImpl;
@@ -16,13 +16,12 @@ import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.io.input.*;
 import de.tum.bgu.msm.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.scenarios.av.FlexibleCommuteTimeProbability;
 import de.tum.bgu.msm.schools.*;
 import org.matsim.core.config.Config;
 
-public class DataBuilder {
+public class DataBuilderForAV {
 
-    private DataBuilder() {
+    private DataBuilderForAV() {
     }
 
     public static DataContainerWithSchools getModelDataForMuc(Properties properties, Config config) {
@@ -51,7 +50,7 @@ public class DataBuilder {
                 throw new RuntimeException("Travel time not recognized! Please set property \"travel.time\" accordingly!");
         }
 
-        CommutingTimeProbability commutingTimeProbability = new CommutingTimeProbabilityImpl(properties);
+        CommutingTimeProbability commutingTimeProbability = new FlexibleCommuteTimeProbability();
 
         //TODO: revise this!
         new JobType(properties.jobData.jobTypes);
