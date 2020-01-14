@@ -161,6 +161,7 @@ public class ModelBuilderMucAv {
         modelContainer.registerModelUpdateListener(new SwitchToAutonomousVehicleModelMuc(dataContainer,
                 properties,
                 SwitchToAutonomousVehicleModelMuc.class.getResourceAsStream("SwitchToAutonomousVehicleCalc"), SiloUtil.provideNewRandom()));
+        modelContainer.registerModelUpdateListener(new ParkingDataManager(dataContainer, SiloUtil.provideNewRandom()));
 
         return modelContainer;
     }
