@@ -5,7 +5,6 @@ import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
-import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdMuc;
@@ -17,13 +16,12 @@ import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoice;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoiceMapping;
-import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
 import de.tum.bgu.msm.properties.Properties;
 import org.matsim.api.core.v01.TransportMode;
 
 import java.util.*;
 
-public class AVSimpleCommuteModeChoice implements CommuteModeChoice {
+public class AvAndParkingSimpleModeChoice implements CommuteModeChoice {
 
     private final Properties properties;
     private final CommutingTimeProbability commutingTimeProbability;
@@ -31,16 +29,16 @@ public class AVSimpleCommuteModeChoice implements CommuteModeChoice {
     private final GeoData geoData;
     private Random random;
 
-    private final SimpleCommuteModeChoice conventionalVehicleCommuteModeChoice;
+    private final ParkingSimpleMoceChoice conventionalVehicleParkingBasedCommuteModeChoice;
 
-    public AVSimpleCommuteModeChoice(DataContainer dataContainer,
-                                   Properties properties, Random random) {
+    public AvAndParkingSimpleModeChoice(DataContainer dataContainer,
+                                        Properties properties, Random random) {
         this.properties = properties;
         this.commutingTimeProbability = dataContainer.getCommutingTimeProbability();
         this.jobDataManager = dataContainer.getJobDataManager();
         this.random = random;
         geoData = dataContainer.getGeoData();
-        conventionalVehicleCommuteModeChoice = new SimpleCommuteModeChoice(dataContainer, properties, random);
+        conventionalVehicleParkingBasedCommuteModeChoice = new ParkingSimpleMoceChoice(dataContainer, properties, random);
     }
 
 
@@ -49,9 +47,10 @@ public class AVSimpleCommuteModeChoice implements CommuteModeChoice {
     public CommuteModeChoiceMapping assignCommuteModeChoice(Location from, TravelTimes travelTimes, Household household) {
 
         if (((HouseholdMuc) household).getAutonomous() == 0){
-            return conventionalVehicleCommuteModeChoice.assignCommuteModeChoice(from, travelTimes, household);
+            return conventionalVehicleParkingBasedCommuteModeChoice.assignCommuteModeChoice(from, travelTimes, household);
 
         } else {
+            //as soon as there are avs in the household the workers use them and not convetional cars.
             CommuteModeChoiceMapping commuteModeChoiceMapping = new CommuteModeChoiceMapping(HouseholdUtil.getNumberOfWorkers(household));
             for (Person pp : household.getPersons().values()) {
 
@@ -62,9 +61,8 @@ public class AVSimpleCommuteModeChoice implements CommuteModeChoice {
                     double ptUtility = commutingTimeProbability.getCommutingTimeProbability(ptMinutes, TransportMode.pt);
                     double avUtility = commutingTimeProbability.getCommutingTimeProbability(carMinutes, "av");
                     double probabilityAv = avUtility / (avUtility + ptUtility);
-
                     if (random.nextDouble() < probabilityAv) {
-                        CommuteModeChoiceMapping.CommuteMode avCommuteMode = new CommuteModeChoiceMapping.CommuteMode("av", ptUtility);
+                        CommuteModeChoiceMapping.CommuteMode avCommuteMode = new CommuteModeChoiceMapping.CommuteMode("av", avUtility);
                         commuteModeChoiceMapping.assignMode(avCommuteMode,  pp);
                     } else {
                         CommuteModeChoiceMapping.CommuteMode ptMode = new CommuteModeChoiceMapping.CommuteMode(TransportMode.car,ptUtility );
@@ -80,8 +78,9 @@ public class AVSimpleCommuteModeChoice implements CommuteModeChoice {
     public CommuteModeChoiceMapping assignRegionalCommuteModeChoice(Region region, TravelTimes travelTimes, Household household) {
 
         if (((HouseholdMuc) household).getAutonomous() == 0) {
-            return conventionalVehicleCommuteModeChoice.assignRegionalCommuteModeChoice(region, travelTimes, household);
+            return conventionalVehicleParkingBasedCommuteModeChoice.assignRegionalCommuteModeChoice(region, travelTimes, household);
         } else {
+            //as soon as there are avs in the household the workers use them and not convetional cars.
             CommuteModeChoiceMapping commuteModeChoiceMapping = new CommuteModeChoiceMapping(HouseholdUtil.getNumberOfWorkers(household));
             for (Person pp : household.getPersons().values()) {
 
@@ -95,7 +94,7 @@ public class AVSimpleCommuteModeChoice implements CommuteModeChoice {
                     double probabilityAv = avUtility / (avUtility + ptUtility);
 
                     if (random.nextDouble() < probabilityAv) {
-                        CommuteModeChoiceMapping.CommuteMode avCommuteMode = new CommuteModeChoiceMapping.CommuteMode("av", ptUtility);
+                        CommuteModeChoiceMapping.CommuteMode avCommuteMode = new CommuteModeChoiceMapping.CommuteMode("av", avUtility);
                         commuteModeChoiceMapping.assignMode(avCommuteMode, pp);
                     } else {
                         CommuteModeChoiceMapping.CommuteMode ptMode = new CommuteModeChoiceMapping.CommuteMode(TransportMode.car, ptUtility);

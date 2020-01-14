@@ -42,11 +42,6 @@ public class ParkingDataManager implements ModelUpdateListener {
             zone.getAttributes().put("PARKING", zonalParkingData);
         }
 
-
-    }
-
-    @Override
-    public void prepareYear(int year) {
         //find dwelling without number of parking spaces and fill it as a function of dewlling type (hard coded here)
         int counter  = 0;
         for (Dwelling dwelling : dataContainer.getRealEstateDataManager().getDwellings()) {
@@ -59,7 +54,15 @@ public class ParkingDataManager implements ModelUpdateListener {
             }
         }
 
-        logger.info("Updated the parking spaces of " + counter + " in year " + year);
+        logger.info("Updated the parking spaces of " + counter + " in the base year ");
+
+
+
+    }
+
+    @Override
+    public void prepareYear(int year) {
+
 
         //generate a synthetic parking quality by zone based on accessibility
         for (Zone zone : dataContainer.getGeoData().getZones().values()){
@@ -129,7 +132,7 @@ public class ParkingDataManager implements ModelUpdateListener {
     }
 
 
-    private static int getNumberOfParkingSpaces(DefaultDwellingTypeImpl type) {
+    public static int getNumberOfParkingSpaces(DefaultDwellingTypeImpl type) {
         float[] probabilities;
         switch (type) {
             case SFD:

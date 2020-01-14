@@ -3,7 +3,6 @@ package de.tum.bgu.msm.scenarios.av;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
-import de.tum.bgu.msm.data.mito.MitoDataConverterMuc;
 import de.tum.bgu.msm.data.person.PersonFactory;
 import de.tum.bgu.msm.matsim.*;
 import de.tum.bgu.msm.mito.MitoMatsimScenarioAssembler;
@@ -83,11 +82,11 @@ public class ModelBuilderMucAv {
         MovesModelImpl movesModel = new MovesModelImpl(
                 dataContainer, properties,
                 new DefaultMovesStrategy(),
-                new HousingStrategyMuc(dataContainer,
+                new ParkingBasedHousingStrategyMuc(dataContainer,
                         properties,
                         dataContainer.getTravelTimes(), new DefaultDwellingProbabilityStrategy(),
                         new DwellingUtilityStrategyImpl(), new RegionUtilityStrategyMucImpl(), new RegionProbabilityStrategyImpl(),
-                        new AVSimpleCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom())), SiloUtil.provideNewRandom());
+                        new AvAndParkingSimpleModeChoice(dataContainer, properties, SiloUtil.provideNewRandom())), SiloUtil.provideNewRandom());
 
         CreateCarOwnershipModel carOwnershipModel = new CreateCarOwnershipModelMuc(dataContainer);
 

@@ -58,6 +58,10 @@ public class ModeChoiceResultsMonitor implements ResultsMonitor {
             pw.print("timeCar");
             pw.print(",");
             pw.print("timePt");
+            pw.print(",");
+            pw.print("parkingAtHome");
+            pw.print(",");
+            pw.print("parkingAtWork");
             pw.println();
 
 
@@ -110,6 +114,13 @@ public class ModeChoiceResultsMonitor implements ResultsMonitor {
                         pw.print(dataContainer.getTravelTimes().getTravelTime(dd, jj, properties.transportModel.peakHour_s, TransportMode.car));
                         pw.print(",");
                         pw.print(dataContainer.getTravelTimes().getTravelTime(dd, jj, properties.transportModel.peakHour_s, TransportMode.pt));
+                        pw.print(",");
+                        int parkingAtHome = (int) dd.getAttributes().get("PARKING_SPACES");
+                        pw.print(parkingAtHome);
+                        pw.print(",");
+                        LocationParkingData parking = (LocationParkingData) dataContainer.getGeoData().getZones().get(jj.getZoneId()).getAttributes().get("PARKING");
+                        pw.print(parking.getParkingQuality());
+                        pw.print(",");
                         pw.println();
 
                     }
