@@ -5,6 +5,7 @@ import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
+import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdMuc;
@@ -20,10 +21,7 @@ import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
 import de.tum.bgu.msm.properties.Properties;
 import org.matsim.api.core.v01.TransportMode;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-import java.util.TreeMap;
+import java.util.*;
 
 public class AVSimpleCommuteModeChoice implements CommuteModeChoice {
 
@@ -108,4 +106,7 @@ public class AVSimpleCommuteModeChoice implements CommuteModeChoice {
             return commuteModeChoiceMapping;
         }
     }
+
+
+
 }

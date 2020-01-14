@@ -36,6 +36,7 @@ public class RunSiloMucAv {
         model.addResultMonitor(new MultiFileResultsMonitor(dataContainer, properties));
         model.addResultMonitor(new HouseholdSatisfactionMonitor(dataContainer, properties, modelContainer));
         model.addResultMonitor(new AVOwnershipResultsMonitor(modelContainer, dataContainer, properties));
+        model.addResultMonitor(new ModeChoiceResultsMonitor(dataContainer, properties));
         model.runModel();
         logger.info("Finished SILO.");
     }
