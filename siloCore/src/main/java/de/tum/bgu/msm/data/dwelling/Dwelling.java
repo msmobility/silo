@@ -4,6 +4,8 @@ import de.tum.bgu.msm.data.Id;
 import de.tum.bgu.msm.data.MicroLocation;
 import org.locationtech.jts.geom.Coordinate;
 
+import java.util.Map;
+
 public interface Dwelling extends MicroLocation, Id {
 
     int getQuality();
@@ -33,4 +35,6 @@ public interface Dwelling extends MicroLocation, Id {
     void setUsage(DwellingUsage usage);
 
     DwellingUsage getUsage();
+
+    Map<String, Object> getAttributes();
 }

@@ -18,6 +18,7 @@ import org.opengis.feature.simple.SimpleFeature;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Random;
 
 public class OmxSkimTest {
@@ -62,6 +63,11 @@ public class OmxSkimTest {
             @Override
             public void setDevelopment(Development development) {
 
+            }
+
+            @Override
+            public Map<String, Object> getAttributes() {
+                return null;
             }
 
             @Override
