@@ -16,7 +16,6 @@ import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.io.input.*;
 import de.tum.bgu.msm.matsim.MatsimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.scenarios.av.FlexibleCommuteTimeProbability;
 import de.tum.bgu.msm.schools.*;
 import org.matsim.core.config.Config;
 
