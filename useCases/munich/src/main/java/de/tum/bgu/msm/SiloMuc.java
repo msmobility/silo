@@ -6,6 +6,7 @@ import de.tum.bgu.msm.io.output.HouseholdSatisfactionMonitor;
 import de.tum.bgu.msm.io.output.MultiFileResultsMonitor;
 import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.scenarios.av.ModeChoiceResultsMonitor;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -43,6 +44,7 @@ public class SiloMuc {
         model.addResultMonitor(new ResultsMonitorMuc(dataContainer, properties));
         model.addResultMonitor(new MultiFileResultsMonitor(dataContainer, properties));
         model.addResultMonitor(new HouseholdSatisfactionMonitor(dataContainer, properties, modelContainer));
+        model.addResultMonitor(new ModeChoiceResultsMonitor(dataContainer, properties));
         model.runModel();
         logger.info("Finished SILO.");
     }

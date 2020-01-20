@@ -68,6 +68,11 @@ public class HouseholdMuc implements Household {
         delegate.setAutos(autos);
     }
 
+    @Override
+    public Map<String, Object> getAttributes() {
+        return delegate.getAttributes();
+    }
+
     public void setAutonomous(int autonomous){
         this.autonomous = autonomous;
     }

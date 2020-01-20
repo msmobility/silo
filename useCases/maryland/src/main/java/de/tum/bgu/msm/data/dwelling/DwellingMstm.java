@@ -2,6 +2,8 @@ package de.tum.bgu.msm.data.dwelling;
 
 import org.locationtech.jts.geom.Coordinate;
 
+import java.util.Map;
+
 public class DwellingMstm implements Dwelling {
 
     private final DwellingImpl delegate;
@@ -88,6 +90,11 @@ public class DwellingMstm implements Dwelling {
     @Override
     public DwellingUsage getUsage() {
         return delegate.getUsage();
+    }
+
+    @Override
+    public Map<String, Object> getAttributes() {
+        return delegate.getAttributes();
     }
 
     @Override
