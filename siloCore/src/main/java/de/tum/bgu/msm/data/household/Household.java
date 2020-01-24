@@ -26,4 +26,6 @@ public interface Household extends Id {
     void removePerson(int personId);
 
     void setAutos(int autos);
+
+    Map<String, Object> getAttributes();
 }

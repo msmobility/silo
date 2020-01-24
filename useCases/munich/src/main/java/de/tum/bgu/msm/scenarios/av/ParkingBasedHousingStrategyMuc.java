@@ -1,43 +1,41 @@
-package de.tum.bgu.msm.models.relocation;
+package de.tum.bgu.msm.scenarios.av;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Region;
-import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
-import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
+import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManagerImpl;
 import de.tum.bgu.msm.data.geo.GeoData;
-import de.tum.bgu.msm.data.household.*;
-import de.tum.bgu.msm.data.job.Job;
-import de.tum.bgu.msm.data.job.JobDataManager;
-import de.tum.bgu.msm.data.job.JobMuc;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdMuc;
+import de.tum.bgu.msm.data.household.HouseholdType;
+import de.tum.bgu.msm.data.household.IncomeCategory;
 import de.tum.bgu.msm.data.person.Nationality;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoice;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoiceMapping;
-import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
+import de.tum.bgu.msm.models.relocation.DwellingUtilityStrategy;
+import de.tum.bgu.msm.models.relocation.HousingStrategyMuc;
+import de.tum.bgu.msm.models.relocation.RegionUtilityStrategyMuc;
 import de.tum.bgu.msm.models.relocation.moves.DwellingProbabilityStrategy;
 import de.tum.bgu.msm.models.relocation.moves.HousingStrategy;
 import de.tum.bgu.msm.models.relocation.moves.RegionProbabilityStrategy;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
-import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.TransportMode;
 
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.atomic.LongAdder;
 
 import static de.tum.bgu.msm.data.dwelling.RealEstateUtils.RENT_CATEGORIES;
 
-public class HousingStrategyMuc implements HousingStrategy {
+public class ParkingBasedHousingStrategyMuc implements HousingStrategy {
 
     private final static Logger logger = Logger.getLogger(HousingStrategyMuc.class);
 
@@ -57,7 +55,7 @@ public class HousingStrategyMuc implements HousingStrategy {
         POWER_OF_POPULATION
     }
 
-    private static final Normalizer NORMALIZER = Normalizer.VAC_DD;
+    private static final ParkingBasedHousingStrategyMuc.Normalizer NORMALIZER = ParkingBasedHousingStrategyMuc.Normalizer.VAC_DD;
 
     private final DataContainer dataContainer;
     private final Properties properties;
@@ -82,7 +80,7 @@ public class HousingStrategyMuc implements HousingStrategy {
 
     private EnumMap<IncomeCategory, EnumMap<Nationality, Map<Region, Double>>> utilityByIncomeByNationalityByRegion = new EnumMap<>(IncomeCategory.class);
 
-    public HousingStrategyMuc(DataContainer dataContainer,
+    public ParkingBasedHousingStrategyMuc(DataContainer dataContainer,
                               Properties properties,
                               TravelTimes travelTimes,
                               DwellingProbabilityStrategy dwellingProbabilityStrategy,
@@ -176,9 +174,28 @@ public class HousingStrategyMuc implements HousingStrategy {
                 }*/
             }
         }
-        return dwellingUtilityStrategy.calculateSelectDwellingUtility(ht, ddSizeUtility, ddPriceUtility,
+        double utility = dwellingUtilityStrategy.calculateSelectDwellingUtility(ht, ddSizeUtility, ddPriceUtility,
                 ddQualityUtility, ddAutoAccessibilityUtility,
                 transitAccessibilityUtility, workDistanceUtility);
+
+        if (!dd.getAttributes().containsKey("PARKING_SPACES")){
+            dd.getAttributes().put("PARKING_SPACES", ParkingDataManager.getNumberOfParkingSpaces((DefaultDwellingTypeImpl) dd.getType()));
+        }
+
+
+        int lackOfParkingAtHome = hh.getAutos() - (int) (dd.getAttributes().get("PARKING_SPACES"));
+        double penaltyForParkingAtHome = 1.;
+        if (lackOfParkingAtHome > 0){
+            if (((HouseholdMuc) hh).getAutonomous() > 0){
+                penaltyForParkingAtHome = 1 - 0.125 * lackOfParkingAtHome;
+            } else {
+                penaltyForParkingAtHome = 1 - 0.25 * lackOfParkingAtHome;
+            }
+        }
+
+        utility = utility * penaltyForParkingAtHome;
+
+        return utility;
     }
 
     @Override
@@ -235,7 +252,7 @@ public class HousingStrategyMuc implements HousingStrategy {
             utilityByIncomeByNationalityByRegion.put(incomeCategory, utilityByNationalityByRegion);
         }
 
-        if (NORMALIZER == Normalizer.SHARE_VAC_DD) {
+        if (NORMALIZER == ParkingBasedHousingStrategyMuc.Normalizer.SHARE_VAC_DD) {
             RealEstateDataManager realEstateDataManager = dataContainer.getRealEstateDataManager();
             for (int region : geoData.getRegions().keySet()) {
                 totalVacantDd.add(realEstateDataManager.getNumberOfVacantDDinRegion(region));
@@ -299,9 +316,9 @@ public class HousingStrategyMuc implements HousingStrategy {
     }
 
     @Override
-    public HousingStrategy duplicate() {
+    public ParkingBasedHousingStrategyMuc duplicate() {
         TravelTimes travelTimes = this.travelTimes.duplicate();
-        final HousingStrategyMuc housingStrategyMuc = new HousingStrategyMuc(dataContainer, properties, travelTimes, dwellingProbabilityStrategy, dwellingUtilityStrategy, regionUtilityStrategyMuc, regionProbabilityStrategy, commuteModeChoice);
+        final ParkingBasedHousingStrategyMuc housingStrategyMuc = new ParkingBasedHousingStrategyMuc(dataContainer, properties, travelTimes, dwellingProbabilityStrategy, dwellingUtilityStrategy, regionUtilityStrategyMuc, regionProbabilityStrategy, commuteModeChoice);
         housingStrategyMuc.regionalShareForeigners = this.regionalShareForeigners;
         housingStrategyMuc.hhByRegion = this.hhByRegion;
         housingStrategyMuc.utilityByIncomeByNationalityByRegion = this.utilityByIncomeByNationalityByRegion;

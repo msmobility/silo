@@ -19,6 +19,7 @@ package de.tum.bgu.msm.data.household;
 import de.tum.bgu.msm.data.person.Person;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -38,6 +39,8 @@ public class HouseholdImpl implements Household {
     private HouseholdType type;
 
     private final Map<Integer, Person> persons;
+
+    private final Map<String, Object> attributes = new HashMap<>();
 
     public HouseholdImpl(int id, int dwellingID, int autos) {
         this.hhId = id;
@@ -103,6 +106,11 @@ public class HouseholdImpl implements Household {
     @Override
     public void setAutos(int autos) {
         this.autos = autos;
+    }
+
+    @Override
+    public Map<String, Object> getAttributes() {
+        return attributes;
     }
 
     @Override

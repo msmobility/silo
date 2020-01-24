@@ -19,6 +19,9 @@ package de.tum.bgu.msm.data.dwelling;
 import de.tum.bgu.msm.data.MicroLocation;
 import org.locationtech.jts.geom.Coordinate;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author Greg Erhardt
  * Created on Dec 2, 2009
@@ -38,6 +41,7 @@ public final class DwellingImpl implements Dwelling, MicroLocation {
     private int floorSpace = 0;
     private DwellingUsage usage = DwellingUsage.GROUP_QUARTER_OR_DEFAULT;
     private Coordinate coordinate;
+    private final Map<String, Object> attributes = new HashMap<>();
 
 
     DwellingImpl(int id, int zoneId, Coordinate coordinate,
@@ -140,6 +144,11 @@ public final class DwellingImpl implements Dwelling, MicroLocation {
     @Override
     public DwellingUsage getUsage() {
         return usage;
+    }
+
+    @Override
+    public Map<String, Object> getAttributes() {
+        return attributes;
     }
 
 

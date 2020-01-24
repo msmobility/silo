@@ -70,6 +70,11 @@ public class MarylandHousehold implements Household {
     }
 
     @Override
+    public Map<String, Object> getAttributes() {
+        return delegate.getAttributes();
+    }
+
+    @Override
     public int getId() {
         return delegate.getId();
     }

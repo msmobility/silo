@@ -1,9 +1,12 @@
 package de.tum.bgu.msm.data.accessibility;
 
+import org.apache.log4j.Logger;
+
 import com.pb.common.datafile.TableDataSet;
+
+import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
 
 /**
  * @author dziemke
@@ -52,7 +55,8 @@ public class CommutingTimeProbabilityImpl implements CommutingTimeProbability {
 	}
 
 	@Override
-	public float getCommutingTimeProbability(int minutes) {
+	public float getCommutingTimeProbability(int minutes, String mode) {
+    	//this default implementation does not take into account mode. This allows compatible with e.g. more relaxed perception of commute time for AV users
 		if (minutes < workTripLengthFrequencyDistribution.length) {
 			return workTripLengthFrequencyDistribution[minutes];
 		} else {
