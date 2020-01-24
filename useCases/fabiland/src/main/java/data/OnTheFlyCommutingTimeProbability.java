@@ -17,7 +17,7 @@ public class OnTheFlyCommutingTimeProbability implements CommutingTimeProbabilit
     }
 
     @Override
-    public float getCommutingTimeProbability(int minutes) {
+    public float getCommutingTimeProbability(int minutes, String mode) {
         return (float) Math.exp(beta * minutes);
     }
 
