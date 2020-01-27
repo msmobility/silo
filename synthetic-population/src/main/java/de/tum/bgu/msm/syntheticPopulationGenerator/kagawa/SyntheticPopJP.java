@@ -2377,7 +2377,7 @@ public class SyntheticPopJP implements SyntheticPopI {
                 + "_"
                 + properties.main.baseYear
                 + ".csv";
-        HouseholdWriter hhwriter = new DefaultHouseholdWriter(dataContainer.getHouseholdDataManager());
+        HouseholdWriter hhwriter = new DefaultHouseholdWriter(dataContainer.getHouseholdDataManager().getHouseholds());
         hhwriter.writeHouseholds(filehh);
 
         String filepp = properties.main.baseDirectory
@@ -2401,7 +2401,7 @@ public class SyntheticPopJP implements SyntheticPopI {
                 + "_"
                 + properties.main.baseYear
                 + ".csv";
-        JobWriter jjwriter = new DefaultJobWriter(dataContainer.getJobDataManager());
+        JobWriter jjwriter = new DefaultJobWriter(dataContainer.getJobDataManager().getJobs());
         jjwriter.writeJobs(filejj);
 
 

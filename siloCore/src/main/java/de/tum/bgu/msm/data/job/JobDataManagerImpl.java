@@ -100,7 +100,7 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
                 + properties.jobData.jobsFinalFileName
                 + "_"
                 + properties.main.endYear + ".csv";
-        new DefaultJobWriter(this).writeJobs(filejj);
+        new DefaultJobWriter(this.jobData.getJobs()).writeJobs(filejj);
     }
 
     @Override
