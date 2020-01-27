@@ -40,6 +40,6 @@ public class CoordAssingment {
             jobDataManagerCopy.addJob(jobDataManagerCopy.getFactory().createJob(job.getId(), job.getZoneId(), zone.getRandomCoordinate(SiloUtil.getRandomObject()), job.getWorkerId(), job.getType()));
         }
 
-        new DefaultJobWriter(jobDataManagerCopy).writeJobs("C:\\Users\\nkueh\\IdeaProjects\\silo-parent\\cape_town_fabilut\\silo\\microData\\jj_2011_micro.csv");
+        new DefaultJobWriter(jobDataManagerCopy.getJobs()).writeJobs("C:\\Users\\nkueh\\IdeaProjects\\silo-parent\\cape_town_fabilut\\silo\\microData\\jj_2011_micro.csv");
     }
 }

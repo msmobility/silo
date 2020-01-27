@@ -5,13 +5,14 @@ import de.tum.bgu.msm.data.job.JobData;
 import de.tum.bgu.msm.utils.SiloUtil;
 
 import java.io.PrintWriter;
+import java.util.Collection;
 
 public class DefaultJobWriter implements JobWriter {
 
-    private final JobData jobData;
+    private final Collection<Job> jobs;
 
-    public DefaultJobWriter(JobData jobData) {
-        this.jobData = jobData;
+    public DefaultJobWriter(Collection<Job> jobs) {
+        this.jobs = jobs;
     }
 
     @Override
@@ -19,7 +20,7 @@ public class DefaultJobWriter implements JobWriter {
         PrintWriter pwj = SiloUtil.openFileForSequentialWriting(path, false);
         pwj.print("id,zone,personId,type,coordX,coordY");
         pwj.println();
-        for (Job jj : jobData.getJobs()) {
+        for (Job jj : jobs) {
             pwj.print(jj.getId());
             pwj.print(",");
             pwj.print(jj.getZoneId());

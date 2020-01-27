@@ -295,7 +295,7 @@ public class CreatePopulation {
         new DefaultDwellingWriter(dwellingData.getDwellings()).writeDwellings(scenarioFolderRoot + "/microData/dd_0.csv");
         new DefaultHouseholdWriter(householdData.getHouseholds()).writeHouseholds(scenarioFolderRoot + "/microData/hh_0.csv");
         new DefaultPersonWriter(householdData).writePersons(scenarioFolderRoot + "/microData/pp_0.csv");
-        new DefaultJobWriter(jobData).writeJobs(scenarioFolderRoot + "/microData/jj_0.csv");
+        new DefaultJobWriter(jobData.getJobs()).writeJobs(scenarioFolderRoot + "/microData/jj_0.csv");
     }
 
     public static Job getJob(JobFactory jjFactory, int jjId, int ppId) {
