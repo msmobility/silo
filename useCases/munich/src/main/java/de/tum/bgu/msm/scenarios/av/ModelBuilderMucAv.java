@@ -66,7 +66,7 @@ import org.matsim.core.scenario.ScenarioUtils;
 
 public class ModelBuilderMucAv {
 
-    public static ModelContainer getModelContainerAvForMuc(DataContainerWithSchools dataContainer, Properties properties, Config config, boolean useAv) {
+    public static ModelContainer getModelContainerAvForMuc(DataContainerWithSchools dataContainer, Properties properties, Config config, boolean useAv, String penetrationRateCalculator) {
 
         PersonFactory ppFactory = dataContainer.getHouseholdDataManager().getPersonFactory();
         HouseholdFactory hhFactory = dataContainer.getHouseholdDataManager().getHouseholdFactory();
@@ -160,7 +160,7 @@ public class ModelBuilderMucAv {
         if (useAv) {
             modelContainer.registerModelUpdateListener(new SwitchToAutonomousVehicleModelMuc(dataContainer,
                     properties,
-                    SwitchToAutonomousVehicleModelMuc.class.getResourceAsStream("SwitchToAutonomousVehicleCalc"), SiloUtil.provideNewRandom()));
+                    SwitchToAutonomousVehicleModelMuc.class.getResourceAsStream(penetrationRateCalculator), SiloUtil.provideNewRandom()));
         }
         modelContainer.registerModelUpdateListener(new ParkingDataManager(dataContainer, SiloUtil.provideNewRandom()));
         return modelContainer;

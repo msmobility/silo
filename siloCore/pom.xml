@@ -370,7 +370,7 @@
         <dependency>
             <groupId>com.github.msmobility</groupId>
             <artifactId>mito</artifactId>
-            <version>73b5ce546c08baeee5814c21174ae1f609aa189f</version>
+            <version>c7dbd4a5a820ee1334c77fe3c7157c9425932859</version>
             <exclusions>
                 <exclusion>
                     <groupId>javax.media</groupId>
