@@ -168,7 +168,7 @@ public class HousingStrategyMstm implements HousingStrategy<DwellingMstm> {
                 ddQualityUtility, ddAutoAccessibilityUtility,
                 transitAccessibilityUtility, schoolQualityUtility, crimeUtility, workDistanceUtility);
 
-        Race householdRace = ((MarylandHousehold) hh).getRace();
+        Race householdRace = ((HouseholdMstm) hh).getRace();
 
         double racialShare = 1;
 
@@ -206,7 +206,7 @@ public class HousingStrategyMstm implements HousingStrategy<DwellingMstm> {
 
     @Override
     public double calculateRegionalUtility(Household household, Region region) {
-        Race householdRace = ((MarylandHousehold) household).getRace();
+        Race householdRace = ((HouseholdMstm) household).getRace();
 
 
         double thisRegionFactor = 1;
@@ -305,7 +305,7 @@ public class HousingStrategyMstm implements HousingStrategy<DwellingMstm> {
             }
             final int region = geoData.getZones().get(zone).getRegion().getId();
 
-            final Race race = ((MarylandHousehold) hh).getRace();
+            final Race race = ((HouseholdMstm) hh).getRace();
             zonalRacialComposition.setIndexed(zone, race.getId(),
                     zonalRacialComposition.getIndexed(zone, race.getId()) + 1);
             double value = regionalRacialComposition.getIndexed(region, race.getId());

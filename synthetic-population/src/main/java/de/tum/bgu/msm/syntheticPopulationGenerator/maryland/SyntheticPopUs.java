@@ -525,7 +525,7 @@ public class SyntheticPopUs implements SyntheticPopI {
                             jobData.getJobFromId(workplace).setWorkerID(newPpId);  // -2 for jobs outside of the study area
                         }
 
-                        MarylandPerson pp = (MarylandPerson) PersonUtils.getFactory().createPerson(newPpId, age, Gender.valueOf(gender), occ, null, workplace, income);
+                        PersonMstm pp = (PersonMstm) PersonUtils.getFactory().createPerson(newPpId, age, Gender.valueOf(gender), occ, null, workplace, income);
                         pp.setRace(race);
                         householdData.addPerson(pp);
                         householdData.addPersonToHousehold(pp, household);

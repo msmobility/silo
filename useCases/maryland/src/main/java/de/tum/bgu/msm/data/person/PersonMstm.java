@@ -2,13 +2,15 @@ package de.tum.bgu.msm.data.person;
 
 import de.tum.bgu.msm.data.household.Household;
 
-public final class MarylandPerson implements Person {
+import java.util.Optional;
+
+public final class PersonMstm implements Person {
 
     private final Person delegate;
     private Race race;
 
-    MarylandPerson(int id, int age, Gender gender, Occupation occupation,
-                   PersonRole role, int jobId, int income) {
+    PersonMstm(int id, int age, Gender gender, Occupation occupation,
+               PersonRole role, int jobId, int income) {
         delegate = new PersonImpl(id, age, gender, occupation, role, jobId, income);
     }
 
@@ -103,5 +105,15 @@ public final class MarylandPerson implements Person {
 
     public void setRace(Race race) {
         this.race = race;
+    }
+
+    @Override
+    public Optional<Object> getAttribute(String key) {
+        return delegate.getAttribute(key);
+    }
+
+    @Override
+    public void setAttribute(String key, Object value) {
+        delegate.setAttribute(key, value);
     }
 }

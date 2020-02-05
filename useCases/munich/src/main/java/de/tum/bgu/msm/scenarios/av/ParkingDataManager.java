@@ -45,11 +45,11 @@ public class ParkingDataManager implements ModelUpdateListener {
         //find dwelling without number of parking spaces and fill it as a function of dewlling type (hard coded here)
         int counter  = 0;
         for (Dwelling dwelling : dataContainer.getRealEstateDataManager().getDwellings()) {
-            if (dwelling.getAttributes().get("PARKING_SPACES") == null) {
+            if (!dwelling.getAttribute("PARKING_SPACES").isPresent()) {
                 int spaces = getNumberOfParkingSpaces((DefaultDwellingTypeImpl)dwelling.getType());
                 dwellinggsByType.add(dwelling.getType());
                 parkingSpacesByDwellingType.add(dwelling.getType(), spaces);
-                dwelling.getAttributes().put("PARKING_SPACES",spaces);
+                dwelling.setAttribute("PARKING_SPACES",spaces);
                 counter++;
             }
         }

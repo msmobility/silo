@@ -19,6 +19,8 @@ package de.tum.bgu.msm.data.person;
 import de.tum.bgu.msm.data.Id;
 import de.tum.bgu.msm.data.household.Household;
 
+import java.util.Optional;
+
 /**
  * @author Greg Erhardt 
  * Created on Dec 2, 2009
@@ -39,8 +41,6 @@ public interface Person extends Id {
     void setWorkplace(int newWorkplace);
 
     void setOccupation(Occupation newOccupation);
-
-    int getId();
 	
 	int getAge();
 
@@ -59,4 +59,8 @@ public interface Person extends Id {
     void setDriverLicense(boolean driverLicense);
 
     boolean hasDriverLicense();
+
+    Optional<Object> getAttribute(String key);
+
+    void setAttribute(String key, Object value);
 }
