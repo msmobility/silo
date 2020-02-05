@@ -28,7 +28,7 @@ public class FlexibleCommuteTimeProbability implements CommutingTimeProbability 
     public float getCommutingTimeProbability(int minutes, String mode) {
         if (mode.equalsIgnoreCase("av")){
             //implements "a reduction of VOT of 40%"
-            return (float) Math.exp(-2 * 0.6 * minutes);
+            return (float) Math.exp(-0.2 * 0.6 * minutes);
         } else {
             return (float) Math.exp(-0.2 * minutes);
         }
