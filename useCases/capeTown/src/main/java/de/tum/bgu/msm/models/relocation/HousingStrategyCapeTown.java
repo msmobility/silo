@@ -164,6 +164,10 @@ public class HousingStrategyCapeTown implements HousingStrategy {
                 utilityByRegionByRaceByIncome.get(household.getHouseholdType()
                         .getIncomeCategory()).get(race).get(region.getId());
 
+        if(genericUtil == null) {
+            return 0.;
+        }
+
         double thisRegionFactor = 1;
         double carToWorkersRatio = Math.min(1., ((double) household.getAutos() / HouseholdUtil.getNumberOfWorkers(household)));
 
