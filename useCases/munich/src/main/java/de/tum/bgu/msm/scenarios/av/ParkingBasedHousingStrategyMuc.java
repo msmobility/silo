@@ -184,16 +184,25 @@ public class ParkingBasedHousingStrategyMuc implements HousingStrategy {
 
 
         int lackOfParkingAtHome = hh.getAutos() - (int) (dd.getAttributes().get("PARKING_SPACES"));
-        double penaltyForParkingAtHome = 1.;
+        //double penaltyForParkingAtHomeDueToPrivateSpaces = 1.;
+        LocationParkingData locationParkingData = (LocationParkingData) geoData.getZones().get(dd.getZoneId()).getAttributes().get("PARKING");
+        double penaltyForParkingAtHomeDueToOnStreetParking = 1.;
+
         if (lackOfParkingAtHome > 0){
             if (((HouseholdMuc) hh).getAutonomous() > 0){
-                penaltyForParkingAtHome = 1 - 0.125 * lackOfParkingAtHome;
+                //penaltyForParkingAtHomeDueToPrivateSpaces = 1 - 0.125 * lackOfParkingAtHome;
+                penaltyForParkingAtHomeDueToOnStreetParking= 0.55 + 0.15 * locationParkingData.getParkingQuality();
             } else {
-                penaltyForParkingAtHome = 1 - 0.25 * lackOfParkingAtHome;
+                //penaltyForParkingAtHomeDueToPrivateSpaces = 1 - 0.25 * lackOfParkingAtHome;
+                penaltyForParkingAtHomeDueToOnStreetParking= 0.1 + 0.3 * locationParkingData.getParkingQuality();
+
             }
+
         }
 
-        utility = utility * penaltyForParkingAtHome;
+
+
+        utility = utility * penaltyForParkingAtHomeDueToOnStreetParking;
 
         return utility;
     }

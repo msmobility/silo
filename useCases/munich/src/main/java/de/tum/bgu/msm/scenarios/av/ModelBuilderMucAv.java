@@ -162,7 +162,7 @@ public class ModelBuilderMucAv {
                     properties,
                     SwitchToAutonomousVehicleModelMuc.class.getResourceAsStream(penetrationRateCalculator), SiloUtil.provideNewRandom()));
         }
-        modelContainer.registerModelUpdateListener(new ParkingDataManager(dataContainer, SiloUtil.provideNewRandom()));
+        modelContainer.registerModelUpdateListener(new ParkingDataManager(dataContainer, SiloUtil.provideNewRandom(), properties));
         return modelContainer;
     }
 }
