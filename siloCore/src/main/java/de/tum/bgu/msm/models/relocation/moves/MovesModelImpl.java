@@ -21,6 +21,7 @@ import de.tum.bgu.msm.utils.Sampler;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
+import org.locationtech.jts.geom.Coordinate;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -75,7 +76,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
     @Override
     public void setup() {
         housingStrategy.setup();
-        String header = new StringJoiner(",").add("hh").add("oldDdd").add("newDd").add("oldZone").add("newZone").add("autos").add("licenses").add("workers").toString();
+        String header = new StringJoiner(",").add("hh").add("oldDdd").add("newDd").add("oldX").add("oldY").add("newX").add("newY").add("oldZone").add("newZone").add("autos").add("licenses").add("workers").toString();
         Path basePath = Paths.get(properties.main.baseDirectory).resolve("scenOutput").resolve(properties.main.scenarioName).resolve("siloResults/relocation");
         relocationTracker = new YearByYearCsvModelTracker(basePath, "relocation", header);
     }
@@ -146,21 +147,10 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
             // Step 3: Move household
             dataContainer.getHouseholdDataManager().saveHouseholdMemento(household);
-            int oldZoneId = dataContainer.getRealEstateDataManager().getDwelling(idOldDd).getZoneId();
-            int newZoneId = dataContainer.getRealEstateDataManager().getDwelling(idNewDD).getZoneId();
-            relocationTracker.trackRecord(new StringJoiner(",")
-                    .add(String.valueOf(hhId))
-                    .add(String.valueOf(idOldDd))
-                    .add(String.valueOf(idNewDD))
-                    .add(String.valueOf(oldZoneId))
-                    .add(String.valueOf(newZoneId))
-                    .add(String.valueOf(household.getAutos()))
-                    .add(String.valueOf(HouseholdUtil.getHHLicenseHolders(household)))
-                    .add(String.valueOf(HouseholdUtil.getNumberOfWorkers(household)))
-                    .toString());
+            printMove(household, idOldDd, idNewDD);
             moveHousehold(household, idOldDd, idNewDD);
             if (hhId == SiloUtil.trackHh) {
-                SiloUtil.trackWriter.println("Household " + hhId + " has moved to dwelling " +
+                SiloUtil.trackWriter.println("Household " + hhId + " has moved to newDwelling " +
                         idOldDd);
             }
             return true;
@@ -171,6 +161,36 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
             }
             return false;
         }
+    }
+
+    private void printMove(Household household, int idOldDd, int idNewDD) {
+        final Dwelling oldDwelling = dataContainer.getRealEstateDataManager().getDwelling(idOldDd);
+        int oldZoneId = oldDwelling.getZoneId();
+        final Dwelling newDwelling = dataContainer.getRealEstateDataManager().getDwelling(idNewDD);
+        int newZoneId = newDwelling.getZoneId();
+        Coordinate oldCoordinate = oldDwelling.getCoordinate();
+        Coordinate newCoordinate = oldDwelling.getCoordinate();
+        if(oldCoordinate == null) {
+            oldCoordinate = new Coordinate(Double.NaN, Double.NaN);
+        }
+        if(newCoordinate == null) {
+            newCoordinate = new Coordinate(Double.NaN, Double.NaN);
+        }
+
+        relocationTracker.trackRecord(new StringJoiner(",")
+                .add(String.valueOf(household.getId()))
+                .add(String.valueOf(idOldDd))
+                .add(String.valueOf(idNewDD))
+                .add(String.valueOf(oldCoordinate.x))
+                .add(String.valueOf(oldCoordinate.y))
+                .add(String.valueOf(newCoordinate.x))
+                .add(String.valueOf(newCoordinate.y))
+                .add(String.valueOf(oldZoneId))
+                .add(String.valueOf(newZoneId))
+                .add(String.valueOf(household.getAutos()))
+                .add(String.valueOf(HouseholdUtil.getHHLicenseHolders(household)))
+                .add(String.valueOf(HouseholdUtil.getNumberOfWorkers(household)))
+                .toString());
     }
 
     @Override
