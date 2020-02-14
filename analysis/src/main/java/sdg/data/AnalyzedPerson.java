@@ -3,17 +3,18 @@ package sdg.data;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.population.Person;
 import org.matsim.vehicles.Vehicle;
 
 public class AnalyzedPerson {
-    final private int id;
+    final private Id<Person> id;
     private Id<Link> currentLink;
     private double currentLinkEnterTime;
 
     private double congestedTime;
     private double freeFlowTime;
 
-    public AnalyzedPerson(int id) {
+    public AnalyzedPerson(Id<Person> id) {
         this.id = id;
     }
 
@@ -33,7 +34,7 @@ public class AnalyzedPerson {
         currentLink = null;
     }
 
-    public int getId() {
+    public Id<Person> getId() {
         return id;
     }
 

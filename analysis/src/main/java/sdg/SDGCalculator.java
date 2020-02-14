@@ -13,6 +13,7 @@ import de.tum.bgu.msm.data.household.IncomeCategory;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.util.MitoUtil;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Id;
 import sdg.data.AnalyzedPerson;
 import sdg.data.DataContainerSdg;
 import sdg.data.Trip;
@@ -33,13 +34,13 @@ public class SDGCalculator {
     private Map<Integer, List<Household>> hhByZone = new HashMap<>();
     private Map<Integer, List<Person>> ppByZone = new HashMap<>();
     private Map<Integer, List<Dwelling>> ddByZone = new HashMap<>();
-    private Map<Integer, AnalyzedPerson> matsimPerson = new HashMap<>();
+    private Map< Id<org.matsim.api.core.v01.population.Person>, AnalyzedPerson> matsimPerson = new HashMap<>();
     private Map<Integer, Person> matsimIdSiloPerson = new HashMap<>();
     private Map<Integer, List<Trip>> commutingTripsByZone = new HashMap<>();
     private Map<Integer, List<Trip>> schoolTripsByZone = new HashMap<>();
     private Map<Integer, Map<Mode, List<Trip>>> ttByModeByZone = new HashMap<>();
 
-    public void setMatsimPerson(Map<Integer, AnalyzedPerson> matsimPerson) {
+    public void setMatsimPerson(Map<Id<org.matsim.api.core.v01.population.Person>, AnalyzedPerson> matsimPerson) {
         this.matsimPerson = matsimPerson;
     }
 
