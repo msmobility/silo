@@ -81,7 +81,7 @@ public class SiloUtil {
         root.addAppender(warnErrorAppender);
     }
 
-    static void loadHdf5Lib() {
+    public static void loadHdf5Lib() {
         ClassLoader classLoader = SiloUtil.class.getClassLoader();
         logger.info("Trying to set up native hdf5 lib");
         String path = null;
