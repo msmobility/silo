@@ -6,6 +6,7 @@ import com.google.common.math.LongMath;
 import de.tum.bgu.msm.DataBuilder;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.job.Job;
+import de.tum.bgu.msm.data.job.JobType;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
@@ -35,7 +36,7 @@ public class GaleShapley {
 
     public GaleShapley() {
 
-        String sector = "Agri";
+        String sector = "Trns";
 
         OpenIntIntHashMap worker2Index = new OpenIntIntHashMap();
         OpenIntIntHashMap zones2Index = new OpenIntIntHashMap();
@@ -54,6 +55,20 @@ public class GaleShapley {
                 .collect(Collectors.groupingBy(person ->
                         dataContainer.getJobDataManager().getJobFromId(person.getJobId()).getType()));
         final Map<String, Map<Integer, List<Job>>> jobsByZoneBySector = dataContainer.getJobDataManager().getJobs().stream().collect(Collectors.groupingBy(Job::getType, Collectors.groupingBy(Job::getZoneId)));
+
+        for(String type: JobType.getJobTypes()) {
+            final Map<Integer, List<Job>> jobsByZone = jobsByZoneBySector.get(type);
+            final IntSummaryStatistics intSummaryStatistics = jobsByZone.keySet().stream().mapToInt(zone -> jobsByZone.get(zone).size()).summaryStatistics();
+            System.out.println("Sector " + type);
+            System.out.println("min " +intSummaryStatistics.getMin());
+            System.out.println("max "+intSummaryStatistics.getMax());
+            System.out.println("avg " +intSummaryStatistics.getAverage());
+            System.out.println("sum " +intSummaryStatistics.getSum());
+
+        }
+
+
+
 
         int[][] preferences = new int[personsByJobSector.get(sector).size()][jobsByZoneBySector.get(sector).size()];
         logger.info("Initialized preference array with " + preferences.length + " workers and " + preferences[0].length + " zones for sector " + sector);
