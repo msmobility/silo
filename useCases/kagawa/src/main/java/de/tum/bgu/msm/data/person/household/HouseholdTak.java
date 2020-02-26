@@ -7,6 +7,7 @@ import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonTak;
 
 import java.util.Map;
+import java.util.Optional;
 
 public class HouseholdTak implements Household {
 
@@ -69,8 +70,13 @@ public class HouseholdTak implements Household {
     }
 
     @Override
-    public Map<String, Object> getAttributes() {
-        return delegate.getAttributes();
+    public Optional<Object> getAttribute(String key) {
+        return delegate.getAttribute(key);
+    }
+
+    @Override
+    public void setAttribute(String key, Object value) {
+        delegate.setAttribute(key, value);
     }
 
     public void setAutonomous(int autonomous){

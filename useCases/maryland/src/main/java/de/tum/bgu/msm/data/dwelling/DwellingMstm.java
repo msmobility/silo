@@ -3,6 +3,7 @@ package de.tum.bgu.msm.data.dwelling;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.util.Map;
+import java.util.Optional;
 
 public class DwellingMstm implements Dwelling {
 
@@ -93,8 +94,13 @@ public class DwellingMstm implements Dwelling {
     }
 
     @Override
-    public Map<String, Object> getAttributes() {
-        return delegate.getAttributes();
+    public Optional<Object> getAttribute(String key) {
+        return delegate.getAttribute(key);
+    }
+
+    @Override
+    public void setAttribute(String key, Object value) {
+        delegate.setAttribute(key, value);
     }
 
     @Override

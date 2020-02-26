@@ -21,5 +21,10 @@
             <artifactId>schools</artifactId>
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.kevinstern</groupId>
+            <artifactId>software-and-algorithms</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
 </project>

@@ -86,7 +86,7 @@ public class MitoDataConverterMucWithAVs implements MitoDataConverter {
 
 
             //hard coded because the properties are not yet available?
-            household.getAdditionalAttributes().put("AVs", ((HouseholdMuc) siloHousehold).getAutonomous());
+//            household.getAdditionalAttributes().put("AVs", ((HouseholdMuc) siloHousehold).getAutonomous());
 
             Coordinate coordinate;
             if (dwelling.getCoordinate() != null) {

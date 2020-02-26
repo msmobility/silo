@@ -4,6 +4,7 @@ import de.tum.bgu.msm.data.Id;
 import de.tum.bgu.msm.data.person.Person;
 
 import java.util.Map;
+import java.util.Optional;
 
 public interface Household extends Id {
 
@@ -27,5 +28,7 @@ public interface Household extends Id {
 
     void setAutos(int autos);
 
-    Map<String, Object> getAttributes();
+    Optional<Object> getAttribute(String key);
+
+    void setAttribute(String key, Object value);
 }

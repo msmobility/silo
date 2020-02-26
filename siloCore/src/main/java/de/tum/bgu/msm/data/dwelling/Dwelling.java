@@ -5,6 +5,7 @@ import de.tum.bgu.msm.data.MicroLocation;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.util.Map;
+import java.util.Optional;
 
 public interface Dwelling extends MicroLocation, Id {
 
@@ -36,5 +37,7 @@ public interface Dwelling extends MicroLocation, Id {
 
     DwellingUsage getUsage();
 
-    Map<String, Object> getAttributes();
+    Optional<Object> getAttribute(String key);
+
+    void setAttribute(String key, Object value);
 }
