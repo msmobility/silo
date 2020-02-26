@@ -19,7 +19,7 @@ import de.tum.bgu.msm.io.input.DefaultHouseholdReader;
 import de.tum.bgu.msm.io.input.DwellingReader;
 import de.tum.bgu.msm.io.input.JobReader;
 import de.tum.bgu.msm.io.input.PersonReader;
-import de.tum.bgu.msm.matsim.MatsimTravelTimes;
+import de.tum.bgu.msm.matsim.MatsimTravelTimesAndCosts;
 import de.tum.bgu.msm.properties.Properties;
 import org.matsim.core.config.Config;
 
@@ -48,7 +48,7 @@ public final class DataBuilder {
                 accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, jobData);
                 break;
             case MATSIM:
-                travelTimes = new MatsimTravelTimes(config);
+                travelTimes = new MatsimTravelTimesAndCosts(config);
 //                accessibility = new MatsimAccessibility(geoData);
                 accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, jobData);
                 break;
