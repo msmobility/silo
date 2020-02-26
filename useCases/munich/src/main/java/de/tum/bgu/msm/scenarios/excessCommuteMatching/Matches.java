@@ -2,6 +2,7 @@ package de.tum.bgu.msm.scenarios.excessCommuteMatching;
 
 import blogspot.software_and_algorithms.stern_library.optimization.HungarianAlgorithm;
 import cern.colt.map.tint.OpenIntIntHashMap;
+import com.google.common.collect.Iterables;
 import com.google.common.math.LongMath;
 import de.tum.bgu.msm.DataBuilder;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
@@ -9,35 +10,36 @@ import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobType;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
+import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
-import org.matsim.contrib.accessibility.utils.ProgressBar;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.router.*;
 import org.matsim.core.router.costcalculators.FreespeedTravelTimeAndDisutility;
 import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
+import org.matsim.core.utils.collections.Tuple;
 import org.matsim.core.utils.geometry.CoordUtils;
-import org.omg.PortableInterceptor.INACTIVE;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class Matches {
 
     private final static Logger logger = Logger.getLogger(Matches.class);
 
-    private final static Map<Integer, Integer> jobByPerson = new LinkedHashMap<>();
 
     public static void main(String[] args) {
 
 
         String path = "C:\\Users\\Nico\\tum\\fabilut\\gitproject\\muc/siloMuc.properties";
-        String matchBaseDirectory = "./";
+        String matchBaseDirectory = "C:\\Users\\Nico\\tum\\msm-papers\\data\\thePerfectMatch";
 
         Properties properties = SiloUtil.siloInitialization(path);
         DataContainerWithSchools dataContainer = DataBuilder.getModelDataForMuc(properties, null);
@@ -50,39 +52,63 @@ public class Matches {
         LeastCostPathCalculatorFactory multiNodeFactory = new FastMultiNodeDijkstraFactory(true);
         FreespeedTravelTimeAndDisutility freespeed = new FreespeedTravelTimeAndDisutility(ConfigUtils.createConfig().planCalcScore());
 
-        MultiNodePathCalculator calculator = (MultiNodePathCalculator) multiNodeFactory.createPathCalculator(network, freespeed, freespeed);
 
 
         for(String sector: JobType.getJobTypes()) {
             logger.warn("Starting matching of sector " + sector);
+            Map<Integer, Tuple<Integer, Double>> jobByPerson = new ConcurrentHashMap<>();
+
             final List<Match> matches = readMatches(matchBaseDirectory, sector);
             final Map<Integer, List<Match>> collect = matches.stream().collect(Collectors.groupingBy(match -> match.zoneId));
             logger.info("read " + matches.size() + " matches.");
-            int counter = 0;
-            for (Map.Entry<Integer, List<Match>> entry : collect.entrySet()) {
-                if(LongMath.isPowerOfTwo(counter)) {
-                    logger.info("Matched " + counter + " zones.");
-                }
-                final List<Job> jobs = jobsByZoneBySector.get(sector).get(entry.getKey());
-                matchZone(entry.getKey(), entry.getValue(), jobs, dataContainer, network, calculator);
-                counter++;
+            AtomicInteger counter = new AtomicInteger();
+            final Set<Map.Entry<Integer, List<Match>>> entries = collect.entrySet();
+
+            final int partitionSize = (int) ((double) entries.size() / (Properties.get().main.numberOfThreads)) + 1;
+            Iterable<List<Map.Entry<Integer, List<Match>>>> partitions = Iterables.partition(entries, partitionSize);
+            ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Properties.get().main.numberOfThreads);
+
+            for (List<Map.Entry<Integer, List<Match>>> partition : partitions) {
+                executor.addTaskToQueue(() -> {
+                    try {
+                        MultiNodePathCalculator calculator = (MultiNodePathCalculator) multiNodeFactory.createPathCalculator(network, freespeed, freespeed);
+
+                        for (Map.Entry<Integer, List<Match>> entry : partition) {
+                            if(LongMath.isPowerOfTwo(counter.get())) {
+                                logger.info("Matched " + counter + " zones.");
+                            }
+                            final List<Job> jobs = jobsByZoneBySector.get(sector).get(entry.getKey());
+                            final Map<Integer, Tuple<Integer, Double>> jobByPersonCurrent = matchZone(entry.getValue(), jobs, dataContainer, network, calculator);
+                            jobByPerson.putAll(jobByPersonCurrent);
+                            counter.incrementAndGet();
+                        }
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                    return null;
+                });
             }
+            executor.execute();
+
+
+
+            logger.info("Writing matches for sector " + sector);
+            writeMatches(matchBaseDirectory, sector, jobByPerson);
         }
 
-        writeMatches();
 
 
 
     }
 
-    private static void writeMatches() {
-        File file = new File("finalMatches.csv");
+    private static void writeMatches(String baseDirectoy, String sector, Map<Integer, Tuple<Integer, Double>> jobByPerson) {
+        File file = new File(baseDirectoy+"/finalMatches"+sector+".csv");
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-            writer.write("personId,jobId");
+            writer.write("personId,jobId,tt");
             writer.newLine();
-            for(Map.Entry<Integer, Integer> entry : jobByPerson.entrySet()) {
-                writer.write(entry.getKey()+","+entry.getValue());
+            for(Map.Entry<Integer, Tuple<Integer,Double>> entry : jobByPerson.entrySet()) {
+                writer.write(entry.getKey()+","+entry.getValue().getFirst()+","+entry.getValue().getSecond());
                 writer.newLine();
             }
             writer.flush();
@@ -93,7 +119,7 @@ public class Matches {
 
     }
 
-    private static void matchZone(int zoneId, List<Match> matches, List<Job> jobs, DataContainerWithSchools dataContainer, Network carNetwork, MultiNodePathCalculator calculator) {
+    private static Map<Integer, Tuple<Integer, Double>> matchZone(List<Match> matches, List<Job> jobs, DataContainerWithSchools dataContainer, Network carNetwork, MultiNodePathCalculator calculator) {
 
 
         Set<InitialNode> toNodes = new HashSet<>();
@@ -143,17 +169,20 @@ public class Matches {
         final HungarianAlgorithm withinZoneMatching = new HungarianAlgorithm(costMatrix);
         final int[] results = withinZoneMatching.execute();
 
+        Map<Integer, Tuple<Integer,Double>> jobByPerson = new LinkedHashMap<>();
+
         for (int k = 0; k < results.length; k++) {
             int personId = index2Worker.get(k);
             int jobId = index2Job.get(results[k]);
-            jobByPerson.put(personId, jobId);
+            jobByPerson.put(personId, new Tuple<>(jobId, costMatrix[k][results[k]]));
         }
+        return jobByPerson;
     }
 
 
     private static List<Match> readMatches(String base, String sector) {
         List<Match> matches = new ArrayList<>();
-        File file = new File(base + sector+"matches.csv");
+        File file = new File(base +"/"+ sector+"matches.csv");
         try {
             BufferedReader reader = new BufferedReader(new FileReader(file));
             final String header = reader.readLine();
