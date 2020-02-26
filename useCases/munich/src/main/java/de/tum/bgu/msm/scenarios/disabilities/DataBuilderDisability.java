@@ -14,7 +14,7 @@ import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.io.input.*;
-import de.tum.bgu.msm.matsim.MatsimTravelTimes;
+import de.tum.bgu.msm.matsim.MatsimTravelTimesAndCosts;
 import de.tum.bgu.msm.models.disability.DefaultDisabilityStrategy;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.*;
@@ -43,7 +43,7 @@ public class DataBuilderDisability {
                 accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, jobData);
                 break;
             case MATSIM:
-                travelTimes = new MatsimTravelTimes(config);
+                travelTimes = new MatsimTravelTimesAndCosts(config);
 //                accessibility = new MatsimAccessibility(geoData);
                 accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, jobData);
                 break;
