@@ -173,6 +173,10 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
 
         NoiseOfflineCalculation noiseOfflineCalculation = new NoiseOfflineCalculation(scenario, outputDirectoryRoot);
         noiseOfflineCalculation.run();
+
+        NoiseContext noiseContext = noiseOfflineCalculation.getNoiseContext();
+        NoiseTollCalculator tollCalculator = new NoiseTollCalculator(noiseContext);
+        tollCalculator.calculateExpectedTollDisutility(Id.createLinkId(123), 28800, null);
     }
 
 
