@@ -19,9 +19,9 @@ import org.matsim.vehicles.VehicleWriterV1;
 import java.util.Arrays;
 import java.util.List;
 
-public class PTScheduleCreator2 {
+public class PTScheduleCreator {
 	
-	private final static Logger LOG = Logger.getLogger(PTScheduleCreator2.class);
+	private final static Logger LOG = Logger.getLogger(PTScheduleCreator.class);
 
 	private static final double PT_HEADWAY = 10 * 60.;
 	private static final double PT_OPERATION_START_TIME = 6 * 3600.;
@@ -30,12 +30,13 @@ public class PTScheduleCreator2 {
 	public static void main(String[] args) {
 	    //String scenarioName = "_4-l_ux";
         //String scenarioName = "_1-l_lower-u";
-        String scenarioName = "_2-l_x";
+        //String scenarioName = "_1-l_ne";
+        String scenarioName = "_1-l_nes";
 
-        String inputNetwork = "useCases/fabiland/scenario/matsimInput/network_cap75.xml";
-        String outputNetwork = "useCases/fabiland/scenario/matsimInput/network_cap75" + scenarioName + ".xml";
-        String outputPTSchedule = "useCases/fabiland/scenario/matsimInput/schedule" + scenarioName + ".xml";
-        String outputPTVehicles = "useCases/fabiland/scenario/matsimInput/transitvehicles" + scenarioName + ".xml";
+        String inputNetwork = "useCases/fabiland/scenario/matsimInput/nw_cap75.xml";
+        String outputNetwork = "useCases/fabiland/scenario/matsimInput/nw_cap75" + scenarioName + ".xml";
+        String outputPTSchedule = "useCases/fabiland/scenario/matsimInput/ts" + scenarioName + ".xml";
+        String outputPTVehicles = "useCases/fabiland/scenario/matsimInput/tv" + scenarioName + ".xml";
 
         createSchedule(inputNetwork, outputNetwork, outputPTSchedule, outputPTVehicles);
     }
@@ -195,58 +196,81 @@ public class PTScheduleCreator2 {
 //        ts.addTransitLine(tlUpperU);
 //
 //        // X starting in north west
-        TransitLine tlXNW = ts.getFactory().createTransitLine(Id.create("x-nw", TransitLine.class));
-        {
-            TransitRouteStop stop1 = ts.getFactory().createTransitRouteStop(stopFac1, 0 * tt2, 0 * tt2);
-            TransitRouteStop stop7 = ts.getFactory().createTransitRouteStop(stopFac7, 1 * tt2, 1 * tt2);
-            TransitRouteStop stop13 = ts.getFactory().createTransitRouteStop(stopFac13, 2 * tt2, 2 * tt2);
-            TransitRouteStop stop19 = ts.getFactory().createTransitRouteStop(stopFac19, 3 * tt2, 3 * tt2);
-            TransitRouteStop stop25 = ts.getFactory().createTransitRouteStop(stopFac25, 4 * tt2, 4 * tt2);
-
-            List<TransitRouteStop> stops = Arrays.asList(stop1, stop7, stop13, stop19, stop25);
-            TransitRoute tr = tsf.createTransitRoute(Id.create("x-nw-1", TransitRoute.class), null, stops, TransportMode.pt);
-            addDepartures(tsf, tr, PT_OPERATION_START_TIME, PT_OPERATION_END_TIME, PT_HEADWAY);
-            tlXNW.addRoute(tr);
-        }{
-            TransitRouteStop stop25 = ts.getFactory().createTransitRouteStop(stopFac25, 0 * tt2, 0 * tt2);
-            TransitRouteStop stop19 = ts.getFactory().createTransitRouteStop(stopFac19, 1 * tt2, 1 * tt2);
-            TransitRouteStop stop13 = ts.getFactory().createTransitRouteStop(stopFac13, 2 * tt2, 2 * tt2);
-            TransitRouteStop stop7 = ts.getFactory().createTransitRouteStop(stopFac7, 3 * tt2, 3 * tt2);
-            TransitRouteStop stop1 = ts.getFactory().createTransitRouteStop(stopFac1, 4 * tt2, 4 * tt2);
-
-            List<TransitRouteStop> stops = Arrays.asList(stop25, stop19, stop13, stop7, stop1);
-            TransitRoute tr = tsf.createTransitRoute(Id.create("x-nw-2", TransitRoute.class), null, stops, TransportMode.pt);
-            addDepartures(tsf, tr, PT_OPERATION_START_TIME, PT_OPERATION_END_TIME, PT_HEADWAY);
-            tlXNW.addRoute(tr);
-        }
-        ts.addTransitLine(tlXNW);
+//        TransitLine tlXNW = ts.getFactory().createTransitLine(Id.create("x-nw", TransitLine.class));
+//        {
+//            TransitRouteStop stop1 = ts.getFactory().createTransitRouteStop(stopFac1, 0 * tt2, 0 * tt2);
+//            TransitRouteStop stop7 = ts.getFactory().createTransitRouteStop(stopFac7, 1 * tt2, 1 * tt2);
+//            TransitRouteStop stop13 = ts.getFactory().createTransitRouteStop(stopFac13, 2 * tt2, 2 * tt2);
+//            TransitRouteStop stop19 = ts.getFactory().createTransitRouteStop(stopFac19, 3 * tt2, 3 * tt2);
+//            TransitRouteStop stop25 = ts.getFactory().createTransitRouteStop(stopFac25, 4 * tt2, 4 * tt2);
+//
+//            List<TransitRouteStop> stops = Arrays.asList(stop1, stop7, stop13, stop19, stop25);
+//            TransitRoute tr = tsf.createTransitRoute(Id.create("x-nw-1", TransitRoute.class), null, stops, TransportMode.pt);
+//            addDepartures(tsf, tr, PT_OPERATION_START_TIME, PT_OPERATION_END_TIME, PT_HEADWAY);
+//            tlXNW.addRoute(tr);
+//        }{
+//            TransitRouteStop stop25 = ts.getFactory().createTransitRouteStop(stopFac25, 0 * tt2, 0 * tt2);
+//            TransitRouteStop stop19 = ts.getFactory().createTransitRouteStop(stopFac19, 1 * tt2, 1 * tt2);
+//            TransitRouteStop stop13 = ts.getFactory().createTransitRouteStop(stopFac13, 2 * tt2, 2 * tt2);
+//            TransitRouteStop stop7 = ts.getFactory().createTransitRouteStop(stopFac7, 3 * tt2, 3 * tt2);
+//            TransitRouteStop stop1 = ts.getFactory().createTransitRouteStop(stopFac1, 4 * tt2, 4 * tt2);
+//
+//            List<TransitRouteStop> stops = Arrays.asList(stop25, stop19, stop13, stop7, stop1);
+//            TransitRoute tr = tsf.createTransitRoute(Id.create("x-nw-2", TransitRoute.class), null, stops, TransportMode.pt);
+//            addDepartures(tsf, tr, PT_OPERATION_START_TIME, PT_OPERATION_END_TIME, PT_HEADWAY);
+//            tlXNW.addRoute(tr);
+//        }
+//        ts.addTransitLine(tlXNW);
 
         // X starting in north east
-        TransitLine tlXNE = ts.getFactory().createTransitLine(Id.create("x-ne", TransitLine.class));
+//        TransitLine tlXNE = ts.getFactory().createTransitLine(Id.create("x-ne", TransitLine.class));
+//        {
+//            TransitRouteStop stop5 = ts.getFactory().createTransitRouteStop(stopFac5, 0 * tt2, 0 * tt2);
+//            TransitRouteStop stop9 = ts.getFactory().createTransitRouteStop(stopFac9, 1 * tt2, 1 * tt2);
+//            TransitRouteStop stop13 = ts.getFactory().createTransitRouteStop(stopFac13, 2 * tt2, 2 * tt2);
+//            TransitRouteStop stop17 = ts.getFactory().createTransitRouteStop(stopFac17, 3 * tt2, 3 * tt2);
+//            TransitRouteStop stop21 = ts.getFactory().createTransitRouteStop(stopFac21, 4 * tt2, 4 * tt2);
+//
+//            List<TransitRouteStop> stops = Arrays.asList(stop5, stop9, stop13, stop17, stop21);
+//            TransitRoute tr = tsf.createTransitRoute(Id.create("x-ne-1", TransitRoute.class), null, stops, TransportMode.pt);
+//            addDepartures(tsf, tr, PT_OPERATION_START_TIME, PT_OPERATION_END_TIME, PT_HEADWAY);
+//            tlXNE.addRoute(tr);
+//        }{
+//            TransitRouteStop stop21 = ts.getFactory().createTransitRouteStop(stopFac21, 0 * tt2, 0 * tt2);
+//            TransitRouteStop stop17 = ts.getFactory().createTransitRouteStop(stopFac17, 1 * tt2, 1 * tt2);
+//            TransitRouteStop stop13 = ts.getFactory().createTransitRouteStop(stopFac13, 2 * tt2, 2 * tt2);
+//            TransitRouteStop stop9 = ts.getFactory().createTransitRouteStop(stopFac9, 3 * tt2, 3 * tt2);
+//            TransitRouteStop stop5 = ts.getFactory().createTransitRouteStop(stopFac5, 4 * tt2, 4 * tt2);
+//
+//            List<TransitRouteStop> stops = Arrays.asList(stop21, stop17, stop13, stop9, stop5);
+//            TransitRoute tr = tsf.createTransitRoute(Id.create("x-ne-2", TransitRoute.class), null, stops, TransportMode.pt);
+//            addDepartures(tsf, tr, PT_OPERATION_START_TIME, PT_OPERATION_END_TIME, PT_HEADWAY);
+//            tlXNE.addRoute(tr);
+//        }
+//        ts.addTransitLine(tlXNE);
+
+        // X starting in north east short
+        TransitLine tlXNES = ts.getFactory().createTransitLine(Id.create("x-ne", TransitLine.class));
         {
             TransitRouteStop stop5 = ts.getFactory().createTransitRouteStop(stopFac5, 0 * tt2, 0 * tt2);
             TransitRouteStop stop9 = ts.getFactory().createTransitRouteStop(stopFac9, 1 * tt2, 1 * tt2);
             TransitRouteStop stop13 = ts.getFactory().createTransitRouteStop(stopFac13, 2 * tt2, 2 * tt2);
-            TransitRouteStop stop17 = ts.getFactory().createTransitRouteStop(stopFac17, 3 * tt2, 3 * tt2);
-            TransitRouteStop stop21 = ts.getFactory().createTransitRouteStop(stopFac21, 4 * tt2, 4 * tt2);
 
-            List<TransitRouteStop> stops = Arrays.asList(stop5, stop9, stop13, stop17, stop21);
-            TransitRoute tr = tsf.createTransitRoute(Id.create("x-ne-1", TransitRoute.class), null, stops, TransportMode.pt);
+            List<TransitRouteStop> stops = Arrays.asList(stop5, stop9, stop13);
+            TransitRoute tr = tsf.createTransitRoute(Id.create("x-nes-1", TransitRoute.class), null, stops, TransportMode.pt);
             addDepartures(tsf, tr, PT_OPERATION_START_TIME, PT_OPERATION_END_TIME, PT_HEADWAY);
-            tlXNE.addRoute(tr);
+            tlXNES.addRoute(tr);
         }{
-            TransitRouteStop stop21 = ts.getFactory().createTransitRouteStop(stopFac21, 0 * tt2, 0 * tt2);
-            TransitRouteStop stop17 = ts.getFactory().createTransitRouteStop(stopFac17, 1 * tt2, 1 * tt2);
             TransitRouteStop stop13 = ts.getFactory().createTransitRouteStop(stopFac13, 2 * tt2, 2 * tt2);
             TransitRouteStop stop9 = ts.getFactory().createTransitRouteStop(stopFac9, 3 * tt2, 3 * tt2);
             TransitRouteStop stop5 = ts.getFactory().createTransitRouteStop(stopFac5, 4 * tt2, 4 * tt2);
 
-            List<TransitRouteStop> stops = Arrays.asList(stop21, stop17, stop13, stop9, stop5);
-            TransitRoute tr = tsf.createTransitRoute(Id.create("x-ne-2", TransitRoute.class), null, stops, TransportMode.pt);
+            List<TransitRouteStop> stops = Arrays.asList(stop13, stop9, stop5);
+            TransitRoute tr = tsf.createTransitRoute(Id.create("x-nes-2", TransitRoute.class), null, stops, TransportMode.pt);
             addDepartures(tsf, tr, PT_OPERATION_START_TIME, PT_OPERATION_END_TIME, PT_HEADWAY);
-            tlXNE.addRoute(tr);
+            tlXNES.addRoute(tr);
         }
-        ts.addTransitLine(tlXNE);
+        ts.addTransitLine(tlXNES);
 
         LOG.info("After alteration, transit schedule has " + ts.getTransitLines().size() + " lines.");
 
