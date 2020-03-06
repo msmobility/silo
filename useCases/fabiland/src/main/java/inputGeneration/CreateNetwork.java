@@ -35,9 +35,9 @@ public class CreateNetwork {
      * (21)----(22)-----(23)-----(24)-----(25)
      */
     public static void main(String[] args) {
-        String networkFileName = "useCases/fabiland/scenario/matsimInput/nw_cap50.xml";
+        String networkFileName = "useCases/fabiland/scenario/matsimInput/nw_cap100.xml";
         double freespeed = 50./3.6;
-        double capacity = 50.;
+        double capacity = 100.;
         double numLanes = 1.;
         double length = 5000.;
 
@@ -71,14 +71,8 @@ public class CreateNetwork {
         Node node24 = NetworkUtils.createAndAddNode(network, Id.create(24, Node.class), new Coord((double) 5000, (double) -10000));
         Node node25 = NetworkUtils.createAndAddNode(network, Id.create(25, Node.class), new Coord((double) 10000, (double) -10000));
 
-
         Set<String> carModeSet = new HashSet<>();
         carModeSet.add(TransportMode.car);
-
-//        Set<String> carAndPtModeSet = new HashSet<>();
-//        carAndPtModeSet.add(TransportMode.car);
-//        carAndPtModeSet.add(TransportMode.pt);
-
 
         // Links (bi-directional)
         NetworkUtils.createAndAddLink(network,Id.create("0102", Link.class), node1, node2, length, freespeed, capacity, numLanes);

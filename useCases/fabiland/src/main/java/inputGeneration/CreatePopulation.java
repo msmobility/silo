@@ -21,7 +21,7 @@ import java.util.Random;
 public class CreatePopulation {
     private final static Logger logger = Logger.getLogger(CreatePopulation.class);
 
-    private final static String scenarioFolderRoot = "useCases/fabiland/scenarios/base";
+    private final static String scenarioFolderRoot = "useCases/fabiland/scenario";
 
     private final static int sideLengthHorizonal = 1000;
     private final static int sideLengthVertical = 1000;
@@ -263,7 +263,9 @@ public class CreatePopulation {
 
             Random rnd = new Random(4712);
             int population = householdsByZone[row][col];
-            int vacantDd = (int) (0.05 * population);
+            int vacantDd = (int) (0.05 * population); // Change the way vacant dwellings are added to the zones
+            // int vacantDd = 50;
+            // int vacantDd = 300;
             int vacantJj = (int) (0.05 * jobsByZoneTotal[row][col]);
 
             for (int i = 0; i < vacantDd; i++) {
