@@ -37,6 +37,8 @@ public class SiloMstm {
         ResultsMonitor resultsMonitor = new DefaultResultsMonitor(dataContainer, properties);
         SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
         model.addResultMonitor(resultsMonitor);
+        ResultsMonitor mstmMonitor = new MstmMonitor(dataContainer, properties);
+        model.addResultMonitor(mstmMonitor);
         model.runModel();
         logger.info("Finished SILO.");
     }
