@@ -1,9 +1,11 @@
 package sdg.reader;
 
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.events.ActivityEndEvent;
 import org.matsim.api.core.v01.events.LinkEnterEvent;
 import org.matsim.api.core.v01.events.LinkLeaveEvent;
 import org.matsim.api.core.v01.events.VehicleLeavesTrafficEvent;
+import org.matsim.api.core.v01.events.handler.ActivityEndEventHandler;
 import org.matsim.api.core.v01.events.handler.LinkEnterEventHandler;
 import org.matsim.api.core.v01.events.handler.LinkLeaveEventHandler;
 import org.matsim.api.core.v01.events.handler.VehicleLeavesTrafficEventHandler;
@@ -16,7 +18,8 @@ import sdg.data.AnalyzedPerson;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CongestionEventHandler implements LinkEnterEventHandler, LinkLeaveEventHandler, VehicleLeavesTrafficEventHandler {
+public class CongestionEventHandler implements ActivityEndEventHandler, LinkEnterEventHandler,
+        LinkLeaveEventHandler, VehicleLeavesTrafficEventHandler {
 
     private final Network network;
 
@@ -30,15 +33,28 @@ public class CongestionEventHandler implements LinkEnterEventHandler, LinkLeaveE
         this.network = network;
     }
 
+
+    public void handleEvent(ActivityEndEvent event) {
+        Id<Person> personId = Id.createPersonId(event.getPersonId().toString());
+        persons.putIfAbsent(personId, new AnalyzedPerson(personId));
+
+
+    }
+
+
     @Override
     public void handleEvent(LinkEnterEvent event) {
         double time = event.getTime();
         Id<Person> personId = Id.createPersonId(event.getVehicleId().toString());
         Id<Link> linkId = event.getLinkId();
+        if (persons.keySet().contains(personId)){
+            AnalyzedPerson person = persons.get(personId);
+            person.enterThisLink(linkId, time);
+        } else {
+            throw new RuntimeException("This person appeared suddenly?");
+        }
 
-        persons.putIfAbsent(personId, new AnalyzedPerson(personId));
-        AnalyzedPerson person = persons.get(personId);
-        person.enterThisLink(linkId, time);
+
 
     }
 
@@ -52,6 +68,8 @@ public class CongestionEventHandler implements LinkEnterEventHandler, LinkLeaveE
             AnalyzedPerson person = persons.get(personId);
             Link link = network.getLinks().get(linkId);
             person.leaveThisLink(linkId, time, link);
+        } else {
+            throw new RuntimeException("This person appeared suddenly?");
         }
     }
 
@@ -68,6 +86,8 @@ public class CongestionEventHandler implements LinkEnterEventHandler, LinkLeaveE
             AnalyzedPerson person = persons.get(personId);
             person.leaveTraffic();
 
+        } else {
+            throw new RuntimeException("This person appeared suddenly?");
         }
 
     }

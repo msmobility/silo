@@ -26,7 +26,7 @@ public class AnalyzedPerson {
     public void leaveThisLink(Id<Link> linkId, double time, Link link){
         if (linkId == currentLink){
             congestedTime = congestedTime + (time - currentLinkEnterTime);
-            freeFlowTime = freeFlowTime + Math.ceil(link.getLength() / link.getFreespeed());
+            freeFlowTime = freeFlowTime + (link.getLength() / link.getFreespeed());
         }
     }
 
