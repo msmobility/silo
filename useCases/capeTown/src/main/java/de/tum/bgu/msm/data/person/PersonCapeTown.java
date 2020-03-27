@@ -2,6 +2,8 @@ package de.tum.bgu.msm.data.person;
 
 import de.tum.bgu.msm.data.household.Household;
 
+import java.util.Optional;
+
 public class PersonCapeTown implements Person {
 
     private final PersonImpl delegate;
@@ -102,5 +104,15 @@ public class PersonCapeTown implements Person {
     @Override
     public boolean hasDriverLicense() {
         return delegate.hasDriverLicense();
+    }
+
+    @Override
+    public Optional<Object> getAttribute(String key) {
+        return delegate.getAttribute(key);
+    }
+
+    @Override
+    public void setAttribute(String key, Object value) {
+        delegate.setAttribute(key, value);
     }
 }

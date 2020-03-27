@@ -44,7 +44,6 @@ public class SiloMuc {
         model.addResultMonitor(new ResultsMonitorMuc(dataContainer, properties));
         model.addResultMonitor(new MultiFileResultsMonitor(dataContainer, properties));
         model.addResultMonitor(new HouseholdSatisfactionMonitor(dataContainer, properties, modelContainer));
-        model.addResultMonitor(new ModeChoiceResultsMonitor(dataContainer, properties));
         model.runModel();
         logger.info("Finished SILO.");
     }

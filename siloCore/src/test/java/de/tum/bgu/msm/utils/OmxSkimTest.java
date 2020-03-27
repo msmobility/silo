@@ -7,7 +7,7 @@ import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
-import de.tum.bgu.msm.io.OmxTravelTimesWriter;
+import de.tum.bgu.msm.io.output.OmxTravelTimesWriter;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix2D;
 import org.junit.Assert;
 import org.junit.Before;

@@ -167,6 +167,7 @@
         <module>kagawa</module>
         <module>austin</module>
         <module>capeTown</module>
+        <module>fabiland</module>
     </modules>
 
     <repositories>

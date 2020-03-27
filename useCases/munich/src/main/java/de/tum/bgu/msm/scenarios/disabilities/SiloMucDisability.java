@@ -70,7 +70,7 @@ public class SiloMucDisability {
                 + "_"
                 + properties.main.baseYear
                 + "d.csv";
-        DwellingWriter ddwriter = new DefaultDwellingWriter(dataContainer.getRealEstateDataManager());
+        DwellingWriter ddwriter = new DefaultDwellingWriter(dataContainer.getRealEstateDataManager().getDwellings());
         ddwriter.writeDwellings(filedd);
 
         String filejj = properties.main.baseDirectory

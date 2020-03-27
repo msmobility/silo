@@ -125,7 +125,7 @@ public class ParkingBasedHousingStrategyMuc implements HousingStrategy {
         double workDistanceUtility = 1;
 
         CommuteModeChoiceMapping commuteModeChoiceMapping = commuteModeChoice.assignCommuteModeChoice(dd, travelTimes, hh);
-        hh.getAttributes().put("COMUTE_MODE_CHOICE_MAPPING", commuteModeChoiceMapping);
+        hh.setAttribute("COMUTE_MODE_CHOICE_MAPPING", commuteModeChoiceMapping);
 
 
         for (Person pp : hh.getPersons().values()) {
@@ -178,16 +178,13 @@ public class ParkingBasedHousingStrategyMuc implements HousingStrategy {
                 ddQualityUtility, ddAutoAccessibilityUtility,
                 transitAccessibilityUtility, workDistanceUtility);
 
-        if (!dd.getAttributes().containsKey("PARKING_SPACES")){
-            dd.getAttributes().put("PARKING_SPACES", ParkingDataManager.getNumberOfParkingSpaces((DefaultDwellingTypeImpl) dd.getType()));
+        if (!dd.getAttribute("PARKING_SPACES").isPresent()){
+            dd.setAttribute("PARKING_SPACES", ParkingDataManager.getNumberOfParkingSpaces((DefaultDwellingTypeImpl) dd.getType()));
         }
 
 
-        int lackOfParkingAtHome = hh.getAutos() - (int) (dd.getAttributes().get("PARKING_SPACES"));
-        //double penaltyForParkingAtHomeDueToPrivateSpaces = 1.;
-        LocationParkingData locationParkingData = (LocationParkingData) geoData.getZones().get(dd.getZoneId()).getAttributes().get("PARKING");
-        double penaltyForParkingAtHomeDueToOnStreetParking = 1.;
-
+        int lackOfParkingAtHome = hh.getAutos() - (int) (dd.getAttribute("PARKING_SPACES").get());
+        double penaltyForParkingAtHome = 1.;
         if (lackOfParkingAtHome > 0){
             if (((HouseholdMuc) hh).getAutonomous() > 0){
                 //penaltyForParkingAtHomeDueToPrivateSpaces = 1 - 0.125 * lackOfParkingAtHome;

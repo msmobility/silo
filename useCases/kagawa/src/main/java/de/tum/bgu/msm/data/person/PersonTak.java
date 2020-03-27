@@ -3,6 +3,8 @@ package de.tum.bgu.msm.data.person;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.schools.PersonWithSchool;
 
+import java.util.Optional;
+
 public final class PersonTak implements PersonWithSchool {
 
     private final Person delegate;
@@ -102,10 +104,14 @@ public final class PersonTak implements PersonWithSchool {
     }
 
     @Override
-    public void setSchoolType(int schoolType) {this.schoolType = schoolType; }
+    public void setSchoolType(int schoolType) {
+        this.schoolType = schoolType;
+    }
 
     @Override
-    public int getSchoolType() {return schoolType;}
+    public int getSchoolType() {
+        return schoolType;
+    }
 
     @Override
     public void setSchoolPlace(int schoolPlace) {
@@ -113,7 +119,9 @@ public final class PersonTak implements PersonWithSchool {
     }
 
     @Override
-    public int getSchoolPlace() {return schoolPlace;}
+    public int getSchoolPlace() {
+        return schoolPlace;
+    }
 
     @Override
     public int getSchoolId() {
@@ -125,37 +133,13 @@ public final class PersonTak implements PersonWithSchool {
         this.schoolId = schoolId;
     }
 
-    public static class PersonFactoryTak implements PersonFactory {
+    @Override
+    public Optional<Object> getAttribute(String key) {
+        return delegate.getAttribute(key);
+    }
 
-        @Override
-        public PersonTak createPerson(int id, int age,
-                                      Gender gender, Occupation occupation,
-                                      PersonRole role, int workplace,
-                                      int income) {
-            return new PersonTak(id, age, gender,
-                    occupation, role, workplace,
-                    income);
-        }
-
-        @Override
-        public Person giveBirth(Person parent, int id, Gender gender) {
-            PersonTak pp = new PersonTak(id, 0, gender, Occupation.TODDLER, PersonRole.CHILD, 0, 0);
-            return pp;
-        }
-
-        //TODO duplicate as well school attributes
-        @Override
-        public PersonTak duplicate(Person originalPerson, int id) {
-            PersonTak duplicate = new PersonTak(id,
-                    originalPerson.getAge(),
-                    originalPerson.getGender(),
-                    originalPerson.getOccupation(),
-                    originalPerson.getRole(),
-                    -1,
-                    originalPerson.getAnnualIncome());
-            duplicate.setDriverLicense(originalPerson.hasDriverLicense());
-            duplicate.setSchoolId(((PersonTak) originalPerson).getSchoolId());
-            return duplicate;
-        }
+    @Override
+    public void setAttribute(String key, Object value) {
+        delegate.setAttribute(key, value);
     }
 }

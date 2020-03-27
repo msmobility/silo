@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.matsim;
 
+import ch.sbb.matsim.routing.pt.raptor.SwissRailRaptorRoutingModule;
 import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.Region;
@@ -16,11 +17,14 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.PlanElement;
+import org.matsim.api.core.v01.population.Route;
 import org.matsim.core.config.Config;
+import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.network.NetworkUtils;
-import org.matsim.core.router.FreespeedFactorRoutingModule;
-import org.matsim.core.router.TripRouter;
+import org.matsim.core.population.routes.NetworkRoute;
+import org.matsim.core.router.*;
 import org.matsim.core.utils.geometry.CoordUtils;
+import org.matsim.core.utils.misc.Time;
 import org.matsim.facilities.ActivityFacilitiesFactory;
 import org.matsim.facilities.ActivityFacilitiesFactoryImpl;
 import org.matsim.facilities.ActivityFacility;
@@ -31,9 +35,9 @@ import java.util.*;
 /**
  * @author dziemke, nkuehnel
  */
-public final class MatsimTravelTimes implements TravelTimes {
+public final class MatsimTravelTimesAndCosts implements TravelTimes {
 
-    private final static Logger logger = Logger.getLogger(MatsimTravelTimes.class);
+    private final static Logger logger = Logger.getLogger(MatsimTravelTimesAndCosts.class);
 
     private MatsimData matsimData;
 
@@ -48,7 +52,7 @@ public final class MatsimTravelTimes implements TravelTimes {
 
     private final Config config;
 
-    public MatsimTravelTimes(Config config) {
+    public MatsimTravelTimesAndCosts(Config config) {
         this.config = config;
     }
 
@@ -119,11 +123,64 @@ public final class MatsimTravelTimes implements TravelTimes {
         travelTimesToRegion.put(TransportMode.pt, travelTimesToRegionPt);
     }
 
-    // TODO Use travel costs?
     @Override
     public double getTravelTime(Location origin, Location destination, double timeOfDay_s, String mode) {
+        List<? extends PlanElement> planElements = getRoute(origin, destination, timeOfDay_s, mode);
+        double arrivalTime = timeOfDay_s;
 
+        if (!planElements.isEmpty()) {
+            final Leg lastLeg = (Leg) planElements.get(planElements.size() - 1);
+            arrivalTime = lastLeg.getDepartureTime() + lastLeg.getTravelTime();
+        }
 
+        double time = arrivalTime - timeOfDay_s;
+
+        //convert to minutes
+        time /= 60.;
+        return time;
+    }
+
+    public double getGeneralizedTravelCosts(Location origin, Location destination, double timeOfDay_s, String mode) {
+        List<? extends PlanElement> planElements = getRoute(origin, destination, timeOfDay_s, mode);
+        RoutingModule routingModule = tripRouter.getRoutingModule(mode);
+        PlanCalcScoreConfigGroup cnScoringGroup = config.planCalcScore();
+
+        double utility = 0.;
+        if(routingModule instanceof NetworkRoutingModule || routingModule instanceof NetworkRoutingInclAccessEgressModule) {
+            for (PlanElement pe : planElements) {
+                if (pe instanceof Leg) {
+                    final Leg leg = (Leg) pe;
+                    Route route = leg.getRoute();
+                    utility -= ((NetworkRoute) route).getTravelCost();
+                    utility += cnScoringGroup.getModes().get(mode).getConstant();
+                }
+            }
+        }
+
+        if (routingModule instanceof SwissRailRaptorRoutingModule || routingModule instanceof FreespeedFactorRoutingModule) {
+            for (PlanElement pe : planElements) {
+                if (pe instanceof Leg) {
+                    final Leg leg = (Leg) pe;
+
+                    double travelTime = leg.getTravelTime();
+
+                    // overrides individual parameters per person; use default scoring parameters
+                    if (Time.getUndefinedTime() != travelTime) {
+                        utility += travelTime * (cnScoringGroup.getModes().get(mode).getMarginalUtilityOfTraveling() + (-1) * cnScoringGroup.getPerforming_utils_hr()) / 3600;
+                    }
+                    Double distance = ((Leg) pe).getRoute().getDistance();
+                    if (distance != null && distance != 0.) {
+                        utility += distance * cnScoringGroup.getModes().get(mode).getMarginalUtilityOfDistance();
+                        utility += distance * cnScoringGroup.getModes().get(mode).getMonetaryDistanceRate() * cnScoringGroup.getMarginalUtilityOfMoney();
+                    }
+                    utility += cnScoringGroup.getModes().get(mode).getConstant();
+                }
+            }
+        }
+        return -utility;
+    }
+
+    private List<? extends PlanElement> getRoute(Location origin, Location destination, double timeOfDay_s, String mode) {
         Coord originCoord;
         Coord destinationCoord;
         if (origin instanceof MicroLocation && destination instanceof MicroLocation) {
@@ -149,19 +206,7 @@ public final class MatsimTravelTimes implements TravelTimes {
         ActivityFacilitiesFactoryImpl activityFacilitiesFactory = new ActivityFacilitiesFactoryImpl();
         Facility fromFacility = ((ActivityFacilitiesFactory) activityFacilitiesFactory).createActivityFacility(Id.create(1, ActivityFacility.class), originCoord, fromLink);
         Facility toFacility = ((ActivityFacilitiesFactory) activityFacilitiesFactory).createActivityFacility(Id.create(2, ActivityFacility.class), destinationCoord, toLink);
-        List<? extends PlanElement> planElements = tripRouter.calcRoute(mode, fromFacility, toFacility, timeOfDay_s, null);
-        double arrivalTime = timeOfDay_s;
-
-        if (!planElements.isEmpty()) {
-            final Leg lastLeg = (Leg) planElements.get(planElements.size() - 1);
-            arrivalTime = lastLeg.getDepartureTime() + lastLeg.getTravelTime();
-        }
-
-        double time = arrivalTime - timeOfDay_s;
-
-        //convert to minutes
-        time /= 60.;
-        return time;
+        return tripRouter.calcRoute(mode, fromFacility, toFacility, timeOfDay_s, null);
     }
 
     @Override
@@ -210,14 +255,14 @@ public final class MatsimTravelTimes implements TravelTimes {
     @Override
     public TravelTimes duplicate() {
         logger.warn("Creating another TravelTimes object.");
-        MatsimTravelTimes matsimTravelTimes = new MatsimTravelTimes(config);
-        matsimTravelTimes.zones = this.zones;
-        matsimTravelTimes.regions = this.regions;
-        matsimTravelTimes.matsimData = matsimData;
-        matsimTravelTimes.tripRouter = matsimData.createTripRouter();
-        matsimTravelTimes.skimsByMode.putAll(this.skimsByMode);
-        matsimTravelTimes.travelTimesFromRegion.putAll(travelTimesFromRegion);
-        matsimTravelTimes.travelTimesToRegion.putAll(travelTimesToRegion);
-        return matsimTravelTimes;
+        MatsimTravelTimesAndCosts matsimTravelTimesAndCosts = new MatsimTravelTimesAndCosts(config);
+        matsimTravelTimesAndCosts.zones = this.zones;
+        matsimTravelTimesAndCosts.regions = this.regions;
+        matsimTravelTimesAndCosts.matsimData = matsimData;
+        matsimTravelTimesAndCosts.tripRouter = matsimData.createTripRouter();
+        matsimTravelTimesAndCosts.skimsByMode.putAll(this.skimsByMode);
+        matsimTravelTimesAndCosts.travelTimesFromRegion.putAll(travelTimesFromRegion);
+        matsimTravelTimesAndCosts.travelTimesToRegion.putAll(travelTimesToRegion);
+        return matsimTravelTimesAndCosts;
     }
 }

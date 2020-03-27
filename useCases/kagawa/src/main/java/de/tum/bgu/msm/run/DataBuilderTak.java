@@ -17,7 +17,7 @@ import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.GeoDataReaderTak;
 import de.tum.bgu.msm.io.input.*;
-import de.tum.bgu.msm.matsim.MatsimTravelTimes;
+import de.tum.bgu.msm.matsim.MatsimTravelTimesAndCosts;
 import de.tum.bgu.msm.properties.Properties;
 import org.matsim.core.config.Config;
 
@@ -41,7 +41,7 @@ public class DataBuilderTak {
                 accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, jobData);
                 break;
             case MATSIM:
-                travelTimes = new MatsimTravelTimes(config);
+                travelTimes = new MatsimTravelTimesAndCosts(config);
 //                accessibility = new MatsimAccessibility(geoData);
                 accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, jobData);
                 break;

@@ -59,7 +59,7 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
 
         Scenario scenario = ScenarioUtils.loadScenario(matsimConfig);
         Population matsimPopulation = scenario.getPopulation();
-        PopulationFactory matsimPopulationFactory = matsimPopulation.getFactory();
+
 
         HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
         JobDataManager jobDataManager = dataContainer.getJobDataManager();
@@ -77,49 +77,73 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
                 if (person.getOccupation() != Occupation.EMPLOYED || person.getJobId() == -2) { // i.e. person does not work
                     continue;
                 }
-                if (commuteModeChoiceMapping.getMode(person).mode.equals(TransportMode.car)) {
-                    Coordinate dwellingCoordinate;
-                    if (dwelling != null && dwelling.getCoordinate() != null) {
-                        dwellingCoordinate = dwelling.getCoordinate();
-                    } else {
-                        dwellingCoordinate = dataContainer.getGeoData().getZones().get(dwelling.getZoneId()).getRandomCoordinate(SiloUtil.getRandomObject());
-                    }
-                    Coord dwellingCoord = new Coord(dwellingCoordinate.x, dwellingCoordinate.y);
+                String mode = commuteModeChoiceMapping.getMode(person).mode;
+                if (mode.equals(TransportMode.car)) {
+                    Coord dwellingCoord = getOrRandomlyChooseDwellingCoord(dwelling);
 
                     Job job = jobDataManager.getJobFromId(person.getJobId());
-                    Coordinate jobCoordinate;
-                    if (job != null && job.getCoordinate() != null) {
-                        jobCoordinate = job.getCoordinate();
-                    } else {
-                        jobCoordinate = dataContainer.getGeoData().getZones().get(job.getZoneId()).getRandomCoordinate(SiloUtil.getRandomObject());
+                    Coord jobCoord = getOrRandomlyChooseJobCoordinate(job);
+
+                    createHWHPlan(matsimPopulation, person, dwellingCoord, job, jobCoord, TransportMode.car);
+                } else {
+                    if (!properties.transportModel.onlySimulateCarTrips) {
+                        Coord dwellingCoord = getOrRandomlyChooseDwellingCoord(dwelling);
+
+                        Job job = jobDataManager.getJobFromId(person.getJobId());
+                        Coord jobCoord = getOrRandomlyChooseJobCoordinate(job);
+
+                        createHWHPlan(matsimPopulation, person, dwellingCoord, job, jobCoord, mode);
                     }
-                    Coord jobCoord = new Coord(jobCoordinate.x, jobCoordinate.y);
-
-                    org.matsim.api.core.v01.population.Person matsimPerson = matsimPopulationFactory.createPerson(Id.createPersonId(person.getId()));
-                    matsimPopulation.addPerson(matsimPerson);
-
-                    Plan matsimPlan = matsimPopulationFactory.createPlan();
-                    matsimPerson.addPlan(matsimPlan);
-
-                    Activity activity1 = matsimPopulationFactory.createActivityFromCoord("home", dwellingCoord);
-                    Integer departureTime = defineDepartureFromHome(job);
-                    activity1.setEndTime(departureTime);
-                    matsimPlan.addActivity(activity1);
-                    matsimPlan.addLeg(matsimPopulationFactory.createLeg(TransportMode.car));
-
-                    Activity activity2 = matsimPopulationFactory.createActivityFromCoord("work", jobCoord);
-                    activity2.setEndTime(defineWorkEndTime(job, departureTime));
-                    matsimPlan.addActivity(activity2);
-                    matsimPlan.addLeg(matsimPopulationFactory.createLeg(TransportMode.car));
-
-                    Activity activity3 = matsimPopulationFactory.createActivityFromCoord("home", dwellingCoord);
-
-                    matsimPlan.addActivity(activity3);
                 }
             }
         }
         logger.info("Finished creating MATSim scenario.");
         return scenario;
+    }
+
+    private Coord getOrRandomlyChooseDwellingCoord(Dwelling dwelling) {
+        Coordinate dwellingCoordinate;
+        if (dwelling != null && dwelling.getCoordinate() != null) {
+            dwellingCoordinate = dwelling.getCoordinate();
+        } else {
+            dwellingCoordinate = dataContainer.getGeoData().getZones().get(dwelling.getZoneId()).getRandomCoordinate(SiloUtil.getRandomObject());
+        }
+        return new Coord(dwellingCoordinate.x, dwellingCoordinate.y);
+    }
+
+    private Coord getOrRandomlyChooseJobCoordinate(Job job) {
+        Coordinate jobCoordinate;
+        if (job != null && job.getCoordinate() != null) {
+            jobCoordinate = job.getCoordinate();
+        } else {
+            jobCoordinate = dataContainer.getGeoData().getZones().get(job.getZoneId()).getRandomCoordinate(SiloUtil.getRandomObject());
+        }
+        return new Coord(jobCoordinate.x, jobCoordinate.y);
+    }
+
+    private void createHWHPlan(Population matsimPopulation, Person person, Coord dwellingCoord, Job job, Coord jobCoord, String transportMode) {
+        PopulationFactory populationFactory = matsimPopulation.getFactory();
+
+        org.matsim.api.core.v01.population.Person matsimPerson = populationFactory.createPerson(Id.createPersonId(person.getId()));
+        matsimPopulation.addPerson(matsimPerson);
+
+        Plan matsimPlan = populationFactory.createPlan();
+        matsimPerson.addPlan(matsimPlan);
+
+        Activity activity1 = populationFactory.createActivityFromCoord("home", dwellingCoord);
+        Integer departureTime = defineDepartureFromHome(job);
+        activity1.setEndTime(departureTime);
+        matsimPlan.addActivity(activity1);
+        matsimPlan.addLeg(populationFactory.createLeg(transportMode));
+
+        Activity activity2 = populationFactory.createActivityFromCoord("work", jobCoord);
+        activity2.setEndTime(defineWorkEndTime(job, departureTime));
+        matsimPlan.addActivity(activity2);
+        matsimPlan.addLeg(populationFactory.createLeg(transportMode));
+
+        Activity activity3 = populationFactory.createActivityFromCoord("home", dwellingCoord);
+
+        matsimPlan.addActivity(activity3);
     }
 
     /**

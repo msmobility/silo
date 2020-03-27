@@ -75,12 +75,8 @@ public class ModeChoiceResultsMonitor implements ResultsMonitor {
 
         for (Household household : dataContainer.getHouseholdDataManager().getHouseholds()) {
 
-            Object cmcm = household.getAttributes().get("COMUTE_MODE_CHOICE_MAPPING");
-
-            if (cmcm != null){
-
+            household.getAttribute("COMUTE_MODE_CHOICE_MAPPING").ifPresent(cmcm -> {
                 CommuteModeChoiceMapping commuteModeChoiceMapping = (CommuteModeChoiceMapping) cmcm;
-
                 for (Person person : household.getPersons().values()){
 
                     CommuteModeChoiceMapping.CommuteMode mode = commuteModeChoiceMapping.getMode(person);
@@ -115,7 +111,7 @@ public class ModeChoiceResultsMonitor implements ResultsMonitor {
                         pw.print(",");
                         pw.print(dataContainer.getTravelTimes().getTravelTime(dd, jj, properties.transportModel.peakHour_s, TransportMode.pt));
                         pw.print(",");
-                        int parkingAtHome = (int) dd.getAttributes().get("PARKING_SPACES");
+                        int parkingAtHome = (int) dd.getAttribute("PARKING_SPACES").orElse(-1);
                         pw.print(parkingAtHome);
                         pw.print(",");
                         LocationParkingData parking = (LocationParkingData) dataContainer.getGeoData().getZones().get(jj.getZoneId()).getAttributes().get("PARKING");
@@ -127,11 +123,8 @@ public class ModeChoiceResultsMonitor implements ResultsMonitor {
 
                 }
 
-            }
-
+            });
         }
-
-
     }
 
     @Override

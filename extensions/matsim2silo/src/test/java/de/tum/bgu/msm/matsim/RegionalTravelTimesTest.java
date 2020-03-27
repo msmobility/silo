@@ -65,7 +65,7 @@ public class RegionalTravelTimesTest {
 
         final Config config = ConfigUtils.createConfig();
         Properties properties = Properties.initializeProperties("./test/silo.properties");
-        MatsimTravelTimes travelTimes = new MatsimTravelTimes(config);
+        MatsimTravelTimesAndCosts travelTimes = new MatsimTravelTimesAndCosts(config);
         DefaultDataContainer dataContainer = new DefaultDataContainer(geoData, null,
                 null, null, travelTimes, null, null, properties);
         final Network network = getNetwork();

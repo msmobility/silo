@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.io;
 
-import de.tum.bgu.msm.data.person.MarylandPerson;
+import de.tum.bgu.msm.data.person.PersonMstm;
 import de.tum.bgu.msm.data.person.PersonfactoryMstm;
 import de.tum.bgu.msm.data.person.Race;
 import de.tum.bgu.msm.data.household.Household;
@@ -71,7 +71,7 @@ public class PersonReaderMstm {
                 if (household == null) {
                     throw new RuntimeException("Person " + id + " refers to non existing household " + hhid + "!");
                 }
-                MarylandPerson pp = factory.createPerson(id, age, gender, occupation, pr, workplace, income);
+                PersonMstm pp = factory.createPerson(id, age, gender, occupation, pr, workplace, income);
                 pp.setRace(race);
                 householdDataManager.addPerson(pp);
                 householdDataManager.addPersonToHousehold(pp, household);

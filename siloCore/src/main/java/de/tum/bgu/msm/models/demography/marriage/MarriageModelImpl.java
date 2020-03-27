@@ -23,11 +23,13 @@ import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
-import de.tum.bgu.msm.data.person.*;
+import de.tum.bgu.msm.data.person.Gender;
+import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.person.PersonRole;
 import de.tum.bgu.msm.events.impls.person.MarriageEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
-import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
+import de.tum.bgu.msm.models.relocation.migration.InOutMigration;
 import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SampleException;
@@ -47,7 +49,7 @@ public class MarriageModelImpl extends AbstractModel implements MarriageModel {
 
     private final static Logger logger = Logger.getLogger(MarriageModelImpl.class);
 
-    private final InOutMigrationImpl iomig;
+    private final InOutMigration iomig;
     private final MovesModelImpl movesModel;
     private final CreateCarOwnershipModel carOwnership;
     private final HouseholdFactory hhFactory;
@@ -73,7 +75,7 @@ public class MarriageModelImpl extends AbstractModel implements MarriageModel {
     // performance, the person type of this person in the marriage market is not updated.
 
     public MarriageModelImpl(DataContainer dataContainer, MovesModelImpl movesModel,
-                             InOutMigrationImpl iomig, CreateCarOwnershipModel carOwnership,
+                             InOutMigration iomig, CreateCarOwnershipModel carOwnership,
                              HouseholdFactory hhFactory, Properties properties, MarriageStrategy strategy, Random rnd) {
         super(dataContainer, properties, rnd);
         this.movesModel = movesModel;
