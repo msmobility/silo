@@ -100,7 +100,7 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
                 + properties.jobData.jobsFinalFileName
                 + "_"
                 + properties.main.endYear + ".csv";
-        new DefaultJobWriter(this).writeJobs(filejj);
+        new DefaultJobWriter(this.jobData.getJobs()).writeJobs(filejj);
     }
 
     @Override
@@ -349,7 +349,8 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
                 if (numberOfVacantJobs > 0) {
                     int travelTime_min = (int) ((travelTimes.getTravelTimeToRegion(homeZone, reg,
                             properties.transportModel.peakHour_s, TransportMode.car) + 0.5) / 60.);
-                    final double prob = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, travelTime_min)) * (double) numberOfVacantJobs;
+                    //todo make region probability sensitve to mode choice to find a vacant job
+                    final double prob = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, travelTime_min), TransportMode.car) * (double) numberOfVacantJobs;
                     regionSampler.incrementalAdd(reg, prob);
                 }
             }

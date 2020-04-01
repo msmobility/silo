@@ -7,7 +7,7 @@ import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
-import de.tum.bgu.msm.io.OmxTravelTimesWriter;
+import de.tum.bgu.msm.io.output.OmxTravelTimesWriter;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix2D;
 import org.junit.Assert;
 import org.junit.Before;
@@ -18,6 +18,7 @@ import org.opengis.feature.simple.SimpleFeature;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Random;
 
 public class OmxSkimTest {
@@ -62,6 +63,11 @@ public class OmxSkimTest {
             @Override
             public void setDevelopment(Development development) {
 
+            }
+
+            @Override
+            public Map<String, Object> getAttributes() {
+                return null;
             }
 
             @Override

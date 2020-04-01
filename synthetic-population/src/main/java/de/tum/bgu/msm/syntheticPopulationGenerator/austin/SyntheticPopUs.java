@@ -543,7 +543,7 @@ public class SyntheticPopUs implements SyntheticPopI {
                             jobData.getJobFromId(workplace).setWorkerID(newPpId);  // -2 for jobs outside of the study area
                         }
 
-                        MarylandPerson pp = (MarylandPerson) householdData.getPersonFactory().createPerson(newPpId, age, Gender.valueOf(gender), occ, null, workplace, income);
+                        PersonMstm pp = (PersonMstm) householdData.getPersonFactory().createPerson(newPpId, age, Gender.valueOf(gender), occ, null, workplace, income);
                         pp.setRace(race);
                         householdData.addPerson(pp);
                         householdData.addPersonToHousehold(pp, household);
@@ -797,7 +797,7 @@ public class SyntheticPopUs implements SyntheticPopI {
                 	Zone homeZone = geoData.getZones().get(homeTaz);
                 	Zone destinationZone = zone;
                     int distance = (int) (travelTimes.getTravelTime(homeZone, destinationZone, Properties.get().transportModel.peakHour_s, "car") + 0.5);
-                    zoneProbabilities.put(zone, commutingTimeProbability.getCommutingTimeProbability(distance) * (double) numberOfJobsInThisZone);
+                    zoneProbabilities.put(zone, commutingTimeProbability.getCommutingTimeProbability(distance, TransportMode.car) * (double) numberOfJobsInThisZone);
                 } else {
                     zoneProbabilities.put(zone, 0.);
                 }

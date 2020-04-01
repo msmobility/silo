@@ -1,18 +1,19 @@
 package de.tum.bgu.msm.data.household;
 
-import de.tum.bgu.msm.data.person.MarylandPerson;
+import de.tum.bgu.msm.data.person.PersonMstm;
 import de.tum.bgu.msm.data.person.Race;
 import de.tum.bgu.msm.data.person.Person;
 
 import java.util.Map;
+import java.util.Optional;
 
 
-public class MarylandHousehold implements Household {
+public class HouseholdMstm implements Household {
 
     private final HouseholdImpl delegate;
     private Race race;
 
-    public MarylandHousehold(int id, int dwellingId, int autos) {
+    public HouseholdMstm(int id, int dwellingId, int autos) {
         delegate = new HouseholdImpl(id, dwellingId, autos);
     }
 
@@ -70,6 +71,16 @@ public class MarylandHousehold implements Household {
     }
 
     @Override
+    public Optional<Object> getAttribute(String key) {
+        return delegate.getAttribute(key);
+    }
+
+    @Override
+    public void setAttribute(String key, Object value) {
+        delegate.setAttribute(key, value);
+    }
+
+    @Override
     public int getId() {
         return delegate.getId();
     }
@@ -82,8 +93,8 @@ public class MarylandHousehold implements Household {
         Race householdRace = null;
         for (Person pp : getPersons().values()) {
             if (householdRace == null) {
-                householdRace = ((MarylandPerson) pp).getRace();
-            } else if (((MarylandPerson) pp).getRace() != householdRace) {
+                householdRace = ((PersonMstm) pp).getRace();
+            } else if (((PersonMstm) pp).getRace() != householdRace) {
                 race = Race.other;
             }
         }

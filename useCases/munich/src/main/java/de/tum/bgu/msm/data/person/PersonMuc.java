@@ -3,6 +3,8 @@ package de.tum.bgu.msm.data.person;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.schools.PersonWithSchool;
 
+import java.util.Optional;
+
 public class PersonMuc implements PersonWithSchool {
 
     private final Person delegate;
@@ -144,5 +146,15 @@ public class PersonMuc implements PersonWithSchool {
                 +"\nSchool type               " + schoolType
                 +"\nSchool place               " + schoolPlace
                 +"\nSchool id    " + schoolId;
+    }
+
+    @Override
+    public Optional<Object> getAttribute(String key) {
+        return delegate.getAttribute(key);
+    }
+
+    @Override
+    public void setAttribute(String key, Object value) {
+        delegate.setAttribute(key, value);
     }
 }

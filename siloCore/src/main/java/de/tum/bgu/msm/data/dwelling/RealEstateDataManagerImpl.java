@@ -109,7 +109,7 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
                 + "_"
                 + properties.main.endYear
                 + ".csv";
-        new DefaultDwellingWriter(this).writeDwellings(filedd);
+        new DefaultDwellingWriter(this.dwellingData.getDwellings()).writeDwellings(filedd);
     }
 
     @Override

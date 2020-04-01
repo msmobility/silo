@@ -1,9 +1,9 @@
 package de.tum.bgu.msm.io.output;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.zip.GZIPOutputStream;
 
 public class YearByYearCsvModelTracker {
 
@@ -11,7 +11,7 @@ public class YearByYearCsvModelTracker {
     private final String baseFileName;
     private final String header;
 
-    private BufferedWriter currentWriter;
+    private GZIPOutputStream currentWriter;
 
     public YearByYearCsvModelTracker(Path rootDirectory, String baseFileName, String header) {
         this.rootDirectory = rootDirectory;
@@ -27,13 +27,16 @@ public class YearByYearCsvModelTracker {
 
     public void newYear(int currentYear) {
         try {
-            if(currentWriter != null) {
+            if (currentWriter != null) {
                 currentWriter.flush();
                 currentWriter.close();
             }
-            currentWriter = Files.newBufferedWriter(rootDirectory.resolve(baseFileName+currentYear+".csv"));
-            currentWriter.write(header);
-            currentWriter.newLine();
+
+            OutputStream fos = Files.newOutputStream(rootDirectory.resolve(baseFileName + currentYear + ".csv.gz"));
+            currentWriter = new GZIPOutputStream(fos);
+
+            currentWriter.write(header.getBytes());
+            currentWriter.write("\n".getBytes());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -52,8 +55,8 @@ public class YearByYearCsvModelTracker {
 
     public void trackRecord(String record) {
         try {
-            currentWriter.write(record);
-            currentWriter.newLine();
+            currentWriter.write(record.getBytes());
+            currentWriter.write("\n".getBytes());
         } catch (IOException e) {
             e.printStackTrace();
         }

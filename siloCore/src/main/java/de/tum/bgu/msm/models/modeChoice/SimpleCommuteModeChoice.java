@@ -53,14 +53,14 @@ public class SimpleCommuteModeChoice implements CommuteModeChoice {
                 Job job = jobDataManager.getJobFromId(pp.getJobId());
 
                 int ptMinutes = (int) travelTimes.getTravelTime(from, job, job.getStartTimeInSeconds().orElse((int) properties.transportModel.peakHour_s), TransportMode.pt);
-                double ptUtility = commutingTimeProbability.getCommutingTimeProbability(ptMinutes);
+                double ptUtility = commutingTimeProbability.getCommutingTimeProbability(ptMinutes, TransportMode.pt);
 
                 if (!pp.hasDriverLicense() || household.getAutos() == 0) {
                     CommuteModeChoiceMapping.CommuteMode ptCommuteMode = new CommuteModeChoiceMapping.CommuteMode(TransportMode.pt, ptUtility);
                     commuteModeChoiceMapping.assignMode(ptCommuteMode, pp);
                 } else {
                     int carMinutes = (int) travelTimes.getTravelTime(from, job, job.getStartTimeInSeconds().orElse((int) properties.transportModel.peakHour_s), TransportMode.car);
-                    double carUtility = commutingTimeProbability.getCommutingTimeProbability(carMinutes);
+                    double carUtility = commutingTimeProbability.getCommutingTimeProbability(carMinutes, TransportMode.car);
                     Map<String, Double> utilityByMode = new HashMap<>();
                     utilityByMode.put(TransportMode.car, carUtility);
                     utilityByMode.put(TransportMode.pt, ptUtility);
@@ -118,14 +118,14 @@ public class SimpleCommuteModeChoice implements CommuteModeChoice {
 
 
                 int ptMinutes = (int) travelTimes.getTravelTimeFromRegion(region, jobZone, job.getStartTimeInSeconds().orElse((int) properties.transportModel.peakHour_s), TransportMode.pt);
-                double ptUtility = commutingTimeProbability.getCommutingTimeProbability(ptMinutes);
+                double ptUtility = commutingTimeProbability.getCommutingTimeProbability(ptMinutes, TransportMode.pt);
 
                 if (!pp.hasDriverLicense() || household.getAutos() == 0) {
                     CommuteModeChoiceMapping.CommuteMode ptCommuteMode = new CommuteModeChoiceMapping.CommuteMode(TransportMode.pt, ptUtility);
                     commuteModeChoiceMapping.assignMode(ptCommuteMode, pp);
                 } else {
                     int carMinutes = (int) travelTimes.getTravelTimeFromRegion(region, jobZone, job.getStartTimeInSeconds().orElse((int) properties.transportModel.peakHour_s), TransportMode.car);
-                    double carUtility = commutingTimeProbability.getCommutingTimeProbability(carMinutes);
+                    double carUtility = commutingTimeProbability.getCommutingTimeProbability(carMinutes, TransportMode.car);
                     Map<String, Double> utilityByMode = new HashMap<>();
                     utilityByMode.put(TransportMode.car, carUtility);
                     utilityByMode.put(TransportMode.pt, ptUtility);

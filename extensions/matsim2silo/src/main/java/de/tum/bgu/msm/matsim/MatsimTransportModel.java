@@ -22,7 +22,6 @@ package de.tum.bgu.msm.matsim;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
-import de.tum.bgu.msm.matsim.accessibility.MatsimAccessibility;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
@@ -40,8 +39,6 @@ import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.ScenarioUtils;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
 
 import java.util.Objects;
 
@@ -56,7 +53,7 @@ public final class MatsimTransportModel implements TransportModel {
     private final Config initialMatsimConfig;
 
     private final MatsimData matsimData;
-    private final MatsimTravelTimes internalTravelTimes;
+    private final MatsimTravelTimesAndCosts internalTravelTimes;
 
     private final DataContainer dataContainer;
 
@@ -74,10 +71,10 @@ public final class MatsimTransportModel implements TransportModel {
         ConfigUtils.writeMinimalConfig(initialMatsimConfig, file.getAbsolutePath());
 
         final TravelTimes travelTimes = dataContainer.getTravelTimes();
-        if (travelTimes instanceof MatsimTravelTimes) {
-            this.internalTravelTimes = (MatsimTravelTimes) travelTimes;
+        if (travelTimes instanceof MatsimTravelTimesAndCosts) {
+            this.internalTravelTimes = (MatsimTravelTimesAndCosts) travelTimes;
         } else {
-            this.internalTravelTimes = new MatsimTravelTimes(matsimConfig);
+            this.internalTravelTimes = new MatsimTravelTimesAndCosts(matsimConfig);
         }
         this.matsimData = matsimData;
         this.scenarioAssembler = scenarioAssembler;

@@ -2,6 +2,7 @@ package de.tum.bgu.msm.data.job;
 
 import de.tum.bgu.msm.data.MicroLocation;
 import org.locationtech.jts.geom.Coordinate;
+import org.matsim.utils.objectattributes.attributable.Attributes;
 
 import java.util.Optional;
 
@@ -15,6 +16,8 @@ public class JobMuc implements Job, MicroLocation {
     private Coordinate coordinate;
     private int zoneId;
 
+    private final Attributes attributes = new Attributes();
+
     JobMuc(int id, int zoneId, Coordinate coordinate, int workerId, String type) {
         this.id = id;
         this.coordinate = coordinate;
@@ -23,14 +26,17 @@ public class JobMuc implements Job, MicroLocation {
         this.zoneId = zoneId;
     }
 
+    @Override
     public int getId () {
         return id;
     }
 
+    @Override
     public int getWorkerId() {
         return workerId;
     }
 
+    @Override
     public String getType() {
         return type;
     }
@@ -39,6 +45,7 @@ public class JobMuc implements Job, MicroLocation {
         this.coordinate = coordinate;
     }
 
+    @Override
     public void setWorkerID(int personID) {
         this.workerId = personID;
     }
@@ -48,10 +55,12 @@ public class JobMuc implements Job, MicroLocation {
         this.workingTimeInSeconds = workingTimeInSeconds;
     }
 
+    @Override
     public Optional<Integer> getStartTimeInSeconds() {
         return Optional.of(startTimeInSeconds);
     }
 
+    @Override
     public Optional<Integer> getWorkingTimeInSeconds() {
         return Optional.of(workingTimeInSeconds);
     }
@@ -73,5 +82,15 @@ public class JobMuc implements Job, MicroLocation {
     @Override
     public Coordinate getCoordinate() {
         return coordinate;
+    }
+
+    @Override
+    public Optional<Object> getAttribute(String key) {
+        return Optional.ofNullable(attributes.getAttribute(key));
+    }
+
+    @Override
+    public void setAttribute(String key, Object value) {
+        attributes.putAttribute(key, value);
     }
 }

@@ -3,6 +3,7 @@ package de.tum.bgu.msm.scenarios.disabilities;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.accessibility.AccessibilityImpl;
 import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
+import de.tum.bgu.msm.data.accessibility.CommutingTimeProbabilityImpl;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.geo.DefaultGeoData;
 import de.tum.bgu.msm.data.geo.GeoData;
@@ -13,7 +14,7 @@ import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.io.input.*;
-import de.tum.bgu.msm.matsim.MatsimTravelTimes;
+import de.tum.bgu.msm.matsim.MatsimTravelTimesAndCosts;
 import de.tum.bgu.msm.models.disability.DefaultDisabilityStrategy;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.*;
@@ -42,7 +43,7 @@ public class DataBuilderDisability {
                 accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, jobData);
                 break;
             case MATSIM:
-                travelTimes = new MatsimTravelTimes(config);
+                travelTimes = new MatsimTravelTimesAndCosts(config);
 //                accessibility = new MatsimAccessibility(geoData);
                 accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, jobData);
                 break;
@@ -50,7 +51,7 @@ public class DataBuilderDisability {
                 break;
         }
 
-        CommutingTimeProbability commutingTimeProbability = new CommutingTimeProbability(properties);
+        CommutingTimeProbability commutingTimeProbability = new CommutingTimeProbabilityImpl(properties);
 
         //TODO: revise this!
         new JobType(properties.jobData.jobTypes);
