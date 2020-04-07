@@ -29,6 +29,9 @@ public class GermanyPropertiesSynPop extends AbstractPropertiesSynPop {
         marginalsMunicipality = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"marginals.municipality","input/syntheticPopulation/" + state + "/marginalsMunicipality.csv"));
         marginalsMunicipality.buildIndex(marginalsMunicipality.getColumnPosition("ID_city"));
 
+        jobsByTaz = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"jobs.by.taz","input/syntheticPopulation/" + state + "/jobByType.csv"));
+        jobsByTaz.buildIndex(jobsByTaz.getColumnPosition("taz"));
+
 
         //todo same as municipalities
         marginalsCounty = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"marginals.county","input/syntheticPopulation/" + state + "/marginalsCounty.csv"));
