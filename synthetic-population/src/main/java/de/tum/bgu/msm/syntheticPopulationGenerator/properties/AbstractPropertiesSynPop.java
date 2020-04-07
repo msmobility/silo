@@ -18,6 +18,7 @@ public abstract class AbstractPropertiesSynPop {
     public boolean runDisability;
     public String[] attributesMunicipality;
     public TableDataSet marginalsMunicipality;
+    public TableDataSet jobsByTaz;
     public String[] attributesCounty;
     public TableDataSet marginalsCounty;
     public TableDataSet selectedMunicipalities;

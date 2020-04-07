@@ -11,6 +11,7 @@ import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -55,8 +56,16 @@ public class AssignJobs {
         RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
         HouseholdDataManager households = dataContainer.getHouseholdDataManager();
         for (Person pp : workerArrayList){
-            int selectedJobType = 1;//pp.getJobType();
+            String selectedJobTypeAsString = (String) ((PersonMuc) pp).getAdditionalAttributes().get("jobType");
+            ///todo found some empty job types
+            if (selectedJobTypeAsString.equalsIgnoreCase("")){
+                ((PersonMuc) pp).getAdditionalAttributes().put("jobType", "Serv");
+            }
+
+            int selectedJobType = jobIntTypes.get(selectedJobTypeAsString);
+
             Household hh = pp.getHousehold();
+
             int origin = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
             int[] workplace = selectWorkplace(origin, selectedJobType);
             if (workplace[0] > 0) {
@@ -73,7 +82,8 @@ public class AssignJobs {
     }
 
 
-   private void calculateDistanceImpedance(){
+
+    private void calculateDistanceImpedance(){
 
         distanceImpedance = new Matrix(dataSetSynPop.getDistanceTazToTaz().getRowCount(), dataSetSynPop.getDistanceTazToTaz().getColumnCount());
         Map<Integer, Float> utilityHBW = dataSetSynPop.getTripLengthDistribution().column("HBW");
