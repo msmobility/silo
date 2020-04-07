@@ -56,6 +56,7 @@ public abstract class AbstractPropertiesSynPop {
     public String microPersonsFileName;
     public String microHouseholdsFileName;
     public String microDwellingsFileName;
+    public String microJobsFileName;
     public int[] ageBracketsBorough;
     public String[] attributesBorough;
     public TableDataSet marginalsBorough;

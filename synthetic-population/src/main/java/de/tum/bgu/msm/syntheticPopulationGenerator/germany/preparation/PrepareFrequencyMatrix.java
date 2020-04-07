@@ -271,7 +271,7 @@ public class PrepareFrequencyMatrix {
                         frequencyMatrix.setValueAt(i, "borough_hhWithChildren", 1);
                     } else if (age < 60){
                         int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_age59");
-                        frequencyMatrix.setValueAt(i, "borough_age30", value1);
+                        frequencyMatrix.setValueAt(i, "borough_age59", value1);
                     } else {
                         int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_age99");
                         frequencyMatrix.setValueAt(i, "borough_age99", value1);
@@ -281,31 +281,31 @@ public class PrepareFrequencyMatrix {
                     case "04_Bremen":
                     if (gender == 2) {
                         if (age < 19){
-                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_females_18");
-                            frequencyMatrix.setValueAt(i, "borough_females_18", value1);
+                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_female18");
+                            frequencyMatrix.setValueAt(i, "borough_female18", value1);
                         } else if (age < 36){
-                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_females_35");
-                            frequencyMatrix.setValueAt(i, "borough_females_35", value1);
+                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_female35");
+                            frequencyMatrix.setValueAt(i, "borough_female35", value1);
                         } else if (age < 66){
-                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_females_65");
-                            frequencyMatrix.setValueAt(i, "borough_females_65", value1);
+                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_female65");
+                            frequencyMatrix.setValueAt(i, "borough_female65", value1);
                         } else {
-                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_females_99");
-                            frequencyMatrix.setValueAt(i, "borough_females_99", value1);
+                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_female99");
+                            frequencyMatrix.setValueAt(i, "borough_female99", value1);
                         }
                     } else {
                         if (age < 19){
-                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_females_18");
-                            frequencyMatrix.setValueAt(i, "borough_females_18", value1);
+                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_male18");
+                            frequencyMatrix.setValueAt(i, "borough_male18", value1);
                         } else if (age < 36){
-                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_females_35");
-                            frequencyMatrix.setValueAt(i, "borough_females_35", value1);
+                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_male35");
+                            frequencyMatrix.setValueAt(i, "borough_male35", value1);
                         } else if (age < 66){
-                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_females_65");
-                            frequencyMatrix.setValueAt(i, "borough_females_65", value1);
+                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_male65");
+                            frequencyMatrix.setValueAt(i, "borough_male65", value1);
                         } else {
-                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_females_99");
-                            frequencyMatrix.setValueAt(i, "borough_females_99", value1);
+                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_male99");
+                            frequencyMatrix.setValueAt(i, "borough_male99", value1);
                         }
                     }
                     if (age < 19) {
@@ -388,8 +388,8 @@ public class PrepareFrequencyMatrix {
                         frequencyMatrix.setValueAt(i, "borough_females", value1);
                     }
                     if (age < 18){
-                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_age18");
-                        frequencyMatrix.setValueAt(i, "borough_age18", value1);
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_age17");
+                        frequencyMatrix.setValueAt(i, "borough_age17", value1);
                     } else if (age < 30){
                         int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_age29");
                         frequencyMatrix.setValueAt(i, "borough_age29", value1);
@@ -489,17 +489,17 @@ public class PrepareFrequencyMatrix {
                         int value2 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_males");
                         frequencyMatrix.setValueAt(i, "borough_males", value2);
                         if (age < 19){
-                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_females_18");
-                            frequencyMatrix.setValueAt(i, "borough_females_18", value1);
+                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_males_18");
+                            frequencyMatrix.setValueAt(i, "borough_males_18", value1);
                         } else if (age < 36){
-                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_females_35");
-                            frequencyMatrix.setValueAt(i, "borough_females_35", value1);
+                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_males_35");
+                            frequencyMatrix.setValueAt(i, "borough_males_35", value1);
                         } else if (age < 66){
-                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_females_65");
-                            frequencyMatrix.setValueAt(i, "borough_females_65", value1);
+                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_males_65");
+                            frequencyMatrix.setValueAt(i, "borough_males_65", value1);
                         } else {
-                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_females_99");
-                            frequencyMatrix.setValueAt(i, "borough_females_99", value1);
+                            int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_males_99");
+                            frequencyMatrix.setValueAt(i, "borough_males_99", value1);
                         }
                     }
                     break;
@@ -507,8 +507,8 @@ public class PrepareFrequencyMatrix {
                 case "14_Dresden":
                     if (age < 19) {
                         frequencyMatrix.setValueAt(i, "borough_hhWithChildren", 1);
-                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_females_18");
-                        frequencyMatrix.setValueAt(i, "borough_females_18", value1);
+                        int value1 = 1 + (int) frequencyMatrix.getValueAt(i, "borough_age18");
+                        frequencyMatrix.setValueAt(i, "borough_age18", value1);
                     }
                     break;
 

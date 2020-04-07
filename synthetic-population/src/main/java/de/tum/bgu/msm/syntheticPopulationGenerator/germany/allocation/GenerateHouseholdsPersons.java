@@ -151,7 +151,10 @@ public class GenerateHouseholdsPersons {
             probabilityId[i] = dataSetSynPop.getWeights().getValueAt(i + 1, Integer.toString(municipality));
             ids[i] = (int) dataSetSynPop.getWeights().getValueAt(i + 1, "ID");
         }
-        probabilityTAZ = new double[dataSetSynPop.getProbabilityZone().get(municipality).keySet().size()];
+        Map<Integer, Map<Integer, Float>> probabilityZone = dataSetSynPop.getProbabilityZone();
+        Map<Integer, Float> integerFloatMap = probabilityZone.get(municipality);
+        int size = integerFloatMap.keySet().size();
+        probabilityTAZ = new double[size];
         sumTAZs = 0;
         probabilityTAZ = dataSetSynPop.getProbabilityZone().get(municipality).values().stream().mapToDouble(Number::doubleValue).toArray();
         for (int i = 1; i < probabilityTAZ.length; i++) {

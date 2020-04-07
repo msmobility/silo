@@ -22,6 +22,7 @@ public final class MovesProperties {
     }
 
     public MovesProperties(ResourceBundle bundle) {
+
         PropertiesUtil.newPropertySubmodule("Relocation properties - control of population");
         populationControlTotal = PopulationControlTotalMethod.valueOf(
                 PropertiesUtil.getStringProperty(bundle, "population.control.total", "rate").toUpperCase());

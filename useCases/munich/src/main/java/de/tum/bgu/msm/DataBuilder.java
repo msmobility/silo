@@ -1,5 +1,6 @@
 package de.tum.bgu.msm;
 
+import de.tum.bgu.msm.data.DataContainerMuc;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.accessibility.AccessibilityImpl;
 import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
@@ -72,7 +73,7 @@ public class DataBuilder {
 
         SchoolData schoolData = new SchoolDataImpl(geoData, dwellingData, properties);
 
-        return new DataContainerWithSchoolsImpl(geoData, realEstateDataManager, jobDataManager, householdDataManager, travelTimes, accessibility,
+        return new DataContainerMuc(geoData, realEstateDataManager, jobDataManager, householdDataManager, travelTimes, accessibility,
         		commutingTimeProbability, schoolData, properties);
     }
 

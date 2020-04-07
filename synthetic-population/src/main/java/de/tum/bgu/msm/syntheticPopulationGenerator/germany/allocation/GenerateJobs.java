@@ -30,10 +30,15 @@ public class GenerateJobs {
         for (int municipality : dataSetSynPop.getMunicipalities()){
             logger.info("   Municipality " + municipality + ". Starting to generate jobs");
             for (String jobType : PropertiesSynPop.get().main.jobStringType) {
+                // read instaedof marginals Municipality another file with all job total by state by skim matrix zone for a certain state
+                // no need to loop for probabilities because this is the higher resolution - do a for loop to generate each job "keep this for future,when we have jobs by PLZ
+                // keep the next three lines
                 if (PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, jobType) > 0.1) {
-                    initializeTAZprobability(municipality, jobType);
+                    initializeTAZprobability(municipality, jobType); // change this. vreate one file for the whole Germany. change the file with jobs, make uniqe file
                     generateJobsByTypeAtMunicipalityWithReplacement(municipality, jobType);
                 }
+                int numberOfJobs = 0;
+                //generateJobsInTAZ(municipality, jobType, numberOfJobs);
             }
         }
     }

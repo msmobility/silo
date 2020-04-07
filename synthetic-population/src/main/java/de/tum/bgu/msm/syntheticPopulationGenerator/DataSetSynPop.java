@@ -53,9 +53,11 @@ public class DataSetSynPop {
     private Table<Integer, String, Integer> householdTable;
     private Table<Integer, String, Integer> personTable;
     private Table<Integer, String, Integer> dwellingTable;
+    private Table<Integer, String, Integer> jobTable;//new
     private TableDataSet householdDataSet;
     private TableDataSet personDataSet;
     private TableDataSet dwellingDataSet;
+    private TableDataSet jobDataSet;//new
 
     private Map<Integer, SimpleFeature> zoneFeatureMap;
 
@@ -218,10 +220,12 @@ public class DataSetSynPop {
     }
 
     public Table<Integer, String, Integer> getPersonTable() {
+
         return personTable;
     }
 
     public void setPersonTable(Table<Integer, String, Integer> personTable) {
+
         this.personTable = personTable;
     }
 
@@ -230,8 +234,20 @@ public class DataSetSynPop {
     }
 
     public void setDwellingTable(Table<Integer, String, Integer> dwellingTable) {
+
         this.dwellingTable = dwellingTable;
     }
+
+    //new
+    public Table<Integer, String, Integer> getJobTable() {
+        return jobTable;
+    }
+
+    public void setJobTable(Table<Integer, String, Integer> dwellingTable) {
+
+        this.jobTable = jobTable;
+    }
+    //new
 
     public Table<Integer, Integer, Integer> getSchoolCapacity() {
         return schoolCapacity;
@@ -287,6 +303,14 @@ public class DataSetSynPop {
 
     public void setDwellingDataSet(TableDataSet dwellingDataSet) {
         this.dwellingDataSet = dwellingDataSet;
+    }
+
+    public TableDataSet getJobDataSet() {
+        return jobDataSet;
+    }
+
+    public void setJobDataSet(TableDataSet jobDataSet) {
+        this.jobDataSet = jobDataSet;
     }
 
     public Map<Integer, SimpleFeature> getZoneFeatureMap() {

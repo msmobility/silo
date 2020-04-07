@@ -17,7 +17,8 @@ public class GermanyPropertiesSynPop extends AbstractPropertiesSynPop {
         runSyntheticPopulation = PropertiesUtil.getBooleanProperty(bundle, "run.synth.pop.generator", false);
         runIPU = PropertiesUtil.getBooleanProperty(bundle, "run.ipu.synthetic.pop", false);
         runAllocation = PropertiesUtil.getBooleanProperty(bundle, "run.population.allocation", false);
-        runJobAllocation = PropertiesUtil.getBooleanProperty(bundle, "run.job.de.tum.bgu.msm.syntheticPopulationGenerator.germany.disability ", false);
+        runJobAllocation = PropertiesUtil.getBooleanProperty(bundle, "run.job.de.tum.bgu.msm.syntheticPopulationGenerator.germany.disability ", true); // was there initially. was true - than can not find Agri
+        //runJobAllocation = PropertiesUtil.getBooleanProperty(bundle, "run.job.allocation", true);
         twoGeographicalAreasIPU = PropertiesUtil.getBooleanProperty(bundle, "run.ipu.city.and.county", false);
         boroughIPU = PropertiesUtil.getBooleanProperty(bundle,"run.three.areas",false);
         runDisability = PropertiesUtil.getBooleanProperty(bundle, "run.disability", false);

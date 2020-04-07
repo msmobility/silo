@@ -95,10 +95,10 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
                 + ".csv";
         new DefaultHouseholdWriter(this).writeHouseholds(filehh);
 
-        String filepp = outputDirectory +"/"+ properties.householdData.personFinalFileName + "_"
-                + properties.main.endYear
-                + ".csv";
-        new DefaultPersonWriter(householdData).writePersons(filepp);
+//        String filepp = outputDirectory +"/"+ properties.householdData.personFinalFileName + "_"
+//                + properties.main.endYear
+//                + ".csv";
+//        new DefaultPersonWriter(householdData).writePersons(filepp);
     }
 
     @Override
