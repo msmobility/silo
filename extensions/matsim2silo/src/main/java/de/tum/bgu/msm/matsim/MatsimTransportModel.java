@@ -18,7 +18,6 @@
  * *********************************************************************** */
 package de.tum.bgu.msm.matsim;
 
-
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
@@ -143,6 +142,9 @@ public final class MatsimTransportModel implements TransportModel {
         config.controler().setWritePlansInterval(Math.max(config.controler().getLastIteration(), 1));
         config.controler().setWriteEventsInterval(Math.max(config.controler().getLastIteration(), 1));
         config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
+        if (properties.transportModel.includeAccessEgress) {
+            config.plansCalcRoute().setInsertingAccessEgressWalk(true);
+        }
         config.transit().setUsingTransitInMobsim(false);
     }
 

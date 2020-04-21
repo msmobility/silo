@@ -203,7 +203,10 @@ public final class MatsimTravelTimesAndCosts implements TravelTimes {
         ActivityFacilitiesFactoryImpl activityFacilitiesFactory = new ActivityFacilitiesFactoryImpl();
         Facility fromFacility = ((ActivityFacilitiesFactory) activityFacilitiesFactory).createActivityFacility(Id.create(1, ActivityFacility.class), originCoord, fromLink);
         Facility toFacility = ((ActivityFacilitiesFactory) activityFacilitiesFactory).createActivityFacility(Id.create(2, ActivityFacility.class), destinationCoord, toLink);
-        return tripRouter.calcRoute(mode, fromFacility, toFacility, timeOfDay_s, null);
+        System.out.println("---- " + mode);
+        List<? extends PlanElement> route = tripRouter.calcRoute(mode, fromFacility, toFacility, timeOfDay_s, null);
+        System.out.println(route);
+        return route;
     }
 
     @Override

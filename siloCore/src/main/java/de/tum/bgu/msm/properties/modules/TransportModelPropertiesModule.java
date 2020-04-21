@@ -46,6 +46,8 @@ public class TransportModelPropertiesModule {
 
     public final boolean onlySimulateCarTrips;
 
+    public final boolean includeAccessEgress;
+
     public enum TransportModelIdentifier {
         MITO_MATSIM, MATSIM, NONE;
     }
@@ -85,6 +87,9 @@ public class TransportModelPropertiesModule {
 
         PropertiesUtil.newPropertySubmodule("MATSim - Only simulate car trips");
         onlySimulateCarTrips = PropertiesUtil.getBooleanProperty(bundle, "matsim.simulate.car.trips.only", true);
+
+        PropertiesUtil.newPropertySubmodule("MATSim - Include access and egress walks for all modes");
+        includeAccessEgress = PropertiesUtil.getBooleanProperty(bundle, "matsim.include.access.egress", false);
     }
 
 }
