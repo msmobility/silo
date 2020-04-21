@@ -1,18 +1,18 @@
 library(readr)
 library(dplyr)
+library(plot3D)
 
-#sets working directory to script location, only works in rstudio
-#setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
 
 # read relocation for specific year
-year <- 0
+year <- 2
 # scenarioName <- 'base'
 # scenarioName <- 'unrestrictedDev'
 # scenarioName <- 'pt-1line'
 # scenarioName <- 'cap75_1-l_lower-u'
+scenarioName <- 'cap75_2-l_x'
 # scenarioName <- 'cap75_2-l_u'
-scenarioName <- 'cap75_4-l_ux_fast'
+# scenarioName <- 'cap75_4-l_ux_fast'
 
 zones <- read.csv(paste("../scenario/input/zoneSystem.csv", sep=""))
 
@@ -99,36 +99,6 @@ zExtent = c(0,1000)
 #        ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="a) Population")
 # hist3D(x,y,jobsMatrix, zlim=zExtent, clim=zExtent, theta=25, phi=15, axes=FALSE,label=FALSE, nticks=5, 
 #        ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="b) Jobs")
-
-
-
-par(mfrow=c(2,2))
-
-relocationWithcarAndWorkersCounts <- hist(relocationWithcarAndWorkers$newZone, breaks = c(0.5:25.5))$counts
-relocationWithoutcarAndWorkersCounts <- hist(relocationWithoutcarAndWorkers$newZone, breaks = c(0.5:25.5))$counts
-relocationWithcarNoWorkersCounts <- hist(relocationWithcarNoWorkers$newZone, breaks = c(0.5:25.5))$counts
-relocationWithoutcarNoWorkersCounts <- hist(relocationWithoutcarNoWorkers$newZone, breaks = c(0.5:25.5))$counts
-
-# Convert Z values into a matrix.
-relocationWithcarAndWorkersMatrix = matrix(relocationWithcarAndWorkersCounts, nrow=5, ncol=5, byrow=TRUE)
-relocationWithoutcarAndWorkersMatrix = matrix(relocationWithoutcarAndWorkersCounts, nrow=5, ncol=5, byrow=TRUE)
-relocationWithcarNoWorkersMatrix = matrix(relocationWithcarNoWorkersCounts, nrow=5, ncol=5, byrow=TRUE)
-relocationWithoutcarNoWorkersMatrix = matrix(relocationWithoutcarNoWorkersCounts, nrow=5, ncol=5, byrow=TRUE)
-
-# Following line is to check of a particular zone sits at the corect position in the plot
-# z[1] <- 100
-
-# box types: “b”, “b2”, “f”, “g”, “bl”, “bl2”, “u”, “n”
-zExtent = c(0,120)
-hist3D(x,y,relocationWithcarAndWorkersMatrix, zlim=zExtent, clim=zExtent, theta=25, phi=15, axes=FALSE,label=FALSE, nticks=5, 
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="a) Workers with car")
-hist3D(x,y,relocationWithoutcarAndWorkersMatrix, zlim=zExtent, clim=zExtent, theta=25, phi=15, axes=FALSE,label=FALSE, nticks=5, 
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="b) Workers without car")
-hist3D(x,y,relocationWithcarNoWorkersMatrix, zlim=zExtent, clim=zExtent, theta=25, phi=15, axes=FALSE,label=FALSE, nticks=5, 
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="c) Non-workers with car")
-hist3D(x,y,relocationWithoutcarNoWorkersMatrix, zlim=zExtent, clim=zExtent, theta=25, phi=15, axes=FALSE,label=FALSE, nticks=5, 
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="d) Non-workers without car")
-
 
 ######################################################################
 
