@@ -20,29 +20,29 @@ public class CreateNetwork {
     /*
      * Thicker lines denote pt line
      *
-     * (1)------(2)------(3)------(4)======(5)
-     * 	||		 |		  |		  ||	    |
-     * 	||		 |		  |		  ||	    |
-     * (6)======(7)------(8)======(9)-----(10)
-     * 	|		 ||		 ||		   |		|
-     * 	|		 ||		 ||		   |		|
-     * (11)----(12)=====(13)=====(14)-----(15)
-     *  |		 |		 ||		  ||		|
-     *  |		 |		 ||		  ||		|
-     * (16)----(17)=====(18)-----(19)=====(20)
-     * 	|		||		  |		   |	   ||
-     * 	|		||		  |		   |	   ||
-     * (21)====(22)-----(23)-----(24)-----(25)
+     * (1)------(2)------(3)------(4)------(5)
+     * 	 |		 |		  |		   |	    |
+     * 	 |		 |		  |		   |	    |
+     * (6)------(7)------(8)------(9)-----(10)
+     * 	 |		 |		  |		   |	    |
+     * 	 |		 |		  |		   |	    |
+     * (11)----(12)-----(13)-----(14)-----(15)
+     *   |		 |		  |		   |	    |
+     *   |		 |		  |		   |	    |
+     * (16)----(17)-----(18)-----(19)-----(20)
+     * 	 |		 |		  |		   |	    |
+     * 	 |		 |		  |		   |	    |
+     * (21)----(22)-----(23)-----(24)-----(25)
      */
     public static void main(String[] args) {
-        String networkFileName = "useCases/fabiland/scenarios/base/matsimInput/network_cap150.xml";
+        String networkFileName = "useCases/fabiland/scenario/matsimInput/nw_cap100.xml";
         double freespeed = 50./3.6;
-        double capacity = 150.;
+        double capacity = 100.;
         double numLanes = 1.;
         double length = 5000.;
 
         Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
-        Network network = (Network) scenario.getNetwork();
+        Network network = scenario.getNetwork();
 
         // Nodes
         Node node1 = NetworkUtils.createAndAddNode(network, Id.create(1, Node.class), new Coord((double) -10000, (double) 10000));
@@ -71,14 +71,8 @@ public class CreateNetwork {
         Node node24 = NetworkUtils.createAndAddNode(network, Id.create(24, Node.class), new Coord((double) 5000, (double) -10000));
         Node node25 = NetworkUtils.createAndAddNode(network, Id.create(25, Node.class), new Coord((double) 10000, (double) -10000));
 
-
         Set<String> carModeSet = new HashSet<>();
         carModeSet.add(TransportMode.car);
-
-        Set<String> carAndPtModeSet = new HashSet<>();
-        carAndPtModeSet.add(TransportMode.car);
-        carAndPtModeSet.add(TransportMode.pt);
-
 
         // Links (bi-directional)
         NetworkUtils.createAndAddLink(network,Id.create("0102", Link.class), node1, node2, length, freespeed, capacity, numLanes);
@@ -97,15 +91,15 @@ public class CreateNetwork {
         network.getLinks().get(Id.create("0403", Link.class)).setAllowedModes(carModeSet);
 
         NetworkUtils.createAndAddLink(network,Id.create("0405", Link.class), node4, node5, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("0405", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("0405", Link.class)).setAllowedModes(carModeSet);
         NetworkUtils.createAndAddLink(network,Id.create("0504", Link.class), node5, node4, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("0504", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("0504", Link.class)).setAllowedModes(carModeSet);
 
 
         NetworkUtils.createAndAddLink(network,Id.create("0106", Link.class), node1, node6, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("0106", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("0106", Link.class)).setAllowedModes(carModeSet);
         NetworkUtils.createAndAddLink(network,Id.create("0601", Link.class), node6, node1, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("0601", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("0601", Link.class)).setAllowedModes(carModeSet);
 
         NetworkUtils.createAndAddLink(network,Id.create("0207", Link.class), node2, node7, length, freespeed, capacity, numLanes);
         network.getLinks().get(Id.create("0207", Link.class)).setAllowedModes(carModeSet);
@@ -118,9 +112,9 @@ public class CreateNetwork {
         network.getLinks().get(Id.create("0803", Link.class)).setAllowedModes(carModeSet);
 
         NetworkUtils.createAndAddLink(network,Id.create("0409", Link.class), node4, node9, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("0409", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("0409", Link.class)).setAllowedModes(carModeSet);
         NetworkUtils.createAndAddLink(network,Id.create("0904", Link.class), node9, node4, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("0904", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("0904", Link.class)).setAllowedModes(carModeSet);
 
         NetworkUtils.createAndAddLink(network,Id.create("0510", Link.class), node5, node10, length, freespeed, capacity, numLanes);
         network.getLinks().get(Id.create("0510", Link.class)).setAllowedModes(carModeSet);
@@ -129,9 +123,9 @@ public class CreateNetwork {
 
 
         NetworkUtils.createAndAddLink(network,Id.create("0607", Link.class), node6, node7, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("0607", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("0607", Link.class)).setAllowedModes(carModeSet);
         NetworkUtils.createAndAddLink(network,Id.create("0706", Link.class), node7, node6, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("0706", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("0706", Link.class)).setAllowedModes(carModeSet);
 
         NetworkUtils.createAndAddLink(network,Id.create("0708", Link.class), node7, node8, length, freespeed, capacity, numLanes);
         network.getLinks().get(Id.create("0708", Link.class)).setAllowedModes(carModeSet);
@@ -139,9 +133,9 @@ public class CreateNetwork {
         network.getLinks().get(Id.create("0807", Link.class)).setAllowedModes(carModeSet);
 
         NetworkUtils.createAndAddLink(network,Id.create("0809", Link.class), node8, node9, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("0809", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("0809", Link.class)).setAllowedModes(carModeSet);
         NetworkUtils.createAndAddLink(network,Id.create("0908", Link.class), node9, node8, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("0908", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("0908", Link.class)).setAllowedModes(carModeSet);
 
         NetworkUtils.createAndAddLink(network,Id.create("0910", Link.class), node9, node10, length, freespeed, capacity, numLanes);
         network.getLinks().get(Id.create("0910", Link.class)).setAllowedModes(carModeSet);
@@ -155,14 +149,14 @@ public class CreateNetwork {
         network.getLinks().get(Id.create("1106", Link.class)).setAllowedModes(carModeSet);
 
         NetworkUtils.createAndAddLink(network,Id.create("0712", Link.class), node7, node12, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("0712", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("0712", Link.class)).setAllowedModes(carModeSet);
         NetworkUtils.createAndAddLink(network,Id.create("1207", Link.class), node12, node7, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("1207", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("1207", Link.class)).setAllowedModes(carModeSet);
 
         NetworkUtils.createAndAddLink(network,Id.create("0813", Link.class), node8, node13, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("0813", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("0813", Link.class)).setAllowedModes(carModeSet);
         NetworkUtils.createAndAddLink(network,Id.create("1308", Link.class), node13, node8, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("1308", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("1308", Link.class)).setAllowedModes(carModeSet);
 
         NetworkUtils.createAndAddLink(network,Id.create("0914", Link.class), node9, node14, length, freespeed, capacity, numLanes);
         network.getLinks().get(Id.create("0914", Link.class)).setAllowedModes(carModeSet);
@@ -181,14 +175,14 @@ public class CreateNetwork {
         network.getLinks().get(Id.create("1211", Link.class)).setAllowedModes(carModeSet);
 
         NetworkUtils.createAndAddLink(network,Id.create("1213", Link.class), node12, node13, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("1213", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("1213", Link.class)).setAllowedModes(carModeSet);
         NetworkUtils.createAndAddLink(network,Id.create("1312", Link.class), node13, node12, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("1312", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("1312", Link.class)).setAllowedModes(carModeSet);
 
         NetworkUtils.createAndAddLink(network,Id.create("1314", Link.class), node13, node14, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("1314", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("1314", Link.class)).setAllowedModes(carModeSet);
         NetworkUtils.createAndAddLink(network,Id.create("1413", Link.class), node14, node13, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("1413", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("1413", Link.class)).setAllowedModes(carModeSet);
 
         NetworkUtils.createAndAddLink(network,Id.create("1415", Link.class), node14, node15, length, freespeed, capacity, numLanes);
         network.getLinks().get(Id.create("1415", Link.class)).setAllowedModes(carModeSet);
@@ -207,14 +201,14 @@ public class CreateNetwork {
         network.getLinks().get(Id.create("1712", Link.class)).setAllowedModes(carModeSet);
 
         NetworkUtils.createAndAddLink(network,Id.create("1318", Link.class), node13, node18, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("1318", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("1318", Link.class)).setAllowedModes(carModeSet);
         NetworkUtils.createAndAddLink(network,Id.create("1813", Link.class), node18, node13, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("1813", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("1813", Link.class)).setAllowedModes(carModeSet);
 
         NetworkUtils.createAndAddLink(network,Id.create("1419", Link.class), node14, node19, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("1419", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("1419", Link.class)).setAllowedModes(carModeSet);
         NetworkUtils.createAndAddLink(network,Id.create("1914", Link.class), node19, node14, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("1914", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("1914", Link.class)).setAllowedModes(carModeSet);
 
         NetworkUtils.createAndAddLink(network,Id.create("1520", Link.class), node15, node20, length, freespeed, capacity, numLanes);
         network.getLinks().get(Id.create("1520", Link.class)).setAllowedModes(carModeSet);
@@ -228,9 +222,9 @@ public class CreateNetwork {
         network.getLinks().get(Id.create("1716", Link.class)).setAllowedModes(carModeSet);
 
         NetworkUtils.createAndAddLink(network,Id.create("1718", Link.class), node17, node18, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("1718", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("1718", Link.class)).setAllowedModes(carModeSet);
         NetworkUtils.createAndAddLink(network,Id.create("1817", Link.class), node18, node17, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("1817", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("1817", Link.class)).setAllowedModes(carModeSet);
 
         NetworkUtils.createAndAddLink(network,Id.create("1819", Link.class), node18, node19, length, freespeed, capacity, numLanes);
         network.getLinks().get(Id.create("1819", Link.class)).setAllowedModes(carModeSet);
@@ -238,9 +232,9 @@ public class CreateNetwork {
         network.getLinks().get(Id.create("1918", Link.class)).setAllowedModes(carModeSet);
 
         NetworkUtils.createAndAddLink(network,Id.create("1920", Link.class), node19, node20, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("1920", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("1920", Link.class)).setAllowedModes(carModeSet);
         NetworkUtils.createAndAddLink(network,Id.create("2019", Link.class), node20, node19, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("2019", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("2019", Link.class)).setAllowedModes(carModeSet);
 
 
         NetworkUtils.createAndAddLink(network,Id.create("1621", Link.class), node16, node21, length, freespeed, capacity, numLanes);
@@ -249,9 +243,9 @@ public class CreateNetwork {
         network.getLinks().get(Id.create("2116", Link.class)).setAllowedModes(carModeSet);
 
         NetworkUtils.createAndAddLink(network,Id.create("1722", Link.class), node17, node22, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("1722", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("1722", Link.class)).setAllowedModes(carModeSet);
         NetworkUtils.createAndAddLink(network,Id.create("2217", Link.class), node22, node17, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("2217", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("2217", Link.class)).setAllowedModes(carModeSet);
 
         NetworkUtils.createAndAddLink(network,Id.create("1823", Link.class), node18, node23, length, freespeed, capacity, numLanes);
         network.getLinks().get(Id.create("1823", Link.class)).setAllowedModes(carModeSet);
@@ -264,15 +258,15 @@ public class CreateNetwork {
         network.getLinks().get(Id.create("2419", Link.class)).setAllowedModes(carModeSet);
 
         NetworkUtils.createAndAddLink(network,Id.create("2025", Link.class), node20, node25, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("2025", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("2025", Link.class)).setAllowedModes(carModeSet);
         NetworkUtils.createAndAddLink(network,Id.create("2520", Link.class), node25, node20, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("2520", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("2520", Link.class)).setAllowedModes(carModeSet);
 
 
         NetworkUtils.createAndAddLink(network,Id.create("2122", Link.class), node21, node22, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("2122", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("2122", Link.class)).setAllowedModes(carModeSet);
         NetworkUtils.createAndAddLink(network,Id.create("2221", Link.class), node22, node21, length, freespeed, capacity, numLanes);
-        network.getLinks().get(Id.create("2221", Link.class)).setAllowedModes(carAndPtModeSet);
+        network.getLinks().get(Id.create("2221", Link.class)).setAllowedModes(carModeSet);
 
         NetworkUtils.createAndAddLink(network,Id.create("2223", Link.class), node22, node23, length, freespeed, capacity, numLanes);
         network.getLinks().get(Id.create("2223", Link.class)).setAllowedModes(carModeSet);

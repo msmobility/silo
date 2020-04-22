@@ -1,9 +1,4 @@
-//package org.matsim.pt;
 package inputGeneration;
-
-
-import java.util.Arrays;
-import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
@@ -13,44 +8,43 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
-import org.matsim.core.population.routes.NetworkRoute;
-import org.matsim.core.population.routes.RouteUtils;
+import org.matsim.core.network.io.NetworkWriter;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.pt.transitSchedule.api.Departure;
-import org.matsim.pt.transitSchedule.api.TransitLine;
-import org.matsim.pt.transitSchedule.api.TransitRoute;
-import org.matsim.pt.transitSchedule.api.TransitRouteStop;
-import org.matsim.pt.transitSchedule.api.TransitSchedule;
-import org.matsim.pt.transitSchedule.api.TransitScheduleFactory;
-import org.matsim.pt.transitSchedule.api.TransitScheduleWriter;
-import org.matsim.pt.transitSchedule.api.TransitStopFacility;
+import org.matsim.pt.transitSchedule.api.*;
+import org.matsim.pt.utils.CreatePseudoNetwork;
 import org.matsim.pt.utils.CreateVehiclesForSchedule;
 import org.matsim.pt.utils.TransitScheduleValidator;
 import org.matsim.vehicles.VehicleWriterV1;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class PTScheduleCreator {
 	
 	private final static Logger LOG = Logger.getLogger(PTScheduleCreator.class);
 
-	private static final double PT_HEADWAY = 15 * 60.;
+	private static final double PT_HEADWAY = 10 * 60.;
 	private static final double PT_OPERATION_START_TIME = 6 * 3600.;
 	private static final double PT_OPERATION_END_TIME = 24 * 3600.;
 
-	private static double DEPARTURE_OFFSET_ONE_LINK = 7 * 60;
-	
 	public static void main(String[] args) {
+	    //String scenarioName = "_2-l_x";
+        //String scenarioName = "_2-l_u";
+        //String scenarioName = "_1-l_lower-u";
+        String scenarioName = "_1-l_upper-u";
+        //String scenarioName = "_1-l_ne";
+        //String scenarioName = "_1-l_nes";
+        //String scenarioName = "_1-l_ring";
 
-        String inputNetwork = "useCases/fabiland/scenarios/base/matsimInput/network.xml";
-        String outputSchedule = "useCases/fabiland/scenarios/base/matsimInput/schedule-1line.xml";
-        String outputTransitVehicles = "useCases/fabiland/scenarios/base/matsimInput/transitvehicles-1line.xml";
-//        String inputNetwork = "scenarios/fabiland/network.xml";
-//        String outputSchedule = "scenarios/fabiland/schedule.xml";
-//        String outputTransitVehicles = "scenarios/fabiland/transitvehicles.xml";
+        String inputNetwork = "useCases/fabiland/scenario/matsimInput/nw_cap75.xml";
+        String outputNetwork = "useCases/fabiland/scenario/matsimInput/nw_cap75" + scenarioName + ".xml";
+        String outputPTSchedule = "useCases/fabiland/scenario/matsimInput/ts" + scenarioName + ".xml";
+        String outputPTVehicles = "useCases/fabiland/scenario/matsimInput/tv" + scenarioName + ".xml";
 
-        createGridSchedule(outputSchedule, inputNetwork, outputTransitVehicles);
+        createSchedule(inputNetwork, outputNetwork, outputPTSchedule, outputPTVehicles);
     }
 
-    private static void createGridSchedule(String outputSchedule, String inputNetwork, String outputTransitVehicles) {
+    private static void createSchedule(String inputNetwork, String outputNetwork, String outputPTSchedule, String outputPTVehicles) {
         Scenario scenario = ScenarioUtils.loadScenario(ConfigUtils.createConfig());
 
         MatsimNetworkReader matsimNetworkReader = new MatsimNetworkReader(scenario.getNetwork());
@@ -62,224 +56,302 @@ public class PTScheduleCreator {
         Network network = scenario.getNetwork();
 
         final Node node1 = network.getNodes().get(Id.createNodeId("1"));
-        final TransitStopFacility stop0201fac = tsf.createTransitStopFacility(Id.create("stop0201fac", TransitStopFacility.class), node1.getCoord(), false);
-        stop0201fac.setLinkId(Id.createLinkId("0201"));
-        ts.addStopFacility(stop0201fac);
-        final TransitStopFacility stop0601fac = tsf.createTransitStopFacility(Id.create("stop0601fac", TransitStopFacility.class), node1.getCoord(), false);
-        stop0601fac.setLinkId(Id.createLinkId("0601"));
-        ts.addStopFacility(stop0601fac);
-        
+        final TransitStopFacility stopFac1 = tsf.createTransitStopFacility(Id.create(node1.getId(), TransitStopFacility.class), node1.getCoord(), false);
+
+        final Node node2 = network.getNodes().get(Id.createNodeId("2"));
+        final TransitStopFacility stopFac2 = tsf.createTransitStopFacility(Id.create(node2.getId(), TransitStopFacility.class), node2.getCoord(), false);
+
+        final Node node3 = network.getNodes().get(Id.createNodeId("3"));
+        final TransitStopFacility stopFac3 = tsf.createTransitStopFacility(Id.create(node3.getId(), TransitStopFacility.class), node3.getCoord(), false);
+
         final Node node4 = network.getNodes().get(Id.createNodeId("4"));
-        final TransitStopFacility stop0504fac = tsf.createTransitStopFacility(Id.create("stop0504fac", TransitStopFacility.class), node4.getCoord(), false);
-        stop0504fac.setLinkId(Id.createLinkId("0504"));
-        ts.addStopFacility(stop0504fac);
-        final TransitStopFacility stop0904fac = tsf.createTransitStopFacility(Id.create("stop0904fac", TransitStopFacility.class), node4.getCoord(), false);
-        stop0904fac.setLinkId(Id.createLinkId("0904"));
-        ts.addStopFacility(stop0904fac);
-        
+        final TransitStopFacility stopFac4 = tsf.createTransitStopFacility(Id.create(node4.getId(), TransitStopFacility.class), node4.getCoord(), false);
+
         final Node node5 = network.getNodes().get(Id.createNodeId("5"));
-        final TransitStopFacility stop1005fac = tsf.createTransitStopFacility(Id.create("stop1005fac", TransitStopFacility.class), node5.getCoord(), false);
-        stop1005fac.setLinkId(Id.createLinkId("1005"));
-        ts.addStopFacility(stop1005fac);
-        final TransitStopFacility stop0405fac = tsf.createTransitStopFacility(Id.create("stop0405fac", TransitStopFacility.class), node5.getCoord(), false);
-        stop0405fac.setLinkId(Id.createLinkId("0405"));
-        ts.addStopFacility(stop0405fac);
-        
+        final TransitStopFacility stopFac5 = tsf.createTransitStopFacility(Id.create(node5.getId(), TransitStopFacility.class), node5.getCoord(), false);
+
         final Node node6 = network.getNodes().get(Id.createNodeId("6"));
-        final TransitStopFacility stop0106fac = tsf.createTransitStopFacility(Id.create("stop0106fac", TransitStopFacility.class), node6.getCoord(), false);
-        stop0106fac.setLinkId(Id.createLinkId("0106"));
-        ts.addStopFacility(stop0106fac);
-        final TransitStopFacility stop0706fac = tsf.createTransitStopFacility(Id.create("stop0706fac", TransitStopFacility.class), node6.getCoord(), false);
-        stop0706fac.setLinkId(Id.createLinkId("0706"));
-        ts.addStopFacility(stop0706fac);
-        
+        final TransitStopFacility stopFac6 = tsf.createTransitStopFacility(Id.create(node6.getId(), TransitStopFacility.class), node6.getCoord(), false);
+
         final Node node7 = network.getNodes().get(Id.createNodeId("7"));
-        final TransitStopFacility stop0607fac = tsf.createTransitStopFacility(Id.create("stop0607fac", TransitStopFacility.class), node7.getCoord(), false);
-        stop0607fac.setLinkId(Id.createLinkId("0607"));
-        ts.addStopFacility(stop0607fac);
-        final TransitStopFacility stop1207fac = tsf.createTransitStopFacility(Id.create("stop1207fac", TransitStopFacility.class), node7.getCoord(), false);
-        stop1207fac.setLinkId(Id.createLinkId("1207"));
-        ts.addStopFacility(stop1207fac);
-        
-        final Node node8 = network.getNodes().get(Id.createNodeId("8"));
-        final TransitStopFacility stop0908fac = tsf.createTransitStopFacility(Id.create("stop0908fac", TransitStopFacility.class), node8.getCoord(), false);
-        stop0908fac.setLinkId(Id.createLinkId("0908"));
-        ts.addStopFacility(stop0908fac);
-        final TransitStopFacility stop1308fac = tsf.createTransitStopFacility(Id.create("stop1308fac", TransitStopFacility.class), node8.getCoord(), false);
-        stop1308fac.setLinkId(Id.createLinkId("1308"));
-        ts.addStopFacility(stop1308fac);
-        
+        final TransitStopFacility stopFac7 = tsf.createTransitStopFacility(Id.create(node7.getId(), TransitStopFacility.class), node7.getCoord(), false);
+
         final Node node9 = network.getNodes().get(Id.createNodeId("9"));
-        final TransitStopFacility stop0409fac = tsf.createTransitStopFacility(Id.create("stop0409fac", TransitStopFacility.class), node9.getCoord(), false);
-        stop0409fac.setLinkId(Id.createLinkId("0409"));
-        ts.addStopFacility(stop0409fac);
-        final TransitStopFacility stop0809fac = tsf.createTransitStopFacility(Id.create("stop0809fac", TransitStopFacility.class), node9.getCoord(), false);
-        stop0809fac.setLinkId(Id.createLinkId("0809"));
-        ts.addStopFacility(stop0809fac);
-        
+        final TransitStopFacility stopFac9 = tsf.createTransitStopFacility(Id.create(node9.getId(), TransitStopFacility.class), node9.getCoord(), false);
+
+        final Node node10 = network.getNodes().get(Id.createNodeId("10"));
+        final TransitStopFacility stopFac10 = tsf.createTransitStopFacility(Id.create(node10.getId(), TransitStopFacility.class), node10.getCoord(), false);
+
+        final Node node11 = network.getNodes().get(Id.createNodeId("11"));
+        final TransitStopFacility stopFac11 = tsf.createTransitStopFacility(Id.create(node11.getId(), TransitStopFacility.class), node11.getCoord(), false);
+
         final Node node12 = network.getNodes().get(Id.createNodeId("12"));
-        final TransitStopFacility stop0712fac = tsf.createTransitStopFacility(Id.create("stop0712fac", TransitStopFacility.class), node12.getCoord(), false);
-        stop0712fac.setLinkId(Id.createLinkId("0712"));
-        ts.addStopFacility(stop0712fac);
-        final TransitStopFacility stop1312fac = tsf.createTransitStopFacility(Id.create("stop1312fac", TransitStopFacility.class), node12.getCoord(), false);
-        stop1312fac.setLinkId(Id.createLinkId("1312"));
-        ts.addStopFacility(stop1312fac);
-        
+        final TransitStopFacility stopFac12 = tsf.createTransitStopFacility(Id.create(node12.getId(), TransitStopFacility.class), node12.getCoord(), false);
+
         final Node node13 = network.getNodes().get(Id.createNodeId("13"));
-        final TransitStopFacility stop1213fac = tsf.createTransitStopFacility(Id.create("stop1213fac", TransitStopFacility.class), node13.getCoord(), false);
-        stop1213fac.setLinkId(Id.createLinkId("1213"));
-        ts.addStopFacility(stop1213fac);
-        final TransitStopFacility stop0813fac = tsf.createTransitStopFacility(Id.create("stop0813fac", TransitStopFacility.class), node13.getCoord(), false);
-        stop0813fac.setLinkId(Id.createLinkId("0813"));
-        ts.addStopFacility(stop0813fac);
-        final TransitStopFacility stop1413fac = tsf.createTransitStopFacility(Id.create("stop1413fac", TransitStopFacility.class), node13.getCoord(), false);
-        stop1413fac.setLinkId(Id.createLinkId("1413"));
-        ts.addStopFacility(stop1413fac);
-        final TransitStopFacility stop1813fac = tsf.createTransitStopFacility(Id.create("stop1813fac", TransitStopFacility.class), node13.getCoord(), false);
-        stop1813fac.setLinkId(Id.createLinkId("1813"));
-        ts.addStopFacility(stop1813fac);
-        
+        final TransitStopFacility stopFac13 = tsf.createTransitStopFacility(Id.create(node13.getId(), TransitStopFacility.class), node13.getCoord(), false);
+
         final Node node14 = network.getNodes().get(Id.createNodeId("14"));
-        final TransitStopFacility stop1314fac = tsf.createTransitStopFacility(Id.create("stop1314fac", TransitStopFacility.class), node14.getCoord(), false);
-        ts.addStopFacility(stop1314fac);
-        stop1314fac.setLinkId(Id.createLinkId("1314"));
-        final TransitStopFacility stop1914fac = tsf.createTransitStopFacility(Id.create("stop1914fac", TransitStopFacility.class), node14.getCoord(), false);
-        ts.addStopFacility(stop1914fac);
-        stop1914fac.setLinkId(Id.createLinkId("1914"));
-        
+        final TransitStopFacility stopFac14 = tsf.createTransitStopFacility(Id.create(node14.getId(), TransitStopFacility.class), node14.getCoord(), false);
+
+        final Node node15 = network.getNodes().get(Id.createNodeId("15"));
+        final TransitStopFacility stopFac15 = tsf.createTransitStopFacility(Id.create(node15.getId(), TransitStopFacility.class), node15.getCoord(), false);
+
+        final Node node16 = network.getNodes().get(Id.createNodeId("16"));
+        final TransitStopFacility stopFac16 = tsf.createTransitStopFacility(Id.create(node16.getId(), TransitStopFacility.class), node16.getCoord(), false);
+
         final Node node17 = network.getNodes().get(Id.createNodeId("17"));
-        final TransitStopFacility stop1817fac = tsf.createTransitStopFacility(Id.create("stop1817fac", TransitStopFacility.class), node17.getCoord(), false);
-        ts.addStopFacility(stop1817fac);
-        stop1817fac.setLinkId(Id.createLinkId("1817"));
-        final TransitStopFacility stop2217fac = tsf.createTransitStopFacility(Id.create("stop2217fac", TransitStopFacility.class), node17.getCoord(), false);
-        ts.addStopFacility(stop2217fac);
-        stop2217fac.setLinkId(Id.createLinkId("2217"));
-        
-        final Node node18 = network.getNodes().get(Id.createNodeId("18"));
-        final TransitStopFacility stop1318fac = tsf.createTransitStopFacility(Id.create("stop1318fac", TransitStopFacility.class), node18.getCoord(), false);
-        ts.addStopFacility(stop1318fac);
-        stop1318fac.setLinkId(Id.createLinkId("1318"));
-        final TransitStopFacility stop1718fac = tsf.createTransitStopFacility(Id.create("stop1718fac", TransitStopFacility.class), node18.getCoord(), false);
-        ts.addStopFacility(stop1718fac);
-        stop1718fac.setLinkId(Id.createLinkId("1718"));
-        
+        final TransitStopFacility stopFac17 = tsf.createTransitStopFacility(Id.create(node17.getId(), TransitStopFacility.class), node17.getCoord(), false);
+
         final Node node19 = network.getNodes().get(Id.createNodeId("19"));
-        final TransitStopFacility stop1419fac = tsf.createTransitStopFacility(Id.create("stop1419fac", TransitStopFacility.class), node19.getCoord(), false);
-        ts.addStopFacility(stop1419fac);
-        stop1419fac.setLinkId(Id.createLinkId("1419"));
-        final TransitStopFacility stop2019fac = tsf.createTransitStopFacility(Id.create("stop2019fac", TransitStopFacility.class), node19.getCoord(), false);
-        ts.addStopFacility(stop2019fac);
-        stop2019fac.setLinkId(Id.createLinkId("2019"));
-        
+        final TransitStopFacility stopFac19 = tsf.createTransitStopFacility(Id.create(node19.getId(), TransitStopFacility.class), node19.getCoord(), false);
+
         final Node node20 = network.getNodes().get(Id.createNodeId("20"));
-        final TransitStopFacility stop1920fac = tsf.createTransitStopFacility(Id.create("stop1920fac", TransitStopFacility.class), node20.getCoord(), false);
-        ts.addStopFacility(stop1920fac);
-        stop1920fac.setLinkId(Id.createLinkId("1920"));
-        final TransitStopFacility stop2520fac = tsf.createTransitStopFacility(Id.create("stop2520fac", TransitStopFacility.class), node20.getCoord(), false);
-        ts.addStopFacility(stop2520fac);
-        stop2520fac.setLinkId(Id.createLinkId("2520"));
-        
+        final TransitStopFacility stopFac20 = tsf.createTransitStopFacility(Id.create(node20.getId(), TransitStopFacility.class), node20.getCoord(), false);
+
         final Node node21 = network.getNodes().get(Id.createNodeId("21"));
-        final TransitStopFacility stop2221fac = tsf.createTransitStopFacility(Id.create("stop2221fac", TransitStopFacility.class), node21.getCoord(), false);
-        ts.addStopFacility(stop2221fac);
-        stop2221fac.setLinkId(Id.createLinkId("2221"));
-        final TransitStopFacility stop1621fac = tsf.createTransitStopFacility(Id.create("stop1621fac", TransitStopFacility.class), node21.getCoord(), false);
-        ts.addStopFacility(stop1621fac);
-        stop1621fac.setLinkId(Id.createLinkId("1621"));
-        
+        final TransitStopFacility stopFac21 = tsf.createTransitStopFacility(Id.create(node21.getId(), TransitStopFacility.class), node21.getCoord(), false);
+
         final Node node22 = network.getNodes().get(Id.createNodeId("22"));
-        final TransitStopFacility stop1722fac = tsf.createTransitStopFacility(Id.create("stop1722fac", TransitStopFacility.class), node22.getCoord(), false);
-        ts.addStopFacility(stop1722fac);
-        stop1722fac.setLinkId(Id.createLinkId("1722"));
-        final TransitStopFacility stop2122fac = tsf.createTransitStopFacility(Id.create("stop2122fac", TransitStopFacility.class), node22.getCoord(), false);
-        ts.addStopFacility(stop2122fac);
-        stop2122fac.setLinkId(Id.createLinkId("2122"));
-        
+        final TransitStopFacility stopFac22 = tsf.createTransitStopFacility(Id.create(node22.getId(), TransitStopFacility.class), node22.getCoord(), false);
+
+        final Node node23 = network.getNodes().get(Id.createNodeId("23"));
+        final TransitStopFacility stopFac23 = tsf.createTransitStopFacility(Id.create(node23.getId(), TransitStopFacility.class), node23.getCoord(), false);
+
+        final Node node24 = network.getNodes().get(Id.createNodeId("24"));
+        final TransitStopFacility stopFac24 = tsf.createTransitStopFacility(Id.create(node24.getId(), TransitStopFacility.class), node24.getCoord(), false);
+
         final Node node25 = network.getNodes().get(Id.createNodeId("25"));
-        final TransitStopFacility stop2025fac = tsf.createTransitStopFacility(Id.create("stop2025fac", TransitStopFacility.class), node25.getCoord(), false);
-        ts.addStopFacility(stop2025fac);
-        stop2025fac.setLinkId(Id.createLinkId("2025"));
-        final TransitStopFacility stop2425fac = tsf.createTransitStopFacility(Id.create("stop2425fac", TransitStopFacility.class), node25.getCoord(), false);
-        ts.addStopFacility(stop2425fac);
-        stop2425fac.setLinkId(Id.createLinkId("2425"));
+        final TransitStopFacility stopFac25 = tsf.createTransitStopFacility(Id.create(node25.getId(), TransitStopFacility.class), node25.getCoord(), false);
 
+        ts.addStopFacility(stopFac1);
+//        ts.addStopFacility(stopFac2); // only ring
+//        ts.addStopFacility(stopFac3); // only ring
+//        ts.addStopFacility(stopFac4); // only ring
+        ts.addStopFacility(stopFac5);
+        ts.addStopFacility(stopFac6); // not in X
+//        ts.addStopFacility(stopFac7); // not in U
+//        ts.addStopFacility(stopFac9); // not in U
+        ts.addStopFacility(stopFac10); // not in X
+        ts.addStopFacility(stopFac11); // not in X
+        ts.addStopFacility(stopFac12); // not in X
+        ts.addStopFacility(stopFac13);
+        ts.addStopFacility(stopFac14); // not in X
+        ts.addStopFacility(stopFac15); // not in X
+//        ts.addStopFacility(stopFac16); // not in X
+//        ts.addStopFacility(stopFac17); // not in U
+//        ts.addStopFacility(stopFac19); // not in U
+//        ts.addStopFacility(stopFac20); // not in X
+//        ts.addStopFacility(stopFac21);
+//        ts.addStopFacility(stopFac22); // only ring
+//        ts.addStopFacility(stopFac23); // only ring
+//        ts.addStopFacility(stopFac24); // only ring
+//        ts.addStopFacility(stopFac25);
 
-        // TODO consider DEPARTURE_OFFSET_ONE_LINK if necessary
-        TransitRouteStop stop0201 = ts.getFactory().createTransitRouteStop(stop0201fac, 0., 0.);
-        TransitRouteStop stop0601 = ts.getFactory().createTransitRouteStop(stop0601fac, 0., 0.);
-        TransitRouteStop stop0106 = ts.getFactory().createTransitRouteStop(stop0106fac, 0., 0.);
-        TransitRouteStop stop0607 = ts.getFactory().createTransitRouteStop(stop0607fac, 0., 0.);
-        TransitRouteStop stop0706 = ts.getFactory().createTransitRouteStop(stop0706fac, 0., 0.);
-        TransitRouteStop stop0712 = ts.getFactory().createTransitRouteStop(stop0712fac, 0., 0.);
-        TransitRouteStop stop1207 = ts.getFactory().createTransitRouteStop(stop1207fac, 0., 0.);
-        TransitRouteStop stop1213 = ts.getFactory().createTransitRouteStop(stop1213fac, 0., 0.);
-        TransitRouteStop stop1312 = ts.getFactory().createTransitRouteStop(stop1312fac, 0., 0.);
-        TransitRouteStop stop1314 = ts.getFactory().createTransitRouteStop(stop1314fac, 0., 0.);
-        TransitRouteStop stop1413 = ts.getFactory().createTransitRouteStop(stop1413fac, 0., 0.);
-        TransitRouteStop stop1419 = ts.getFactory().createTransitRouteStop(stop1419fac, 0., 0.);
-        TransitRouteStop stop1914 = ts.getFactory().createTransitRouteStop(stop1914fac, 0., 0.);
-        TransitRouteStop stop1920 = ts.getFactory().createTransitRouteStop(stop1920fac, 0., 0.);
-        TransitRouteStop stop2019 = ts.getFactory().createTransitRouteStop(stop2019fac, 0., 0.);
-        TransitRouteStop stop2025 = ts.getFactory().createTransitRouteStop(stop2025fac, 0., 0.);
-        TransitRouteStop stop2520 = ts.getFactory().createTransitRouteStop(stop2520fac, 0., 0.);
-        TransitRouteStop stop2425 = ts.getFactory().createTransitRouteStop(stop2425fac, 0., 0.);
-//        TransitRouteStop stop0504 = ts.getFactory().createTransitRouteStop(stop0504fac, 0., 0.);
-//        TransitRouteStop stop0904 = ts.getFactory().createTransitRouteStop(stop0904fac, 0., 0.);
-//        TransitRouteStop stop1005 = ts.getFactory().createTransitRouteStop(stop1005fac, 0., 0.);
-//        TransitRouteStop stop0405 = ts.getFactory().createTransitRouteStop(stop0405fac, 0., 0.);
-//        TransitRouteStop stop0908 = ts.getFactory().createTransitRouteStop(stop0908fac, 0., 0.);
-//        TransitRouteStop stop1308 = ts.getFactory().createTransitRouteStop(stop1308fac, 0., 0.);
-//        TransitRouteStop stop0409 = ts.getFactory().createTransitRouteStop(stop0409fac, 0., 0.);
-//        TransitRouteStop stop0809 = ts.getFactory().createTransitRouteStop(stop0809fac, 0., 0.);
-//        TransitRouteStop stop0813 = ts.getFactory().createTransitRouteStop(stop0813fac, 0., 0.);
-//        TransitRouteStop stop1813 = ts.getFactory().createTransitRouteStop(stop1813fac, 0., 0.);
-//        TransitRouteStop stop1817 = ts.getFactory().createTransitRouteStop(stop1817fac, 0., 0.);
-//        TransitRouteStop stop2217 = ts.getFactory().createTransitRouteStop(stop2217fac, 0., 0.);
-//        TransitRouteStop stop1318 = ts.getFactory().createTransitRouteStop(stop1318fac, 0., 0.);
-//        TransitRouteStop stop1718 = ts.getFactory().createTransitRouteStop(stop1718fac, 0., 0.);
-//        TransitRouteStop stop2221 = ts.getFactory().createTransitRouteStop(stop2221fac, 0., 0.);
-//        TransitRouteStop stop1621 = ts.getFactory().createTransitRouteStop(stop1621fac, 0., 0.);
-//        TransitRouteStop stop1722 = ts.getFactory().createTransitRouteStop(stop1722fac, 0., 0.);
-//        TransitRouteStop stop2122 = ts.getFactory().createTransitRouteStop(stop2122fac, 0., 0.);
+        double tt = 360.;
+        double tt2 = 500.;
+        // double tt = 0.;
+        // double tt2 = 0.;
 
-        {
-            TransitLine tl = ts.getFactory().createTransitLine(Id.create("line0125", TransitLine.class));
-            NetworkRoute route = RouteUtils.createNetworkRoute(Arrays.asList(Id.createLinkId("0201"), Id.createLinkId("0106"), Id.createLinkId("0607"), Id.createLinkId("0712"),
-            		Id.createLinkId("1213"), Id.createLinkId("1314"), Id.createLinkId("1419"), Id.createLinkId("1920"), Id.createLinkId("2025")), network);
-            List<TransitRouteStop> stops = Arrays.asList(stop0201, stop0106, stop0607, stop0712, stop1213, stop1314, stop1419, stop1920, stop2025);
-            TransitRoute tr = tsf.createTransitRoute(Id.create("line0125", TransitRoute.class), route, stops, TransportMode.pt);
-            addDepartures(tsf, tr, PT_OPERATION_START_TIME, PT_OPERATION_END_TIME, PT_HEADWAY);
-            tl.addRoute(tr);
-            ts.addTransitLine(tl);
-        } {
-        	TransitLine tl = ts.getFactory().createTransitLine(Id.create("line2501", TransitLine.class));
-            NetworkRoute route = RouteUtils.createNetworkRoute(Arrays.asList(Id.createLinkId("2425"), Id.createLinkId("2520"), Id.createLinkId("2019"), Id.createLinkId("1914"),
-            		Id.createLinkId("1413"), Id.createLinkId("1312"), Id.createLinkId("1207"), Id.createLinkId("0706"), Id.createLinkId("0601")), network);
-            List<TransitRouteStop> stops = Arrays.asList(stop2425, stop2520, stop2019, stop1914, stop1413, stop1312, stop1207, stop0706, stop0601);
-            TransitRoute tr = tsf.createTransitRoute(Id.create("line2501", TransitRoute.class), route, stops, TransportMode.pt);
-            addDepartures(tsf, tr, PT_OPERATION_START_TIME, PT_OPERATION_END_TIME, PT_HEADWAY);
-            tl.addRoute(tr);
-            ts.addTransitLine(tl);
-        }
+        // Lower U
+//        TransitLine tlLowerU = ts.getFactory().createTransitLine(Id.create("lower-u", TransitLine.class));
 //        {
-//        	TransitLine tl = ts.getFactory().createTransitLine(Id.create("line0521", TransitLine.class));
-//            NetworkRoute route = RouteUtils.createNetworkRoute(Arrays.asList(Id.createLinkId("1005"), Id.createLinkId("0504"), Id.createLinkId("0409"), Id.createLinkId("0908"),
-//            		Id.createLinkId("0813"), Id.createLinkId("1318"), Id.createLinkId("1817"), Id.createLinkId("1722"), Id.createLinkId("2221")), network);
-//            List<TransitRouteStop> stops = Arrays.asList(stop1005, stop0504, stop0409, stop0908, stop0813, stop1318, stop1817, stop1722, stop2221);
-//            TransitRoute tr = tsf.createTransitRoute(Id.create("line0521", TransitRoute.class), route, stops, TransportMode.pt);
+//            TransitRouteStop stop21 = ts.getFactory().createTransitRouteStop(stopFac21, 0 * tt, 0 * tt);
+//            TransitRouteStop stop16 = ts.getFactory().createTransitRouteStop(stopFac16, 1 * tt, 1 * tt);
+//            TransitRouteStop stop11 = ts.getFactory().createTransitRouteStop(stopFac11, 2 * tt, 2 * tt);
+//            TransitRouteStop stop12 = ts.getFactory().createTransitRouteStop(stopFac12, 3 * tt, 3 * tt);
+//            TransitRouteStop stop13 = ts.getFactory().createTransitRouteStop(stopFac13, 4 * tt, 4 * tt);
+//            TransitRouteStop stop14 = ts.getFactory().createTransitRouteStop(stopFac14, 5 * tt, 5 * tt);
+//            TransitRouteStop stop15 = ts.getFactory().createTransitRouteStop(stopFac15, 6 * tt, 6 * tt);
+//            TransitRouteStop stop20 = ts.getFactory().createTransitRouteStop(stopFac20, 7 * tt, 7 * tt);
+//            TransitRouteStop stop25 = ts.getFactory().createTransitRouteStop(stopFac25, 8 * tt, 8 * tt);
+//
+//            List<TransitRouteStop> stops = Arrays.asList(stop21, stop16, stop11, stop12, stop13, stop14, stop15, stop20, stop25);
+//            TransitRoute tr = tsf.createTransitRoute(Id.create("lower-u-1", TransitRoute.class), null, stops, TransportMode.pt);
 //            addDepartures(tsf, tr, PT_OPERATION_START_TIME, PT_OPERATION_END_TIME, PT_HEADWAY);
-//            tl.addRoute(tr);
-//            ts.addTransitLine(tl);
-//        } {
-//        	TransitLine tl = ts.getFactory().createTransitLine(Id.create("line2105", TransitLine.class));
-//            NetworkRoute route = RouteUtils.createNetworkRoute(Arrays.asList(Id.createLinkId("1621"), Id.createLinkId("2122"), Id.createLinkId("2217"), Id.createLinkId("1718"),
-//            		Id.createLinkId("1813"), Id.createLinkId("1308"), Id.createLinkId("0809"), Id.createLinkId("0904"), Id.createLinkId("0405")), network);
-//            List<TransitRouteStop> stops = Arrays.asList(stop1621, stop2122, stop2217, stop1718, stop1813, stop1308, stop0809, stop0904, stop0405);
-//            TransitRoute tr = tsf.createTransitRoute(Id.create("line2105", TransitRoute.class), route, stops, TransportMode.pt);
+//            tlLowerU.addRoute(tr);
+//        }{
+//            TransitRouteStop stop25 = ts.getFactory().createTransitRouteStop(stopFac25, 0 * tt, 0 * tt);
+//            TransitRouteStop stop20 = ts.getFactory().createTransitRouteStop(stopFac20, 1 * tt, 1 * tt);
+//            TransitRouteStop stop15 = ts.getFactory().createTransitRouteStop(stopFac15, 2 * tt, 2 * tt);
+//            TransitRouteStop stop14 = ts.getFactory().createTransitRouteStop(stopFac14, 3 * tt, 3 * tt);
+//            TransitRouteStop stop13 = ts.getFactory().createTransitRouteStop(stopFac13, 4 * tt, 4 * tt);
+//            TransitRouteStop stop12 = ts.getFactory().createTransitRouteStop(stopFac12, 5 * tt, 5 * tt);
+//            TransitRouteStop stop11 = ts.getFactory().createTransitRouteStop(stopFac11, 6 * tt, 6 * tt);
+//            TransitRouteStop stop16 = ts.getFactory().createTransitRouteStop(stopFac16, 7 * tt, 7 * tt);
+//            TransitRouteStop stop21 = ts.getFactory().createTransitRouteStop(stopFac21, 8 * tt, 8 * tt);
+//
+//            List<TransitRouteStop> stops = Arrays.asList(stop25, stop20, stop15, stop14, stop13, stop12, stop11, stop16, stop21);
+//            TransitRoute tr = tsf.createTransitRoute(Id.create("lower-u-2", TransitRoute.class), null, stops, TransportMode.pt);
 //            addDepartures(tsf, tr, PT_OPERATION_START_TIME, PT_OPERATION_END_TIME, PT_HEADWAY);
-//            tl.addRoute(tr);
-//            ts.addTransitLine(tl);
+//            tlLowerU.addRoute(tr);
 //        }
+//        ts.addTransitLine(tlLowerU);
+
+        // Upper U
+        TransitLine tlUpperU = ts.getFactory().createTransitLine(Id.create("upper-u", TransitLine.class));
+        {
+            TransitRouteStop stop1 = ts.getFactory().createTransitRouteStop(stopFac1, 0 * tt, 0 * tt);
+            TransitRouteStop stop6 = ts.getFactory().createTransitRouteStop(stopFac6, 1 * tt, 1 * tt);
+            TransitRouteStop stop11 = ts.getFactory().createTransitRouteStop(stopFac11, 2 * tt, 2 * tt);
+            TransitRouteStop stop12 = ts.getFactory().createTransitRouteStop(stopFac12, 3 * tt, 3 * tt);
+            TransitRouteStop stop13 = ts.getFactory().createTransitRouteStop(stopFac13, 4 * tt, 4 * tt);
+            TransitRouteStop stop14 = ts.getFactory().createTransitRouteStop(stopFac14, 5 * tt, 5 * tt);
+            TransitRouteStop stop15 = ts.getFactory().createTransitRouteStop(stopFac15, 6 * tt, 6 * tt);
+            TransitRouteStop stop10 = ts.getFactory().createTransitRouteStop(stopFac10, 7 * tt, 7 * tt);
+            TransitRouteStop stop5 = ts.getFactory().createTransitRouteStop(stopFac5, 8 * tt, 8 * tt);
+
+            List<TransitRouteStop> stops = Arrays.asList(stop1, stop6, stop11, stop12, stop13, stop14, stop15, stop10, stop5);
+            TransitRoute tr = tsf.createTransitRoute(Id.create("upper-u-1", TransitRoute.class), null, stops, TransportMode.pt);
+            addDepartures(tsf, tr, PT_OPERATION_START_TIME, PT_OPERATION_END_TIME, PT_HEADWAY);
+            tlUpperU.addRoute(tr);
+        }{
+            TransitRouteStop stop5 = ts.getFactory().createTransitRouteStop(stopFac5, 0 * tt, 0 * tt);
+            TransitRouteStop stop10 = ts.getFactory().createTransitRouteStop(stopFac10, 1 * tt, 1 * tt);
+            TransitRouteStop stop15 = ts.getFactory().createTransitRouteStop(stopFac15, 2 * tt, 2 * tt);
+            TransitRouteStop stop14 = ts.getFactory().createTransitRouteStop(stopFac14, 3 * tt, 3 * tt);
+            TransitRouteStop stop13 = ts.getFactory().createTransitRouteStop(stopFac13, 4 * tt, 4 * tt);
+            TransitRouteStop stop12 = ts.getFactory().createTransitRouteStop(stopFac12, 5 * tt, 5 * tt);
+            TransitRouteStop stop11 = ts.getFactory().createTransitRouteStop(stopFac11, 6 * tt, 6 * tt);
+            TransitRouteStop stop6 = ts.getFactory().createTransitRouteStop(stopFac6, 7 * tt, 7 * tt);
+            TransitRouteStop stop1 = ts.getFactory().createTransitRouteStop(stopFac1, 8 * tt, 8 * tt);
+
+            List<TransitRouteStop> stops = Arrays.asList(stop5, stop10, stop15, stop14, stop13, stop12, stop11, stop6, stop1);
+            TransitRoute tr = tsf.createTransitRoute(Id.create("upper-u-2", TransitRoute.class), null, stops, TransportMode.pt);
+            addDepartures(tsf, tr, PT_OPERATION_START_TIME, PT_OPERATION_END_TIME, PT_HEADWAY);
+            tlUpperU.addRoute(tr);
+        }
+        ts.addTransitLine(tlUpperU);
+
+        // X starting in north west
+//        TransitLine tlXNW = ts.getFactory().createTransitLine(Id.create("x-nw", TransitLine.class));
+//        {
+//            TransitRouteStop stop1 = ts.getFactory().createTransitRouteStop(stopFac1, 0 * tt2, 0 * tt2);
+//            TransitRouteStop stop7 = ts.getFactory().createTransitRouteStop(stopFac7, 1 * tt2, 1 * tt2);
+//            TransitRouteStop stop13 = ts.getFactory().createTransitRouteStop(stopFac13, 2 * tt2, 2 * tt2);
+//            TransitRouteStop stop19 = ts.getFactory().createTransitRouteStop(stopFac19, 3 * tt2, 3 * tt2);
+//            TransitRouteStop stop25 = ts.getFactory().createTransitRouteStop(stopFac25, 4 * tt2, 4 * tt2);
+//
+//            List<TransitRouteStop> stops = Arrays.asList(stop1, stop7, stop13, stop19, stop25);
+//            TransitRoute tr = tsf.createTransitRoute(Id.create("x-nw-1", TransitRoute.class), null, stops, TransportMode.pt);
+//            addDepartures(tsf, tr, PT_OPERATION_START_TIME, PT_OPERATION_END_TIME, PT_HEADWAY);
+//            tlXNW.addRoute(tr);
+//        }{
+//            TransitRouteStop stop25 = ts.getFactory().createTransitRouteStop(stopFac25, 0 * tt2, 0 * tt2);
+//            TransitRouteStop stop19 = ts.getFactory().createTransitRouteStop(stopFac19, 1 * tt2, 1 * tt2);
+//            TransitRouteStop stop13 = ts.getFactory().createTransitRouteStop(stopFac13, 2 * tt2, 2 * tt2);
+//            TransitRouteStop stop7 = ts.getFactory().createTransitRouteStop(stopFac7, 3 * tt2, 3 * tt2);
+//            TransitRouteStop stop1 = ts.getFactory().createTransitRouteStop(stopFac1, 4 * tt2, 4 * tt2);
+//
+//            List<TransitRouteStop> stops = Arrays.asList(stop25, stop19, stop13, stop7, stop1);
+//            TransitRoute tr = tsf.createTransitRoute(Id.create("x-nw-2", TransitRoute.class), null, stops, TransportMode.pt);
+//            addDepartures(tsf, tr, PT_OPERATION_START_TIME, PT_OPERATION_END_TIME, PT_HEADWAY);
+//            tlXNW.addRoute(tr);
+//        }
+//        ts.addTransitLine(tlXNW);
+
+        // X starting in north east
+//        TransitLine tlXNE = ts.getFactory().createTransitLine(Id.create("x-ne", TransitLine.class));
+//        {
+//            TransitRouteStop stop5 = ts.getFactory().createTransitRouteStop(stopFac5, 0 * tt2, 0 * tt2);
+//            TransitRouteStop stop9 = ts.getFactory().createTransitRouteStop(stopFac9, 1 * tt2, 1 * tt2);
+//            TransitRouteStop stop13 = ts.getFactory().createTransitRouteStop(stopFac13, 2 * tt2, 2 * tt2);
+//            TransitRouteStop stop17 = ts.getFactory().createTransitRouteStop(stopFac17, 3 * tt2, 3 * tt2);
+//            TransitRouteStop stop21 = ts.getFactory().createTransitRouteStop(stopFac21, 4 * tt2, 4 * tt2);
+//
+//            List<TransitRouteStop> stops = Arrays.asList(stop5, stop9, stop13, stop17, stop21);
+//            TransitRoute tr = tsf.createTransitRoute(Id.create("x-ne-1", TransitRoute.class), null, stops, TransportMode.pt);
+//            addDepartures(tsf, tr, PT_OPERATION_START_TIME, PT_OPERATION_END_TIME, PT_HEADWAY);
+//            tlXNE.addRoute(tr);
+//        }{
+//            TransitRouteStop stop21 = ts.getFactory().createTransitRouteStop(stopFac21, 0 * tt2, 0 * tt2);
+//            TransitRouteStop stop17 = ts.getFactory().createTransitRouteStop(stopFac17, 1 * tt2, 1 * tt2);
+//            TransitRouteStop stop13 = ts.getFactory().createTransitRouteStop(stopFac13, 2 * tt2, 2 * tt2);
+//            TransitRouteStop stop9 = ts.getFactory().createTransitRouteStop(stopFac9, 3 * tt2, 3 * tt2);
+//            TransitRouteStop stop5 = ts.getFactory().createTransitRouteStop(stopFac5, 4 * tt2, 4 * tt2);
+//
+//            List<TransitRouteStop> stops = Arrays.asList(stop21, stop17, stop13, stop9, stop5);
+//            TransitRoute tr = tsf.createTransitRoute(Id.create("x-ne-2", TransitRoute.class), null, stops, TransportMode.pt);
+//            addDepartures(tsf, tr, PT_OPERATION_START_TIME, PT_OPERATION_END_TIME, PT_HEADWAY);
+//            tlXNE.addRoute(tr);
+//        }
+//        ts.addTransitLine(tlXNE);
+
+        // X starting in north east short
+//        TransitLine tlXNES = ts.getFactory().createTransitLine(Id.create("x-nes", TransitLine.class));
+//        {
+//            TransitRouteStop stop5 = ts.getFactory().createTransitRouteStop(stopFac5, 0 * tt2, 0 * tt2);
+//            TransitRouteStop stop9 = ts.getFactory().createTransitRouteStop(stopFac9, 1 * tt2, 1 * tt2);
+//            TransitRouteStop stop13 = ts.getFactory().createTransitRouteStop(stopFac13, 2 * tt2, 2 * tt2);
+//
+//            List<TransitRouteStop> stops = Arrays.asList(stop5, stop9, stop13);
+//            TransitRoute tr = tsf.createTransitRoute(Id.create("x-nes-1", TransitRoute.class), null, stops, TransportMode.pt);
+//            addDepartures(tsf, tr, PT_OPERATION_START_TIME, PT_OPERATION_END_TIME, PT_HEADWAY);
+//            tlXNES.addRoute(tr);
+//        }{
+//            TransitRouteStop stop13 = ts.getFactory().createTransitRouteStop(stopFac13, 0 * tt2, 0 * tt2);
+//            TransitRouteStop stop9 = ts.getFactory().createTransitRouteStop(stopFac9, 1 * tt2, 1 * tt2);
+//            TransitRouteStop stop5 = ts.getFactory().createTransitRouteStop(stopFac5, 2 * tt2, 2 * tt2);
+//
+//            List<TransitRouteStop> stops = Arrays.asList(stop13, stop9, stop5);
+//            TransitRoute tr = tsf.createTransitRoute(Id.create("x-nes-2", TransitRoute.class), null, stops, TransportMode.pt);
+//            addDepartures(tsf, tr, PT_OPERATION_START_TIME, PT_OPERATION_END_TIME, PT_HEADWAY);
+//            tlXNES.addRoute(tr);
+//        }
+//        ts.addTransitLine(tlXNES);
+
+        // Ring
+//        TransitLine tlRing = ts.getFactory().createTransitLine(Id.create("ring", TransitLine.class));
+//        {
+//            TransitRouteStop stop21 = ts.getFactory().createTransitRouteStop(stopFac21, 0 * tt, 0 * tt);
+//            TransitRouteStop stop22 = ts.getFactory().createTransitRouteStop(stopFac22, 1 * tt, 1 * tt);
+//            TransitRouteStop stop23 = ts.getFactory().createTransitRouteStop(stopFac23, 2 * tt, 2 * tt);
+//            TransitRouteStop stop24 = ts.getFactory().createTransitRouteStop(stopFac24, 3 * tt, 3 * tt);
+//            TransitRouteStop stop25 = ts.getFactory().createTransitRouteStop(stopFac25, 4 * tt, 4 * tt);
+//            TransitRouteStop stop20 = ts.getFactory().createTransitRouteStop(stopFac20, 5 * tt, 5 * tt);
+//            TransitRouteStop stop15 = ts.getFactory().createTransitRouteStop(stopFac15, 6 * tt, 6 * tt);
+//            TransitRouteStop stop10 = ts.getFactory().createTransitRouteStop(stopFac10, 7 * tt, 7 * tt);
+//            TransitRouteStop stop5 = ts.getFactory().createTransitRouteStop(stopFac5, 8 * tt, 8 * tt);
+//            TransitRouteStop stop4 = ts.getFactory().createTransitRouteStop(stopFac4, 9 * tt, 9 * tt);
+//            TransitRouteStop stop3 = ts.getFactory().createTransitRouteStop(stopFac3, 10 * tt, 10 * tt);
+//            TransitRouteStop stop2 = ts.getFactory().createTransitRouteStop(stopFac2, 11 * tt, 11 * tt);
+//            TransitRouteStop stop1 = ts.getFactory().createTransitRouteStop(stopFac1, 12 * tt, 12 * tt);
+//            TransitRouteStop stop6 = ts.getFactory().createTransitRouteStop(stopFac6, 13 * tt, 13 * tt);
+//            TransitRouteStop stop11 = ts.getFactory().createTransitRouteStop(stopFac11, 14 * tt, 14 * tt);
+//            TransitRouteStop stop16 = ts.getFactory().createTransitRouteStop(stopFac16, 15 * tt, 15 * tt);
+//
+//            List<TransitRouteStop> stops = Arrays.asList(stop21, stop22, stop23, stop24, stop25, stop20, stop15, stop10, stop5, stop4, stop3, stop2, stop1, stop6, stop11, stop16, stop21);
+//            TransitRoute tr = tsf.createTransitRoute(Id.create("ring-counter", TransitRoute.class), null, stops, TransportMode.pt);
+//            addDepartures(tsf, tr, PT_OPERATION_START_TIME, PT_OPERATION_END_TIME, PT_HEADWAY);
+//            tlRing.addRoute(tr);
+//        }{
+//            TransitRouteStop stop21 = ts.getFactory().createTransitRouteStop(stopFac21, 0 * tt, 0 * tt);
+//            TransitRouteStop stop16 = ts.getFactory().createTransitRouteStop(stopFac16, 15 * tt, 15 * tt);
+//            TransitRouteStop stop11 = ts.getFactory().createTransitRouteStop(stopFac11, 14 * tt, 14 * tt);
+//            TransitRouteStop stop6 = ts.getFactory().createTransitRouteStop(stopFac6, 13 * tt, 13 * tt);
+//            TransitRouteStop stop1 = ts.getFactory().createTransitRouteStop(stopFac1, 12 * tt, 12 * tt);
+//            TransitRouteStop stop2 = ts.getFactory().createTransitRouteStop(stopFac2, 11 * tt, 11 * tt);
+//            TransitRouteStop stop3 = ts.getFactory().createTransitRouteStop(stopFac3, 10 * tt, 10 * tt);
+//            TransitRouteStop stop4 = ts.getFactory().createTransitRouteStop(stopFac4, 9 * tt, 9 * tt);
+//            TransitRouteStop stop5 = ts.getFactory().createTransitRouteStop(stopFac5, 8 * tt, 8 * tt);
+//            TransitRouteStop stop10 = ts.getFactory().createTransitRouteStop(stopFac10, 7 * tt, 7 * tt);
+//            TransitRouteStop stop15 = ts.getFactory().createTransitRouteStop(stopFac15, 6 * tt, 6 * tt);
+//            TransitRouteStop stop20 = ts.getFactory().createTransitRouteStop(stopFac20, 5 * tt, 5 * tt);
+//            TransitRouteStop stop25 = ts.getFactory().createTransitRouteStop(stopFac25, 4 * tt, 4 * tt);
+//            TransitRouteStop stop24 = ts.getFactory().createTransitRouteStop(stopFac24, 3 * tt, 3 * tt);
+//            TransitRouteStop stop23 = ts.getFactory().createTransitRouteStop(stopFac23, 2 * tt, 2 * tt);
+//            TransitRouteStop stop22 = ts.getFactory().createTransitRouteStop(stopFac22, 1 * tt, 1 * tt);
+//
+//            List<TransitRouteStop> stops = Arrays.asList(stop21, stop16, stop11, stop6, stop1, stop2, stop3, stop4, stop5, stop10, stop15, stop20, stop25, stop24, stop23, stop22, stop21);
+//            TransitRoute tr = tsf.createTransitRoute(Id.create("ring-clock", TransitRoute.class), null, stops, TransportMode.pt);
+//            addDepartures(tsf, tr, PT_OPERATION_START_TIME, PT_OPERATION_END_TIME, PT_HEADWAY);
+//            tlRing.addRoute(tr);
+//        }
+//        ts.addTransitLine(tlRing);
+
+        LOG.info("After alteration, transit schedule has " + ts.getTransitLines().size() + " lines.");
+
+        new CreatePseudoNetwork(ts, network, "pt-").createNetwork();
 
         // Validate -------------------------------------------------------------------------------
         TransitScheduleValidator.ValidationResult validationResult = TransitScheduleValidator.validateAll(ts, scenario.getNetwork());
@@ -295,16 +367,73 @@ public class PTScheduleCreator {
             LOG.warn(issue.getMessage());
         }
 
-        LOG.info("After alteration, transit schedule has " + ts.getTransitLines().size() + " lines.");
+        NetworkWriter writer = new NetworkWriter(network);
+        writer.write(outputNetwork);
 
         TransitScheduleWriter transitScheduleWriter = new TransitScheduleWriter(ts);
-        transitScheduleWriter.writeFile(outputSchedule);
-        
-        
-        // create transit vehicles
+        transitScheduleWriter.writeFile(outputPTSchedule);
+
         new CreateVehiclesForSchedule(ts, scenario.getTransitVehicles()).run();
-        new VehicleWriterV1(scenario.getTransitVehicles()).writeFile(outputTransitVehicles);
+        new VehicleWriterV1(scenario.getTransitVehicles()).writeFile(outputPTVehicles);
     }
+
+//    static void setLinkSpeedsToMax(Scenario scenario) {
+//        Map<Id<Link>, Double> linkMaxSpeed = new HashMap<>();
+//
+//        for (Link link : scenario.getNetwork().getLinks().values()) {
+//            linkMaxSpeed.put(link.getId(), 0.);
+//        }
+//
+//        for (TransitLine line : scenario.getTransitSchedule().getTransitLines().values()) {
+//            for (TransitRoute transitRoute : line.getRoutes().values()) {
+//                double arrivalTime = 0;
+//                double departureTime = 0;
+//                for (int ii = 0; ii < transitRoute.getStops().size(); ii++) {
+//
+//                    arrivalTime = transitRoute.getStops().get(ii).getArrivalOffset();
+//                    Id<Link> linkId = null;
+//                    if (ii == 0) {
+//                        linkId = transitRoute.getRoute().getStartLinkId();
+//                        linkMaxSpeed.replace(linkId, 50.);
+//                    }
+//
+//                    else {
+//
+//                        if (ii == transitRoute.getStops().size()-1) {
+//                            linkId = transitRoute.getRoute().getEndLinkId();
+//                        }
+//
+//                        else {
+//                            linkId = transitRoute.getRoute().getLinkIds().get(ii-1);
+//                        }
+//
+//                        Double prevSpeed = linkMaxSpeed.get(linkId);
+//                        double newSpeed = 50.;
+//                        if (arrivalTime - departureTime != 0) {
+//                            newSpeed = scenario.getNetwork().getLinks().get(linkId).getLength() / (- 1 + arrivalTime - departureTime);
+//                        }
+//
+//                        if(newSpeed > prevSpeed) {
+//                            linkMaxSpeed.replace(linkId, newSpeed);
+//                        }
+//                    }
+//                    departureTime = transitRoute.getStops().get(ii).getDepartureOffset();
+//                }
+//            }
+//        }
+//
+//        for (Link link : scenario.getNetwork().getLinks().values()) {
+//            double speed = linkMaxSpeed.get(link.getId());
+//            link.setFreespeed(speed);
+//            if (speed>300./3.6) {
+//                LOG.warn("Link speed is higher than 300 km/h on link " + link.getId()+ " - Speed is " + Math.round(speed*3.6) + " km/h");
+//            }
+//            if (speed<1./3.6) {
+//                LOG.warn("Link speed is lower than 1 km/h on link " + link.getId()+ " - Speed is " + Math.round(speed*3.6) + " km/h");
+//            }
+//        }
+//
+//    }
     
     private static void addDepartures(TransitScheduleFactory tsf, TransitRoute tr, double beginning, double end, double interval) {
         for (double time = beginning; time < end; time = time + interval) {
