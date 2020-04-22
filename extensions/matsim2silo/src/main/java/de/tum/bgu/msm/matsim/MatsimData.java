@@ -132,9 +132,14 @@ public final class MatsimData {
     }
 
     TripRouter createTripRouter() {
-
-        final RoutingModule networkRoutingModule = DefaultRoutingModules.createPureNetworkRouter(
-                TransportMode.car, PopulationUtils.getFactory(), carNetwork, leastCostPathCalculatorFactory.createPathCalculator(carNetwork, travelDisutility, travelTime));
+        final RoutingModule carRoutingModule;
+        if (Properties.get().transportModel.includeAccessEgress) {
+            carRoutingModule = DefaultRoutingModules.createAccessEgressNetworkRouter(
+                    TransportMode.car, PopulationUtils.getFactory(), carNetwork, leastCostPathCalculatorFactory.createPathCalculator(carNetwork, travelDisutility, travelTime), config.plansCalcRoute());
+        } else {
+            carRoutingModule = DefaultRoutingModules.createPureNetworkRouter(
+                    TransportMode.car, PopulationUtils.getFactory(), carNetwork, leastCostPathCalculatorFactory.createPathCalculator(carNetwork, travelDisutility, travelTime));
+        }
         final RoutingModule ptRoutingModule;
 
         if (schedule != null && config.transit().isUseTransit()) {
@@ -148,7 +153,7 @@ public final class MatsimData {
         }
 
         TripRouter.Builder bd = new TripRouter.Builder(config);
-        bd.setRoutingModule(TransportMode.car, networkRoutingModule);
+        bd.setRoutingModule(TransportMode.car, carRoutingModule);
         bd.setRoutingModule(TransportMode.pt, ptRoutingModule);
         return bd.build();
     }
