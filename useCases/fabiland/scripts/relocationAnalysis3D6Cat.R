@@ -2,24 +2,31 @@ library(readr)
 library(dplyr)
 library(plot3D)
 
+# workingDirectory <- '/Users/dominik/Workspace/git/silo/useCases/fabiland/scripts/'
+workingDirectory <- '/Users/dominik/Workspace/git/silo/useCases/fabiland/scenario/scenOutput/'
+setwd(workingDirectory)
 getwd()
 
 # scenarioName <- 'cap75_2-l_x'
 # scenarioName <- 'cap75_2-l_u'
-# scenarioName <- 'cap75_1-l_nes'
 # scenarioName <- 'cap75_1-l_nes_unr-dev'
 # scenarioName <- 'cap75_1-l_lower-u'
 # scenarioName <- 'cap75_1-l_upper-u'
 # scenarioName <- 'cap75_1-l_ring'
-# scenarioName <- 'cap75_2-l_x_ctm_ae'
-scenarioName <- 'cap75_2-l_x_smc_ae'
+# scenarioName <- 'vac300_ae_cap75_1-l_nes_smc'
+scenarioName <- 'vac300_1-reg_ae_cap75_1-l_nes_smc'
+# scenarioName <- 'vac300_ae_cap75_2-l_x_smc'
 
-zones <- read.csv(paste("../scenario/input/zoneSystem.csv", sep=""))
+setwd(paste(workingDirectory,"/",scenarioName, sep=""))
+getwd()
+dir.create("graphics")
+
+zones <- read.csv(paste("../../input/zoneSystem.csv", sep=""))
 
 startYear <- 0
 endYear <- 9
 
-reloc <- read_csv(paste("../scenario/scenOutput/",scenarioName,"/siloResults/relocation/relocation",startYear,".csv.gz", sep=""))
+reloc <- read_csv(paste("siloResults/relocation/relocation",startYear,".csv.gz", sep=""))
 
 reloc1CarWorkMerged <- head(reloc,1)
 reloc2CarWorkMerged <- head(reloc,1)
@@ -28,13 +35,12 @@ reloc1CarNoWorkMerged <- head(reloc,1)
 reloc2CarNoWorkMerged <- head(reloc,1)
 relocNoCarNoWorkMerged <- head(reloc,1)
 
-
 x = c(1,2,3,4,5)
 # y axis in reverse order
 y = c(5,4,3,2,1)
 
 for(year in startYear:endYear) {
-    reloc <- read_csv(paste("../scenario/scenOutput/",scenarioName,"/siloResults/relocation/relocation",year,".csv.gz", sep=""))
+    reloc <- read_csv(paste("siloResults/relocation/relocation",year,".csv.gz", sep=""))
     
     reloc1CarWork <- reloc %>% filter(reloc$autos == 1 & reloc$workers > 0)
     reloc2CarWork <- reloc %>% filter(reloc$autos > 1 & reloc$workers > 0)
@@ -59,8 +65,7 @@ for(year in startYear:endYear) {
     relocNoCarNoWorkMatrix = matrix(relocNoCarNoWorkCounts, nrow=5, ncol=5, byrow=TRUE)
     
     # Plot relocations of current year
-    png(paste(scenarioName,"_reloc_",year,".png", sep=""),
-        width = 800, height = 640)
+    png(paste("graphics/",scenarioName,"_reloc_",year,".png", sep=""), width = 800, height = 640)
     par(mfrow=c(2,3))
     
     # box types: “b”, “b2”, “f”, “g”, “bl”, “bl2”, “u”, “n”
@@ -91,8 +96,8 @@ for(year in startYear:endYear) {
 }
 
 # Plot relocations in sum of all selected years
-png(paste(scenarioName,"_reloc.png", sep=""),
-    width = 800, height = 640)
+
+png(paste("graphics/",scenarioName,"_reloc.png", sep=""), width = 800, height = 640)
 par(mfrow=c(2,3))
 
 reloc1CarWorkMergedCounts <- hist(reloc1CarWorkMerged$newZone, breaks = c(0.5:25.5))$counts
@@ -144,8 +149,7 @@ jobs = c(200, 100, 100, 100, 500,
 popMatrix = matrix(pop, nrow=5, ncol=5, byrow=TRUE)
 jobsMatrix = matrix(jobs, nrow=5, ncol=5, byrow=TRUE)
 
-png("popJobs.png",
-    width = 800, height = 640)
+png("graphics/popJobs.png", width = 800, height = 640)
 par(mfrow=c(2,2))
 zExtent = c(0,1000)
 hist3D(x,y,popMatrix, zlim=zExtent, clim=zExtent, theta=25, phi=15, axes=FALSE,label=FALSE, nticks=5,
@@ -153,3 +157,4 @@ hist3D(x,y,popMatrix, zlim=zExtent, clim=zExtent, theta=25, phi=15, axes=FALSE,l
 hist3D(x,y,jobsMatrix, zlim=zExtent, clim=zExtent, theta=25, phi=15, axes=FALSE,label=FALSE, nticks=5,
        ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="b) Jobs")
 dev.off()
+
