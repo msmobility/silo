@@ -45,9 +45,13 @@
 			<param name="weight" value="0.1" />
 		</parameterset>
 		<parameterset type="strategysettings" >
-			<param name="strategyName" value="ChangeTripMode" />
+			<param name="strategyName" value="SubtourModeChoice" />
 			<param name="weight" value="0.1" />
 		</parameterset>
+	</module>
+	<module name="subtourModeChoice" >
+		<param name="considerCarAvailability" value="true" />
+		<param name="modes" value="car,pt" />
 	</module>
 	<module name="transitRouter" >
 		<param name="extensionRadius" value="500.0" />
