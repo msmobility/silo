@@ -128,7 +128,7 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
 
         org.matsim.api.core.v01.population.Person matsimPerson = populationFactory.createPerson(Id.createPersonId(person.getId()));
 
-        if (noHHAUtos > 0) {
+        if (noHHAUtos > 0 && person.hasDriverLicense()) {
             PersonUtils.setCarAvail(matsimPerson, "maybe");
         } else {
             PersonUtils.setCarAvail(matsimPerson, "never"); // Needs to be exaclty this string to work, cf. PermissibleModesCalculator:69
