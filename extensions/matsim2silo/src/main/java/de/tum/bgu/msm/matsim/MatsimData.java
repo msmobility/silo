@@ -133,7 +133,7 @@ public final class MatsimData {
 
     TripRouter createTripRouter() {
         final RoutingModule carRoutingModule;
-        if (Properties.get().transportModel.includeAccessEgress) {
+        if (config.plansCalcRoute().isInsertingAccessEgressWalk()) {
             carRoutingModule = DefaultRoutingModules.createAccessEgressNetworkRouter(
                     TransportMode.car, PopulationUtils.getFactory(), carNetwork, leastCostPathCalculatorFactory.createPathCalculator(carNetwork, travelDisutility, travelTime), config.plansCalcRoute());
         } else {
