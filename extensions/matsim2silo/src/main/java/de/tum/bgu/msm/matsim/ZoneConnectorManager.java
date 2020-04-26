@@ -76,9 +76,9 @@ public class ZoneConnectorManager {
                 int weight = 1;
                 if(household!=null) {
                     weight += household.getHhSize();
-                    xSum += (weight * coordinate.x);
-                    ySum += (weight * coordinate.y);
                 }
+                xSum += (weight * coordinate.x);
+                ySum += (weight * coordinate.y);
                 weightedCount += weight;
             }
             double avgX = xSum / weightedCount;
