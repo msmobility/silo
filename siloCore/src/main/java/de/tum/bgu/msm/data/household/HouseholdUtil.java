@@ -210,4 +210,8 @@ public class HouseholdUtil {
         }
         return zonePopulationMap;
     }
+
+    public static int getHhZone(Household household, DataContainer dataContainer) {
+        return dataContainer.getRealEstateDataManager().getDwelling(household.getDwellingId()).getZoneId();
+    }
 }
