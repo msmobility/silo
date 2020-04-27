@@ -419,7 +419,9 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
             run = true;
             barrier = new CyclicBarrier(threads +1);
             for (int i = 0; i < threads; i++) {
-                new UtilityUtils(strategy.duplicate()).start();
+                UtilityUtils thread = new UtilityUtils(strategy.duplicate());
+                thread.setDaemon(true);
+                thread.start();
             }
         }
 
