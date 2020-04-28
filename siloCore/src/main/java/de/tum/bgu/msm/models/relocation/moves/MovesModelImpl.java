@@ -53,8 +53,8 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
     private final Map<HouseholdType, Double> averageHousingSatisfaction = new ConcurrentHashMap<>();
     private final Map<Integer, Double> satisfactionByHousehold = new ConcurrentHashMap<>();
-    private final HashMap<Integer, Integer> householdsByZone = new HashMap<>();
-    private final HashMap<Integer, Double > sumOfSatisfactionsByZone = new HashMap<>();
+    private final Map<Integer, Integer> householdsByZone = new HashMap<>();
+    private final Map<Integer, Double > sumOfSatisfactionsByZone = new HashMap<>();
     private YearByYearCsvModelTracker relocationTracker;
 
 
@@ -460,11 +460,11 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         }
     }
 
-    public HashMap<Integer, Integer> getHouseholdsByZone() {
+    public Map<Integer, Integer> getHouseholdsByZone() {
         return householdsByZone;
     }
 
-    public HashMap<Integer, Double> getSumOfSatisfactionsByZone() {
+    public Map<Integer, Double> getSumOfSatisfactionsByZone() {
         return sumOfSatisfactionsByZone;
     }
 }
