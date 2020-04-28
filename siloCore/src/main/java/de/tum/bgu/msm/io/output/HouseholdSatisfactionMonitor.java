@@ -13,7 +13,7 @@ import org.apache.log4j.Logger;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.util.HashMap;
+import java.util.Map;
 
 
 public class HouseholdSatisfactionMonitor implements ResultsMonitor {
@@ -61,8 +61,8 @@ public class HouseholdSatisfactionMonitor implements ResultsMonitor {
     @Override
     public void endYear(int year, Multiset<Class<? extends MicroEvent>> eventCounter) {
         if (enabled){
-            HashMap<Integer, Integer> householdsByZone = movesModel.getHouseholdsByZone();
-            HashMap<Integer, Double> sumOfSatisfactionsByZone = movesModel.getSumOfSatisfactionsByZone();
+            Map<Integer, Integer> householdsByZone = movesModel.getHouseholdsByZone();
+            Map<Integer, Double> sumOfSatisfactionsByZone = movesModel.getSumOfSatisfactionsByZone();
             for (Zone zone : dataContainer.getGeoData().getZones().values()){
                 int hhThisZone = householdsByZone.getOrDefault(zone.getZoneId(), 0);
                 double avgSatisfactionThisZone = hhThisZone != 0 ? sumOfSatisfactionsByZone.getOrDefault(zone.getZoneId(),0.)/hhThisZone : -1;
