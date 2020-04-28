@@ -7,8 +7,9 @@ workingDirectory <- '/Users/dominik/Workspace/git/silo/useCases/fabiland/scenari
 setwd(workingDirectory)
 getwd()
 
-scenarioName <- 'vac300_1-reg_ae_cap75_1-l_nes_smc'
+# scenarioName <- 'vac300_1-reg_ae_cap75_1-l_nes_smc'
 # scenarioName <- 'vac300_1-reg_ae_cap75_2-l_x_smc'
+# scenarioName <- 'vac300_1-reg_ae_cap75_1-l_ring_smc'
 
 # scenarioName <- 'vac300_25-reg_ae_cap75_1-l_nes_smc'
 # scenarioName <- 'vac300_25-reg_ae_cap75_2-l_x_smc'
@@ -16,6 +17,7 @@ scenarioName <- 'vac300_1-reg_ae_cap75_1-l_nes_smc'
 
 # scenarioName <- 'vac300_ae_cap75_1-l_nes_smc'
 # scenarioName <- 'vac300_ae_cap75_2-l_x_smc'
+scenarioName <- 'vac300_ae_cap75_1-l_ring_smc'
 
 setwd(paste(workingDirectory,"/",scenarioName, sep=""))
 getwd()
@@ -133,7 +135,7 @@ dev.off()
 
 ################################################################################
 
-# Plot population and jobs
+# Plot households and jobs
 households = c(250, 0, 0, 0, 250,
     0, 0, 500, 0, 0,
     0, 500, 3000, 500, 0,
