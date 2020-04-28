@@ -58,7 +58,7 @@
 				<stop refId="6" arrivalOffset="01:18:00" departureOffset="01:18:00" awaitDeparture="false"/>
 				<stop refId="11" arrivalOffset="01:24:00" departureOffset="01:24:00" awaitDeparture="false"/>
 				<stop refId="16" arrivalOffset="01:30:00" departureOffset="01:30:00" awaitDeparture="false"/>
-				<stop refId="21.1" arrivalOffset="00:00:00" departureOffset="00:00:00" awaitDeparture="false"/>
+				<stop refId="21.1" arrivalOffset="01:36:00" departureOffset="01:36:00" awaitDeparture="false"/>
 			</routeProfile>
 			<route>
 				<link refId="pt-0"/>
@@ -194,22 +194,22 @@
 			<transportMode>pt</transportMode>
 			<routeProfile>
 				<stop refId="21.2" arrivalOffset="00:00:00" departureOffset="00:00:00" awaitDeparture="false"/>
-				<stop refId="16.1" arrivalOffset="01:30:00" departureOffset="01:30:00" awaitDeparture="false"/>
-				<stop refId="11.1" arrivalOffset="01:24:00" departureOffset="01:24:00" awaitDeparture="false"/>
-				<stop refId="6.1" arrivalOffset="01:18:00" departureOffset="01:18:00" awaitDeparture="false"/>
-				<stop refId="1.1" arrivalOffset="01:12:00" departureOffset="01:12:00" awaitDeparture="false"/>
-				<stop refId="2.1" arrivalOffset="01:06:00" departureOffset="01:06:00" awaitDeparture="false"/>
-				<stop refId="3.1" arrivalOffset="01:00:00" departureOffset="01:00:00" awaitDeparture="false"/>
-				<stop refId="4.1" arrivalOffset="00:54:00" departureOffset="00:54:00" awaitDeparture="false"/>
+				<stop refId="16.1" arrivalOffset="00:06:00" departureOffset="00:06:00" awaitDeparture="false"/>
+				<stop refId="11.1" arrivalOffset="00:12:00" departureOffset="00:12:00" awaitDeparture="false"/>
+				<stop refId="6.1" arrivalOffset="00:18:00" departureOffset="00:18:00" awaitDeparture="false"/>
+				<stop refId="1.1" arrivalOffset="00:24:00" departureOffset="00:24:00" awaitDeparture="false"/>
+				<stop refId="2.1" arrivalOffset="00:30:00" departureOffset="00:30:00" awaitDeparture="false"/>
+				<stop refId="3.1" arrivalOffset="00:36:00" departureOffset="00:36:00" awaitDeparture="false"/>
+				<stop refId="4.1" arrivalOffset="00:42:00" departureOffset="00:42:00" awaitDeparture="false"/>
 				<stop refId="5.1" arrivalOffset="00:48:00" departureOffset="00:48:00" awaitDeparture="false"/>
-				<stop refId="10.1" arrivalOffset="00:42:00" departureOffset="00:42:00" awaitDeparture="false"/>
-				<stop refId="15.1" arrivalOffset="00:36:00" departureOffset="00:36:00" awaitDeparture="false"/>
-				<stop refId="20.1" arrivalOffset="00:30:00" departureOffset="00:30:00" awaitDeparture="false"/>
-				<stop refId="25.1" arrivalOffset="00:24:00" departureOffset="00:24:00" awaitDeparture="false"/>
-				<stop refId="24.1" arrivalOffset="00:18:00" departureOffset="00:18:00" awaitDeparture="false"/>
-				<stop refId="23.1" arrivalOffset="00:12:00" departureOffset="00:12:00" awaitDeparture="false"/>
-				<stop refId="22.1" arrivalOffset="00:06:00" departureOffset="00:06:00" awaitDeparture="false"/>
-				<stop refId="21.2" arrivalOffset="00:00:00" departureOffset="00:00:00" awaitDeparture="false"/>
+				<stop refId="10.1" arrivalOffset="00:54:00" departureOffset="00:54:00" awaitDeparture="false"/>
+				<stop refId="15.1" arrivalOffset="01:00:00" departureOffset="01:00:00" awaitDeparture="false"/>
+				<stop refId="20.1" arrivalOffset="01:06:00" departureOffset="01:06:00" awaitDeparture="false"/>
+				<stop refId="25.1" arrivalOffset="01:12:00" departureOffset="01:12:00" awaitDeparture="false"/>
+				<stop refId="24.1" arrivalOffset="01:18:00" departureOffset="01:18:00" awaitDeparture="false"/>
+				<stop refId="23.1" arrivalOffset="01:24:00" departureOffset="01:24:00" awaitDeparture="false"/>
+				<stop refId="22.1" arrivalOffset="01:30:00" departureOffset="01:30:00" awaitDeparture="false"/>
+				<stop refId="21.2" arrivalOffset="01:36:00" departureOffset="01:36:00" awaitDeparture="false"/>
 			</routeProfile>
 			<route>
 				<link refId="pt-0"/>
