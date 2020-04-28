@@ -103,7 +103,7 @@ public final class MatsimTravelTimesAndCosts implements TravelTimes {
                         minToCar = travelTimeToRegionCar;
                     }
                     double travelTimeFromRegionPt = getPeakSkim(TransportMode.pt).getIndexed(zoneInRegion.getZoneId(), zoneId);
-                    if (travelTimeFromRegionCar < minFromPt) {
+                    if (travelTimeFromRegionPt < minFromPt) {
                         minFromPt = travelTimeFromRegionPt;
                     }
                     double travelTimeToRegionPt = getPeakSkim(TransportMode.pt).getIndexed(zoneId, zoneInRegion.getZoneId());
