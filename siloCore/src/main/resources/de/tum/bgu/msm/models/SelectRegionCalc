@@ -1,3 +1,0 @@
-var calculateSelectRegionProbability = function(regionUtility) {
-    return Math.exp(0.5 * regionUtility);
-}

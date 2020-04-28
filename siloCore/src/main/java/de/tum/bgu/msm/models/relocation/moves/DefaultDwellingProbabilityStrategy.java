@@ -1,18 +1,23 @@
 package de.tum.bgu.msm.models.relocation.moves;
 
-import de.tum.bgu.msm.models.ScriptInputProvider;
-import de.tum.bgu.msm.util.js.JavaScriptCalculator;
+public class DefaultDwellingProbabilityStrategy implements DwellingProbabilityStrategy {
 
-import java.io.InputStreamReader;
-import java.io.Reader;
+    /**
+     * This is the scale factor for the exponential function. Higher values will make differences
+     * in utility have a stronger impact on the probability. Lower values will cause the probabilities
+     * to be more similar to each other.
+     */
+    private final double beta;
 
-public class DefaultDwellingProbabilityStrategy extends JavaScriptCalculator<Double> implements DwellingProbabilityStrategy {
+    public DefaultDwellingProbabilityStrategy(double beta) {
+        this.beta = beta;
+    }
 
     public DefaultDwellingProbabilityStrategy() {
-        super(new InputStreamReader(ScriptInputProvider.getDwellingProbabilityScriptInput()));
+        this(0.5);
     }
 
     public double calculateSelectDwellingProbability(double dwellingUtility) {
-        return super.calculate("calculateSelectDwellingProbability", dwellingUtility);
+        return Math.exp(beta * dwellingUtility);
     }
 }
