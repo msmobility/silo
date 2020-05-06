@@ -4,9 +4,9 @@ library(plot3D)
 
 workingDirectory <- '/Users/dominik/Workspace/git/silo/useCases/fabiland/scenario/scenOutput/'
 
-# scenarioName <- 'vac-r_ae_cap30_2-l_x_smc'
-# scenarioName <- 'vac-r_ae_cap30_1-l_ring_smc'
-scenarioName <- 'vac-r_ae_cap30_1-l_nes_smc'
+# scenarioName <- '9-reg_ae_cap30_2-l_x_smc'
+# scenarioName <- '9-reg_ae_cap30_1-l_ring_smc'
+scenarioName <- '9-reg_ae_cap30_1-l_nes_smc'
 
 setwd(paste(workingDirectory,"/",scenarioName, sep=""))
 dir.create("graphics")
@@ -14,7 +14,7 @@ dir.create("graphics")
 zones <- read.csv(paste("../../input/zoneSystem_9-reg.csv", sep=""))
 
 startYear <- 0
-endYear <- 1
+endYear <- 9
 
 reloc <- read_csv(paste("siloResults/relocation/relocation",startYear,".csv.gz", sep=""))
 
@@ -63,25 +63,17 @@ for(year in startYear:endYear) {
     par(mfrow=c(3,3))
     
     # box types: “b”, “b2”, “f”, “g”, “bl”, “bl2”, “u”, “n”
-    zExtent = c(0,20)
-    hist3D(x,y,reloc1Car1WorkDestMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5, 
-           ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="a) Households with 1 worker and 1 car.")
-    hist3D(x,y,reloc2Car1WorkDestMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5, 
-           ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="b) Households with 1 worker and 2 cars.")
-    hist3D(x,y,reloc0Car1WorkDestMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5, 
-           ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="c) Households with 1 worker and no car.")
-    hist3D(x,y,reloc1Car2WorkDestMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5, 
-           ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="d) Households with 2 workers and 1 car.")
-    hist3D(x,y,reloc2Car2WorkDestMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5, 
-           ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="e) Households with 2 workers and 2 cars.")
-    hist3D(x,y,reloc0Car2WorkDestMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5, 
-           ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="f) Households with 2 workers and no cars.")
-    hist3D(x,y,reloc1Car0WorkDestMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5, 
-           ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="g) Households with no workers and 1 car.")
-    hist3D(x,y,reloc2Car0WorkDestMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5, 
-           ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="h) Households with no workers and 2 cars.")
-    hist3D(x,y,reloc0Car0WorkDestMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5, 
-           ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="i) Households with no workers and no cars.")
+    cLim = c(0,20)
+    zLim = c(0,20)
+    hist3D(x,y,reloc1Car1WorkDestMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="a) Households with 1 worker and 1 car.")
+    hist3D(x,y,reloc2Car1WorkDestMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="b) Households with 1 worker and 2 cars.")
+    hist3D(x,y,reloc0Car1WorkDestMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="c) Households with 1 worker and no car.")
+    hist3D(x,y,reloc1Car2WorkDestMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="d) Households with 2 workers and 1 car.")
+    hist3D(x,y,reloc2Car2WorkDestMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="e) Households with 2 workers and 2 cars.")
+    hist3D(x,y,reloc0Car2WorkDestMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="f) Households with 2 workers and no cars.")
+    hist3D(x,y,reloc1Car0WorkDestMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="g) Households with no workers and 1 car.")
+    hist3D(x,y,reloc2Car0WorkDestMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="h) Households with no workers and 2 cars.")
+    hist3D(x,y,reloc0Car0WorkDestMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="i) Households with no workers and no cars.")
     dev.off()
     # End plot current year
     
@@ -113,24 +105,17 @@ for(year in startYear:endYear) {
     par(mfrow=c(3,3))
     
     # box types: “b”, “b2”, “f”, “g”, “bl”, “bl2”, “u”, “n”
-    hist3D(x,y,reloc1Car1WorkOrigMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5, 
-           ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="a) Households with 1 worker and 1 car.")
-    hist3D(x,y,reloc2Car1WorkOrigMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5, 
-           ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="b) Households with 1 worker and 2 cars.")
-    hist3D(x,y,reloc0Car1WorkOrigMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5, 
-           ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="c) Households with 1 worker and no car.")
-    hist3D(x,y,reloc1Car2WorkOrigMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5, 
-           ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="d) Households with 2 workers and 1 car.")
-    hist3D(x,y,reloc2Car2WorkOrigMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5, 
-           ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="e) Households with 2 workers and 2 cars.")
-    hist3D(x,y,reloc0Car2WorkOrigMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5, 
-           ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="f) Households with 2 workers and no cars.")
-    hist3D(x,y,reloc1Car0WorkOrigMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5, 
-           ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="g) Households with no workers and 1 car.")
-    hist3D(x,y,reloc2Car0WorkOrigMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5, 
-           ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="h) Households with no workers and 2 cars.")
-    hist3D(x,y,reloc0Car0WorkOrigMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5, 
-           ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="i) Households with no workers and no cars.")
+    cLim = c(0,20)
+    zLim = c(0,20)
+    hist3D(x,y,reloc1Car1WorkOrigMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="a) Households with 1 worker and 1 car.")
+    hist3D(x,y,reloc2Car1WorkOrigMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="b) Households with 1 worker and 2 cars.")
+    hist3D(x,y,reloc0Car1WorkOrigMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="c) Households with 1 worker and no car.")
+    hist3D(x,y,reloc1Car2WorkOrigMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="d) Households with 2 workers and 1 car.")
+    hist3D(x,y,reloc2Car2WorkOrigMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="e) Households with 2 workers and 2 cars.")
+    hist3D(x,y,reloc0Car2WorkOrigMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="f) Households with 2 workers and no cars.")
+    hist3D(x,y,reloc1Car0WorkOrigMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="g) Households with no workers and 1 car.")
+    hist3D(x,y,reloc2Car0WorkOrigMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="h) Households with no workers and 2 cars.")
+    hist3D(x,y,reloc0Car0WorkOrigMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="i) Households with no workers and no cars.")
     dev.off()
     # End plot current year
     
@@ -151,24 +136,17 @@ for(year in startYear:endYear) {
     par(mfrow=c(3,3))
     
     # box types: “b”, “b2”, “f”, “g”, “bl”, “bl2”, “u”, “n”
-    hist3D(x,y,reloc1Car1WorkDiffMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5, 
-           ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="a) Households with 1 worker and 1 car.")
-    hist3D(x,y,reloc2Car1WorkDiffMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5, 
-           ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="b) Households with 1 worker and 2 cars.")
-    hist3D(x,y,reloc0Car1WorkDiffMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5, 
-           ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="c) Households with 1 worker and no car.")
-    hist3D(x,y,reloc1Car2WorkDiffMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5, 
-           ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="d) Households with 2 workers and 1 car.")
-    hist3D(x,y,reloc2Car2WorkDiffMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5, 
-           ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="e) Households with 2 workers and 2 cars.")
-    hist3D(x,y,reloc0Car2WorkDiffMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5, 
-           ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="f) Households with 2 workers and no cars.")
-    hist3D(x,y,reloc1Car0WorkDiffMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5, 
-           ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="g) Households with no workers and 1 car.")
-    hist3D(x,y,reloc2Car0WorkDiffMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5, 
-           ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="h) Households with no workers and 2 cars.")
-    hist3D(x,y,reloc0Car0WorkDiffMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5, 
-           ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="i) Households with no workers and no cars.")
+    cLim = c(-20,20)
+    zLim = c(0,20)
+    hist3D(x,y,reloc1Car1WorkDiffMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="a) Households with 1 worker and 1 car.")
+    hist3D(x,y,reloc2Car1WorkDiffMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="b) Households with 1 worker and 2 cars.")
+    hist3D(x,y,reloc0Car1WorkDiffMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="c) Households with 1 worker and no car.")
+    hist3D(x,y,reloc1Car2WorkDiffMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="d) Households with 2 workers and 1 car.")
+    hist3D(x,y,reloc2Car2WorkDiffMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="e) Households with 2 workers and 2 cars.")
+    hist3D(x,y,reloc0Car2WorkDiffMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="f) Households with 2 workers and no cars.")
+    hist3D(x,y,reloc1Car0WorkDiffMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="g) Households with no workers and 1 car.")
+    hist3D(x,y,reloc2Car0WorkDiffMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="h) Households with no workers and 2 cars.")
+    hist3D(x,y,reloc0Car0WorkDiffMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="i) Households with no workers and no cars.")
     dev.off()
     # End plot current year
     
@@ -227,25 +205,17 @@ reloc2Car0WorkDestMergedMatrix = matrix(reloc2Car0WorkDestMergedCounts, nrow=5, 
 reloc0Car0WorkDestMergedMatrix = matrix(reloc0Car0WorkDestMergedCounts, nrow=5, ncol=5, byrow=TRUE)
 
 # box types: “b”, “b2”, “f”, “g”, “bl”, “bl2”, “u”, “n”
-zExtent = c(0,20)
-hist3D(x,y,reloc1Car1WorkDestMergedMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5,
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="a) Households with 1 worker and 1 car.")
-hist3D(x,y,reloc2Car1WorkDestMergedMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5,
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="b) Households with 1 worker and 2 cars.")
-hist3D(x,y,reloc0Car1WorkDestMergedMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5,
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="c) Households with 1 worker and no car.")
-hist3D(x,y,reloc1Car2WorkDestMergedMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5,
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="d) Households with 2 workers and 1 car.")
-hist3D(x,y,reloc2Car2WorkDestMergedMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5,
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="e) Households with 2 workers and 2 cars.")
-hist3D(x,y,reloc0Car2WorkDestMergedMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5,
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="f) Households with 2 workers and no cars.")
-hist3D(x,y,reloc1Car0WorkDestMergedMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5,
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="g) Households with no workers and 1 car.")
-hist3D(x,y,reloc2Car0WorkDestMergedMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5,
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="h) Households with no workers and 2 cars.")
-hist3D(x,y,reloc0Car0WorkDestMergedMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5,
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="i) Households with no workers and no cars.")
+cLim = c(0,200)
+zLim = c(0,200)
+hist3D(x,y,reloc1Car1WorkDestMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="a) Households with 1 worker and 1 car.")
+hist3D(x,y,reloc2Car1WorkDestMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="b) Households with 1 worker and 2 cars.")
+hist3D(x,y,reloc0Car1WorkDestMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="c) Households with 1 worker and no car.")
+hist3D(x,y,reloc1Car2WorkDestMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="d) Households with 2 workers and 1 car.")
+hist3D(x,y,reloc2Car2WorkDestMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="e) Households with 2 workers and 2 cars.")
+hist3D(x,y,reloc0Car2WorkDestMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="f) Households with 2 workers and no cars.")
+hist3D(x,y,reloc1Car0WorkDestMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="g) Households with no workers and 1 car.")
+hist3D(x,y,reloc2Car0WorkDestMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="h) Households with no workers and 2 cars.")
+hist3D(x,y,reloc0Car0WorkDestMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="i) Households with no workers and no cars.")
 dev.off()
 
 #################################################################################
@@ -275,24 +245,17 @@ reloc2Car0WorkOrigMergedMatrix = matrix(reloc2Car0WorkOrigMergedCounts, nrow=5, 
 reloc0Car0WorkOrigMergedMatrix = matrix(reloc0Car0WorkOrigMergedCounts, nrow=5, ncol=5, byrow=TRUE)
 
 # box types: “b”, “b2”, “f”, “g”, “bl”, “bl2”, “u”, “n”
-hist3D(x,y,reloc1Car1WorkOrigMergedMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5,
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="a) Households with 1 worker and 1 car.")
-hist3D(x,y,reloc2Car1WorkOrigMergedMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5,
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="b) Households with 1 worker and 2 cars.")
-hist3D(x,y,reloc0Car1WorkOrigMergedMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5,
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="c) Households with 1 worker and no car.")
-hist3D(x,y,reloc1Car2WorkOrigMergedMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5,
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="d) Households with 2 workers and 1 car.")
-hist3D(x,y,reloc2Car2WorkOrigMergedMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5,
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="e) Households with 2 workers and 2 cars.")
-hist3D(x,y,reloc0Car2WorkOrigMergedMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5,
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="f) Households with 2 workers and no cars.")
-hist3D(x,y,reloc1Car0WorkOrigMergedMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5,
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="g) Households with no workers and 1 car.")
-hist3D(x,y,reloc2Car0WorkOrigMergedMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5,
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="h) Households with no workers and 2 cars.")
-hist3D(x,y,reloc0Car0WorkOrigMergedMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5,
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="i) Households with no workers and no cars.")
+cLim = c(0,200)
+zLim = c(0,2000)
+hist3D(x,y,reloc1Car1WorkOrigMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="a) Households with 1 worker and 1 car.")
+hist3D(x,y,reloc2Car1WorkOrigMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="b) Households with 1 worker and 2 cars.")
+hist3D(x,y,reloc0Car1WorkOrigMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="c) Households with 1 worker and no car.")
+hist3D(x,y,reloc1Car2WorkOrigMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="d) Households with 2 workers and 1 car.")
+hist3D(x,y,reloc2Car2WorkOrigMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="e) Households with 2 workers and 2 cars.")
+hist3D(x,y,reloc0Car2WorkOrigMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="f) Households with 2 workers and no cars.")
+hist3D(x,y,reloc1Car0WorkOrigMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="g) Households with no workers and 1 car.")
+hist3D(x,y,reloc2Car0WorkOrigMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="h) Households with no workers and 2 cars.")
+hist3D(x,y,reloc0Car0WorkOrigMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="i) Households with no workers and no cars.")
 dev.off()
 
 #################################################################################
@@ -312,24 +275,17 @@ png(paste("graphics/",scenarioName,"_reloc-diff.png", sep=""), width = 800, heig
 par(mfrow=c(3,3))
 
 # box types: “b”, “b2”, “f”, “g”, “bl”, “bl2”, “u”, “n”
-hist3D(x,y,reloc1Car1WorkDiffMergedMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5,
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="a) Households with 1 worker and 1 car.")
-hist3D(x,y,reloc2Car1WorkDiffMergedMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5,
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="b) Households with 1 worker and 2 cars.")
-hist3D(x,y,reloc0Car1WorkDiffMergedMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5,
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="c) Households with 1 worker and no car.")
-hist3D(x,y,reloc1Car2WorkDiffMergedMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5,
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="d) Households with 2 workers and 1 car.")
-hist3D(x,y,reloc2Car2WorkDiffMergedMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5,
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="e) Households with 2 workers and 2 cars.")
-hist3D(x,y,reloc0Car2WorkDiffMergedMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5,
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="f) Households with 2 workers and no cars.")
-hist3D(x,y,reloc1Car0WorkDiffMergedMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5,
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="g) Households with no workers and 1 car.")
-hist3D(x,y,reloc2Car0WorkDiffMergedMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5,
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="h) Households with no workers and 2 cars.")
-hist3D(x,y,reloc0Car0WorkDiffMergedMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5,
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="i) Households with no workers and no cars.")
+cLim = c(-100,100)
+zLim = c(0,100)
+hist3D(x,y,reloc1Car1WorkDiffMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="a) Households with 1 worker and 1 car.")
+hist3D(x,y,reloc2Car1WorkDiffMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="b) Households with 1 worker and 2 cars.")
+hist3D(x,y,reloc0Car1WorkDiffMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="c) Households with 1 worker and no car.")
+hist3D(x,y,reloc1Car2WorkDiffMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="d) Households with 2 workers and 1 car.")
+hist3D(x,y,reloc2Car2WorkDiffMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="e) Households with 2 workers and 2 cars.")
+hist3D(x,y,reloc0Car2WorkDiffMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="f) Households with 2 workers and no cars.")
+hist3D(x,y,reloc1Car0WorkDiffMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="g) Households with no workers and 1 car.")
+hist3D(x,y,reloc2Car0WorkDiffMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="h) Households with no workers and 2 cars.")
+hist3D(x,y,reloc0Car0WorkDiffMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="i) Households with no workers and no cars.")
 dev.off()
 # End plot current year
 
@@ -351,11 +307,10 @@ jobs = c(300, 10, 10, 10, 300,
 householdsMatrix = matrix(households, nrow=5, ncol=5, byrow=TRUE)
 jobsMatrix = matrix(jobs, nrow=5, ncol=5, byrow=TRUE)
 
-png("graphics/householdsJobs.png", width = 800, height = 640)
-par(mfrow=c(2,2))
-zExtent = c(0,1200)
-hist3D(x,y,householdsMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5,
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="a) Households")
-hist3D(x,y,jobsMatrix, zlim=zExtent, clim=zExtent, theta=115, phi=25, axes=FALSE,label=FALSE, nticks=5,
-       ticktype="detailed", space=0.7, lighting=TRUE, light="diffuse", shade=0.5, bty = "n", main ="b) Jobs")
+png("graphics/householdsJobs.png", width = 800, height = 320)
+par(mfrow=c(1,2))
+cLim = c(0,1200)
+zLim = c(0,1200)
+hist3D(x,y,householdsMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty = "n", main ="a) Households")
+hist3D(x,y,jobsMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty = "n", main ="b) Jobs")
 dev.off()
