@@ -232,9 +232,7 @@ public class CreatePopulation {
 
         logger.warn("Adding vacant jobs and dwellings");
         for (int zoneId = 1; zoneId <= 25; zoneId++) {
-            List<Integer> zonesInOneZoneRegions = Arrays.asList(13);
-            List<Integer> zonesInTwoZoneRegions = Arrays.asList(3,8,11,12,14,15,18,23);
-            List<Integer> zonesInFourZoneRegions = Arrays.asList(1,2,4,5,6,7,9,10,16,17,19,20,21,22,24,25);
+
 
             int row = (zoneId - 1) / 5;
             int col = (zoneId - 1) % 5;
@@ -243,20 +241,20 @@ public class CreatePopulation {
             double y1 = 20000 - 12500 - row * centroidOffset;
 
             Random rnd = new Random(4712);
-            int population = householdsByZone[row][col];
-            int vacantDd = 0;
-            //int vacantDd = (int) (0.05 * population); // Change the way vacant dwellings are added to the zones
-            // int vacantDd = 50;
-            // int vacantDd = 300;
-            if (zonesInOneZoneRegions.contains(zoneId)) {
-                vacantDd = 400;
-            } else if (zonesInTwoZoneRegions.contains(zoneId)) {
-                vacantDd = 200;
-            } else if (zonesInFourZoneRegions.contains(zoneId)) {
-                vacantDd = 100;
-            } else {
-                throw new RuntimeException("Zone must have been contained in one of the prespecified lists.");
-            }
+            int vacantDd = 100;
+            // int vacantDd = 0;
+//            List<Integer> zonesInOneZoneRegions = Arrays.asList(13);
+//            List<Integer> zonesInTwoZoneRegions = Arrays.asList(3,8,11,12,14,15,18,23);
+//            List<Integer> zonesInFourZoneRegions = Arrays.asList(1,2,4,5,6,7,9,10,16,17,19,20,21,22,24,25);
+//            if (zonesInOneZoneRegions.contains(zoneId)) {
+//                vacantDd = 400;
+//            } else if (zonesInTwoZoneRegions.contains(zoneId)) {
+//                vacantDd = 200;
+//            } else if (zonesInFourZoneRegions.contains(zoneId)) {
+//                vacantDd = 100;
+//            } else {
+//                throw new RuntimeException("Zone must have been contained in one of the prespecified lists.");
+//            }
             int vacantJj = (int) (0.05 * jobsByZoneTotal[row][col]);
 
             for (int i = 0; i < vacantDd; i++) {
