@@ -8,6 +8,7 @@ public class RegionUtilityStrategyImpl implements RegionUtilityStrategy {
     public double calculateSelectRegionProbability(IncomeCategory incomeCategory,
                                                    float price, float accessibility, float share) {
         double alpha;
+//        double alpha = 1.;
 
         switch (incomeCategory) {
             case LOW:
