@@ -4,16 +4,43 @@ library(plot3D)
 
 workingDirectory <- '/Users/dominik/Workspace/git/silo/useCases/fabiland/scenario/scenOutput/'
 
-# scenarioName <- '9-reg_ae_cap30_2-l_x_smc'
-# scenarioName <- '9-reg_ae_cap30_1-l_ring_smc'
-scenarioName <- '9-reg_ae_cap30_1-l_nes_smc'
+# scenarioName <- '9r_ae_cap30_2-l_x_smc'
+# scenarioName <- '9r_ae_cap30_1-l_ring_smc'
+# scenarioName <- '9r_ae_cap30_1-l_nes_smc'
+
+# scenarioName <- '25r_ae_cap30_2-l_x_smc'
+# scenarioName <- '25r_ae_cap30_1-l_ring_smc'
+# scenarioName <- '25r_ae_cap30_1-l_nes_smc'
+
+scenarioName <- '25r_ae_unr-dev_cap30_2-l_x_smc'
+
+# scenarioName <- '25r_ae_cap30_2-l_x_smc_pt'
+# scenarioName <- '25r_ae_cap30_2-l_x_smc_pt_a02'
+# scenarioName <- '25r_ae_cap30_2-l_x_smc_pt_a1'
+# scenarioName <- '25r_ae_cap30_1-l_ring_smc_pt_a1'
+# scenarioName <- '25r_ae_cap30_2-l_x_smc_pt_b08'
+# scenarioName <- '25r_ae_rs10_cap30_2-l_x_smc'
+# scenarioName <- '25r_ae_rs87_cap30_2-l_x_smc'
+
+# scenarioName <- '25r_ae_cap30_1-l_ring_smc_pt'
+# scenarioName <- '25r_ae_cap30_1-l_nes_smc_pt'
+
+# scenarioName <- '1r_ae_cap30_2-l_x_smc'
+# scenarioName <- '1r_ae_cap30_1-l_ring_smc'
+# scenarioName <- '1r_ae_cap30_1-l_nes_smc'
+
+# scenarioName <- '1r_ae_cap30_2-l_x_smc_dd200'
 
 setwd(paste(workingDirectory,"/",scenarioName, sep=""))
 dir.create("graphics")
 
-zones <- read.csv(paste("../../input/zoneSystem_9-reg.csv", sep=""))
+# zones <- read.csv(paste("../../input/zoneSystem_9-reg.csv", sep=""))
+zones <- read.csv(paste("../../input/zoneSystem_25-reg.csv", sep=""))
+
+scalingFactor <- 1.0
 
 startYear <- 0
+# endYear <- 4
 endYear <- 9
 
 reloc <- read_csv(paste("siloResults/relocation/relocation",startYear,".csv.gz", sep=""))
@@ -63,8 +90,8 @@ for(year in startYear:endYear) {
     par(mfrow=c(3,3))
     
     # box types: “b”, “b2”, “f”, “g”, “bl”, “bl2”, “u”, “n”
-    cLim = c(0,20)
-    zLim = c(0,20)
+    cLim = c(0,20*scalingFactor)
+    zLim = c(0,20*scalingFactor)
     hist3D(x,y,reloc1Car1WorkDestMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="a) Households with 1 worker and 1 car.")
     hist3D(x,y,reloc2Car1WorkDestMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="b) Households with 1 worker and 2 cars.")
     hist3D(x,y,reloc0Car1WorkDestMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="c) Households with 1 worker and no car.")
@@ -105,8 +132,8 @@ for(year in startYear:endYear) {
     par(mfrow=c(3,3))
     
     # box types: “b”, “b2”, “f”, “g”, “bl”, “bl2”, “u”, “n”
-    cLim = c(0,20)
-    zLim = c(0,20)
+    cLim = c(0,20*scalingFactor)
+    zLim = c(0,20*scalingFactor)
     hist3D(x,y,reloc1Car1WorkOrigMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="a) Households with 1 worker and 1 car.")
     hist3D(x,y,reloc2Car1WorkOrigMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="b) Households with 1 worker and 2 cars.")
     hist3D(x,y,reloc0Car1WorkOrigMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="c) Households with 1 worker and no car.")
@@ -136,8 +163,8 @@ for(year in startYear:endYear) {
     par(mfrow=c(3,3))
     
     # box types: “b”, “b2”, “f”, “g”, “bl”, “bl2”, “u”, “n”
-    cLim = c(-20,20)
-    zLim = c(0,20)
+    cLim = c(-20*scalingFactor,20*scalingFactor)
+    zLim = c(0,20*scalingFactor)
     hist3D(x,y,reloc1Car1WorkDiffMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="a) Households with 1 worker and 1 car.")
     hist3D(x,y,reloc2Car1WorkDiffMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="b) Households with 1 worker and 2 cars.")
     hist3D(x,y,reloc0Car1WorkDiffMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="c) Households with 1 worker and no car.")
@@ -205,8 +232,8 @@ reloc2Car0WorkDestMergedMatrix = matrix(reloc2Car0WorkDestMergedCounts, nrow=5, 
 reloc0Car0WorkDestMergedMatrix = matrix(reloc0Car0WorkDestMergedCounts, nrow=5, ncol=5, byrow=TRUE)
 
 # box types: “b”, “b2”, “f”, “g”, “bl”, “bl2”, “u”, “n”
-cLim = c(0,200)
-zLim = c(0,200)
+cLim = c(0,200*scalingFactor)
+zLim = c(0,200*scalingFactor)
 hist3D(x,y,reloc1Car1WorkDestMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="a) Households with 1 worker and 1 car.")
 hist3D(x,y,reloc2Car1WorkDestMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="b) Households with 1 worker and 2 cars.")
 hist3D(x,y,reloc0Car1WorkDestMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="c) Households with 1 worker and no car.")
@@ -245,8 +272,8 @@ reloc2Car0WorkOrigMergedMatrix = matrix(reloc2Car0WorkOrigMergedCounts, nrow=5, 
 reloc0Car0WorkOrigMergedMatrix = matrix(reloc0Car0WorkOrigMergedCounts, nrow=5, ncol=5, byrow=TRUE)
 
 # box types: “b”, “b2”, “f”, “g”, “bl”, “bl2”, “u”, “n”
-cLim = c(0,200)
-zLim = c(0,2000)
+cLim = c(0,200*scalingFactor)
+zLim = c(0,200*scalingFactor)
 hist3D(x,y,reloc1Car1WorkOrigMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="a) Households with 1 worker and 1 car.")
 hist3D(x,y,reloc2Car1WorkOrigMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="b) Households with 1 worker and 2 cars.")
 hist3D(x,y,reloc0Car1WorkOrigMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="c) Households with 1 worker and no car.")
@@ -275,8 +302,8 @@ png(paste("graphics/",scenarioName,"_reloc-diff.png", sep=""), width = 800, heig
 par(mfrow=c(3,3))
 
 # box types: “b”, “b2”, “f”, “g”, “bl”, “bl2”, “u”, “n”
-cLim = c(-100,100)
-zLim = c(0,100)
+cLim = c(-100*scalingFactor,100*scalingFactor)
+zLim = c(0,100*scalingFactor)
 hist3D(x,y,reloc1Car1WorkDiffMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="a) Households with 1 worker and 1 car.")
 hist3D(x,y,reloc2Car1WorkDiffMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="b) Households with 1 worker and 2 cars.")
 hist3D(x,y,reloc0Car1WorkDiffMergedMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="c) Households with 1 worker and no car.")
@@ -309,8 +336,8 @@ jobsMatrix = matrix(jobs, nrow=5, ncol=5, byrow=TRUE)
 
 png("graphics/householdsJobs.png", width = 800, height = 320)
 par(mfrow=c(1,2))
-cLim = c(0,1200)
-zLim = c(0,1200)
-hist3D(x,y,householdsMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty = "n", main ="a) Households")
-hist3D(x,y,jobsMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty = "n", main ="b) Jobs")
+cLim = c(0,1200*scalingFactor)
+zLim = c(0,1200*scalingFactor)
+hist3D(x,y,householdsMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="a) Households")
+hist3D(x,y,jobsMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="b) Jobs")
 dev.off()
