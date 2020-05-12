@@ -29,28 +29,52 @@ public class CreatePopulation {
     private final static int sideLengthVertical = 1000;
     private final static int centroidOffset = 5000;
 
+//    private final static int[][] householdsByZone = {
+//            {300, 10, 10, 10, 10},
+//            {10, 10, 300, 10, 10},
+//            {10, 300, 1020, 10, 300},
+//            {10, 10, 10, 10, 10},
+//            {10, 10, 300, 10, 300}
+//    };
+//
+//    private final static int[][] currentJobsByZone = {
+//            {300, 10, 10, 10, 300},
+//            {10, 10, 10, 10, 10},
+//            {10, 300, 1020, 10, 10},
+//            {10, 10, 300, 10, 10},
+//            {300, 10, 10, 10, 300}
+//    };
+//
+//    private final static int[][] jobsByZoneTotal = {
+//            {300, 10, 10, 10, 300},
+//            {10, 10, 10, 10, 10},
+//            {10, 300, 1020, 10, 10},
+//            {10, 10, 300, 10, 10},
+//            {300, 10, 10, 10, 300}
+//    };
+
     private final static int[][] householdsByZone = {
-            {300, 10, 10, 10, 10},
-            {10, 10, 300, 10, 10},
-            {10, 300, 1020, 10, 300},
-            {10, 10, 10, 10, 10},
-            {10, 10, 300, 10, 300}
+            {600, 20, 20, 20, 20},
+            {20, 20, 600, 20, 20},
+            {20, 600, 2040, 20, 600},
+            {20, 20, 20, 20, 20},
+            {20, 20, 600, 20, 600}
     };
 
     private final static int[][] currentJobsByZone = {
-            {300, 10, 10, 10, 300},
-            {10, 10, 10, 10, 10},
-            {10, 300, 1020, 10, 10},
-            {10, 10, 300, 10, 10},
-            {300, 10, 10, 10, 300}
+            {600, 20, 20, 20, 600},
+            {20, 20, 20, 20, 20},
+            {20, 600, 2040, 20, 20},
+            {20, 20, 600, 20, 20},
+            {600, 20, 20, 20, 600}
     };
 
     private final static int[][] jobsByZoneTotal = {
-            {300, 10, 10, 10, 300},
-            {10, 10, 10, 10, 10},
-            {10, 300, 1020, 10, 10},
-            {10, 10, 300, 10, 10},
-            {300, 10, 10, 10, 300}
+            {600, 20, 20, 20, 600},
+            {20, 20, 20, 20, 20},
+            {20, 600, 2040, 20, 20},
+            {20, 20, 600, 20, 20},
+            {600, 20, 20, 20, 600}
     };
 
     public static void main(String[] args) {
@@ -241,7 +265,8 @@ public class CreatePopulation {
             double y1 = 20000 - 12500 - row * centroidOffset;
 
             Random rnd = new Random(4712);
-            int vacantDd = 100;
+            //int vacantDd = 100;
+            int vacantDd = 200;
             // int vacantDd = 0;
 //            List<Integer> zonesInOneZoneRegions = Arrays.asList(13);
 //            List<Integer> zonesInTwoZoneRegions = Arrays.asList(3,8,11,12,14,15,18,23);
@@ -282,11 +307,14 @@ public class CreatePopulation {
             }
         }
 
-
-        new DefaultDwellingWriter(dwellingData.getDwellings()).writeDwellings(scenarioFolderRoot + "/microData/dd_0.csv");
-        new DefaultHouseholdWriter(householdData.getHouseholds()).writeHouseholds(scenarioFolderRoot + "/microData/hh_0.csv");
-        new DefaultPersonWriter(householdData).writePersons(scenarioFolderRoot + "/microData/pp_0.csv");
-        new DefaultJobWriter(jobData.getJobs()).writeJobs(scenarioFolderRoot + "/microData/jj_0.csv");
+//        new DefaultDwellingWriter(dwellingData.getDwellings()).writeDwellings(scenarioFolderRoot + "/microData/dd_0.csv");
+//        new DefaultHouseholdWriter(householdData.getHouseholds()).writeHouseholds(scenarioFolderRoot + "/microData/hh_0.csv");
+//        new DefaultPersonWriter(householdData).writePersons(scenarioFolderRoot + "/microData/pp_0.csv");
+//        new DefaultJobWriter(jobData.getJobs()).writeJobs(scenarioFolderRoot + "/microData/jj_0.csv");
+        new DefaultDwellingWriter(dwellingData.getDwellings()).writeDwellings(scenarioFolderRoot + "/microData/dd_2x_0.csv");
+        new DefaultHouseholdWriter(householdData.getHouseholds()).writeHouseholds(scenarioFolderRoot + "/microData/hh_2x_0.csv");
+        new DefaultPersonWriter(householdData).writePersons(scenarioFolderRoot + "/microData/pp_2x_0.csv");
+        new DefaultJobWriter(jobData.getJobs()).writeJobs(scenarioFolderRoot + "/microData/jj_2x_0.csv");
     }
 
     public static Job getJob(JobFactory jjFactory, int jjId, int ppId) {
