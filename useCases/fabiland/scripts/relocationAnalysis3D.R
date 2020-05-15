@@ -12,7 +12,7 @@ workingDirectory <- '/Users/dominik/Workspace/git/silo/useCases/fabiland/scenari
 # scenarioName <- '25r_ae_cap30_1-l_ring_smc'
 # scenarioName <- '25r_ae_cap30_1-l_nes_smc'
 
-scenarioName <- '25r_ae_unr-dev_cap30_2-l_x_smc'
+# scenarioName <- '25r_ae_unr-dev_cap30_2-l_x_smc'
 
 # scenarioName <- '25r_ae_cap30_2-l_x_smc_pt'
 # scenarioName <- '25r_ae_cap30_2-l_x_smc_pt_a02'
@@ -30,6 +30,10 @@ scenarioName <- '25r_ae_unr-dev_cap30_2-l_x_smc'
 # scenarioName <- '1r_ae_cap30_1-l_nes_smc'
 
 # scenarioName <- '1r_ae_cap30_2-l_x_smc_dd200'
+
+# scenarioName <- '25r_2x_ae_cap60_2-l_x_smc'
+
+scenarioName <- '25r_mat2_ae_cap30_2-l_x_smc'
 
 setwd(paste(workingDirectory,"/",scenarioName, sep=""))
 dir.create("graphics")
