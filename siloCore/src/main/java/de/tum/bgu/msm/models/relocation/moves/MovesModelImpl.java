@@ -169,7 +169,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         final Dwelling newDwelling = dataContainer.getRealEstateDataManager().getDwelling(idNewDD);
         int newZoneId = newDwelling.getZoneId();
         Coordinate oldCoordinate = oldDwelling.getCoordinate();
-        Coordinate newCoordinate = oldDwelling.getCoordinate();
+        Coordinate newCoordinate = newDwelling.getCoordinate();
         if(oldCoordinate == null) {
             oldCoordinate = new Coordinate(Double.NaN, Double.NaN);
         }
