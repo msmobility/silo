@@ -2,7 +2,7 @@ library(readr)
 library(dplyr)
 library(plot3D)
 
-workingDirectory <- '/Users/dominik/Workspace/git/silo/useCases/fabiland/scenario/scenOutput/'
+workingDirectory <- '/Users/dominik/Workspace/runs-svn/fabilut/fabiland/'
 
 # scenarioName <- '9r_ae_cap30_2-l_x_smc'
 # scenarioName <- '9r_ae_cap30_1-l_ring_smc'
@@ -31,17 +31,16 @@ workingDirectory <- '/Users/dominik/Workspace/git/silo/useCases/fabiland/scenari
 
 # scenarioName <- '1r_ae_cap30_2-l_x_smc_dd200'
 
-# scenarioName <- '25r_2x_ae_cap60_2-l_x_smc'
+scenarioName <- '25r_2x_ae_rs87_cap60_1-l_ring_smc'
 
-scenarioName <- '25r_mat2_ae_cap30_2-l_x_smc'
+# scenarioName <- '25r_mat2_ae_cap30_2-l_x_smc'
 
 setwd(paste(workingDirectory,"/",scenarioName, sep=""))
 dir.create("graphics")
 
-# zones <- read.csv(paste("../../input/zoneSystem_9-reg.csv", sep=""))
-zones <- read.csv(paste("../../input/zoneSystem_25-reg.csv", sep=""))
+zones <- read.csv(paste("/Users/dominik/Workspace/git/silo/useCases/fabiland/scenario/input/zoneSystem_25-reg.csv", sep=""))
 
-scalingFactor <- 1.0
+scalingFactor <- 2.0
 
 startYear <- 0
 # endYear <- 4
