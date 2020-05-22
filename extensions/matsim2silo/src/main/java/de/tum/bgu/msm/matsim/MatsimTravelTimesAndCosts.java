@@ -146,36 +146,33 @@ public final class MatsimTravelTimesAndCosts implements TravelTimes {
         PlanCalcScoreConfigGroup cnScoringGroup = config.planCalcScore();
 
         double utility = 0.;
-        if(routingModule instanceof NetworkRoutingModule || routingModule instanceof NetworkRoutingInclAccessEgressModule) {
+        if (routingModule instanceof NetworkRoutingModule || routingModule instanceof NetworkRoutingInclAccessEgressModule) {
             for (PlanElement pe : planElements) {
                 if (pe instanceof Leg) {
-                    final Leg leg = (Leg) pe;
-                    Route route = leg.getRoute();
+                    Route route = ((Leg) pe).getRoute();
                     utility -= ((NetworkRoute) route).getTravelCost();
                     utility += cnScoringGroup.getModes().get(mode).getConstant();
                 }
             }
-        }
-
-        if (routingModule instanceof SwissRailRaptorRoutingModule || routingModule instanceof FreespeedFactorRoutingModule) {
+        } else if (routingModule instanceof SwissRailRaptorRoutingModule || routingModule instanceof FreespeedFactorRoutingModule) {
             for (PlanElement pe : planElements) {
                 if (pe instanceof Leg) {
-                    final Leg leg = (Leg) pe;
-
-                    double travelTime = leg.getTravelTime();
+                    double time = ((Leg) pe).getTravelTime();
 
                     // overrides individual parameters per person; use default scoring parameters
-                    if (Time.getUndefinedTime() != travelTime) {
-                        utility += travelTime * (cnScoringGroup.getModes().get(mode).getMarginalUtilityOfTraveling() + (-1) * cnScoringGroup.getPerforming_utils_hr()) / 3600;
+                    if (Time.getUndefinedTime() != time) {
+                        utility += time * (cnScoringGroup.getModes().get(mode).getMarginalUtilityOfTraveling() - cnScoringGroup.getPerforming_utils_hr()) / 3600;
                     }
-                    Double distance = ((Leg) pe).getRoute().getDistance();
-                    if (distance != null && distance != 0.) {
-                        utility += distance * cnScoringGroup.getModes().get(mode).getMarginalUtilityOfDistance();
-                        utility += distance * cnScoringGroup.getModes().get(mode).getMonetaryDistanceRate() * cnScoringGroup.getMarginalUtilityOfMoney();
+                    Double dist = ((Leg) pe).getRoute().getDistance();
+                    if (dist != null && dist != 0.) {
+                        utility += dist * cnScoringGroup.getModes().get(mode).getMarginalUtilityOfDistance();
+                        utility += dist * cnScoringGroup.getModes().get(mode).getMonetaryDistanceRate() * cnScoringGroup.getMarginalUtilityOfMoney();
                     }
                     utility += cnScoringGroup.getModes().get(mode).getConstant();
                 }
             }
+        } else {
+            throw new RuntimeException("Computation of generalized costs not implemented for routing module " + routingModule.toString());
         }
         return -utility;
     }

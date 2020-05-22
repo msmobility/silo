@@ -25,6 +25,7 @@ import org.matsim.api.core.v01.population.Plan;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.api.core.v01.population.PopulationFactory;
 import org.matsim.core.config.Config;
+import org.matsim.core.population.PersonUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 
 public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimScenarioAssembler {
@@ -78,13 +79,14 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
                     continue;
                 }
                 String mode = commuteModeChoiceMapping.getMode(person).mode;
+                int noHHAUtos = household.getAutos();
                 if (mode.equals(TransportMode.car)) {
                     Coord dwellingCoord = getOrRandomlyChooseDwellingCoord(dwelling);
 
                     Job job = jobDataManager.getJobFromId(person.getJobId());
                     Coord jobCoord = getOrRandomlyChooseJobCoordinate(job);
 
-                    createHWHPlan(matsimPopulation, person, dwellingCoord, job, jobCoord, TransportMode.car);
+                    createHWHPlan(matsimPopulation, person, dwellingCoord, job, jobCoord, noHHAUtos, TransportMode.car);
                 } else {
                     if (!properties.transportModel.onlySimulateCarTrips) {
                         Coord dwellingCoord = getOrRandomlyChooseDwellingCoord(dwelling);
@@ -92,7 +94,7 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
                         Job job = jobDataManager.getJobFromId(person.getJobId());
                         Coord jobCoord = getOrRandomlyChooseJobCoordinate(job);
 
-                        createHWHPlan(matsimPopulation, person, dwellingCoord, job, jobCoord, mode);
+                        createHWHPlan(matsimPopulation, person, dwellingCoord, job, jobCoord, noHHAUtos, mode);
                     }
                 }
             }
@@ -121,10 +123,17 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
         return new Coord(jobCoordinate.x, jobCoordinate.y);
     }
 
-    private void createHWHPlan(Population matsimPopulation, Person person, Coord dwellingCoord, Job job, Coord jobCoord, String transportMode) {
+    private void createHWHPlan(Population matsimPopulation, Person person, Coord dwellingCoord, Job job, Coord jobCoord, int noHHAUtos, String transportMode) {
         PopulationFactory populationFactory = matsimPopulation.getFactory();
 
         org.matsim.api.core.v01.population.Person matsimPerson = populationFactory.createPerson(Id.createPersonId(person.getId()));
+
+        if (noHHAUtos > 0 && person.hasDriverLicense()) {
+            PersonUtils.setCarAvail(matsimPerson, "maybe");
+        } else {
+            PersonUtils.setCarAvail(matsimPerson, "never"); // Needs to be exaclty this string to work, cf. PermissibleModesCalculator:69
+        }
+
         matsimPopulation.addPerson(matsimPerson);
 
         Plan matsimPlan = populationFactory.createPlan();

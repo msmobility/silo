@@ -16,65 +16,122 @@ import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.matsim.core.utils.misc.Counter;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 public class CreatePopulation {
     private final static Logger logger = Logger.getLogger(CreatePopulation.class);
 
-    private final static String scenarioFolderRoot = "useCases/fabiland/scenarios/base";
+    private final static String scenarioFolderRoot = "useCases/fabiland/scenario";
 
     private final static int sideLengthHorizonal = 1000;
     private final static int sideLengthVertical = 1000;
     private final static int centroidOffset = 5000;
 
-
+    // Non-adjusted population
 //    private final static int[][] householdsByZone = {
-//            {250, 0, 0, 0, 250},
-//            {0, 0, 500, 0, 0},
-//            {0, 500, 5000, 500, 0},
-//            {0, 0, 500, 0, 0},
-//            {250, 0, 0, 0, 250}
+//            {300, 10, 10, 10, 10},
+//            {10, 10, 300, 10, 10},
+//            {10, 300, 1020, 10, 300},
+//            {10, 10, 10, 10, 10},
+//            {10, 10, 300, 10, 300}
 //    };
 //
 //    private final static int[][] currentJobsByZone = {
-//            {200, 100, 100, 100, 200},
-//            {100, 100, 400, 100, 100},
-//            {100, 400, 4000, 400, 100},
-//            {100, 100, 400, 100, 100},
-//            {200, 100, 100, 100, 200}
+//            {300, 10, 10, 10, 300},
+//            {10, 10, 10, 10, 10},
+//            {10, 300, 1020, 10, 10},
+//            {10, 10, 300, 10, 10},
+//            {300, 10, 10, 10, 300}
 //    };
 //
 //    private final static int[][] jobsByZoneTotal = {
-//            {200, 100, 100, 100, 200},
-//            {100, 100, 400, 100, 100},
-//            {100, 400, 4000, 400, 100},
-//            {100, 100, 400, 100, 100},
-//            {200, 100, 100, 100, 200}
+//            {300, 10, 10, 10, 300},
+//            {10, 10, 10, 10, 10},
+//            {10, 300, 1020, 10, 10},
+//            {10, 10, 300, 10, 10},
+//            {300, 10, 10, 10, 300}
 //    };
+    // End non-adjusted population
 
+    // Doubled population
+//    private final static int[][] householdsByZone = {
+//            {600, 20, 20, 20, 20},
+//            {20, 20, 600, 20, 20},
+//            {20, 600, 2040, 20, 600},
+//            {20, 20, 20, 20, 20},
+//            {20, 20, 600, 20, 600}
+//    };
+//
+//    private final static int[][] currentJobsByZone = {
+//            {600, 20, 20, 20, 600},
+//            {20, 20, 20, 20, 20},
+//            {20, 600, 2040, 20, 20},
+//            {20, 20, 600, 20, 20},
+//            {600, 20, 20, 20, 600}
+//    };
+//
+//    private final static int[][] jobsByZoneTotal = {
+//            {600, 20, 20, 20, 600},
+//            {20, 20, 20, 20, 20},
+//            {20, 600, 2040, 20, 20},
+//            {20, 20, 600, 20, 20},
+//            {600, 20, 20, 20, 600}
+//    };
+    // End doubled population
+
+    // Quadrupled population
+//    private final static int[][] householdsByZone = {
+//            {1200, 40, 40, 40, 40},
+//            {40, 40, 1200, 40, 40},
+//            {40, 1200, 4080, 40, 1200},
+//            {40, 40, 40, 40, 40},
+//            {40, 40, 1200, 40, 1200}
+//    };
+//
+//    private final static int[][] currentJobsByZone = {
+//            {1200, 40, 40, 40, 1200},
+//            {40, 40, 40, 40, 40},
+//            {40, 1200, 4080, 40, 40},
+//            {40, 40, 1200, 40, 40},
+//            {1200, 40, 40, 40, 1200}
+//    };
+//
+//    private final static int[][] jobsByZoneTotal = {
+//            {1200, 40, 40, 40, 1200},
+//            {40, 40, 40, 40, 40},
+//            {40, 1200, 4080, 40, 40},
+//            {40, 40, 1200, 40, 40},
+//            {1200, 40, 40, 40, 1200}
+//    };
+    // End Quadrupled population
+
+    // Octupled population
     private final static int[][] householdsByZone = {
-            {250, 0, 0, 0, 250},
-            {0, 0, 500, 0, 0},
-            {0, 500, 3000, 500, 0},
-            {0, 0, 0, 0, 0},
-            {500, 0, 500, 0, 0}
+            {2400, 80, 80, 80, 80},
+            {80, 80, 2400, 80, 40},
+            {80, 2400, 8160, 80, 2400},
+            {80, 80, 80, 80, 80},
+            {80, 80, 2400, 80, 2400}
     };
 
     private final static int[][] currentJobsByZone = {
-            {200, 100, 100, 100, 500},
-            {100, 100, 400, 100, 100},
-            {100, 400, 2000, 400, 100},
-            {100, 100, 400, 0, 0},
-            {200, 100, 100, 0, 200}
+            {2400, 80, 80, 80, 2400},
+            {80, 80, 80, 80, 80},
+            {80, 2400, 8160, 80, 80},
+            {80, 80, 2400, 80, 80},
+            {2400, 80, 80, 80, 2400}
     };
 
     private final static int[][] jobsByZoneTotal = {
-            {200, 100, 100, 100, 500},
-            {100, 100, 400, 100, 100},
-            {100, 400, 2000, 400, 100},
-            {100, 100, 400, 0, 0},
-            {200, 100, 100, 0, 200}
+            {2400, 80, 80, 80, 2400},
+            {80, 80, 80, 80, 80},
+            {80, 2400, 8160, 80, 80},
+            {80, 80, 2400, 80, 80},
+            {2400, 80, 80, 80, 2400}
     };
+    // End octupled population
 
     public static void main(String[] args) {
 
@@ -134,11 +191,14 @@ public class CreatePopulation {
                     Person p3 = ppFactory.createPerson(ppId, age3, Gender.valueOf(rnd.nextInt(2) + 1), Occupation.STUDENT, PersonRole.CHILD, -1, 0);
                     p3.setHousehold(household);
                     ppId++;
+
+
+
                     if (rnd.nextDouble() < 2./3.) {
                         Job job1 = getJob(jjFactory, jjId, p1.getId());
                         if(job1 != null) {
                             p1.setOccupation(Occupation.EMPLOYED);
-                            p1.setIncome(2000);
+                            p1.setIncome(12*2000);
                             p1.setDriverLicense(true);
                             job1.setWorkerID(p1.getId());
                             p1.setWorkplace(job1.getId());
@@ -148,9 +208,10 @@ public class CreatePopulation {
                     }
                     if (rnd.nextDouble() < 0.5) {
                         Job job2 = getJob(jjFactory, jjId, p2.getId());
+
                         if(job2 != null) {
                             p2.setOccupation(Occupation.EMPLOYED);
-                            p2.setIncome(2000);
+                            p2.setIncome(12*2000);
                             job2.setWorkerID(p2.getId());
                             p2.setDriverLicense(true);
                             p2.setWorkplace(job2.getId());
@@ -188,7 +249,7 @@ public class CreatePopulation {
                             p1.setWorkplace(job1.getId());
                             p1.setDriverLicense(true);
                             jobData.addJob(job1);
-                            p1.setIncome(2000);
+                            p1.setIncome(12*2000);
                             jjId++;
                         }
                     }
@@ -201,7 +262,7 @@ public class CreatePopulation {
                             p2.setDriverLicense(true);
                             jjId++;
                             jobData.addJob(job2);
-                            p2.setIncome(2000);
+                            p2.setIncome(12*2000);
                         }
                     }
 
@@ -227,7 +288,7 @@ public class CreatePopulation {
                             p1.setDriverLicense(true);
                             jjId++;
                             jobData.addJob(job1);
-                            p1.setIncome(2000);
+                            p1.setIncome(12*2000);
                         }
                     }
 
@@ -244,16 +305,14 @@ public class CreatePopulation {
                 dwellingData.addDwelling(dwelling);
                 householdData.addHousehold(household);
                 counter1.incCounter();
-
             }
-
-
             counter.incCounter();
         }
 
 
         logger.warn("Adding vacant jobs and dwellings");
         for (int zoneId = 1; zoneId <= 25; zoneId++) {
+
 
             int row = (zoneId - 1) / 5;
             int col = (zoneId - 1) % 5;
@@ -262,8 +321,25 @@ public class CreatePopulation {
             double y1 = 20000 - 12500 - row * centroidOffset;
 
             Random rnd = new Random(4712);
-            int population = householdsByZone[row][col];
-            int vacantDd = (int) (0.05 * population);
+            //int vacantDd = 100;
+            int vacantDd = 200;
+
+            // 9-region case (in order to distributed dewllings evently over regions)
+            // int vacantDd = 0;
+//            List<Integer> zonesInOneZoneRegions = Arrays.asList(13);
+//            List<Integer> zonesInTwoZoneRegions = Arrays.asList(3,8,11,12,14,15,18,23);
+//            List<Integer> zonesInFourZoneRegions = Arrays.asList(1,2,4,5,6,7,9,10,16,17,19,20,21,22,24,25);
+//            if (zonesInOneZoneRegions.contains(zoneId)) {
+//                vacantDd = 400;
+//            } else if (zonesInTwoZoneRegions.contains(zoneId)) {
+//                vacantDd = 200;
+//            } else if (zonesInFourZoneRegions.contains(zoneId)) {
+//                vacantDd = 100;
+//            } else {
+//                throw new RuntimeException("Zone must have been contained in one of the prespecified lists.");
+//            }
+            // End 9-region case
+
             int vacantJj = (int) (0.05 * jobsByZoneTotal[row][col]);
 
             for (int i = 0; i < vacantDd; i++) {
@@ -291,11 +367,14 @@ public class CreatePopulation {
             }
         }
 
-
-        new DefaultDwellingWriter(dwellingData.getDwellings()).writeDwellings(scenarioFolderRoot + "/microData/dd_0.csv");
-        new DefaultHouseholdWriter(householdData.getHouseholds()).writeHouseholds(scenarioFolderRoot + "/microData/hh_0.csv");
-        new DefaultPersonWriter(householdData).writePersons(scenarioFolderRoot + "/microData/pp_0.csv");
-        new DefaultJobWriter(jobData.getJobs()).writeJobs(scenarioFolderRoot + "/microData/jj_0.csv");
+//        new DefaultDwellingWriter(dwellingData.getDwellings()).writeDwellings(scenarioFolderRoot + "/microData/dd_0.csv");
+//        new DefaultHouseholdWriter(householdData.getHouseholds()).writeHouseholds(scenarioFolderRoot + "/microData/hh_0.csv");
+//        new DefaultPersonWriter(householdData).writePersons(scenarioFolderRoot + "/microData/pp_0.csv");
+//        new DefaultJobWriter(jobData.getJobs()).writeJobs(scenarioFolderRoot + "/microData/jj_0.csv");
+        new DefaultDwellingWriter(dwellingData.getDwellings()).writeDwellings(scenarioFolderRoot + "/microData/dd_8x_0.csv");
+        new DefaultHouseholdWriter(householdData.getHouseholds()).writeHouseholds(scenarioFolderRoot + "/microData/hh_8x_0.csv");
+        new DefaultPersonWriter(householdData).writePersons(scenarioFolderRoot + "/microData/pp_8x_0.csv");
+        new DefaultJobWriter(jobData.getJobs()).writeJobs(scenarioFolderRoot + "/microData/jj_8x_0.csv");
     }
 
     public static Job getJob(JobFactory jjFactory, int jjId, int ppId) {
