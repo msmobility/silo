@@ -29,6 +29,7 @@ public class CreatePopulation {
     private final static int sideLengthVertical = 1000;
     private final static int centroidOffset = 5000;
 
+    // Non-adjusted population
 //    private final static int[][] householdsByZone = {
 //            {300, 10, 10, 10, 10},
 //            {10, 10, 300, 10, 10},
@@ -52,30 +53,85 @@ public class CreatePopulation {
 //            {10, 10, 300, 10, 10},
 //            {300, 10, 10, 10, 300}
 //    };
+    // End non-adjusted population
 
+    // Doubled population
+//    private final static int[][] householdsByZone = {
+//            {600, 20, 20, 20, 20},
+//            {20, 20, 600, 20, 20},
+//            {20, 600, 2040, 20, 600},
+//            {20, 20, 20, 20, 20},
+//            {20, 20, 600, 20, 600}
+//    };
+//
+//    private final static int[][] currentJobsByZone = {
+//            {600, 20, 20, 20, 600},
+//            {20, 20, 20, 20, 20},
+//            {20, 600, 2040, 20, 20},
+//            {20, 20, 600, 20, 20},
+//            {600, 20, 20, 20, 600}
+//    };
+//
+//    private final static int[][] jobsByZoneTotal = {
+//            {600, 20, 20, 20, 600},
+//            {20, 20, 20, 20, 20},
+//            {20, 600, 2040, 20, 20},
+//            {20, 20, 600, 20, 20},
+//            {600, 20, 20, 20, 600}
+//    };
+    // End doubled population
+
+    // Quadrupled population
+//    private final static int[][] householdsByZone = {
+//            {1200, 40, 40, 40, 40},
+//            {40, 40, 1200, 40, 40},
+//            {40, 1200, 4080, 40, 1200},
+//            {40, 40, 40, 40, 40},
+//            {40, 40, 1200, 40, 1200}
+//    };
+//
+//    private final static int[][] currentJobsByZone = {
+//            {1200, 40, 40, 40, 1200},
+//            {40, 40, 40, 40, 40},
+//            {40, 1200, 4080, 40, 40},
+//            {40, 40, 1200, 40, 40},
+//            {1200, 40, 40, 40, 1200}
+//    };
+//
+//    private final static int[][] jobsByZoneTotal = {
+//            {1200, 40, 40, 40, 1200},
+//            {40, 40, 40, 40, 40},
+//            {40, 1200, 4080, 40, 40},
+//            {40, 40, 1200, 40, 40},
+//            {1200, 40, 40, 40, 1200}
+//    };
+    // End Quadrupled population
+
+    // Octupled population
     private final static int[][] householdsByZone = {
-            {600, 20, 20, 20, 20},
-            {20, 20, 600, 20, 20},
-            {20, 600, 2040, 20, 600},
-            {20, 20, 20, 20, 20},
-            {20, 20, 600, 20, 600}
+            {2400, 80, 80, 80, 80},
+            {80, 80, 2400, 80, 40},
+            {80, 2400, 8160, 80, 2400},
+            {80, 80, 80, 80, 80},
+            {80, 80, 2400, 80, 2400}
     };
 
     private final static int[][] currentJobsByZone = {
-            {600, 20, 20, 20, 600},
-            {20, 20, 20, 20, 20},
-            {20, 600, 2040, 20, 20},
-            {20, 20, 600, 20, 20},
-            {600, 20, 20, 20, 600}
+            {2400, 80, 80, 80, 2400},
+            {80, 80, 80, 80, 80},
+            {80, 2400, 8160, 80, 80},
+            {80, 80, 2400, 80, 80},
+            {2400, 80, 80, 80, 2400}
     };
 
     private final static int[][] jobsByZoneTotal = {
-            {600, 20, 20, 20, 600},
-            {20, 20, 20, 20, 20},
-            {20, 600, 2040, 20, 20},
-            {20, 20, 600, 20, 20},
-            {600, 20, 20, 20, 600}
+            {2400, 80, 80, 80, 2400},
+            {80, 80, 80, 80, 80},
+            {80, 2400, 8160, 80, 80},
+            {80, 80, 2400, 80, 80},
+            {2400, 80, 80, 80, 2400}
     };
+    // End octupled population
 
     public static void main(String[] args) {
 
@@ -267,6 +323,8 @@ public class CreatePopulation {
             Random rnd = new Random(4712);
             //int vacantDd = 100;
             int vacantDd = 200;
+
+            // 9-region case (in order to distributed dewllings evently over regions)
             // int vacantDd = 0;
 //            List<Integer> zonesInOneZoneRegions = Arrays.asList(13);
 //            List<Integer> zonesInTwoZoneRegions = Arrays.asList(3,8,11,12,14,15,18,23);
@@ -280,6 +338,8 @@ public class CreatePopulation {
 //            } else {
 //                throw new RuntimeException("Zone must have been contained in one of the prespecified lists.");
 //            }
+            // End 9-region case
+
             int vacantJj = (int) (0.05 * jobsByZoneTotal[row][col]);
 
             for (int i = 0; i < vacantDd; i++) {
@@ -311,10 +371,10 @@ public class CreatePopulation {
 //        new DefaultHouseholdWriter(householdData.getHouseholds()).writeHouseholds(scenarioFolderRoot + "/microData/hh_0.csv");
 //        new DefaultPersonWriter(householdData).writePersons(scenarioFolderRoot + "/microData/pp_0.csv");
 //        new DefaultJobWriter(jobData.getJobs()).writeJobs(scenarioFolderRoot + "/microData/jj_0.csv");
-        new DefaultDwellingWriter(dwellingData.getDwellings()).writeDwellings(scenarioFolderRoot + "/microData/dd_2x_0.csv");
-        new DefaultHouseholdWriter(householdData.getHouseholds()).writeHouseholds(scenarioFolderRoot + "/microData/hh_2x_0.csv");
-        new DefaultPersonWriter(householdData).writePersons(scenarioFolderRoot + "/microData/pp_2x_0.csv");
-        new DefaultJobWriter(jobData.getJobs()).writeJobs(scenarioFolderRoot + "/microData/jj_2x_0.csv");
+        new DefaultDwellingWriter(dwellingData.getDwellings()).writeDwellings(scenarioFolderRoot + "/microData/dd_8x_0.csv");
+        new DefaultHouseholdWriter(householdData.getHouseholds()).writeHouseholds(scenarioFolderRoot + "/microData/hh_8x_0.csv");
+        new DefaultPersonWriter(householdData).writePersons(scenarioFolderRoot + "/microData/pp_8x_0.csv");
+        new DefaultJobWriter(jobData.getJobs()).writeJobs(scenarioFolderRoot + "/microData/jj_8x_0.csv");
     }
 
     public static Job getJob(JobFactory jjFactory, int jjId, int ppId) {
