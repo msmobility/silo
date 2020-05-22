@@ -14,8 +14,7 @@ public class DefaultDwellingProbabilityStrategy implements DwellingProbabilitySt
     }
 
     public DefaultDwellingProbabilityStrategy() {
-        this(0.5);
-        // this(0.8);
+        this(1.);
     }
 
     public double calculateSelectDwellingProbability(double dwellingUtility) {

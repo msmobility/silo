@@ -121,7 +121,6 @@ public class AccessibilityImpl implements Accessibility {
 
         logger.info("  Calculating regional accessibilities");
          regionalAccessibilities.assign(calculateRegionalAccessibility(geoData.getRegions().values(), autoAccessibilities, popDensity));
-//        regionalAccessibilities.assign(calculateRegionalAccessibility(geoData.getRegions().values(), transitAccessibilities, popDensity));
     }
 
     /**

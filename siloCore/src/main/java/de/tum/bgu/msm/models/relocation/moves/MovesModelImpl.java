@@ -45,7 +45,6 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
     protected final static Logger logger = Logger.getLogger(MovesModelImpl.class);
     private static final int MAX_NUMBER_DWELLINGS = 20;
-//    private static final int MAX_NUMBER_DWELLINGS = 200;
 
     private final MovesStrategy movesStrategy;
     private final HousingStrategy housingStrategy;
