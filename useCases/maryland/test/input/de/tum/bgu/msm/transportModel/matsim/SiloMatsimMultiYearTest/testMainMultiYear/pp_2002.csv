@@ -168,13 +168,13 @@ id,hhid,age,gender,relationShip,occupation,driversLicense,workplace,income
 170,68,32,2,"married",2,true,-1,8635
 171,69,25,1,"married",2,true,-1,10139
 172,69,19,2,"child",1,true,2571751,4409
+684,67,0,1,"child",0,false,0,0
 173,69,10,1,"child",0,false,-1,0
-174,69,32,2,"married",2,true,-1,4765
+174,69,32,2,"married",2,true,-1,8635
 175,70,25,1,"married",2,true,-1,4012
 176,70,19,2,"child",2,true,-1,1889
-177,70,10,1,"child",0,false,-1,712
-178,70,32,2,"married",2,true,-1,988
-690,67,0,1,"child",0,false,0,236
+177,70,10,1,"child",0,false,-1,0
+178,70,32,2,"married",2,true,-1,6148
 179,71,25,1,"married",1,true,2546087,11609
 180,71,19,2,"child",2,true,-1,1764
 181,71,10,1,"child",0,false,-1,0
