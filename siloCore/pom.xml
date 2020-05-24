@@ -184,12 +184,12 @@
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
-<!--        <repository>-->
-<!--            &lt;!&ndash; Geotools is not on Maven central &ndash;&gt;-->
-<!--            <id>osgeo</id>-->
-<!--            <name>Geotools repository</name>-->
-<!--            <url>https://repo.osgeo.org/repository/release/</url>-->
-<!--        </repository>-->
+        <repository>
+            <!-- Geotools is not on Maven central -->
+            <id>osgeo</id>
+            <name>Geotools repository</name>
+            <url>https://repo.osgeo.org/repository/release/</url>
+        </repository>
         <repository>
             <id>matsim</id>
             <url>http://dl.bintray.com/matsim/matsim</url>
