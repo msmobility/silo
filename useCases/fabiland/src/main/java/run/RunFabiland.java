@@ -4,7 +4,7 @@ import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.io.output.DefaultResultsMonitor;
-import de.tum.bgu.msm.io.output.ResultsMonitor;
+import de.tum.bgu.msm.io.output.MultiFileResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -35,9 +35,9 @@ public class RunFabiland {
 
         ModelContainer modelContainer = ModelBuilderFabiland.getModelContainer(dataContainer, properties, config);
 
-        ResultsMonitor resultsMonitor = new DefaultResultsMonitor(dataContainer, properties);
         SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
-        model.addResultMonitor(resultsMonitor);
+        model.addResultMonitor(new DefaultResultsMonitor(dataContainer, properties)); //the old monitor
+        model.addResultMonitor(new MultiFileResultsMonitor(dataContainer, properties)); //the new, multi file monitor
         model.runModel();
         logger.info("Finished SILO.");
     }
