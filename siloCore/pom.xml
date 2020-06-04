@@ -185,6 +185,11 @@
             <url>https://jitpack.io</url>
         </repository>
         <repository>
+            <id>oss-jfrog-artifactory</id>
+            <name>artifactory-snapshots</name>
+            <url>https://oss.jfrog.org/oss-snapshot-local</url>
+        </repository>
+        <repository>
             <!-- Geotools is not on Maven central -->
             <id>osgeo</id>
             <name>Geotools repository</name>
