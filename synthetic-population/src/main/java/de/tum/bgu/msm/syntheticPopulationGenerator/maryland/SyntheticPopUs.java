@@ -44,7 +44,6 @@ import java.util.*;
 
 public class SyntheticPopUs implements SyntheticPopI {
 
-    protected static final String PROPERTIES_RUN_SP                  = "run.synth.pop.generator";
     protected static final String PROPERTIES_PUMS_FILES              = "pums.records";
     protected static final String PROPERTIES_PARTLY_COVERED_PUMAS    = "partly.covered.pumas";
     protected static final String PROPERTIES_HOUSEHOLD_CONTROL_TOTAL = "household.control.total";
@@ -76,7 +75,7 @@ public class SyntheticPopUs implements SyntheticPopI {
     private HouseholdDataManager householdData;
     private JobDataManager jobData;
     private SkimTravelTimes travelTimes;
-
+    private PersonfactoryMstm personfactoryMstm = new PersonfactoryMstm();
 
     public SyntheticPopUs(ResourceBundle rb, Properties properties) {
         // constructor
@@ -525,7 +524,7 @@ public class SyntheticPopUs implements SyntheticPopI {
                             jobData.getJobFromId(workplace).setWorkerID(newPpId);  // -2 for jobs outside of the study area
                         }
 
-                        PersonMstm pp = (PersonMstm) PersonUtils.getFactory().createPerson(newPpId, age, Gender.valueOf(gender), occ, null, workplace, income);
+                        PersonMstm pp = personfactoryMstm.createPerson(newPpId, age, Gender.valueOf(gender), occ, null, workplace, income);
                         pp.setRace(race);
                         householdData.addPerson(pp);
                         householdData.addPersonToHousehold(pp, household);
