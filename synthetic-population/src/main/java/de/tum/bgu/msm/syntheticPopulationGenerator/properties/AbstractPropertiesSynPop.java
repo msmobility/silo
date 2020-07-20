@@ -18,6 +18,7 @@ public abstract class AbstractPropertiesSynPop {
     public boolean runDisability;
     public String[] attributesMunicipality;
     public TableDataSet marginalsMunicipality;
+    public TableDataSet jobsByTaz;
     public String[] attributesCounty;
     public TableDataSet marginalsCounty;
     public TableDataSet selectedMunicipalities;
@@ -56,6 +57,7 @@ public abstract class AbstractPropertiesSynPop {
     public String microPersonsFileName;
     public String microHouseholdsFileName;
     public String microDwellingsFileName;
+    public String microJobsFileName;
     public int[] ageBracketsBorough;
     public String[] attributesBorough;
     public TableDataSet marginalsBorough;
@@ -71,6 +73,7 @@ public abstract class AbstractPropertiesSynPop {
     public String householdsStateFileName;
     public String personsStateFileName;
     public String dwellingsStateFileName;
+    public String jobsStateFileName;
     public String frequencyMatrixFileName;
 
 }

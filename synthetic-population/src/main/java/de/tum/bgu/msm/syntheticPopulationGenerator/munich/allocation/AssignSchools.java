@@ -74,12 +74,12 @@ public class AssignSchools {
 
     private void calculateDistanceImpedance(){
 
-        distanceImpedanceTertiary = new Matrix(dataSetSynPop.getDistanceTazToTaz().getRowCount(), dataSetSynPop.getDistanceTazToTaz().getColumnCount());
-        distanceImpedancePrimarySecondary = new Matrix(dataSetSynPop.getDistanceTazToTaz().getRowCount(), dataSetSynPop.getDistanceTazToTaz().getColumnCount());
+        distanceImpedanceTertiary = new Matrix(dataSetSynPop.getTravelTimeTazToTaz().getRowCount(), dataSetSynPop.getTravelTimeTazToTaz().getColumnCount());
+        distanceImpedancePrimarySecondary = new Matrix(dataSetSynPop.getTravelTimeTazToTaz().getRowCount(), dataSetSynPop.getTravelTimeTazToTaz().getColumnCount());
         Map<Integer, Float> utilityMapTertiary = dataSetSynPop.getTripLengthDistribution().column("Tertiary");
-        for (int i = 1; i <= dataSetSynPop.getDistanceTazToTaz().getRowCount(); i ++){
-            for (int j = 1; j <= dataSetSynPop.getDistanceTazToTaz().getColumnCount(); j++){
-                int distance = (int) dataSetSynPop.getDistanceTazToTaz().getValueAt(i,j);
+        for (int i = 1; i <= dataSetSynPop.getTravelTimeTazToTaz().getRowCount(); i ++){
+            for (int j = 1; j <= dataSetSynPop.getTravelTimeTazToTaz().getColumnCount(); j++){
+                int distance = (int) dataSetSynPop.getTravelTimeTazToTaz().getValueAt(i,j);
                 float utilityTertiary = 0.00000001f;
                 if (distance < 200){
                     utilityTertiary = utilityMapTertiary.get(distance);

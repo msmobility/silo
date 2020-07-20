@@ -25,8 +25,8 @@ public class AssignSchools {
     private ArrayList<Person> studentArrayList;
     private int assignedStudents;
 
-    private Matrix distanceImpedancePrimarySecondary;
-    private Matrix distanceImpedanceTertiary;
+    private Matrix travelTimeImpedancePrimarySecondary;
+    private Matrix travelTimeImpedanceTertiary;
     private Map<Integer, Map<Integer,Integer>> schoolCapacityMap;
     private Map<Integer, Integer> numberOfVacantPlacesByType;
 
@@ -37,7 +37,7 @@ public class AssignSchools {
 
     public void run() {
         logger.info("   Running module: school de.tum.bgu.msm.syntheticPopulationGenerator.germany.disability");
-        calculateDistanceImpedance();
+        calculateTravelTimeImpedance();
         initializeSchoolCapacity();
         shuffleStudents();
 
@@ -72,20 +72,28 @@ public class AssignSchools {
     }
 
 
-    private void calculateDistanceImpedance(){
+    private void calculateTravelTimeImpedance(){
 
-        distanceImpedanceTertiary = new Matrix(dataSetSynPop.getDistanceTazToTaz().getRowCount(), dataSetSynPop.getDistanceTazToTaz().getColumnCount());
-        distanceImpedancePrimarySecondary = new Matrix(dataSetSynPop.getDistanceTazToTaz().getRowCount(), dataSetSynPop.getDistanceTazToTaz().getColumnCount());
+        travelTimeImpedanceTertiary = new Matrix(dataSetSynPop.getTravelTimeTazToTaz().getRowCount(), dataSetSynPop.getTravelTimeTazToTaz().getColumnCount());
+        travelTimeImpedancePrimarySecondary = new Matrix(dataSetSynPop.getTravelTimeTazToTaz().getRowCount(), dataSetSynPop.getTravelTimeTazToTaz().getColumnCount());
         Map<Integer, Float> utilityMapTertiary = dataSetSynPop.getTripLengthDistribution().column("Tertiary");
-        for (int i = 1; i <= dataSetSynPop.getDistanceTazToTaz().getRowCount(); i ++){
-            for (int j = 1; j <= dataSetSynPop.getDistanceTazToTaz().getColumnCount(); j++){
-                int distance = (int) dataSetSynPop.getDistanceTazToTaz().getValueAt(i,j);
-                float utilityTertiary = 0.00000001f;
-                if (distance < 200){
-                    utilityTertiary = utilityMapTertiary.get(distance);
+        for (int i = 1; i <= dataSetSynPop.getTravelTimeTazToTaz().getRowCount(); i ++){
+            for (int j = 1; j <= dataSetSynPop.getTravelTimeTazToTaz().getColumnCount(); j++){
+                int travelTime = (int) dataSetSynPop.getTravelTimeTazToTaz().getValueAt(i,j);
+
+                if (i==j && travelTime >= 1_000_000_000){
+                    travelTimeImpedanceTertiary.setValueAt(i, j, 5);
+                    travelTimeImpedancePrimarySecondary.setValueAt(i, j, 5);
                 }
-                distanceImpedanceTertiary.setValueAt(i,j,utilityTertiary);
-                distanceImpedancePrimarySecondary.setValueAt(i,j, distance);
+
+                //float utilityTertiary = 0.00000001f;
+
+                //if (travelTime < 200){
+                //    utilityTertiary = utilityMapTertiary.get(travelTime);
+                //}
+                //travelTimeImpedanceTertiary.setValueAt(i,j,utilityTertiary);
+                //travelTimeImpedancePrimarySecondary.setValueAt(i,j, travelTime);
+
             }
         }
     }
@@ -99,7 +107,7 @@ public class AssignSchools {
             Iterator<Integer> iterator = schoolCapacityMap.get(3).keySet().iterator();
             while (iterator.hasNext()) {
                 Integer zone = iterator.next();
-                float prob = distanceImpedanceTertiary.getValueAt(hometaz, zone) * schoolCapacityMap.get(3).get(zone);
+                float prob = travelTimeImpedanceTertiary.getValueAt(hometaz, zone) * schoolCapacityMap.get(3).get(zone);
                 probability.put(zone, prob);
             }
             schooltaz = SiloUtil.select(probability);
@@ -124,9 +132,9 @@ public class AssignSchools {
             Iterator<Integer> iterator = schoolCapacityMap.get(schoolType).keySet().iterator();
             while (iterator.hasNext()) {
                 Integer zone = iterator.next();
-                if (distanceImpedancePrimarySecondary.getValueAt(hometaz, zone) < minDistance) {
+                if (travelTimeImpedancePrimarySecondary.getValueAt(hometaz, zone) < minDistance) {
                     schooltaz = zone;
-                    minDistance = distanceImpedancePrimarySecondary.getValueAt(hometaz, zone);
+                    minDistance = travelTimeImpedancePrimarySecondary.getValueAt(hometaz, zone);
                 }
             }
             int remainingCapacity = schoolCapacityMap.get(schoolType).get(schooltaz) - 1;
@@ -147,7 +155,7 @@ public class AssignSchools {
         studentArrayList = new ArrayList<>();
         for (Person p : dataContainer.getHouseholdDataManager().getPersons()){
             PersonMuc pp = (PersonMuc) p;
-            if (pp.getOccupation() == Occupation.STUDENT){
+            if (pp.getOccupation() == Occupation.STUDENT && Occupation.STUDENT.getCode()==3 ){
                 studentArrayList.add(pp);
                 pp.setSchoolPlace(-1);
             }

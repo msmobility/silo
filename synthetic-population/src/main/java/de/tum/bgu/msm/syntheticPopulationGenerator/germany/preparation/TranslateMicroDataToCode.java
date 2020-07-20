@@ -50,11 +50,11 @@ public class TranslateMicroDataToCode {
         int sector = (int)dataSetSynPop.getPersonTable().get(personCount,"sector");
         if (sector < 1) {
             dataSetSynPop.getPersonTable().put(personCount, "sector", 0);
-        } else if (sector < 100){
+        } else if (sector < 50){
             dataSetSynPop.getPersonTable().put(personCount,"sector",1);
-        } else if (sector < 500){
+        } else if (sector < 450){
             dataSetSynPop.getPersonTable().put(personCount,"sector",2);
-        } else if (sector < 990){
+        } else if (sector < 1000){
             dataSetSynPop.getPersonTable().put(personCount,"sector",3);
         } else {
             dataSetSynPop.getPersonTable().put(personCount,"sector",0);

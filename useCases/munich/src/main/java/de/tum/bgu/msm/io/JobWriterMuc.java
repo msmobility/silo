@@ -44,16 +44,16 @@ public class JobWriterMuc implements JobWriter {
             pwj.print(jj.getType());
             pwj.print("\"");
 
-            Coordinate coordinate = jj.getCoordinate();
-            pwj.print(",");
-            pwj.print(coordinate.x);
-            pwj.print(",");
-            pwj.print(coordinate.y);
+//            Coordinate coordinate = jj.getCoordinate();
+//            pwj.print(",");
+//            pwj.print(coordinate.x);
+//            pwj.print(",");
+//            pwj.print(coordinate.y);
 
-            pwj.print(",");
-            pwj.print(((JobMuc)jj).getStartTimeInSeconds());
-            pwj.print(",");
-            pwj.print(((JobMuc)jj).getWorkingTimeInSeconds());
+//            pwj.print(",");
+//            pwj.print(((JobMuc)jj).getStartTimeInSeconds());
+//            pwj.print(",");
+//            pwj.print(((JobMuc)jj).getWorkingTimeInSeconds());
 
             pwj.println();
             if (jj.getId() == SiloUtil.trackJj) {

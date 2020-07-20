@@ -39,7 +39,6 @@ public final class DwellingImpl implements Dwelling, MicroLocation {
     private DwellingUsage usage = DwellingUsage.GROUP_QUARTER_OR_DEFAULT;
     private Coordinate coordinate;
 
-
     DwellingImpl(int id, int zoneId, Coordinate coordinate,
                  int hhId, DwellingType type, int bedrooms,
                  int quality, int price, int year) {

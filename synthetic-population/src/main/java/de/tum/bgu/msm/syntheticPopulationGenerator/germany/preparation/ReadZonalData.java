@@ -4,8 +4,6 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
-import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
-import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -34,7 +32,7 @@ public class ReadZonalData {
     public void run() {
         readCities();
         readZones();
-        readDistanceMatrix();
+        readTravelTimeMatrix();
         readTripLengthFrequencyDistribution();
     }
 
@@ -155,22 +153,23 @@ public class ReadZonalData {
 
     }
 
-    private void readDistanceMatrix(){
+    private void readTravelTimeMatrix(){
         //Read the skim matrix
         logger.info("   Starting to read OMX matrix");
         OmxFile travelTimeOmx = new OmxFile(PropertiesSynPop.get().main.omxFileName);
         travelTimeOmx.openReadOnly();
-        Matrix distanceMatrix = SiloUtil.convertOmxToMatrix(travelTimeOmx.getMatrix("mat1"));
+        Matrix travelTimeMatrix = SiloUtil.convertOmxToMatrix(travelTimeOmx.getMatrix("mat1"));
         OmxLookup omxLookUp = travelTimeOmx.getLookup("lookup1");
         int[] externalNumbers = (int[]) omxLookUp.getLookup();
-        distanceMatrix.setExternalNumbersZeroBased(externalNumbers);
-        for (int i = 1; i <= distanceMatrix.getRowCount(); i++){
-            for (int j = 1; j <= distanceMatrix.getColumnCount(); j++){
-                distanceMatrix.setValueAt(i,j, distanceMatrix.getValueAt(i,j)/1000);
+        travelTimeMatrix.setExternalNumbersZeroBased(externalNumbers);
+        for (int i = 1; i <= travelTimeMatrix.getRowCount(); i++){
+            for (int j = 1; j <= travelTimeMatrix.getColumnCount(); j++){
+                //UNIT:minute
+                travelTimeMatrix.setValueAt(i,j, travelTimeMatrix.getValueAt(i,j)/60);
             }
         }
-        dataSetSynPop.setDistanceTazToTaz(distanceMatrix);
-        logger.info("   Read OMX matrix");
+        dataSetSynPop.setTravelTimeTazToTaz(travelTimeMatrix);
+        logger.info("Read OMX matrix");
     }
 
 
@@ -186,7 +185,7 @@ public class ReadZonalData {
 
             // read header
             String[] header = recString.split(",");
-            int posId = SiloUtil.findPositionInArray("km", header);
+            int posId = SiloUtil.findPositionInArray("min", header);
             int posHBW = SiloUtil.findPositionInArray("HBW",header);
             int posPrimarySecondary = SiloUtil.findPositionInArray("Primary",header);
             int posTertiary = SiloUtil.findPositionInArray("Tertiary",header);

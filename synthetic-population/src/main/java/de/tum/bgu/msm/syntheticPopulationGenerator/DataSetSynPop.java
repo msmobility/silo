@@ -46,7 +46,7 @@ public class DataSetSynPop {
     private Table<Integer, String, Float> tripLengthDistribution;
     private ArrayList<Integer> municipalitiesWithZeroPopulation;
 
-    private Matrix distanceTazToTaz;
+    private Matrix travelTimeTazToTaz;
 
     private HashMap<Integer, ArrayList> boroughsByCounty;
 
@@ -97,12 +97,12 @@ public class DataSetSynPop {
         this.tazByMunicipality = tazByMunicipality;
     }
 
-    public Matrix getDistanceTazToTaz() {
-        return distanceTazToTaz;
+    public Matrix getTravelTimeTazToTaz() {
+        return travelTimeTazToTaz;
     }
 
-    public void setDistanceTazToTaz(Matrix distanceTazToTaz) {
-        this.distanceTazToTaz = distanceTazToTaz;
+    public void setTravelTimeTazToTaz(Matrix travelTimeTazToTaz) {
+        this.travelTimeTazToTaz = travelTimeTazToTaz;
     }
 
     public int[] getCityIDs() {

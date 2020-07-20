@@ -81,7 +81,7 @@ public class ValidateTripLengthDistribution {
                 Household hh = pp.getHousehold();
                 int origin = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
                 int destination = jobDataManager.getJobFromId(pp.getJobId()).getZoneId();
-                int value = (int) dataSetSynPop.getDistanceTazToTaz().getValueAt(origin, destination);
+                int value = (int) dataSetSynPop.getTravelTimeTazToTaz().getValueAt(origin, destination);
                 commuteDistance.addValue(value);
             }
         }

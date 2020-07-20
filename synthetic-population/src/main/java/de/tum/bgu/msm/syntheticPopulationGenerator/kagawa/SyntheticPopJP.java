@@ -8,7 +8,6 @@ import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
-import de.tum.bgu.msm.data.household.HouseholdFactoryMuc;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.job.JobUtils;
@@ -272,7 +271,7 @@ public class SyntheticPopJP implements SyntheticPopI {
                 }
             }
         }
-        dataSetSynPop.setDistanceTazToTaz(distanceMatrix);
+        dataSetSynPop.setTravelTimeTazToTaz(distanceMatrix);
         logger.info("   Read OMX matrix");
 
 

@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.germany.allocation;
 
 import com.google.common.math.LongMath;
+import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.RowVector;
 import de.tum.bgu.msm.container.DataContainer;
@@ -11,6 +12,7 @@ import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -25,7 +27,7 @@ public class AssignJobs {
 
     private final DataSetSynPop dataSetSynPop;
     private final DataContainer dataContainer;
-    private Matrix distanceImpedance;
+    private Matrix travelTimeImpedance;
 
     private HashMap<String, Integer> jobIntTypes;
     protected HashMap<Integer, int[]> idVacantJobsByZoneType;
@@ -33,6 +35,7 @@ public class AssignJobs {
     protected HashMap<Integer, int[]> idZonesVacantJobsByType;
     protected HashMap<Integer, Integer> numberVacantJobsByZoneByType;
     protected HashMap<Integer, Integer> numberZonesByType;
+
 
     private String[] jobStringTypes;
     private ArrayList<Person> workerArrayList;
@@ -48,17 +51,39 @@ public class AssignJobs {
 
     public void run() {
         logger.info("   Running module: job de.tum.bgu.msm.syntheticPopulationGenerator.germany.disability");
-        calculateDistanceImpedance();
+        calculateTravelTimeImpedance();
         identifyVacantJobsByZoneType();
         shuffleWorkers();
         logger.info("Number of workers " + workerArrayList.size());
         RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
         HouseholdDataManager households = dataContainer.getHouseholdDataManager();
+        TableDataSet cellsMatrix = PropertiesSynPop.get().main.cellsMatrix;
         for (Person pp : workerArrayList){
-            int selectedJobType = 1;//pp.getJobType();
+            String selectedJobTypeAsString = (String) ((PersonMuc) pp).getAdditionalAttributes().get("jobType");
+            ///todo found some empty job types
+            if (selectedJobTypeAsString.equals("")){
+                ((PersonMuc) pp).getAdditionalAttributes().put("jobType", "Serv");
+                selectedJobTypeAsString="Serv";
+            }
+
+            int selectedJobType = jobIntTypes.get(selectedJobTypeAsString);
+
             Household hh = pp.getHousehold();
+
+            //int ddZone = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
+
+            //int origin=0;
             int origin = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
+
+            //for(int cells : cellsMatrix.getColumnAsInt("ID_cell")) {
+            //    if ( cells == ddZone) {
+            //        origin = (int) cellsMatrix.getIndexedValueAt(cells, "TAZ");
+            //        break;
+            //    }
+            //}
+
             int[] workplace = selectWorkplace(origin, selectedJobType);
+
             if (workplace[0] > 0) {
                 int jobID = idVacantJobsByZoneType.get(workplace[0])[numberVacantJobsByZoneByType.get(workplace[0]) - 1];
                 setWorkerAndJob(pp, jobID);
@@ -73,18 +98,24 @@ public class AssignJobs {
     }
 
 
-   private void calculateDistanceImpedance(){
 
-        distanceImpedance = new Matrix(dataSetSynPop.getDistanceTazToTaz().getRowCount(), dataSetSynPop.getDistanceTazToTaz().getColumnCount());
+   private void calculateTravelTimeImpedance(){
+
+        travelTimeImpedance = new Matrix(dataSetSynPop.getTravelTimeTazToTaz().getRowCount(), dataSetSynPop.getTravelTimeTazToTaz().getColumnCount());
         Map<Integer, Float> utilityHBW = dataSetSynPop.getTripLengthDistribution().column("HBW");
-        for (int i = 1; i <= dataSetSynPop.getDistanceTazToTaz().getRowCount(); i ++){
-            for (int j = 1; j <= dataSetSynPop.getDistanceTazToTaz().getColumnCount(); j++){
-                int distance = (int) dataSetSynPop.getDistanceTazToTaz().getValueAt(i,j);
+        for (int i = 1; i <= dataSetSynPop.getTravelTimeTazToTaz().getRowCount(); i ++){
+            for (int j = 1; j <= dataSetSynPop.getTravelTimeTazToTaz().getColumnCount(); j++){
+                int travelTime = (int) dataSetSynPop.getTravelTimeTazToTaz().getValueAt(i,j);
                 float utility = 0.00000001f;
-                if (distance < 200){
-                    utility = utilityHBW.get(distance);
+                travelTimeImpedance.setValueAt(i, j, travelTime);
+                //if (travelTime < 140){
+                //    utility = utilityHBW.get(travelTime);
+                //}
+                if (i==j && travelTime >= 1_000_000_000){
+                    //utility = utilityHBW.get(5);
+                    travelTimeImpedance.setValueAt(i, j, 5);
                 }
-                distanceImpedance.setValueAt(i, j, utility);
+                //travelTimeImpedance.setValueAt(i, j, utility);
             }
         }
     }
@@ -103,9 +134,11 @@ public class AssignJobs {
         int[] workplace = new int[2];
         if (numberZonesByType.get(selectedJobType) > 0) {
             double[] probs = new double[numberZonesByType.get(selectedJobType)];
+            double alpha = 0.5000;   //0.50, 0.40, 0.30, 0.25, 0.15
+            double gamma =-0.0090;  //-0.0150
             int[] ids = idZonesVacantJobsByType.get(selectedJobType);
-            RowVector distances = distanceImpedance.getRow(homeTaz);
-            IntStream.range(0, probs.length).parallel().forEach(id -> probs[id] = Math.exp(distances.getValueAt(ids[id] / 100) * Math.pow(numberVacantJobsByZoneByType.get(ids[id]), 0.45)));
+            RowVector traveltimes = travelTimeImpedance.getRow(homeTaz);
+            IntStream.range(0, probs.length).parallel().forEach(id -> probs[id] = Math.exp(Math.exp(traveltimes.getValueAt((ids[id]-selectedJobType)/100 )*gamma) * Math.pow(numberVacantJobsByZoneByType.get(ids[id]), alpha)));
             workplace = select(probs, ids);
         } else {
             workplace[0] = -2;
@@ -133,6 +166,7 @@ public class AssignJobs {
 
         logger.info("  Identifying vacant jobs by zone");
         Collection<Job> jobs = dataContainer.getJobDataManager().getJobs();
+        TableDataSet jobsByTaz = PropertiesSynPop.get().main.jobsByTaz;
 
         jobStringTypes = PropertiesSynPop.get().main.jobStringType;
         jobIntTypes = new HashMap<>();
@@ -153,12 +187,13 @@ public class AssignJobs {
         int[] cellsID = PropertiesSynPop.get().main.cellsMatrix.getColumnAsInt("ID_cell");
 
         //create the counter hashmaps
+
         for (int i = 0; i < PropertiesSynPop.get().main.jobStringType.length; i++){
             int type = jobIntTypes.get(PropertiesSynPop.get().main.jobStringType[i]);
             numberZonesByType.put(type,0);
             numberVacantJobsByType.put(type,0);
-            for (int j = 0; j < cellsID.length; j++){
-                numberVacantJobsByZoneByType.put(type + cellsID[j] * 100, 0);
+            for (int taz : jobsByTaz.getColumnAsInt("taz")){
+                numberVacantJobsByZoneByType.put(type + taz * 100, 0);
             }
         }
         //get the totals
@@ -186,8 +221,8 @@ public class AssignJobs {
             int[] dummy = SiloUtil.createArrayWithValue(numberZonesByType.get(type),0);
             idZonesVacantJobsByType.put(type,dummy);
             numberZonesByType.put(type,0);
-            for (int j = 0; j < cellsID.length; j++){
-                int typeZone = type + cellsID[j] * 100;
+            for (int taz : jobsByTaz.getColumnAsInt("taz")){
+                int typeZone = type + taz * 100;
                 int[] dummy2 = SiloUtil.createArrayWithValue(numberVacantJobsByZoneByType.get(typeZone), 0);
                 idVacantJobsByZoneType.put(typeZone, dummy2);
                 numberVacantJobsByZoneByType.put(typeZone, 0);

@@ -174,7 +174,7 @@ public class ReadZonalData {
                 distanceMatrix.setValueAt(i,j, distanceMatrix.getValueAt(i,j)/1000);
             }
         }
-        dataSetSynPop.setDistanceTazToTaz(distanceMatrix);
+        dataSetSynPop.setTravelTimeTazToTaz(distanceMatrix);
         logger.info("   Read OMX matrix");
     }
 

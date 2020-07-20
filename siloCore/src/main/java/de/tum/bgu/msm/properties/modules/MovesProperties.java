@@ -18,7 +18,7 @@ public final class MovesProperties {
     public final boolean trackRelocations;
 
     public enum PopulationControlTotalMethod {
-        POPULATION, MIGRATION, RATE;
+        POPULATION, MIGRATION, RATE
     }
 
     public MovesProperties(ResourceBundle bundle) {

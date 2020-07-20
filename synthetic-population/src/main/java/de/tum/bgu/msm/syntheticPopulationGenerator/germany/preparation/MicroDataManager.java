@@ -367,11 +367,11 @@ public class MicroDataManager {
         String sectorString = "";
         if (sector < 0){
             sectorString = "";
-        } else if (sector < 100){
+        } else if (sector < 50){
             sectorString = "Agri";
         } else if (sector < 350){
             sectorString = "Mnft";
-        } else if (sector < 400){
+        } else if (sector < 410){
             sectorString = "Util";
         } else if (sector < 450){
             sectorString = "Cons";
@@ -380,14 +380,18 @@ public class MicroDataManager {
         } else if (sector < 550){
             sectorString = "Trns";
         } else if (sector < 580){
-            sectorString = "Retl";
+            sectorString = "Hosp";
         } else if (sector < 640){
-            sectorString = "Trns";
-        } else if (sector < 663){
+            sectorString = "Info";
+        } else if (sector < 680){
             sectorString = "Finc";
-        } else if (sector < 830){
+        } else if (sector < 690){
             sectorString = "Rlst";
+        } else if (sector < 840){
+            sectorString = "Know";
         } else if (sector < 850){
+            sectorString = "Puli";
+        } else if (sector < 900){
             sectorString = "Admn";
         } else if (sector < 1000){
             sectorString = "Serv";

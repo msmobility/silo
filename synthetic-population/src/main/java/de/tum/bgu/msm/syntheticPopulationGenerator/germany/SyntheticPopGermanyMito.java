@@ -112,14 +112,13 @@ public class SyntheticPopGermanyMito implements SyntheticPopI {
         HouseholdWriter ddwriter = new DwellingWriterMucMito(dataContainer.getHouseholdDataManager());
         ddwriter.writeHouseholds(filedd);
 
-/*        String filejj = properties.main.baseDirectory
-                + PropertiesSynPop.get().main.state + "/"
-                + PropertiesSynPop.get().main.personsFileName
+        String filejj = properties.main.baseDirectory
+                + PropertiesSynPop.get().main.jobsStateFileName
                 + "_"
                 + properties.main.baseYear
                 + ".csv";
         JobWriter jjwriter = new JobWriterMuc(dataContainer.getJobDataManager());
-        jjwriter.writeJobs(filejj);*/
+        jjwriter.writeJobs(filejj);
 
     }
 

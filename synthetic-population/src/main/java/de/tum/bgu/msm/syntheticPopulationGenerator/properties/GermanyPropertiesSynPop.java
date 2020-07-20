@@ -17,17 +17,20 @@ public class GermanyPropertiesSynPop extends AbstractPropertiesSynPop {
         runSyntheticPopulation = PropertiesUtil.getBooleanProperty(bundle, "run.synth.pop.generator", false);
         runIPU = PropertiesUtil.getBooleanProperty(bundle, "run.ipu.synthetic.pop", false);
         runAllocation = PropertiesUtil.getBooleanProperty(bundle, "run.population.allocation", false);
-        runJobAllocation = PropertiesUtil.getBooleanProperty(bundle, "run.job.de.tum.bgu.msm.syntheticPopulationGenerator.germany.disability ", false);
+        //runJobAllocation = PropertiesUtil.getBooleanProperty(bundle, "run.job.de.tum.bgu.msm.syntheticPopulationGenerator.germany.disability ", true); // was there initially. was true - than can not find Agri
+        runJobAllocation = PropertiesUtil.getBooleanProperty(bundle, "run.job.allocation", true);
         twoGeographicalAreasIPU = PropertiesUtil.getBooleanProperty(bundle, "run.ipu.city.and.county", false);
         boroughIPU = PropertiesUtil.getBooleanProperty(bundle,"run.three.areas",false);
         runDisability = PropertiesUtil.getBooleanProperty(bundle, "run.disability", false);
         runMicrolocation = PropertiesUtil.getBooleanProperty(bundle, "run.sp.microlocation", false);
 
-        microDataFile = PropertiesUtil.getStringProperty(bundle, "micro.data", "C:/topSecretData/suf2010v1.dat");
+        microDataFile = PropertiesUtil.getStringProperty(bundle, "micro.data", "C:/Users/Wei/Documents/germanyModel/topSecretData/suf2010v1.dat");
         // todo this table is not a property but a data container, "ID_city" might be a property? (if this is applciable to other implementations)
         marginalsMunicipality = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"marginals.municipality","input/syntheticPopulation/" + state + "/marginalsMunicipality.csv"));
         marginalsMunicipality.buildIndex(marginalsMunicipality.getColumnPosition("ID_city"));
 
+        jobsByTaz = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"jobs.by.taz","input/syntheticPopulation/" + state + "/jobsByTaz.csv"));
+        jobsByTaz.buildIndex(jobsByTaz.getColumnPosition("taz"));
 
         //todo same as municipalities
         marginalsCounty = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"marginals.county","input/syntheticPopulation/" + state + "/marginalsCounty.csv"));
@@ -36,13 +39,13 @@ public class GermanyPropertiesSynPop extends AbstractPropertiesSynPop {
         selectedMunicipalities = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"municipalities.list","input/syntheticPopulation/" + state + "/municipalitiesList.csv"));
         selectedMunicipalities.buildIndex(selectedMunicipalities.getColumnPosition("ID_city"));
 
-        cellsMatrix = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"taz.definition ","input/syntheticPopulation/" + state + "/zoneAttributes.csv"));
+        cellsMatrix = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"taz.definition ","input/syntheticPopulation/" + state + "/zoneAttributeswithTAZ.csv"));
         cellsMatrix.buildIndex(cellsMatrix.getColumnPosition("ID_cell"));
 
-        zoneSystemFileName = PropertiesUtil.getStringProperty(bundle,"taz.definition ","input/syntheticPopulation/" + state + "/zoneAttributes.csv");
+        zoneSystemFileName = PropertiesUtil.getStringProperty(bundle,"taz.definition ","input/syntheticPopulation/" + state + "/zoneAttributeswithTAZ.csv");
 
         //todo this cannot be the final name of the matrix
-        omxFileName = PropertiesUtil.getStringProperty(bundle, "distanceODmatrix", "input/syntheticPopulation/tdTest.omx");
+        omxFileName = PropertiesUtil.getStringProperty(bundle, "distanceODmatrix", "input/syntheticPopulation/tdTest_travelTime.omx");
 
         attributesMunicipality = PropertiesUtil.getStringPropertyArray(bundle, "attributes.municipality", new String[]{"Agr", "Ind", "Srv"});
         attributesCounty = PropertiesUtil.getStringPropertyArray(bundle, "attributes.county", new String[]{"Agr", "Ind", "Srv"});
@@ -79,7 +82,7 @@ public class GermanyPropertiesSynPop extends AbstractPropertiesSynPop {
         errorsMunicipalityFileName = PropertiesUtil.getStringProperty(bundle, "errors.IPU.municipality.matrix", "microData/" + state +  "/interimFiles/errorsIPUmunicipality.csv");
         errorsCountyFileName = PropertiesUtil.getStringProperty(bundle, "errors.IPU.county.matrix", "microData/" + state + "/interimFiles/errorsIPUcounty.csv");
         errorsSummaryFileName = PropertiesUtil.getStringProperty(bundle, "errors.IPU.summary.matrix", "microData/" + state + "/interimFiles/errorsIPUsummary.csv");
-        frequencyMatrixFileName = PropertiesUtil.getStringProperty(bundle,"frequency.matrix.file","microData/" + state +  "/interimFiles/frequencyMatrix.csv");
+        frequencyMatrixFileName = PropertiesUtil.getStringProperty(bundle,"frequency.matrix.file","microData/" + state +  "/interimFiles/quencyMatrix.csv");
 
         buildingLocationlist = null;
         jobLocationlist = null;
@@ -92,10 +95,12 @@ public class GermanyPropertiesSynPop extends AbstractPropertiesSynPop {
         householdsFileName = PropertiesUtil.getStringProperty(bundle, "household.file.ascii", "microData/hh");
         personsFileName = PropertiesUtil.getStringProperty(bundle, "person.file.ascii", "microData/pp");
         dwellingsFileName = PropertiesUtil.getStringProperty(bundle, "dwelling.file.ascii", "microData/dd");
+        jobsFileName = PropertiesUtil.getStringProperty(bundle, "job.file.ascii", "microData/jj");
 
         householdsStateFileName = PropertiesUtil.getStringProperty(bundle, "household.file.ascii.sp", "microData/" + state +  "/hh");
         personsStateFileName = PropertiesUtil.getStringProperty(bundle, "person.file.ascii.sp", "microData/" + state +  "/pp");
         dwellingsStateFileName = PropertiesUtil.getStringProperty(bundle, "dwelling.file.ascii.sp", "microData/" + state +  "/dd");
+        jobsStateFileName = PropertiesUtil.getStringProperty(bundle, "job.file.ascii.sp", "microData/" + state +  "/jj");
 
         if (boroughIPU) {
             attributesBorough = PropertiesUtil.getStringPropertyArray(bundle, "attributes.borough", new String[]{"Agr", "Ind", "Srv"});
@@ -103,7 +108,7 @@ public class GermanyPropertiesSynPop extends AbstractPropertiesSynPop {
             marginalsBorough.buildIndex(marginalsBorough.getColumnPosition("ID_borough"));
             selectedBoroughs = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"municipalities.list.borough","input/syntheticPopulation/" + state + "/municipalitiesListBorough.csv"));
             selectedBoroughs.buildIndex(selectedBoroughs.getColumnPosition("ID_borough"));
-            cellsMatrixBoroughs = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"taz.definition ","input/syntheticPopulation/" + state + "/zoneAttributesBorough.csv"));
+            cellsMatrixBoroughs = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"taz.definition ","input/syntheticPopulation/" + state + "/zoneAttributesBoroughwithTAZ.csv"));
             cellsMatrixBoroughs.buildIndex(cellsMatrixBoroughs.getColumnPosition("ID_cell"));
         }
     }

@@ -7,11 +7,13 @@ public class MunichZone extends ZoneImpl {
 
     private final AreaTypes.SGType areaType;
     private final double ptDistance_m;
+    private final int TAZ;
 
-    public MunichZone(int id, float area, AreaTypes.SGType areaType, double initialPTDistance_m, Region region) {
+    public MunichZone(int id, float area, AreaTypes.SGType areaType, double initialPTDistance_m, Region region, int taz) {
         super(id, area, region);
         this.areaType = areaType;
         this.ptDistance_m = initialPTDistance_m;
+        this.TAZ = taz;
     }
 
     public double getPTDistance_m() {
