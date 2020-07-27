@@ -16,8 +16,10 @@ import de.tum.bgu.msm.mito.MitoDataConverter;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.schools.School;
 import de.tum.bgu.msm.schools.SchoolImpl;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 
 import java.util.Map;
 
@@ -38,7 +40,7 @@ public class MitoDataConverterMuc implements MitoDataConverter {
     private void convertZones(DataSet dataSet, DataContainer dataContainer) {
         for (Zone siloZone : dataContainer.getGeoData().getZones().values()) {
             MitoZone zone = new MitoZone(siloZone.getZoneId(), ((MunichZone) siloZone).getAreaTypeSG());
-            zone.setShapeFeature(siloZone.getZoneFeature());
+            zone.setGeometry((Geometry) siloZone.getZoneFeature().getDefaultGeometry());
             dataSet.addZone(zone);
         }
     }
@@ -51,7 +53,7 @@ public class MitoDataConverterMuc implements MitoDataConverter {
             if (school instanceof SchoolImpl) {
                 coordinate = ((SchoolImpl) school).getCoordinate();
             } else {
-                coordinate = zone.getRandomCoord();
+                coordinate = zone.getRandomCoord(SiloUtil.provideNewRandom());
             }
             MitoSchool mitoSchool = new MitoSchool(zones.get(school.getZoneId()), coordinate, school.getId());
             //mitoSchool.setStartTime_min((int) (school.getStartTimeInSeconds() / 60.));
@@ -86,7 +88,7 @@ public class MitoDataConverterMuc implements MitoDataConverter {
                 coordinate = dwelling.getCoordinate();
             } else {
                 randomCoordCounter++;
-                coordinate = zone.getRandomCoord();
+                coordinate = zone.getRandomCoord(SiloUtil.provideNewRandom());
             }
 
             //todo if there are housholds without adults they cannot be processed
@@ -124,11 +126,12 @@ public class MitoDataConverterMuc implements MitoDataConverter {
                     if (job instanceof MicroLocation) {
                         coordinate = job.getCoordinate();
                     } else {
-                        coordinate = zone.getRandomCoord();
+                        coordinate = zone.getRandomCoord(SiloUtil.provideNewRandom());
                     }
                     mitoOccupation = new MitoJob(zone, coordinate, job.getId());
                     mitoOccupation.setStartTime_min((int) (job.getStartTimeInSeconds().get() / 60.));
-                    mitoOccupation.setEndTime_min((int) ((job.getStartTimeInSeconds().get() + job.getWorkingTimeInSeconds().get()) / 60.));
+                    final int endTime = (int) ((job.getStartTimeInSeconds().get() + job.getWorkingTimeInSeconds().get()) / 60.);
+                    mitoOccupation.setEndTime_min(endTime);
                 }
                 break;
             case UNEMPLOYED:

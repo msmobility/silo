@@ -58,8 +58,11 @@ public class MitoMatsimScenarioAssembler implements MatsimScenarioAssembler {
         logger.info("  Receiving demand from MITO");
         Population population = mito.getData().getPopulation();
 
+        double factor = initialMatsimConfig.qsim().getFlowCapFactor();
         Config config = ConfigUtils.loadConfig(initialMatsimConfig.getContext());
         ConfigureMatsim.setDemandSpecificConfigSettings(config);
+        config.qsim().setStorageCapFactor(factor);
+        config.qsim().setFlowCapFactor(factor);
         MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(config);
         scenario.setPopulation(population);
         return scenario;

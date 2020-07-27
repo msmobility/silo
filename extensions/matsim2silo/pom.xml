@@ -23,6 +23,6 @@
         </dependency>
     </dependencies>
     <properties>
-        <matsimVersion>12.0-SNAPSHOT</matsimVersion>
+        <matsimVersion>13.0-SNAPSHOT</matsimVersion>
     </properties>
 </project>

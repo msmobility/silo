@@ -154,7 +154,7 @@ public final class MatsimTravelTimes implements TravelTimes {
 
         if (!planElements.isEmpty()) {
             final Leg lastLeg = (Leg) planElements.get(planElements.size() - 1);
-            arrivalTime = lastLeg.getDepartureTime() + lastLeg.getTravelTime();
+            arrivalTime = lastLeg.getDepartureTime().seconds() + lastLeg.getTravelTime().seconds();
         }
 
         double time = arrivalTime - timeOfDay_s;

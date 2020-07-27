@@ -77,7 +77,7 @@ public final class MatsimData {
         TransportModeNetworkFilter filter = new TransportModeNetworkFilter(network);
 
         Set<String> car = Sets.newHashSet(TransportMode.car);
-        Set<String> pt = Sets.newHashSet(TransportMode.pt);
+        Set<String> pt = Sets.newHashSet(TransportMode.pt, "artificial", "bus", "rail", "tram", "subway");
 
         Network carNetwork = NetworkUtils.createNetwork();
         filter.filter(carNetwork, car);

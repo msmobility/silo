@@ -7,6 +7,9 @@ import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.io.output.DefaultResultsMonitor;
 import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.scenarios.noise.DataBuilderNoise;
+import de.tum.bgu.msm.scenarios.noise.ModelBuilderMucNoise;
+import de.tum.bgu.msm.scenarios.noise.NoiseDataContainerImpl;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.utils.SiloUtil;
 import junitx.framework.FileAssert;
@@ -66,10 +69,10 @@ public class SiloMatsimMucTest {
 
         Properties properties = SiloUtil.siloInitialization(path);
 
-        DataContainerWithSchools dataContainer = DataBuilder.getModelDataForMuc(properties, config);
-        DataBuilder.read(properties, dataContainer);
+        NoiseDataContainerImpl dataContainer = DataBuilderNoise.getModelDataForMuc(properties, config);
+        DataBuilderNoise.read(properties, dataContainer);
 
-        ModelContainer modelContainer = ModelBuilderMuc.getModelContainerForMuc(dataContainer, properties, config);
+        ModelContainer modelContainer = ModelBuilderMucNoise.getModelContainerForMuc(dataContainer, properties, config);
 
         ResultsMonitor resultsMonitor = new DefaultResultsMonitor(dataContainer, properties);
         SiloModel siloModel = new SiloModel(properties, dataContainer, modelContainer);

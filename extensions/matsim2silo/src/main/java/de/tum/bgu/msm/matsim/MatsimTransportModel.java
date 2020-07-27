@@ -80,6 +80,7 @@ public final class MatsimTransportModel implements TransportModel {
 
     @Override
     public void setup() {
+        initialMatsimConfig.plansCalcRoute().setRoutingRandomness(0);
         internalTravelTimes.initialize(dataContainer.getGeoData(), matsimData);
 
         if (properties.transportModel.matsimInitialEventsFile == null) {

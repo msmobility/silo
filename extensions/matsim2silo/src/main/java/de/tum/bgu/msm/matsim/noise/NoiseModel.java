@@ -93,36 +93,24 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
                 if(properties.main.startYear == year) {
                         if(properties.transportModel.matsimInitialPlansFile != null
                                            && properties.transportModel.matsimInitialEventsFile != null) {
-                                //initial files provided -> replay
-                                if(existingNoiseReceiverPoints.isEmpty()) {
                                         replayFromEvents(noiseReceiverPoints);
-                                } else {
-                                        replayFromEvents(newNoiseReceiverPoints);
-                                }
                         } else {
                                 //matsim transport model must have run at this stage for the start year
                                 latestMatsimYear = year;
                                 calculateNoiseOffline(noiseReceiverPoints);
                         }
-                } else if(latestMatsimYear == -1) {
-                        //not the first year and no matsim run has happened yet...
-                        if(properties.transportModel.transportModelYears.contains(year + 1)) {
-                                //...this means that matsim either has to run and update all receiver points for the next year...
-                                latestMatsimYear = year + 1;
-                                calculateNoiseOffline(noiseReceiverPoints);
-                        } else if(properties.transportModel.matsimInitialPlansFile != null
-                                                  && properties.transportModel.matsimInitialEventsFile != null) {
-                                //...or the initial files are available. update new receiver points.
-                                replayFromEvents(newNoiseReceiverPoints);
-                        } else {
-                                //one of the above options have to be true.
-                                throw new RuntimeException("Should not happen!");
-                        }
+                } else if (properties.transportModel.transportModelYears.contains(year + 1)) {
+                        //matsim either has to run and update all receiver points for the next year...
+                        latestMatsimYear = year + 1;
+                        calculateNoiseOffline(noiseReceiverPoints);
+                } else if(latestMatsimYear == -1 && properties.transportModel.matsimInitialPlansFile != null
+                        && properties.transportModel.matsimInitialEventsFile != null) {
+                        //...or the initial files are available and still valid for this year. update new receiver points.
+                        replayFromEvents(newNoiseReceiverPoints);
                 } else {
                         //matsim has run before. update new receiver points.
                         calculateNoiseOffline(newNoiseReceiverPoints);
                 }
-
 
                 int counter65 = 0;
                 int counter55 = 0;
@@ -174,7 +162,7 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
                 noiseParameters.setThrowNoiseEventsCaused(false);
                 noiseParameters.setThrowNoiseEventsAffected(false);
                 noiseParameters.setWriteOutputIteration(0);
-                noiseParameters.setScaleFactor(20);
+                noiseParameters.setScaleFactor(10);
                 config.qsim().setEndTime(24 * 60 * 60);
 
                 noiseParameters.setConsiderNoiseBarriers(true);
@@ -184,10 +172,6 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
 
                 NoiseOfflineCalculation noiseOfflineCalculation = new NoiseOfflineCalculation(scenario, outputDirectoryRoot);
                 noiseOfflineCalculation.run();
-
-                TravelDisutility result = noiseOfflineCalculation.getTollDisutility();
-
-                result.getLinkTravelDisutility( Id.createLinkId(123 ), 28800, null, null );
 
         }
 
@@ -237,7 +221,7 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
                 noiseParameters.setThrowNoiseEventsCaused(false);
                 noiseParameters.setThrowNoiseEventsAffected(false);
                 noiseParameters.setWriteOutputIteration(0);
-                noiseParameters.setScaleFactor(20);
+                noiseParameters.setScaleFactor(10);
                 config.qsim().setEndTime(24 * 60 * 60);
 
                 noiseParameters.setConsiderNoiseBarriers(true);

@@ -13,7 +13,6 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
-import org.matsim.contrib.accessibility.AccessibilityAttributes;
 import org.matsim.contrib.accessibility.AccessibilityConfigGroup;
 //import org.matsim.contrib.accessibility.interfaces.FacilityDataExchangeInterface;
 import org.matsim.core.config.ConfigUtils;
@@ -68,7 +67,7 @@ public class AccessibilityModule {
         final ActivityFacilities opportunities = scenario.getActivityFacilities();
         int i = 0;
         for (ActivityFacility activityFacility : zoneRepresentativeCoords.getFacilities().values()) {
-            activityFacility.getAttributes().putAttribute(AccessibilityAttributes.WEIGHT, zonePopulationMap.get(activityFacility.getId()));
+//            activityFacility.getAttributes().putAttribute(AccessibilityAttributes.WEIGHT, zonePopulationMap.get(activityFacility.getId()));
             opportunities.addActivityFacility(activityFacility);
             i++;
         }
