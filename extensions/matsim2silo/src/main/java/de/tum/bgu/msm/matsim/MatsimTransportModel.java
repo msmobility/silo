@@ -30,6 +30,7 @@ import org.matsim.api.core.v01.TransportMode;
 import org.matsim.contrib.dvrp.trafficmonitoring.TravelTimeUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.ControlerDefaults;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
@@ -143,7 +144,7 @@ public final class MatsimTransportModel implements TransportModel {
         config.controler().setWriteEventsInterval(Math.max(config.controler().getLastIteration(), 1));
         config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
         if (properties.transportModel.includeAccessEgress) {
-            config.plansCalcRoute().setInsertingAccessEgressWalk(true);
+            config.plansCalcRoute().setAccessEgressType(PlansCalcRouteConfigGroup.AccessEgressType.walkConstantTimeToLink);
         }
         config.transit().setUsingTransitInMobsim(false);
     }

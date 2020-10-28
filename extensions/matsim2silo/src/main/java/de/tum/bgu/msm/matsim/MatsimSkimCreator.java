@@ -186,7 +186,7 @@ public class MatsimSkimCreator {
 
                             if (!planElements.isEmpty()) {
                                 final Leg lastLeg = (Leg) planElements.get(planElements.size() - 1);
-                                arrivalTime = lastLeg.getDepartureTime() + lastLeg.getTravelTime();
+                                arrivalTime = lastLeg.getDepartureTime().seconds() + lastLeg.getTravelTime().seconds();
                             }
 
                             double time = arrivalTime - peakHour_s;

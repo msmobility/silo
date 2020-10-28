@@ -14,6 +14,11 @@
     <dependencies>
         <dependency>
             <groupId>org.matsim.contrib</groupId>
+            <artifactId>accidents</artifactId>
+            <version>${matsimVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.matsim.contrib</groupId>
             <artifactId>dvrp</artifactId>
             <version>${matsimVersion}</version>
             <exclusions>

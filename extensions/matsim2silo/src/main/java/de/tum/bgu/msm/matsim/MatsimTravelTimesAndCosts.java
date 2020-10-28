@@ -24,6 +24,7 @@ import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.router.*;
 import org.matsim.core.utils.geometry.CoordUtils;
+import org.matsim.core.utils.misc.OptionalTime;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.facilities.ActivityFacilitiesFactory;
 import org.matsim.facilities.ActivityFacilitiesFactoryImpl;
@@ -130,7 +131,7 @@ public final class MatsimTravelTimesAndCosts implements TravelTimes {
 
         if (!planElements.isEmpty()) {
             final Leg lastLeg = (Leg) planElements.get(planElements.size() - 1);
-            arrivalTime = lastLeg.getDepartureTime() + lastLeg.getTravelTime();
+            arrivalTime = lastLeg.getDepartureTime().seconds() + lastLeg.getTravelTime().seconds();
         }
 
         double time = arrivalTime - timeOfDay_s;
@@ -157,11 +158,11 @@ public final class MatsimTravelTimesAndCosts implements TravelTimes {
         } else if (routingModule instanceof SwissRailRaptorRoutingModule || routingModule instanceof FreespeedFactorRoutingModule) {
             for (PlanElement pe : planElements) {
                 if (pe instanceof Leg) {
-                    double time = ((Leg) pe).getTravelTime();
+                    OptionalTime time = ((Leg) pe).getTravelTime();
 
                     // overrides individual parameters per person; use default scoring parameters
-                    if (Time.getUndefinedTime() != time) {
-                        utility += time * (cnScoringGroup.getModes().get(mode).getMarginalUtilityOfTraveling() - cnScoringGroup.getPerforming_utils_hr()) / 3600;
+                    if (time.isDefined()) {
+                        utility += time.seconds() * (cnScoringGroup.getModes().get(mode).getMarginalUtilityOfTraveling() - cnScoringGroup.getPerforming_utils_hr()) / 3600;
                     }
                     Double dist = ((Leg) pe).getRoute().getDistance();
                     if (dist != null && dist != 0.) {

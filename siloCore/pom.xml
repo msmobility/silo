@@ -416,7 +416,7 @@
         <svnRevision>${buildNumber}</svnRevision>
         <geotools.version>20.2</geotools.version>
         <skipTestJar>false</skipTestJar> <!--Overridden in the bintray profile-->
-        <matsimVersion>11.0</matsimVersion>
+        <matsimVersion>13.0-SNAPSHOT</matsimVersion>
         <java.version>1.8</java.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
