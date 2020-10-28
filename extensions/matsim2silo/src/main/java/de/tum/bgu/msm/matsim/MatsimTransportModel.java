@@ -113,7 +113,7 @@ public final class MatsimTransportModel implements TransportModel {
         TravelTimes travelTimes = dataContainer.getTravelTimes();
         if (year == properties.main.baseYear &&
                 properties.transportModel.transportModelIdentifier == TransportModelPropertiesModule.TransportModelIdentifier.MATSIM){
-            //if using the SimpleCommuteModeChoiceScenarioAssembler, we need some intial travel times (this will use an unlodaded network)
+            //if using the SimpleCommuteModeChoiceScenarioAssembler, we need some initial travel times (this will use an unlodaded network)
             TravelTime myTravelTime = SiloMatsimUtils.getAnEmptyNetworkTravelTime();
             TravelDisutility myTravelDisutility = SiloMatsimUtils.getAnEmptyNetworkTravelDisutility();
             updateTravelTimes(myTravelTime, myTravelDisutility);
