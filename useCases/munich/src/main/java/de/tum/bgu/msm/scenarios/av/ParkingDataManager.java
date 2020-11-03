@@ -6,10 +6,9 @@ import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
-import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
+import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypes;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
-import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -46,7 +45,7 @@ public class ParkingDataManager implements ModelUpdateListener {
         int counter  = 0;
         for (Dwelling dwelling : dataContainer.getRealEstateDataManager().getDwellings()) {
             if (!dwelling.getAttribute("PARKING_SPACES").isPresent()) {
-                int spaces = getNumberOfParkingSpaces((DefaultDwellingTypeImpl)dwelling.getType());
+                int spaces = getNumberOfParkingSpaces((DefaultDwellingTypes.DefaultDwellingTypeImpl)dwelling.getType());
                 dwellinggsByType.add(dwelling.getType());
                 parkingSpacesByDwellingType.add(dwelling.getType(), spaces);
                 dwelling.setAttribute("PARKING_SPACES",spaces);
@@ -118,7 +117,7 @@ public class ParkingDataManager implements ModelUpdateListener {
     @Override
     public void endYear(int year) {
 
-        for (DefaultDwellingTypeImpl type : DefaultDwellingTypeImpl.values()){
+        for (DefaultDwellingTypes.DefaultDwellingTypeImpl type : DefaultDwellingTypes.DefaultDwellingTypeImpl.values()){
             double parkings = parkingSpacesByDwellingType.count(type)/Math.max(dwellinggsByType.count(type),1.);
             logger.info("Parking spaces at dwelling type " + type.toString() + " is " + parkings);
         }
@@ -132,7 +131,7 @@ public class ParkingDataManager implements ModelUpdateListener {
     }
 
 
-    public static int getNumberOfParkingSpaces(DefaultDwellingTypeImpl type) {
+    public static int getNumberOfParkingSpaces(DefaultDwellingTypes.DefaultDwellingTypeImpl type) {
         float[] probabilities;
         switch (type) {
             case SFD:

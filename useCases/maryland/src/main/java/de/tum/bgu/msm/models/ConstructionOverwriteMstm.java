@@ -78,7 +78,9 @@ public class ConstructionOverwriteMstm extends AbstractModel implements Construc
 
         for (int row = 1; row <= overwrite.getRowCount(); row++) {
             int year = (int) overwrite.getValueAt(row, "year");
-            if (year > properties.main.endYear || year < 0) continue;   // if year > endYear, this row is not relevant for current run
+            if (year > properties.main.endYear || year < 0) {
+                continue;   // if year > endYear, this row is not relevant for current run
+            }
             Integer[] data = new Integer[6];
             int zone = (int) overwrite.getValueAt(row, "zone");
             String type = overwrite.getStringValueAt(row, "type");
@@ -89,7 +91,11 @@ public class ConstructionOverwriteMstm extends AbstractModel implements Construc
             int quantity = (int) overwrite.getValueAt(row, "quantity");
             data[0] = zone;
             data[1] = -1;
-            for (DwellingType dt: dataContainer.getRealEstateDataManager().getDwellingTypes()) if (dt.toString().equalsIgnoreCase(type)) data[1] = dataContainer.getRealEstateDataManager().getDwellingTypes().indexOf(dt);
+            for (DwellingType dt: dataContainer.getRealEstateDataManager().getDwellingTypes().getTypes()) {
+                if (dt.toString().equalsIgnoreCase(type)) {
+                    data[1] = dataContainer.getRealEstateDataManager().getDwellingTypes().getTypes().indexOf(dt);
+                }
+            }
             if (data[1] == -1) logger.error("Invalid dwelling type in row " + row + " in file " + fileName + ".");
             data[2] = bedrooms;
             data[3] = quality;
@@ -101,10 +107,14 @@ public class ConstructionOverwriteMstm extends AbstractModel implements Construc
             data[5] = (int) (restrictions * 100);
             if (plannedDwellings.containsKey(year)) {
                 List<Integer[]> list = plannedDwellings.get(year);
-                for (int i = 1; i <= quantity; i++) list.add(data);
+                for (int i = 1; i <= quantity; i++) {
+                    list.add(data);
+                }
             } else {
                 ArrayList<Integer[]> list = new ArrayList<>();
-                for (int i = 1; i <= quantity; i++) list.add(data);
+                for (int i = 1; i <= quantity; i++) {
+                    list.add(data);
+                }
                 plannedDwellings.put(year, list);
             }
         }
@@ -140,15 +150,17 @@ public class ConstructionOverwriteMstm extends AbstractModel implements Construc
                 int msa = ((MstmZone) dataContainer.getGeoData().getZones().get(zoneId)).getMsa();
                 price = (int) (Math.abs(restriction) * ((HouseholdDataManagerMstm)dataContainer.getHouseholdDataManager()).getMedianIncome(msa) / 12 * 0.18 + 0.5);
             }
-            DwellingMstm dd = (DwellingMstm) factory.createDwelling(ddId, zoneId, null, -1, dataContainer.getRealEstateDataManager().getDwellingTypes().get(dto), size, quality, price, year);
+            DwellingMstm dd = (DwellingMstm) factory.createDwelling(ddId, zoneId, null, -1, dataContainer.getRealEstateDataManager().getDwellingTypes().getTypes().get(dto), size, quality, price, year);
             dd.setRestriction(restriction);
             dataContainer.getRealEstateDataManager().addDwelling(dd);
 
             Coordinate coordinate = dataContainer.getGeoData().getZones().get(zoneId).getRandomCoordinate(random);
             dd.setCoordinate(coordinate);
 
-            if (traceOverwriteDwellings) traceFile.println(ddId + "," + zoneId + "," +  dataContainer.getRealEstateDataManager().getDwellingTypes().get(dto).toString() + "," + size + "," +
-                    quality + "," + price + "," + restriction + "," + year);
+            if (traceOverwriteDwellings) {
+                traceFile.println(ddId + "," + zoneId + "," +  dataContainer.getRealEstateDataManager().getDwellingTypes().getTypes().get(dto).toString() + "," + size + "," +
+                        quality + "," + price + "," + restriction + "," + year);
+            }
             if (ddId == SiloUtil.trackDd) {
                 SiloUtil.trackWriter.println("Dwelling " + ddId + " was constructed as an overwrite with these properties: ");
                 SiloUtil.trackWriter.println(dd.toString());
@@ -177,8 +189,12 @@ public class ConstructionOverwriteMstm extends AbstractModel implements Construc
         for (int row = 1; row <= overwriteDwellings.getRowCount(); row++) {
             int ddId = (int) overwriteDwellings.getValueAt(row, "dwellingID");
             Dwelling dd = dataContainer.getRealEstateDataManager().getDwelling(ddId);
-            if (dd == null) overwriteDwellings.setStringValueAt(row, "type", "dwellingWasDemolished");
-            if (dd == null) continue;
+            if (dd == null) {
+                overwriteDwellings.setStringValueAt(row, "type", "dwellingWasDemolished");
+            }
+            if (dd == null) {
+                continue;
+            }
             dwellingRent[row-1] = dd.getPrice();
             if (dd.getResidentId() > 0) {
                 Household hh = householdDataManager.getHouseholdFromId(dd.getResidentId());

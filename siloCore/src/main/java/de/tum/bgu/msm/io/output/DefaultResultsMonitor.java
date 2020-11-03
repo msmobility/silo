@@ -229,7 +229,7 @@ public class DefaultResultsMonitor implements ResultsMonitor {
         }
 
 
-        List<DwellingType> dwellingTypes = dataContainer.getRealEstateDataManager().getDwellingTypes();
+        List<DwellingType> dwellingTypes = dataContainer.getRealEstateDataManager().getDwellingTypes().getTypes();
 
         Multiset<DwellingType> countsByDwellingType = HashMultiset.create(dwellingTypes.size());
 
@@ -273,7 +273,9 @@ public class DefaultResultsMonitor implements ResultsMonitor {
     private void summarizeHousingCostsByIncomeGroup() {
         resultWriter.println("Housing costs by income group");
         String header = "Income";
-        for (int i = 0; i < 10; i++) header = header.concat(",rent_" + ((i + 1) * 250));
+        for (int i = 0; i < 10; i++) {
+            header = header.concat(",rent_" + ((i + 1) * 250));
+        }
         header = header.concat(",averageRent");
         resultWriter.println(header);
         int[][] rentByIncome = new int[10][10];

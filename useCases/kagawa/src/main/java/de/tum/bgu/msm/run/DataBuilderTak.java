@@ -56,7 +56,7 @@ public class DataBuilderTak {
         JobFactory jobFactory = new JobFactoryImpl();
 
         RealEstateDataManager realEstateDataManager = new RealEstateDataManagerImpl(
-                DefaultDwellingTypeImpl.values(), dwellingData, householdData, geoData, new DwellingFactoryImpl(), properties);
+                new DefaultDwellingTypes(), dwellingData, householdData, geoData, new DwellingFactoryImpl(), properties);
 
         JobDataManager jobDataManager = new JobDataManagerImpl(
                 properties, jobFactory, jobData, geoData, travelTimes, commutingTimeProbability);

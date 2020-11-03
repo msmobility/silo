@@ -2,7 +2,7 @@ package de.tum.bgu.msm.scenarios.coreCityDevelopment;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Zone;
-import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
+import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypes;
 import de.tum.bgu.msm.data.job.*;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.jobmography.AddJobsDefinition;
@@ -79,7 +79,7 @@ public class CoreCityJobMarketUpdateTak extends AbstractModel implements JobMark
             for (String jt : JobType.getJobTypes()) {
                 int jobsExogenousForecast = (int) jobDataManager.getJobForecast(year, zoneId, jt);
                 if (jobsExogenousForecast > jobsByZone[JobType.getOrdinal(jt)][zoneId]) {
-                    if(zone.getDevelopment().isThisDwellingTypeAllowed(DefaultDwellingTypeImpl.MF5plus)) {
+                    if(zone.getDevelopment().isThisDwellingTypeAllowed(DefaultDwellingTypes.DefaultDwellingTypeImpl.MF5plus)) {
                         int change = jobsExogenousForecast - jobsByZone[JobType.getOrdinal(jt)][zoneId];
                         executor.addTaskToQueue(new AddJobsDefinition(zone, change, jt, dataContainer, factory, new Random(random.nextLong())));
                     }
