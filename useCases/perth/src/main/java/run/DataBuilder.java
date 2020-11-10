@@ -15,10 +15,7 @@ import de.tum.bgu.msm.data.job.*;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
-import de.tum.bgu.msm.io.input.DefaultHouseholdReader;
-import de.tum.bgu.msm.io.input.DwellingReader;
-import de.tum.bgu.msm.io.input.JobReader;
-import de.tum.bgu.msm.io.input.PersonReader;
+import de.tum.bgu.msm.io.input.*;
 import de.tum.bgu.msm.matsim.MatsimTravelTimesAndCosts;
 import de.tum.bgu.msm.properties.Properties;
 import org.matsim.core.config.Config;
@@ -62,7 +59,7 @@ public final class DataBuilder {
         new JobType(properties.jobData.jobTypes);
 
         RealEstateDataManager realEstateManager = new RealEstateDataManagerImpl(
-                DwellingTypePerth.values(), dwellingData,
+                new PerthDwellingTypes(), dwellingData,
                 householdData, geoData,
                 new DwellingFactoryImpl(),
                 properties);
@@ -165,4 +162,5 @@ public final class DataBuilder {
         PersonReader personReader = new PersonReaderPerth(householdData);
         personReader.readData(personFile);
     }
+
 }

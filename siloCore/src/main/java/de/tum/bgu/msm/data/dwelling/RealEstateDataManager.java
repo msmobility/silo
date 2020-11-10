@@ -11,6 +11,8 @@ public interface RealEstateDataManager extends ModelUpdateListener {
 
     DwellingFactory getDwellingFactory();
 
+    DwellingData getDwellingData();
+
     Map<Integer, Float> getRentPaymentsForIncomeGroup(IncomeCategory incomeCategory);
 
     int getNextDwellingId();
@@ -23,7 +25,7 @@ public interface RealEstateDataManager extends ModelUpdateListener {
 
     int getNumberOfVacantDDinRegion(int region);
 
-    List<DwellingType> getDwellingTypes();
+    DwellingTypes getDwellingTypes();
 
     Dwelling getDwelling(int dwellingId);
 

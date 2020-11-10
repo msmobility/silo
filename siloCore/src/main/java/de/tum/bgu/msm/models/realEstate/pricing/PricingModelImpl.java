@@ -21,8 +21,6 @@ public final class PricingModelImpl extends AbstractModel implements PricingMode
     private final static Logger logger = Logger.getLogger(PricingModelImpl.class);
     private final PricingStrategy strategy;
 
-
-
     public PricingModelImpl(DataContainer dataContainer, Properties properties, PricingStrategy strategy, Random rnd) {
         super(dataContainer, properties, rnd);
         this.strategy = strategy;
@@ -30,7 +28,6 @@ public final class PricingModelImpl extends AbstractModel implements PricingMode
 
     @Override
     public void setup() {
-
     }
 
     @Override
@@ -52,7 +49,7 @@ public final class PricingModelImpl extends AbstractModel implements PricingMode
 
         // get vacancy rate
         double[][] vacRate = dataContainer.getRealEstateDataManager().getVacancyRateByTypeAndRegion();
-        List<DwellingType> dwellingTypes = dataContainer.getRealEstateDataManager().getDwellingTypes();
+        List<DwellingType> dwellingTypes = dataContainer.getRealEstateDataManager().getDwellingTypes().getTypes();
 //        HashMap<String, Integer> priceChange = new HashMap<>();
 
         int[] cnt = new int[dwellingTypes.size()];

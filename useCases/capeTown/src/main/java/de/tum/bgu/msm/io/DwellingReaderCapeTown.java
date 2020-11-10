@@ -51,7 +51,7 @@ public class DwellingReaderCapeTown implements DwellingReader {
                 int zoneId      = Integer.parseInt(lineElements[posZone]);
                 int hhId      = Integer.parseInt(lineElements[posHh]);
                 String tp     = lineElements[posType].replace("\"", "");
-                DwellingTypeCapeTown type = DwellingTypeCapeTown.valueOf(tp);
+                CapeTownDwellingTypes.DwellingTypeCapeTown type = CapeTownDwellingTypes.DwellingTypeCapeTown.valueOf(tp);
                 int price     = Integer.parseInt(lineElements[posCosts]);
                 int area      = Integer.parseInt(lineElements[posRooms]);
                 int quality   = Integer.parseInt(lineElements[posQuality]);

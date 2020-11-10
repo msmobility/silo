@@ -1,19 +1,14 @@
 package sdg;
 
-import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.DefaultDataContainer;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
-import de.tum.bgu.msm.data.accessibility.AccessibilityImpl;
 import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.geo.DefaultGeoData;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.*;
 import de.tum.bgu.msm.data.job.*;
-import de.tum.bgu.msm.data.person.PersonFactory;
 import de.tum.bgu.msm.data.person.PersonFactoryImpl;
-import de.tum.bgu.msm.data.person.PersonFactoryMuc;
-import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.io.input.*;
@@ -24,7 +19,6 @@ import de.tum.bgu.msm.schools.SchoolReader;
 import de.tum.bgu.msm.schools.SchoolReaderImpl;
 import org.matsim.core.config.Config;
 import sdg.data.DataContainerSdg;
-import sdg.reader.TripReader;
 
 public class DataBuilderSdg extends DefaultDataContainer {
 
@@ -37,7 +31,7 @@ public class DataBuilderSdg extends DefaultDataContainer {
         HouseholdData householdData = new HouseholdDataImpl();
         DwellingData dwellingData = new DwellingDataImpl();
         GeoData geoData = new DefaultGeoData();
-        RealEstateDataManager realEstateDataManager = new RealEstateDataManagerImpl(DefaultDwellingTypeImpl.values(), dwellingData, householdData, geoData, new DwellingFactoryImpl(), properties);
+        RealEstateDataManager realEstateDataManager = new RealEstateDataManagerImpl(new DefaultDwellingTypes(), dwellingData, householdData, geoData, new DwellingFactoryImpl(), properties);
         SchoolData schoolData = new SchoolDataImpl(geoData, dwellingData, properties);
         JobFactory jobFactory = new JobFactoryImpl();
         JobData jobData = new JobDataImpl();
@@ -93,7 +87,7 @@ public class DataBuilderSdg extends DefaultDataContainer {
         PersonReader personReader = new DefaultPersonReader(dataContainer.getHouseholdDataManager());
         personReader.readData(personFile);
 
-        DwellingReader ddReader = new DwellingReaderTak(dataContainer.getRealEstateDataManager());
+        DwellingReader ddReader = new DwellingReaderTak(dataContainer.getRealEstateDataManager().getDwellingData());
         ddReader.readData(dwellingsFile);
 
         new JobType(properties.jobData.jobTypes);
