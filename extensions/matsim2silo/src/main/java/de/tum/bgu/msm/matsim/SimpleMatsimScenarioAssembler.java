@@ -30,6 +30,7 @@ import java.util.Collection;
 public class SimpleMatsimScenarioAssembler implements MatsimScenarioAssembler {
 
     private final static Logger logger = Logger.getLogger(SimpleMatsimScenarioAssembler.class);
+
     private final DataContainer dataContainer;
     private final Properties properties;
 
@@ -40,7 +41,7 @@ public class SimpleMatsimScenarioAssembler implements MatsimScenarioAssembler {
 
     @Override
     public Scenario assembleScenario(Config matsimConfig, int year, TravelTimes travelTimes) {
-        logger.info("Starting creating MATSim scenario.");
+        logger.info("Starting creating (simple home-work-home) MATSim scenario.");
         double populationScalingFactor = properties.transportModel.matsimScaleFactor;
         SiloMatsimUtils.checkSiloPropertiesAndMatsimConfigConsistency(matsimConfig, properties);
 
@@ -48,9 +49,7 @@ public class SimpleMatsimScenarioAssembler implements MatsimScenarioAssembler {
         Population matsimPopulation = scenario.getPopulation();
         PopulationFactory matsimPopulationFactory = matsimPopulation.getFactory();
 
-        HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
-        Collection<Person> siloPersons = householdDataManager.getPersons();
-
+        Collection<Person> siloPersons = dataContainer.getHouseholdDataManager().getPersons();
         JobDataManager jobDataManager = dataContainer.getJobDataManager();
 
         for (Person siloPerson : siloPersons) {
@@ -88,6 +87,7 @@ public class SimpleMatsimScenarioAssembler implements MatsimScenarioAssembler {
             if (dwelling != null && dwelling.getCoordinate() != null) {
                 dwellingCoordinate = dwelling.getCoordinate();
             } else {
+                // TODO This step should not be done (again) if a random coordinate for the same dwelling has been chosen before, dz 10/20
                 dwellingCoordinate = dataContainer.getGeoData().getZones().get(dwelling.getZoneId()).getRandomCoordinate(SiloUtil.getRandomObject());
             }
             Coord dwellingCoord = new Coord(dwellingCoordinate.x, dwellingCoordinate.y);
@@ -97,6 +97,7 @@ public class SimpleMatsimScenarioAssembler implements MatsimScenarioAssembler {
             if (job != null && job.getCoordinate() != null) {
                 jobCoordinate = job.getCoordinate();
             } else {
+                // TODO This step should not be done (again) if a random coordinate for the same job has been chosen before, dz 10/20
                 jobCoordinate = dataContainer.getGeoData().getZones().get(job.getZoneId()).getRandomCoordinate(SiloUtil.getRandomObject());
             }
             Coord jobCoord = new Coord(jobCoordinate.x, jobCoordinate.y);
@@ -107,19 +108,18 @@ public class SimpleMatsimScenarioAssembler implements MatsimScenarioAssembler {
             Plan matsimPlan = matsimPopulationFactory.createPlan();
             matsimPerson.addPlan(matsimPlan);
 
-            Activity activity1 = matsimPopulationFactory.createActivityFromCoord("home", dwellingCoord);
-            activity1.setEndTime(6 * 3600 + 3 * SiloUtil.getRandomNumberAsDouble() * 3600); // TODO Potentially change later
-            matsimPlan.addActivity(activity1);
+            Activity homeActivityMorning = matsimPopulationFactory.createActivityFromCoord("home", dwellingCoord);
+            homeActivityMorning.setEndTime(6 * 3600 + 3 * SiloUtil.getRandomNumberAsDouble() * 3600); // TODO Potentially change later
+            matsimPlan.addActivity(homeActivityMorning);
             matsimPlan.addLeg(matsimPopulationFactory.createLeg(TransportMode.car)); // TODO Potentially change later
 
-            Activity activity2 = matsimPopulationFactory.createActivityFromCoord("work", jobCoord);
-            activity2.setEndTime(15 * 3600 + 3 * SiloUtil.getRandomNumberAsDouble() * 3600); // TODO Potentially change later
-            matsimPlan.addActivity(activity2);
+            Activity workActivity = matsimPopulationFactory.createActivityFromCoord("work", jobCoord);
+            workActivity.setEndTime(15 * 3600 + 3 * SiloUtil.getRandomNumberAsDouble() * 3600); // TODO Potentially change later
+            matsimPlan.addActivity(workActivity);
             matsimPlan.addLeg(matsimPopulationFactory.createLeg(TransportMode.car)); // TODO Potentially change later
 
-            Activity activity3 = matsimPopulationFactory.createActivityFromCoord("home", dwellingCoord);
-
-            matsimPlan.addActivity(activity3);
+            Activity homeActvitiyEvening = matsimPopulationFactory.createActivityFromCoord("home", dwellingCoord);
+            matsimPlan.addActivity(homeActvitiyEvening);
         }
         logger.info("Finished creating MATSim scenario.");
         return scenario;

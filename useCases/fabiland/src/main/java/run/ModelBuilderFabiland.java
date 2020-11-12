@@ -114,10 +114,8 @@ public class ModelBuilderFabiland {
         MarriageModel marriageModel = new MarriageModelImpl(dataContainer, movesModel, inOutMigration,
                 carOwnershipModel, hhFactory, properties, new DefaultMarriageStrategy(), SiloUtil.provideNewRandom());
 
-
         TransportModel transportModel;
         MatsimScenarioAssembler scenarioAssembler;
-
 
         MatsimData matsimData = null;
         if (config != null) {
@@ -143,7 +141,6 @@ public class ModelBuilderFabiland {
                 leaveParentsModel, jobMarketUpdateModel,
                 construction, demolition, pricing, renovation,
                 constructionOverwrite, inOutMigration, movesModel, transportModel);
-
         return modelContainer;
     }
 

@@ -4,7 +4,13 @@ library(plot3D)
 
 workingDirectory <- '/Users/dominik/Workspace/runs-svn/fabilut/fabiland/'
 
-scenarioName <- '25r_8x_ae_cap240_1-l_nes_smc_server_2'
+# scenarioName <- '25r_8x_ae_cap240_1-l_nes_smc_server_2'
+# scenarioName <- '25r_8x_ae_cap240_1-l_nes_smc'
+# scenarioName <- '25r_8x_ae_unr-dev_cap240_2-l_x_smc'
+# scenarioName <- '25r_8x_ae_unr-dev_cap240_1-l_nes_smc'
+# scenarioName <- '25r_8x_ae_cap240-red_1-l_nes_smc'
+# scenarioName <- '25r_8x_ae_cap240-red4_1-l_nes_smc'
+scenarioName <- '25r_8x_ae_cap240_2-l_x_lh_smc'
 
 setwd(paste(workingDirectory,"/",scenarioName, sep=""))
 dir.create("graphics")
@@ -316,3 +322,4 @@ zLim = c(0,1200*sf)
 hist3D(x,y,householdsMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="a) Households")
 hist3D(x,y,jobsMatrix, zlim=zLim, clim=cLim, theta=115, phi=25, axes=FALSE, space=0.7, shade=0.5, bty="n", main ="b) Jobs")
 dev.off()
+
