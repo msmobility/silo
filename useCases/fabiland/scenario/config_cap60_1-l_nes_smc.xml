@@ -19,7 +19,6 @@
 		<param name="trafficDynamics" value="withHoles" />
 		<!-- Note that this setting is independent from the "global" threads setting -->
 		<param name="numberOfThreads" value="1" />
-		<param name="usingThreadpool" value="false" />
 	</module>
 	<module name="parallelEventHandling" >
 		<param name="numberOfThreads" value="1" />
