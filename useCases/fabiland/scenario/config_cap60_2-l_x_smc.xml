@@ -52,6 +52,9 @@
 		<param name="considerCarAvailability" value="true" />
 		<param name="modes" value="car,pt" />
 	</module>
+	<module name="transit" >
+		<param name="usingTransitInMobsim" value="false" />
+	</module>
 	<module name="transitRouter" >
 		<param name="extensionRadius" value="500.0" />
 	</module>
