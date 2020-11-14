@@ -213,9 +213,9 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <svnRevision>${buildNumber}</svnRevision>
-        <geotools.version>13.0</geotools.version>
+        <geotools.version>21.5</geotools.version>
         <skipTestJar>false</skipTestJar> <!--Overridden in the bintray profile-->
-        <matsimVersion>0.10.0-SNAPSHOT</matsimVersion>
+        <matsimVersion>13.0-2020w37-SNAPSHOT</matsimVersion>
         <jackson.version>2.9.5</jackson.version>
     </properties>
 </project>
