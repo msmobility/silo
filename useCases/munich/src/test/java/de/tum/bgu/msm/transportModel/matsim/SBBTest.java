@@ -28,7 +28,6 @@ import org.matsim.facilities.Facility;
 import org.matsim.pt.PtConstants;
 import org.matsim.pt.transitSchedule.api.TransitScheduleReader;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
-import org.matsim.vehicles.VehicleReaderV1;
 
 import javax.inject.Provider;
 import java.util.List;
@@ -88,12 +87,12 @@ public class SBBTest {
 //        bd.setRoutingModule(TransportMode.pt, teleportationRoutingModule);
 
 
-        TeleportationRoutingModule teleportationRoutingModule =
-                new TeleportationRoutingModule(
-                        TransportMode.transit_walk,
-                        PopulationUtils.getFactory(),
-                        1.4,
-                        1.3);
+//        TeleportationRoutingModule teleportationRoutingModule =
+//                new TeleportationRoutingModule(
+//                        TransportMode.transit_walk,
+//                        PopulationUtils.getFactory(),
+//                        1.4,
+//                        1.3);
 
         RaptorStaticConfig raptorConfig = RaptorUtils.createStaticConfig(config);
         raptorConfig.setOptimization(RaptorStaticConfig.RaptorOptimization.OneToAllRouting);
@@ -103,13 +102,13 @@ public class SBBTest {
                         new DefaultRaptorIntermodalAccessEgress(),
                         null));
 
-        RoutingModule routingModule =
-                new SwissRailRaptorRoutingModule(
-                        raptor,
-                        scenario.getTransitSchedule(),
-                        scenario.getNetwork(),
-                        teleportationRoutingModule);
-        bd.setRoutingModule(TransportMode.pt, routingModule);
+//        RoutingModule routingModule =
+//                new SwissRailRaptorRoutingModule(
+//                        raptor,
+//                        scenario.getTransitSchedule(),
+//                        scenario.getNetwork(),
+//                        teleportationRoutingModule);
+//        bd.setRoutingModule(TransportMode.pt, routingModule);
 
 
         final Coord originCoord = new Coord(4436689.657372447, 5368527.815536651);
