@@ -25,11 +25,6 @@ public class RunFabiland {
         }
         logger.info("Started SILO Fabiland sandbox model");
 
-        // The following is obviously just a dirty quickfix until access/egress is default in MATSim
-        if (properties.transportModel.includeAccessEgress) {
-            config.plansCalcRoute().setInsertingAccessEgressWalk(true);
-        }
-
         DataContainer dataContainer = DataBuilderFabiland.buildDataContainer(properties, config);
         DataBuilderFabiland.readInput(properties, dataContainer);
 
