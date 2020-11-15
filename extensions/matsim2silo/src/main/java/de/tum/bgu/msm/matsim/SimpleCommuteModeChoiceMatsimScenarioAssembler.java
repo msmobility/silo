@@ -4,7 +4,6 @@ import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.Household;
-import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.person.Occupation;
@@ -17,7 +16,6 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.matsim.api.core.v01.Coord;
-import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.population.Activity;
@@ -25,7 +23,6 @@ import org.matsim.api.core.v01.population.Plan;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.api.core.v01.population.PopulationFactory;
 import org.matsim.core.config.Config;
-import org.matsim.core.population.PersonUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 
 public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimScenarioAssembler {
@@ -59,24 +56,28 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
                 continue;
             }
 
-            Dwelling dwelling = realEstateDataManager.getDwelling(household.getDwellingId());
-            CommuteModeChoiceMapping commuteModeChoiceMapping = commuteModeChoice.assignCommuteModeChoice(
-                    dwelling, travelTimes, household);
-
-            for (Person person: household.getPersons().values()) {
+            for (Person person : household.getPersons().values()) {
                 if (person.getOccupation() != Occupation.EMPLOYED || person.getJobId() == -2) { // i.e. person does not work
                     continue;
                 }
 
+                PopulationFactory populationFactory = matsimPopulation.getFactory();
+
+                org.matsim.api.core.v01.population.Person matsimAlterEgo = SiloMatsimUtils.createMatsimAlterEgo(populationFactory, person, household.getAutos());
+                matsimPopulation.addPerson(matsimAlterEgo);
+
+                Dwelling dwelling = realEstateDataManager.getDwelling(household.getDwellingId());
+                CommuteModeChoiceMapping commuteModeChoiceMapping = commuteModeChoice.assignCommuteModeChoice(dwelling, travelTimes, household);
+
                 String mode = commuteModeChoiceMapping.getMode(person).mode;
-                int noHHAUtos = household.getAutos();
+
                 if (mode.equals(TransportMode.car)) {
                     Coord dwellingCoord = getOrRandomlyChooseDwellingCoord(dwelling);
 
                     Job job = jobDataManager.getJobFromId(person.getJobId());
                     Coord jobCoord = getOrRandomlyChooseJobCoordinate(job);
 
-                    createHWHPlan(matsimPopulation, person, dwellingCoord, job, jobCoord, noHHAUtos, TransportMode.car);
+                    createHWHPlanAndAddToAlterEgo(populationFactory, matsimAlterEgo, dwellingCoord, job, jobCoord, TransportMode.car);
                 } else {
                     if (!properties.transportModel.onlySimulateCarTrips) {
                         Coord dwellingCoord = getOrRandomlyChooseDwellingCoord(dwelling);
@@ -84,7 +85,7 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
                         Job job = jobDataManager.getJobFromId(person.getJobId());
                         Coord jobCoord = getOrRandomlyChooseJobCoordinate(job);
 
-                        createHWHPlan(matsimPopulation, person, dwellingCoord, job, jobCoord, noHHAUtos, mode);
+                        createHWHPlanAndAddToAlterEgo(populationFactory, matsimAlterEgo, dwellingCoord, job, jobCoord, mode);
                     }
                 }
             }
@@ -115,21 +116,12 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
         return new Coord(jobCoordinate.x, jobCoordinate.y);
     }
 
-    private void createHWHPlan(Population matsimPopulation, Person person, Coord dwellingCoord, Job job, Coord jobCoord, int noHHAUtos, String transportMode) {
-        PopulationFactory populationFactory = matsimPopulation.getFactory();
 
-        org.matsim.api.core.v01.population.Person matsimPerson = populationFactory.createPerson(Id.createPersonId(person.getId()));
 
-        if (noHHAUtos > 0 && person.hasDriverLicense()) {
-            PersonUtils.setCarAvail(matsimPerson, "maybe");
-        } else {
-            PersonUtils.setCarAvail(matsimPerson, "never"); // Needs to be exactly this string to work, cf. PermissibleModesCalculator:69
-        }
-
-        matsimPopulation.addPerson(matsimPerson);
-
+    private void createHWHPlanAndAddToAlterEgo(PopulationFactory populationFactory, org.matsim.api.core.v01.population.Person matsimAlterEgo,
+                               Coord dwellingCoord, Job job, Coord jobCoord, String transportMode) {
         Plan matsimPlan = populationFactory.createPlan();
-        matsimPerson.addPlan(matsimPlan);
+        matsimAlterEgo.addPlan(matsimPlan);
 
         Activity homeActivityMorning = populationFactory.createActivityFromCoord("home", dwellingCoord);
         Integer departureTime = defineDepartureFromHome(job);
