@@ -5,8 +5,10 @@ import com.google.common.collect.Sets;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.properties.Properties;
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkUtils;
@@ -18,6 +20,7 @@ import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
+import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 
 import java.util.Collection;
@@ -45,6 +48,7 @@ public final class MatsimData {
 
     private TravelDisutility travelDisutility;
     private TravelTime travelTime;
+    private Population matsimPopulation;
 
     private ZoneConnectorManager zoneConnectorManager;
     private final static int NUMBER_OF_CALC_POINTS = 1;
@@ -133,21 +137,29 @@ public final class MatsimData {
     }
 
     TripRouter createTripRouter() {
-        final RoutingModule carRoutingModule;
+        Scenario scenario = ScenarioUtils.loadScenario(config);
+        RoutingModule accessEgressToNetworkRouter = DefaultRoutingModules.createTeleportationRouter(TransportMode.walk, scenario, config.plansCalcRoute().getModeRoutingParams().get(TransportMode.walk));
+
+        RoutingModule carRoutingModule;
+        LeastCostPathCalculator routeAlgo = leastCostPathCalculatorFactory.createPathCalculator(carNetwork, travelDisutility, travelTime);
         if (config.plansCalcRoute().isInsertingAccessEgressWalk()) {
+//        if ( !config.plansCalcRoute().getAccessEgressType().equals(PlansCalcRouteConfigGroup.AccessEgressType.none) ) { // in matsim-13-w37
             carRoutingModule = DefaultRoutingModules.createAccessEgressNetworkRouter(
-                    TransportMode.car, PopulationUtils.getFactory(), carNetwork, leastCostPathCalculatorFactory.createPathCalculator(carNetwork, travelDisutility, travelTime), config.plansCalcRoute());
+//                    TransportMode.car, PopulationUtils.getFactory(), carNetwork, leastCostPathCalculatorFactory.createPathCalculator(carNetwork, travelDisutility, travelTime), config.plansCalcRoute());
+                    TransportMode.car, routeAlgo, scenario, carNetwork, accessEgressToNetworkRouter);
         } else {
             carRoutingModule = DefaultRoutingModules.createPureNetworkRouter(
-                    TransportMode.car, PopulationUtils.getFactory(), carNetwork, leastCostPathCalculatorFactory.createPathCalculator(carNetwork, travelDisutility, travelTime));
+//                    TransportMode.car, PopulationUtils.getFactory(), carNetwork, leastCostPathCalculatorFactory.createPathCalculator(carNetwork, travelDisutility, travelTime));
+                    TransportMode.car, PopulationUtils.getFactory(), carNetwork, routeAlgo);
         }
-        final RoutingModule ptRoutingModule;
 
+        final RoutingModule ptRoutingModule;
         if (schedule != null && config.transit().isUseTransit()) {
-            final RoutingModule teleportationRoutingModule = DefaultRoutingModules.createTeleportationRouter(
-                    TransportMode.walk, PopulationUtils.getFactory(), config.plansCalcRoute().getOrCreateModeRoutingParams(TransportMode.walk));
+//            final RoutingModule teleportationRoutingModule = DefaultRoutingModules.createTeleportationRouter(
+//                    TransportMode.walk, PopulationUtils.getFactory(), config.plansCalcRoute().getOrCreateModeRoutingParams(TransportMode.walk));
             final SwissRailRaptor swissRailRaptor = createSwissRailRaptor(RaptorStaticConfig.RaptorOptimization.OneToOneRouting);
-            ptRoutingModule = new SwissRailRaptorRoutingModule(swissRailRaptor, schedule, ptNetwork, teleportationRoutingModule);
+//            ptRoutingModule = new SwissRailRaptorRoutingModule(swissRailRaptor, schedule, ptNetwork, teleportationRoutingModule);
+            ptRoutingModule = new SwissRailRaptorRoutingModule(swissRailRaptor, schedule, ptNetwork, accessEgressToNetworkRouter);
         } else {
             ptRoutingModule = DefaultRoutingModules.createPseudoTransitRouter(TransportMode.pt, PopulationUtils.getFactory(), carNetwork,
                     leastCostPathCalculatorFactory.createPathCalculator(carNetwork, travelDisutility, travelTime), config.plansCalcRoute().getOrCreateModeRoutingParams(TransportMode.pt));
@@ -175,8 +187,10 @@ public final class MatsimData {
     }
 
     RoutingModule getTeleportationRouter(String mode) {
+        Scenario scenario = ScenarioUtils.loadScenario(config);
         return DefaultRoutingModules.createTeleportationRouter(
-                mode, PopulationUtils.getFactory(), config.plansCalcRoute().getOrCreateModeRoutingParams(mode));
+//                mode, PopulationUtils.getFactory(), config.plansCalcRoute().getOrCreateModeRoutingParams(mode));
+                mode, scenario, config.plansCalcRoute().getModeRoutingParams().get(mode));
     }
 
     SwissRailRaptorData getRaptorData(RaptorStaticConfig.RaptorOptimization optimization) {
@@ -196,5 +210,11 @@ public final class MatsimData {
 
     public TransitSchedule getSchedule() {
         return schedule;
+    }
+
+    public Population getMatsimPopulation() {return matsimPopulation; }
+
+    public void updateMatsimPopulation(Population matsimPopulation) {
+        this.matsimPopulation = matsimPopulation;
     }
 }

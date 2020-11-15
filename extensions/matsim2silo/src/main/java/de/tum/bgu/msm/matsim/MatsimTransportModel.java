@@ -110,8 +110,9 @@ public final class MatsimTransportModel implements TransportModel {
 
     private void runTransportModel(int year) {
         logger.warn("Running MATSim transport model for year " + year + ".");
-        Scenario assembledScenario;
+        Scenario assembledScenario = ScenarioUtils.createScenario(initialMatsimConfig);
         TravelTimes travelTimes = dataContainer.getTravelTimes();
+
         if (year == properties.main.baseYear &&
                 properties.transportModel.transportModelIdentifier == TransportModelPropertiesModule.TransportModelIdentifier.MATSIM){
             //if using the SimpleCommuteModeChoiceScenarioAssembler, we need some initial travel times (this will use an unlodaded network)
@@ -119,7 +120,22 @@ public final class MatsimTransportModel implements TransportModel {
             TravelDisutility myTravelDisutility = SiloMatsimUtils.getAnEmptyNetworkTravelDisutility();
             updateTravelTimes(myTravelTime, myTravelDisutility);
         }
+
+//        for (Household household: dataContainer.getHouseholdDataManager().getHouseholds()) {
+//            for (Person pp : household.getPersons().values()) {
+//                PopulationFactory populationFactory = assembledScenario.getPopulation().getFactory();
+//
+//                org.matsim.api.core.v01.population.Person matsimAlterEgo = SiloMatsimUtils.createMatsimAlterEgo(populationFactory, pp, household.getAutos());
+//                assembledScenario.getPopulation().addPerson(matsimAlterEgo);
+//            }
+//        }
+
+        matsimData.updateMatsimPopulation(assembledScenario.getPopulation());
+
+        // TODO remove config argument as it is duplicate (cf. above)
         assembledScenario = scenarioAssembler.assembleScenario(initialMatsimConfig, year, travelTimes);
+
+//        VehicleUtils.getOrCreateAllvehicles(assembledScenario); // maybe needed in matsim-13-w37
 
         finalizeConfig(assembledScenario.getConfig(), year);
 
@@ -145,7 +161,8 @@ public final class MatsimTransportModel implements TransportModel {
         config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
         config.plansCalcRoute().setRoutingRandomness(0.);
         if (properties.transportModel.includeAccessEgress) {
-            config.plansCalcRoute().setAccessEgressType(PlansCalcRouteConfigGroup.AccessEgressType.accessEgressModeToLink);
+            config.plansCalcRoute().isInsertingAccessEgressWalk();
+            // config.plansCalcRoute().setAccessEgressType(PlansCalcRouteConfigGroup.AccessEgressType.accessEgressModeToLink); // in matsim-13-w37
         }
     }
 
