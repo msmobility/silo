@@ -222,7 +222,10 @@ public final class MatsimTravelTimesAndCosts implements TravelTimes {
         Facility fromFacility = ((ActivityFacilitiesFactory) activityFacilitiesFactory).createActivityFacility(Id.create(1, ActivityFacility.class), originCoord, fromLink);
         Facility toFacility = ((ActivityFacilitiesFactory) activityFacilitiesFactory).createActivityFacility(Id.create(2, ActivityFacility.class), destinationCoord, toLink);
 
-        org.matsim.api.core.v01.population.Person matsimPerson = matsimData.getMatsimPopulation().getPersons().get(Id.createPersonId(siloPerson.getId()));
+        org.matsim.api.core.v01.population.Person matsimPerson = null;
+        if (siloPerson != null) {
+            matsimPerson = matsimData.getMatsimPopulation().getPersons().get(Id.createPersonId(siloPerson.getId()));
+        }
         return tripRouter.calcRoute(mode, fromFacility, toFacility, timeOfDay_s, matsimPerson);
     }
 
