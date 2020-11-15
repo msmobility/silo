@@ -80,7 +80,8 @@ public class ModelBuilderFabiland {
                         new DwellingUtilityStrategyImpl(),
                         new DefaultDwellingProbabilityStrategy(),
                         new RegionUtilityStrategyImpl(),
-                        new RegionProbabilityStrategyImpl()
+                        new RegionProbabilityStrategyImpl() ,
+                        new SimpleMatsimCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom())
                 ), SiloUtil.provideNewRandom());
 
         CreateCarOwnershipModel carOwnershipModel = new FabilandCarOwnership();
@@ -128,7 +129,8 @@ public class ModelBuilderFabiland {
         }
         switch (properties.transportModel.transportModelIdentifier) {
             case MATSIM:
-                SimpleCommuteModeChoice commuteModeChoice = new SimpleCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom());
+//                SimpleCommuteModeChoice commuteModeChoice = new SimpleCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom());
+                SimpleMatsimCommuteModeChoice commuteModeChoice = new SimpleMatsimCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom());
                 scenarioAssembler = new SimpleCommuteModeChoiceMatsimScenarioAssembler(dataContainer, properties, commuteModeChoice);
                 transportModel = new MatsimTransportModel(dataContainer, config, properties, scenarioAssembler, matsimData);
                 break;
