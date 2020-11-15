@@ -75,9 +75,13 @@ public class ModelBuilderFabiland {
                 dataContainer, properties,
                 new DefaultMovesStrategy(),
                 new SimpleCommuteModeChoiceHousingStrategyImpl(dataContainer,
-                                        properties,
-                                        dataContainer.getTravelTimes(), new DwellingUtilityStrategyImpl(),
-                        new DefaultDwellingProbabilityStrategy(), new RegionUtilityStrategyImpl(), new RegionProbabilityStrategyImpl()), SiloUtil.provideNewRandom());
+                        properties,
+                        dataContainer.getTravelTimes(),
+                        new DwellingUtilityStrategyImpl(),
+                        new DefaultDwellingProbabilityStrategy(),
+                        new RegionUtilityStrategyImpl(),
+                        new RegionProbabilityStrategyImpl()
+                ), SiloUtil.provideNewRandom());
 
         CreateCarOwnershipModel carOwnershipModel = new FabilandCarOwnership();
 
