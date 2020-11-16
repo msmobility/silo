@@ -116,8 +116,6 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
         return new Coord(jobCoordinate.x, jobCoordinate.y);
     }
 
-
-
     private void createHWHPlanAndAddToAlterEgo(PopulationFactory populationFactory, org.matsim.api.core.v01.population.Person matsimAlterEgo,
                                Coord dwellingCoord, Job job, Coord jobCoord, String transportMode) {
         Plan matsimPlan = populationFactory.createPlan();
