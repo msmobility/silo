@@ -10,6 +10,7 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 
 public class RunFabiland {
 
@@ -24,6 +25,12 @@ public class RunFabiland {
             config = ConfigUtils.loadConfig(args[1]);
         }
         logger.info("Started SILO Fabiland sandbox model");
+
+        // The following is obviously just a dirty quickfix until access/egress is default in MATSim
+        if (properties.transportModel.includeAccessEgress) {
+//            config.plansCalcRoute().setInsertingAccessEgressWalk(true); // in matsim-12
+            config.plansCalcRoute().setAccessEgressType(PlansCalcRouteConfigGroup.AccessEgressType.accessEgressModeToLink); // in matsim-13-w37
+        }
 
         DataContainer dataContainer = DataBuilderFabiland.buildDataContainer(properties, config);
         DataBuilderFabiland.readInput(properties, dataContainer);
