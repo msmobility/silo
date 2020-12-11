@@ -595,6 +595,12 @@ public class SiloUtil {
         return list;
     }
 
+    public static float[] convertArrayListToFloatArray (ArrayList<Float> al) {
+        float[] list = new float[al.size()];
+        for (int i = 0; i < al.size(); i++) list[i] = al.get(i);
+        return list;
+    }
+
 
     public static int[] convertIntegerToInt (Integer[] values) {
         int[] intValues = new int[values.length];
