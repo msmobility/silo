@@ -66,7 +66,7 @@ public final class DataBuilder {
         RealEstateDataManager realEstateManager = new RealEstateDataManagerMstm(
                 new DwellingfactoryMstm(),
                 dwellingData,
-                DefaultDwellingTypeImpl.values(),
+                new DefaultDwellingTypes(),
                 householdData, geoData,
                 properties);
 

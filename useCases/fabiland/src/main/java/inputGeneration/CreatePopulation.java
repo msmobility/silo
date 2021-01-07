@@ -1,6 +1,6 @@
 package inputGeneration;
 
-import data.SandboxDwellingType;
+import data.SandboxDwellingTypes;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.household.*;
 import de.tum.bgu.msm.data.job.*;
@@ -16,8 +16,6 @@ import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.matsim.core.utils.misc.Counter;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
 
 public class CreatePopulation {
@@ -168,10 +166,10 @@ public class CreatePopulation {
             for (int i = 0; i < population; i++) {
                 double x = x1 + ((centroidOffset - sideLengthHorizonal) / 2.) + rnd.nextInt(sideLengthHorizonal);
                 double y = y1 + ((centroidOffset - sideLengthVertical) / 2.) + rnd.nextInt(sideLengthVertical);
-                DwellingType type = SandboxDwellingType.SF;
+                DwellingType type = SandboxDwellingTypes.SandboxDwellingType.SF;
                 int price = 1000;
                 if (i >= population / 2) {
-                    type = SandboxDwellingType.MF;
+                    type = SandboxDwellingTypes.SandboxDwellingType.MF;
                     price = 500;
                 }
                 Dwelling dwelling = ddFactory.createDwelling(ddId, zoneId, new Coordinate(x, y), hhId, type, 2, 4, price, 0);
@@ -345,10 +343,10 @@ public class CreatePopulation {
             for (int i = 0; i < vacantDd; i++) {
                 double x = x1 + ((centroidOffset - sideLengthHorizonal) / 2.) + rnd.nextInt(sideLengthHorizonal);
                 double y = y1 + ((centroidOffset - sideLengthVertical) / 2.) + rnd.nextInt(sideLengthVertical);
-                DwellingType type = SandboxDwellingType.MF;
+                DwellingType type = SandboxDwellingTypes.SandboxDwellingType.MF;
                 int price = 500;
                 if (rnd.nextDouble() < 0.5) {
-                    type = SandboxDwellingType.SF;
+                    type = SandboxDwellingTypes.SandboxDwellingType.SF;
                     price = 1000;
                 }
                 Dwelling dwelling = ddFactory.createDwelling(ddId, zoneId, new Coordinate(x, y), -1, type, 2, 4, price, 0);

@@ -15,8 +15,10 @@ import de.tum.bgu.msm.schools.DataContainerWithSchoolsImpl;
 import de.tum.bgu.msm.schools.PersonWithSchool;
 import de.tum.bgu.msm.schools.School;
 import de.tum.bgu.msm.schools.SchoolImpl;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 
 import java.util.Map;
 
@@ -39,7 +41,7 @@ public class MitoDataConverterTak implements MitoDataConverter {
     private void convertZones(DataSet dataSet, DataContainer dataContainer) {
         for (Zone siloZone : dataContainer.getGeoData().getZones().values()) {
             MitoZone zone = new MitoZone(siloZone.getZoneId(), AreaTypes.SGType.CORE_CITY);
-            zone.setShapeFeature(siloZone.getZoneFeature());
+            zone.setGeometry((Geometry) siloZone.getZoneFeature().getDefaultGeometry());
             dataSet.addZone(zone);
         }
     }
@@ -52,7 +54,7 @@ public class MitoDataConverterTak implements MitoDataConverter {
             if (school instanceof SchoolImpl) {
                 coordinate = ((SchoolImpl) school).getCoordinate();
             } else {
-                coordinate = zone.getRandomCoord();
+                coordinate = zone.getRandomCoord(SiloUtil.getRandomObject());
             }
             MitoSchool mitoSchool = new MitoSchool(zones.get(school.getZoneId()), coordinate, school.getId());
             zone.addSchoolEnrollment(school.getOccupancy());
@@ -85,7 +87,7 @@ public class MitoDataConverterTak implements MitoDataConverter {
                 coordinate = dwelling.getCoordinate();
             } else {
                 randomCoordCounter++;
-                coordinate = zone.getRandomCoord();
+                coordinate = zone.getRandomCoord(SiloUtil.getRandomObject());
             }
 
             //todo if there are housholds without adults they cannot be processed
@@ -123,7 +125,7 @@ public class MitoDataConverterTak implements MitoDataConverter {
                     if (job instanceof MicroLocation) {
                         coordinate = job.getCoordinate();
                     } else {
-                        coordinate = zone.getRandomCoord();
+                        coordinate = zone.getRandomCoord(SiloUtil.getRandomObject());
                     }
                     mitoOccupation = new MitoJob(zone, coordinate, job.getId());
                 }

@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.run;
 
+import de.tum.bgu.msm.data.dwelling.CapeTownDwellingTypes;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.DefaultDataContainer;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
@@ -59,7 +60,7 @@ public class DataBuilderCapeTown {
         JobFactory jobFactory = new JobFactoryImpl();
 
         RealEstateDataManager realEstateDataManager = new RealEstateDataManagerImpl(
-                DwellingTypeCapeTown.values(), dwellingData, householdData, geoData, new DwellingFactoryImpl(), properties);
+                new CapeTownDwellingTypes(), dwellingData, householdData, geoData, new DwellingFactoryImpl(), properties);
 
         JobDataManager jobDataManager = new JobDataManagerImpl(
                 properties, jobFactory, jobData, geoData, travelTimes, commutingTimeProbability);
@@ -111,4 +112,5 @@ public class DataBuilderCapeTown {
 //        String schoolsFile = properties.main.baseDirectory + properties.schoolData.schoolsFileName + "_" + year + ".csv";
 //        ssReader.readData(schoolsFile);
     }
+
 }

@@ -375,7 +375,7 @@
         <dependency>
             <groupId>com.github.msmobility</groupId>
             <artifactId>mito</artifactId>
-            <version>master</version>
+            <version>v28102020</version>
             <exclusions>
                 <exclusion>
                     <groupId>javax.media</groupId>
