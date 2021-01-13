@@ -8,7 +8,7 @@ import de.tum.bgu.msm.data.accessibility.Accessibility;
 import org.apache.log4j.Logger;
 import org.jfree.util.Log;
 import org.matsim.api.core.v01.Id;
-import org.matsim.contrib.accessibility.interfaces.FacilityDataExchangeInterface;
+//import org.matsim.contrib.accessibility.interfaces.FacilityDataExchangeInterface;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.facilities.ActivityFacility;
 
@@ -20,7 +20,7 @@ import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 /**
  * @author dziemke
  **/
-public class MatsimAccessibility implements Accessibility, FacilityDataExchangeInterface {
+public class MatsimAccessibility implements Accessibility {
 	private static final Logger logger = Logger.getLogger(MatsimAccessibility.class);
 
 	private final GeoData geoData;
@@ -36,14 +36,14 @@ public class MatsimAccessibility implements Accessibility, FacilityDataExchangeI
     }
 	
 	// FacilityDataExchangeInterface methods
-	@Override
+//	@Override
 	public void setFacilityAccessibilities(ActivityFacility measurePoint, Double timeOfDay, Map<String, Double> accessibilities){
 		if (timeOfDay == 8 * 60. * 60.) { // TODO Find better way for this check
 			accessibilitiesMap.put(new Tuple<ActivityFacility, Double>(measurePoint, timeOfDay), accessibilities);
 		}
 	}
 		
-	@Override
+//	@Override
 	public void finish() { }
 
 	// Accessibility interface methods
