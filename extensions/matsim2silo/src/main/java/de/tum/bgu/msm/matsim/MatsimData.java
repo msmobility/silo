@@ -31,11 +31,11 @@ public final class MatsimData {
     private SwissRailRaptorData raptorData;
     private SwissRailRaptorData raptorDataOneToAll;
 
-    private final Properties properties;
+    private final int nThreads;
     private Config config;
 
-    private final Network carNetwork;
-    private final Network ptNetwork;
+    private Network carNetwork;
+    private Network ptNetwork;
     private final TransitSchedule schedule;
 
     private RaptorParameters raptorParameters;
@@ -49,22 +49,18 @@ public final class MatsimData {
     private ZoneConnectorManager zoneConnectorManager;
     private final static int NUMBER_OF_CALC_POINTS = 1;
 
-
     public MatsimData(Config config, Properties properties,
-                      ZoneConnectorManager.ZoneConnectorMethod method,
+                      ZoneConnectorManagerImpl.ZoneConnectorMethod method,
                       DataContainer dataContainer, Network network, TransitSchedule schedule) {
-        ConfigUtils.setVspDefaults(config); // Needs to be done before config becomes locked for those changes
-        this.config = config;
-        this.raptorParameters = RaptorUtils.createParameters(config);
-        this.properties = properties;
-        this.schedule = schedule;
+        int threads = properties.main.numberOfThreads;
         final Collection<Zone> zones = dataContainer.getGeoData().getZones().values();
+        ZoneConnectorManager zoneConnectorManager;
         switch (method) {
             case RANDOM:
-                this.zoneConnectorManager = ZoneConnectorManager.createRandomZoneConnectors(zones, NUMBER_OF_CALC_POINTS);
+                zoneConnectorManager = ZoneConnectorManagerImpl.createRandomZoneConnectors(zones, NUMBER_OF_CALC_POINTS);
                 break;
             case WEIGHTED_BY_POPULATION:
-                this.zoneConnectorManager = ZoneConnectorManager.createWeightedZoneConnectors(zones,
+                zoneConnectorManager = ZoneConnectorManagerImpl.createWeightedZoneConnectors(zones,
                         dataContainer.getRealEstateDataManager(),
                         dataContainer.getHouseholdDataManager());
                 break;
@@ -72,6 +68,27 @@ public final class MatsimData {
                 throw new RuntimeException("No valid zone connector method defined!");
         }
 
+        ConfigUtils.setVspDefaults(config); // Needs to be done before config becomes locked for those changes
+        this.config = config;
+        this.raptorParameters = RaptorUtils.createParameters(config);
+        this.nThreads = threads;
+        this.schedule = schedule;
+        this.zoneConnectorManager = zoneConnectorManager;
+        filterNetwork(network);
+    }
+
+    public MatsimData(Config config, int threads,Network network,
+                      TransitSchedule schedule, ZoneConnectorManager zoneConnectorManager) {
+        ConfigUtils.setVspDefaults(config); // Needs to be done before config becomes locked for those changes
+        this.config = config;
+        this.raptorParameters = RaptorUtils.createParameters(config);
+        this.nThreads = threads;
+        this.schedule = schedule;
+        this.zoneConnectorManager = zoneConnectorManager;
+        filterNetwork(network);
+    }
+
+    public void filterNetwork(Network network) {
         TransportModeNetworkFilter filter = new TransportModeNetworkFilter(network);
 
         Set<String> car = Sets.newHashSet(TransportMode.car);
@@ -104,7 +121,7 @@ public final class MatsimData {
         this.travelDisutility = travelDisutility;
         this.travelTime = travelTime;
 
-        this.leastCostPathCalculatorFactory = new FastAStarLandmarksFactory(properties.main.numberOfThreads);
+        this.leastCostPathCalculatorFactory = new FastAStarLandmarksFactory(nThreads);
 
         if (config.transit().isUseTransit() && schedule != null) {
             RaptorStaticConfig raptorConfig = RaptorUtils.createStaticConfig(config);

@@ -35,7 +35,6 @@ import de.tum.bgu.msm.models.demography.leaveParentalHousehold.LeaveParentHhMode
 import de.tum.bgu.msm.models.demography.marriage.DefaultMarriageStrategy;
 import de.tum.bgu.msm.models.demography.marriage.MarriageModel;
 import de.tum.bgu.msm.models.jobmography.JobMarketUpdate;
-import de.tum.bgu.msm.models.jobmography.JobMarketUpdateImpl;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoice;
 import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
 import de.tum.bgu.msm.models.realEstate.construction.*;
@@ -129,7 +128,7 @@ public class CoreCityDevelopmentModelBuilderMuc {
         MatsimData matsimData = null;
         if (config != null) {
             final Scenario scenario = ScenarioUtils.loadScenario(config);
-            matsimData = new MatsimData(config, properties, ZoneConnectorManager.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
+            matsimData = new MatsimData(config, properties, ZoneConnectorManagerImpl.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
         }
         switch (properties.transportModel.transportModelIdentifier) {
             case MITO_MATSIM:

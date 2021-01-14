@@ -69,7 +69,7 @@ public class RegionalTravelTimesTest {
         DefaultDataContainer dataContainer = new DefaultDataContainer(geoData, null,
                 null, null, travelTimes, null, null, properties);
         final Network network = getNetwork();
-        final MatsimData matsimData = new MatsimData(config, properties, ZoneConnectorManager.ZoneConnectorMethod.RANDOM, dataContainer, network, null);
+        final MatsimData matsimData = new MatsimData(config, properties, ZoneConnectorManagerImpl.ZoneConnectorMethod.RANDOM, dataContainer, network, null);
 
         matsimData.update(new TravelDisutility() {
             @Override
