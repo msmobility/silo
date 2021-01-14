@@ -34,14 +34,14 @@ public class MatsimSkimCreator {
         this.matsimData = provider;
     }
 
-    public IndexedDoubleMatrix2D createCarSkim(Collection<de.tum.bgu.msm.data.Id> zones) {
+    public IndexedDoubleMatrix2D createCarSkim(Collection<? extends de.tum.bgu.msm.data.Id> zones) {
         final int partitionSize = (int) ((double) zones.size() / (Properties.get().main.numberOfThreads)) + 1;
-        Iterable<List<de.tum.bgu.msm.data.Id>> partitions = Iterables.partition(zones, partitionSize);
+        Iterable<? extends List<? extends de.tum.bgu.msm.data.Id>> partitions = Iterables.partition(zones, partitionSize);
 
         IndexedDoubleMatrix2D skim = new IndexedDoubleMatrix2D(zones, zones);
         Network carNetwork = matsimData.getCarNetwork();
         ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Properties.get().main.numberOfThreads);
-        for (final List<de.tum.bgu.msm.data.Id> partition : partitions) {
+        for (final List<? extends de.tum.bgu.msm.data.Id> partition : partitions) {
             executor.addTaskToQueue(() -> {
                 try {
                     MultiNodePathCalculator calculator = matsimData.createMultiNodePathCalculator();
@@ -79,9 +79,9 @@ public class MatsimSkimCreator {
         return skim;
     }
 
-    public IndexedDoubleMatrix2D createPtSkim(Collection<de.tum.bgu.msm.data.Id> zones) {
+    public IndexedDoubleMatrix2D createPtSkim(Collection<? extends de.tum.bgu.msm.data.Id> zones) {
         final int partitionSize = (int) ((double) zones.size() / (Properties.get().main.numberOfThreads)) + 1;
-        Iterable<List<de.tum.bgu.msm.data.Id>> partitions = Iterables.partition(zones, partitionSize);
+        Iterable<? extends List<? extends de.tum.bgu.msm.data.Id>> partitions = Iterables.partition(zones, partitionSize);
 
         IndexedDoubleMatrix2D skim = new IndexedDoubleMatrix2D(zones, zones);
 
@@ -104,7 +104,7 @@ public class MatsimSkimCreator {
         }
 
         ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Properties.get().main.numberOfThreads);
-        for (final List<de.tum.bgu.msm.data.Id> partition : partitions) {
+        for (final List<? extends de.tum.bgu.msm.data.Id> partition : partitions) {
             executor.addTaskToQueue(() -> {
                 try {
                     SwissRailRaptor raptor = matsimData.createSwissRailRaptor(RaptorStaticConfig.RaptorOptimization.OneToAllRouting);
@@ -160,15 +160,15 @@ public class MatsimSkimCreator {
         return skim;
     }
 
-    public IndexedDoubleMatrix2D createTeleportedSkim(Collection<de.tum.bgu.msm.data.Id> zones, String mode) {
+    public IndexedDoubleMatrix2D createTeleportedSkim(Collection<? extends de.tum.bgu.msm.data.Id> zones, String mode) {
 
         final int partitionSize = (int) ((double) zones.size() / (Properties.get().main.numberOfThreads)) + 1;
-        Iterable<List<de.tum.bgu.msm.data.Id>> partitions = Iterables.partition(zones, partitionSize);
+        Iterable<? extends List<? extends de.tum.bgu.msm.data.Id>> partitions = Iterables.partition(zones, partitionSize);
 
         IndexedDoubleMatrix2D skim = new IndexedDoubleMatrix2D(zones, zones);
 
         ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Properties.get().main.numberOfThreads);
-        for (final List<de.tum.bgu.msm.data.Id> partition : partitions) {
+        for (final List<? extends de.tum.bgu.msm.data.Id> partition : partitions) {
             executor.addTaskToQueue(() -> {
                 try {
                     final RoutingModule teleportationRouter = matsimData.getTeleportationRouter(mode);
@@ -207,14 +207,14 @@ public class MatsimSkimCreator {
         return skim;
     }
 
-    public IndexedDoubleMatrix2D createFreeSpeedFactorSkim(Collection<de.tum.bgu.msm.data.Id> zones, double factor) {
+    public IndexedDoubleMatrix2D createFreeSpeedFactorSkim(Collection<? extends de.tum.bgu.msm.data.Id> zones, double factor) {
         final int partitionSize = (int) ((double) zones.size() / (Properties.get().main.numberOfThreads)) + 1;
-        Iterable<List<de.tum.bgu.msm.data.Id>> partitions = Iterables.partition(zones, partitionSize);
+        Iterable<? extends List<? extends de.tum.bgu.msm.data.Id>> partitions = Iterables.partition(zones, partitionSize);
 
         IndexedDoubleMatrix2D skim = new IndexedDoubleMatrix2D(zones, zones);
         Network carNetwork = matsimData.getCarNetwork();
         ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Properties.get().main.numberOfThreads);
-        for (final List<de.tum.bgu.msm.data.Id> partition : partitions) {
+        for (final List<? extends de.tum.bgu.msm.data.Id> partition : partitions) {
             executor.addTaskToQueue(() -> {
                 try {
                     MultiNodePathCalculator calculator = matsimData.createFreeSpeedMultiNodePathCalculator();
