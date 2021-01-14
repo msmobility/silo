@@ -47,7 +47,7 @@ public class MatsimSkimCreator {
                     MultiNodePathCalculator calculator = matsimData.createMultiNodePathCalculator();
                     Set<InitialNode> toNodes = new HashSet<>();
                     for (de.tum.bgu.msm.data.Id zone : zones) {
-                        for (Coord coord : matsimData.getZoneConnectorManager().getCoordsForZone(zone)) {
+                        for (Coord coord : matsimData.getZoneConnectorManager().getCoordsForZone(zone.getId())) {
                             Node originNode = NetworkUtils.getNearestNode(carNetwork, coord);
                             toNodes.add(new InitialNode(originNode, 0., 0.));
                         }
@@ -56,10 +56,10 @@ public class MatsimSkimCreator {
                     ImaginaryNode aggregatedToNodes = MultiNodeDijkstra.createImaginaryNode(toNodes);
 
                     for (de.tum.bgu.msm.data.Id origin : partition) {
-                        Node originNode = NetworkUtils.getNearestNode(carNetwork, matsimData.getZoneConnectorManager().getCoordsForZone(origin).get(0));
+                        Node originNode = NetworkUtils.getNearestNode(carNetwork, matsimData.getZoneConnectorManager().getCoordsForZone(origin.getId()).get(0));
                         calculator.calcLeastCostPath(originNode, aggregatedToNodes, Properties.get().transportModel.peakHour_s, null, null);
                         for (de.tum.bgu.msm.data.Id destination : zones) {
-                            Node destinationNode = NetworkUtils.getNearestNode(carNetwork, matsimData.getZoneConnectorManager().getCoordsForZone(destination).get(0));
+                            Node destinationNode = NetworkUtils.getNearestNode(carNetwork, matsimData.getZoneConnectorManager().getCoordsForZone(destination.getId()).get(0));
                             double travelTime = calculator.constructPath(originNode, destinationNode, Properties.get().transportModel.peakHour_s).travelTime;
 
                             //convert to minutes
@@ -93,7 +93,7 @@ public class MatsimSkimCreator {
         ActivityFacilitiesFactoryImpl activityFacilitiesFactory = new ActivityFacilitiesFactoryImpl();
 
         for (de.tum.bgu.msm.data.Id zone : zones) {
-            final Coord coord = matsimData.getZoneConnectorManager().getCoordsForZone(zone).get(0);
+            final Coord coord = matsimData.getZoneConnectorManager().getCoordsForZone(zone.getId()).get(0);
             Collection<TransitStopFacility> stops = raptorData.findNearbyStops(coord.getX(), coord.getY(), parameters.getSearchRadius());
             if (stops.isEmpty()) {
                 TransitStopFacility nearest = raptorData.findNearestStop(coord.getX(), coord.getY());
@@ -109,7 +109,7 @@ public class MatsimSkimCreator {
                 try {
                     SwissRailRaptor raptor = matsimData.createSwissRailRaptor(RaptorStaticConfig.RaptorOptimization.OneToAllRouting);
                     for (de.tum.bgu.msm.data.Id origin : partition) {
-                        final Coord fromCoord = matsimData.getZoneConnectorManager().getCoordsForZone(origin).get(0);
+                        final Coord fromCoord = matsimData.getZoneConnectorManager().getCoordsForZone(origin.getId()).get(0);
                         Facility fromFacility = ((ActivityFacilitiesFactory) activityFacilitiesFactory).createActivityFacility(Id.create(1, ActivityFacility.class), fromCoord);
 
                         //calc tree from origin zone connector. note that it will search for multiple
@@ -123,7 +123,7 @@ public class MatsimSkimCreator {
                             }
 
                             //compute direct walk time
-                            final Coord toCoord = matsimData.getZoneConnectorManager().getCoordsForZone(destination).get(0);
+                            final Coord toCoord = matsimData.getZoneConnectorManager().getCoordsForZone(destination.getId()).get(0);
                             double directDistance = CoordUtils.calcEuclideanDistance(fromCoord, toCoord);
                             double directWalkTime = directDistance / walkSpeed;
 
@@ -174,8 +174,8 @@ public class MatsimSkimCreator {
                     final RoutingModule teleportationRouter = matsimData.getTeleportationRouter(mode);
                     for (de.tum.bgu.msm.data.Id origin : partition) {
                         for (de.tum.bgu.msm.data.Id destination : zones) {
-                            Coord originCoord = matsimData.getZoneConnectorManager().getCoordsForZone(origin).get(0);
-                            Coord destinationCoord = matsimData.getZoneConnectorManager().getCoordsForZone(destination).get(0);
+                            Coord originCoord = matsimData.getZoneConnectorManager().getCoordsForZone(origin.getId()).get(0);
+                            Coord destinationCoord = matsimData.getZoneConnectorManager().getCoordsForZone(destination.getId()).get(0);
 
                             ActivityFacilitiesFactoryImpl activityFacilitiesFactory = new ActivityFacilitiesFactoryImpl();
                             Facility fromFacility = ((ActivityFacilitiesFactory) activityFacilitiesFactory).createActivityFacility(Id.create(1, ActivityFacility.class), originCoord);
@@ -220,7 +220,7 @@ public class MatsimSkimCreator {
                     MultiNodePathCalculator calculator = matsimData.createFreeSpeedMultiNodePathCalculator();
                     Set<InitialNode> toNodes = new HashSet<>();
                     for (de.tum.bgu.msm.data.Id zone : zones) {
-                        for (Coord coord : matsimData.getZoneConnectorManager().getCoordsForZone(zone)) {
+                        for (Coord coord : matsimData.getZoneConnectorManager().getCoordsForZone(zone.getId())) {
                             Node originNode = NetworkUtils.getNearestNode(carNetwork, coord);
                             toNodes.add(new InitialNode(originNode, 0., 0.));
                         }
@@ -229,10 +229,10 @@ public class MatsimSkimCreator {
                     ImaginaryNode aggregatedToNodes = MultiNodeDijkstra.createImaginaryNode(toNodes);
 
                     for (de.tum.bgu.msm.data.Id origin : partition) {
-                        Node originNode = NetworkUtils.getNearestNode(carNetwork, matsimData.getZoneConnectorManager().getCoordsForZone(origin).get(0));
+                        Node originNode = NetworkUtils.getNearestNode(carNetwork, matsimData.getZoneConnectorManager().getCoordsForZone(origin.getId()).get(0));
                         calculator.calcLeastCostPath(originNode, aggregatedToNodes, Properties.get().transportModel.peakHour_s, null, null);
                         for (de.tum.bgu.msm.data.Id destination : zones) {
-                            Node destinationNode = NetworkUtils.getNearestNode(carNetwork, matsimData.getZoneConnectorManager().getCoordsForZone(destination).get(0));
+                            Node destinationNode = NetworkUtils.getNearestNode(carNetwork, matsimData.getZoneConnectorManager().getCoordsForZone(destination.getId()).get(0));
                             double travelTime = calculator.constructPath(originNode, destinationNode, Properties.get().transportModel.peakHour_s).travelTime;
 
                             //adjust by factor

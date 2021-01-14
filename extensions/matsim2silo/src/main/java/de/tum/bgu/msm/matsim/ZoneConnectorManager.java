@@ -6,7 +6,7 @@ import org.matsim.api.core.v01.Coord;
 import java.util.List;
 
 public interface ZoneConnectorManager {
-    List<Coord> getCoordsForZone(Id zoneId);
+    List<Coord> getCoordsForZone(int zoneId);
 
     public enum ZoneConnectorMethod {RANDOM, WEIGHTED_BY_POPULATION, GEOMETRIC_CENTROID}
 }

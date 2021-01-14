@@ -108,7 +108,7 @@ public class ZoneConnectorManagerImpl implements ZoneConnectorManager {
     }
 
     @Override
-    public List<Coord> getCoordsForZone(Id zoneId) {
+    public List<Coord> getCoordsForZone(int zoneId) {
         return coordsByZone.get(zoneId);
     }
 }

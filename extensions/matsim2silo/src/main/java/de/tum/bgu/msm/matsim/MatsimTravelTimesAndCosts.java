@@ -186,8 +186,8 @@ public final class MatsimTravelTimesAndCosts implements TravelTimes {
             destinationCoord = CoordUtils.createCoord(((MicroLocation) destination).getCoordinate());
         } else if (origin instanceof Zone && destination instanceof Zone) {
             // Non-microlocations case
-            originCoord = matsimData.getZoneConnectorManager().getCoordsForZone((Zone) origin).get(0);
-            destinationCoord = matsimData.getZoneConnectorManager().getCoordsForZone((Zone) destination).get(0);
+            originCoord = matsimData.getZoneConnectorManager().getCoordsForZone(origin.getZoneId()).get(0);
+            destinationCoord = matsimData.getZoneConnectorManager().getCoordsForZone(destination.getZoneId()).get(0);
         } else {
             throw new IllegalArgumentException("Origin and destination have to be consistent in location type!");
         }
