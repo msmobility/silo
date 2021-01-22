@@ -29,11 +29,11 @@ import java.util.stream.Collectors;
 public class StandaloneSkimCreator {
 
     public static void main(String[] args) {
-        createSkims(Integer.parseInt(args[0]), args[1], args[2], args[3], args[4]);
+        createSkims(Integer.parseInt(args[0]), args[1], args[2], args[3], args[4], Integer.parseInt(args[5]));
     }
 
     public static void createSkims(int threads, String shapePath, String networkPath,
-                                   String schedulePath, String outputPath) {
+                                   String schedulePath, String outputPath, int time) {
 
         Config config = ConfigUtils.createConfig();
 
@@ -55,8 +55,8 @@ public class StandaloneSkimCreator {
         data.update(freespeed, freespeed);
         final MatsimSkimCreator matsimSkimCreator = new MatsimSkimCreator(data);
 
-        final IndexedDoubleMatrix2D carSkim = matsimSkimCreator.createCarSkim(zonesById.keySet());
-        final IndexedDoubleMatrix2D ptSkim = matsimSkimCreator.createPtSkim(zonesById.keySet());
+        final IndexedDoubleMatrix2D carSkim = matsimSkimCreator.createCarSkim(zonesById.keySet(), threads, time);
+        final IndexedDoubleMatrix2D ptSkim = matsimSkimCreator.createPtSkim(zonesById.keySet(), threads, time);
 
         final SkimTravelTimes skimTravelTimes = new SkimTravelTimes();
         skimTravelTimes.updateSkimMatrix(carSkim, TransportMode.car);

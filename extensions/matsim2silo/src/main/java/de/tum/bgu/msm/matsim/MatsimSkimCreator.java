@@ -2,8 +2,6 @@ package de.tum.bgu.msm.matsim;
 
 import ch.sbb.matsim.routing.pt.raptor.*;
 import com.google.common.collect.Iterables;
-import de.tum.bgu.msm.data.Zone;
-import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix2D;
 import org.apache.log4j.Logger;
@@ -34,13 +32,13 @@ public class MatsimSkimCreator {
         this.matsimData = provider;
     }
 
-    public IndexedDoubleMatrix2D createCarSkim(Collection<? extends de.tum.bgu.msm.data.Id> zones) {
-        final int partitionSize = (int) ((double) zones.size() / (Properties.get().main.numberOfThreads)) + 1;
+    public IndexedDoubleMatrix2D createCarSkim(Collection<? extends de.tum.bgu.msm.data.Id> zones, int numberOfThreads, double peakHour_s) {
+        final int partitionSize = (int) ((double) zones.size() / numberOfThreads) + 1;
         Iterable<? extends List<? extends de.tum.bgu.msm.data.Id>> partitions = Iterables.partition(zones, partitionSize);
 
         IndexedDoubleMatrix2D skim = new IndexedDoubleMatrix2D(zones, zones);
         Network carNetwork = matsimData.getCarNetwork();
-        ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Properties.get().main.numberOfThreads);
+        ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(numberOfThreads);
         for (final List<? extends de.tum.bgu.msm.data.Id> partition : partitions) {
             executor.addTaskToQueue(() -> {
                 try {
@@ -57,10 +55,10 @@ public class MatsimSkimCreator {
 
                     for (de.tum.bgu.msm.data.Id origin : partition) {
                         Node originNode = NetworkUtils.getNearestNode(carNetwork, matsimData.getZoneConnectorManager().getCoordsForZone(origin.getId()).get(0));
-                        calculator.calcLeastCostPath(originNode, aggregatedToNodes, Properties.get().transportModel.peakHour_s, null, null);
+                        calculator.calcLeastCostPath(originNode, aggregatedToNodes, peakHour_s, null, null);
                         for (de.tum.bgu.msm.data.Id destination : zones) {
                             Node destinationNode = NetworkUtils.getNearestNode(carNetwork, matsimData.getZoneConnectorManager().getCoordsForZone(destination.getId()).get(0));
-                            double travelTime = calculator.constructPath(originNode, destinationNode, Properties.get().transportModel.peakHour_s).travelTime;
+                            double travelTime = calculator.constructPath(originNode, destinationNode, peakHour_s).travelTime;
 
                             //convert to minutes
                             travelTime /= 60.;
@@ -79,8 +77,9 @@ public class MatsimSkimCreator {
         return skim;
     }
 
-    public IndexedDoubleMatrix2D createPtSkim(Collection<? extends de.tum.bgu.msm.data.Id> zones) {
-        final int partitionSize = (int) ((double) zones.size() / (Properties.get().main.numberOfThreads)) + 1;
+    public IndexedDoubleMatrix2D createPtSkim(Collection<? extends de.tum.bgu.msm.data.Id> zones, int numberOfThreads,
+                                              double peakHour_s) {
+        final int partitionSize = (int) ((double) zones.size() / numberOfThreads) + 1;
         Iterable<? extends List<? extends de.tum.bgu.msm.data.Id>> partitions = Iterables.partition(zones, partitionSize);
 
         IndexedDoubleMatrix2D skim = new IndexedDoubleMatrix2D(zones, zones);
@@ -103,7 +102,7 @@ public class MatsimSkimCreator {
             stopsPerZone.put(zone, stops);
         }
 
-        ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Properties.get().main.numberOfThreads);
+        ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(numberOfThreads);
         for (final List<? extends de.tum.bgu.msm.data.Id> partition : partitions) {
             executor.addTaskToQueue(() -> {
                 try {
@@ -115,7 +114,7 @@ public class MatsimSkimCreator {
                         //calc tree from origin zone connector. note that it will search for multiple
                         //start stops accessible from the connector
                         final Map<Id<TransitStopFacility>, SwissRailRaptorCore.TravelInfo> idTravelInfoMap
-                                = raptor.calcTree(fromFacility, Properties.get().transportModel.peakHour_s, null);
+                                = raptor.calcTree(fromFacility, peakHour_s, null);
                         for (de.tum.bgu.msm.data.Id destination : zones) {
                             if (origin.equals(destination)) {
                                 //Intrazonals will be assigned afterwards
@@ -160,14 +159,15 @@ public class MatsimSkimCreator {
         return skim;
     }
 
-    public IndexedDoubleMatrix2D createTeleportedSkim(Collection<? extends de.tum.bgu.msm.data.Id> zones, String mode) {
+    public IndexedDoubleMatrix2D createTeleportedSkim(Collection<? extends de.tum.bgu.msm.data.Id> zones, String mode,
+                                                      int numberOfThreads, double peakHour_s) {
 
-        final int partitionSize = (int) ((double) zones.size() / (Properties.get().main.numberOfThreads)) + 1;
+        final int partitionSize = (int) ((double) zones.size() / numberOfThreads) + 1;
         Iterable<? extends List<? extends de.tum.bgu.msm.data.Id>> partitions = Iterables.partition(zones, partitionSize);
 
         IndexedDoubleMatrix2D skim = new IndexedDoubleMatrix2D(zones, zones);
 
-        ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Properties.get().main.numberOfThreads);
+        ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(numberOfThreads);
         for (final List<? extends de.tum.bgu.msm.data.Id> partition : partitions) {
             executor.addTaskToQueue(() -> {
                 try {
@@ -180,7 +180,6 @@ public class MatsimSkimCreator {
                             ActivityFacilitiesFactoryImpl activityFacilitiesFactory = new ActivityFacilitiesFactoryImpl();
                             Facility fromFacility = ((ActivityFacilitiesFactory) activityFacilitiesFactory).createActivityFacility(Id.create(1, ActivityFacility.class), originCoord);
                             Facility toFacility = ((ActivityFacilitiesFactory) activityFacilitiesFactory).createActivityFacility(Id.create(2, ActivityFacility.class), destinationCoord);
-                            final double peakHour_s = Properties.get().transportModel.peakHour_s;
                             List<? extends PlanElement> planElements = teleportationRouter.calcRoute(fromFacility, toFacility, peakHour_s, null);
                             double arrivalTime = peakHour_s;
 
@@ -207,13 +206,14 @@ public class MatsimSkimCreator {
         return skim;
     }
 
-    public IndexedDoubleMatrix2D createFreeSpeedFactorSkim(Collection<? extends de.tum.bgu.msm.data.Id> zones, double factor) {
-        final int partitionSize = (int) ((double) zones.size() / (Properties.get().main.numberOfThreads)) + 1;
+    public IndexedDoubleMatrix2D createFreeSpeedFactorSkim(Collection<? extends de.tum.bgu.msm.data.Id> zones,
+                                                           double factor, int numberOfThreads, double peakHour_s) {
+        final int partitionSize = (int) ((double) zones.size() / numberOfThreads) + 1;
         Iterable<? extends List<? extends de.tum.bgu.msm.data.Id>> partitions = Iterables.partition(zones, partitionSize);
 
         IndexedDoubleMatrix2D skim = new IndexedDoubleMatrix2D(zones, zones);
         Network carNetwork = matsimData.getCarNetwork();
-        ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Properties.get().main.numberOfThreads);
+        ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(numberOfThreads);
         for (final List<? extends de.tum.bgu.msm.data.Id> partition : partitions) {
             executor.addTaskToQueue(() -> {
                 try {
@@ -230,10 +230,10 @@ public class MatsimSkimCreator {
 
                     for (de.tum.bgu.msm.data.Id origin : partition) {
                         Node originNode = NetworkUtils.getNearestNode(carNetwork, matsimData.getZoneConnectorManager().getCoordsForZone(origin.getId()).get(0));
-                        calculator.calcLeastCostPath(originNode, aggregatedToNodes, Properties.get().transportModel.peakHour_s, null, null);
+                        calculator.calcLeastCostPath(originNode, aggregatedToNodes, peakHour_s, null, null);
                         for (de.tum.bgu.msm.data.Id destination : zones) {
                             Node destinationNode = NetworkUtils.getNearestNode(carNetwork, matsimData.getZoneConnectorManager().getCoordsForZone(destination.getId()).get(0));
-                            double travelTime = calculator.constructPath(originNode, destinationNode, Properties.get().transportModel.peakHour_s).travelTime;
+                            double travelTime = calculator.constructPath(originNode, destinationNode, peakHour_s).travelTime;
 
                             //adjust by factor
                             travelTime *= factor;
