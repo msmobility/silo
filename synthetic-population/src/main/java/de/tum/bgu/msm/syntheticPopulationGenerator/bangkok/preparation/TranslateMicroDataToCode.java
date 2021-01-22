@@ -36,6 +36,7 @@ public class TranslateMicroDataToCode {
         //convert one by one the records from microDwellings
         for (int hhCount : dataSetSynPop.getHouseholdDataSet().getColumnAsInt("hhThaiId")){
             translateDwellingUsage(hhCount);
+            translateDwellingType(hhCount);
         }
         logger.info("   Finished translating the micro data");
     }
@@ -232,6 +233,56 @@ public class TranslateMicroDataToCode {
         // blank = not eligible to ask
         dataSetSynPop.getHouseholdDataSet().setValueAt(ddCount,"tenureCode",valueCode);
     }
+
+    private void translateDwellingType(int ddCount){
+        int valueCode = 0;
+        int valueMicroData = (int) dataSetSynPop.getHouseholdDataSet().getValueAt(ddCount,"dwellingType");
+        switch (valueMicroData){
+            case 1:
+                valueCode = 5;
+                break;
+            case 2:
+                valueCode = 5;
+                break;
+            case 3: //
+                valueCode = 1;
+                break;
+            case 4: //
+                valueCode = 3;
+                break;
+            case 5: //
+                valueCode = 5;
+                break;
+            case 6: //
+                valueCode = 3;
+                break;
+            case 7: //
+                valueCode = 3;
+                break;
+            case 8: //
+                valueCode = 3;
+                break;
+            case 9: //
+                valueCode = 3;
+                break;
+            case 0: //
+                valueCode = 3;
+                break;
+        }
+        // 1 = Single house
+        // 2 = Townhouse/Semi-detached house
+        // 3 = Condominium
+        // 4 = Flat/apartment/dormitory
+        // 5 = Row/rowhouse
+        // 6 = Home room
+        // 7 = Office room
+        // 8 = Boad/raft/car
+        // 9 = Unknown
+        // 0 = Other
+        // blank = not eligible to ask
+        dataSetSynPop.getHouseholdDataSet().setValueAt(ddCount,"ddTypeCode",valueCode);
+    }
+
 
 
     public int translateIncome(int valueMicroData){

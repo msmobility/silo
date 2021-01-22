@@ -47,6 +47,11 @@ public class CheckHouseholdRelationship {
             resetMaps();
         }
         dataSetSynPop.setPersonDataSet(microDataPerson);
+        String hhFileName = ("microData/interimFiles/microHouseholds2.csv");
+        SiloUtil.writeTableDataSet(microDataHousehold, hhFileName);
+
+        String ppFileName = ("microData/interimFiles/microPerson2.csv");
+        SiloUtil.writeTableDataSet(microDataPerson, ppFileName);
     }
 
 
@@ -81,18 +86,18 @@ public class CheckHouseholdRelationship {
         //method to check how household members are related
 
                 //check marriage household head
-                if (headCouple.get(1)!=null ){
+                if (headCouple.get("male")!=null ){
                     //male
                     int ageMale = 0;
                     int rowMale = 0;
-                    for (Map.Entry<Integer, Integer> pair : headCouple.get(1).entrySet()) {
+                    for (Map.Entry<Integer, Integer> pair : headCouple.get("male").entrySet()) {
                         ageMale = pair.getValue();
                         rowMale = pair.getKey();
                     }
-                    if (headCouple.get(2)!=null ){
+                    if (headCouple.get("female")!=null ){
                         int ageFemale= 0;
                         int rowFemale = 0;
-                        for (Map.Entry<Integer, Integer> pair : headCouple.get(2).entrySet()) {
+                        for (Map.Entry<Integer, Integer> pair : headCouple.get("female").entrySet()) {
                             ageFemale = pair.getValue();
                             rowFemale = pair.getKey();
                         }
@@ -102,10 +107,10 @@ public class CheckHouseholdRelationship {
                         singles = updateInnerMap(singles, 1, ageMale, rowMale);
                     }
                 } else {
-                    if (headCouple.get(2)!=null ){
+                    if (headCouple.get("female")!=null ){
                         int ageFemale= 0;
                         int rowFemale = 0;
-                        for (Map.Entry<Integer, Integer> pair : headCouple.get(2).entrySet()) {
+                        for (Map.Entry<Integer, Integer> pair : headCouple.get("female").entrySet()) {
                             ageFemale = pair.getValue();
                             rowFemale = pair.getKey();
                         }
@@ -199,14 +204,14 @@ public class CheckHouseholdRelationship {
                                 }
                             }
                         }
-                    } else if (countNotClassified[0] == 0 & countNotClassified[1] > 1) { //only females were not classified
+                    } else if (countNotClassified[0] == 0 & countNotClassified[1] > 0) { //only females were not classified
                         //set all of them as single
                         for (Map.Entry<Integer, Integer> pair : notClassifiedFemales.entrySet()) {
                             int newRow = pair.getKey();
                             int newAge = pair.getValue();
                             singles = updateInnerMap(singles, 2, newAge, newRow);
                         }
-                    } else if (countNotClassified[1] == 0 & countNotClassified[0] > 1) { //only males were not classified
+                    } else if (countNotClassified[1] == 0 & countNotClassified[0] > 0) { //only males were not classified
                         // set all of them as single
                         for (Map.Entry<Integer, Integer> pair : notClassifiedMales.entrySet()) {
                             int newRow = pair.getKey();
@@ -347,9 +352,9 @@ public class CheckHouseholdRelationship {
 
                 //check for only one married person in the household
 
+        }
 
-
-        //double checking for persons that are not classified
+/*        //double checking for persons that are not classified
         for (int i = 1; i <= microDataPerson.getRowCount(); i++){
             if (microDataPerson.getValueAt(i,"personRole") == -1){
                 microDataPerson.setValueAt(i, "personRole", 1);
@@ -360,8 +365,8 @@ public class CheckHouseholdRelationship {
         SiloUtil.writeTableDataSet(microDataHousehold, hhFileName);
 
         String ppFileName = ("microData/interimFiles/microPerson2.csv");
-        SiloUtil.writeTableDataSet(microDataPerson, ppFileName);
-    }
+        SiloUtil.writeTableDataSet(microDataPerson, ppFileName);*/
+
 
 
     private void setRoles(HashMap<String, HashMap<Integer, Integer>> singles, HashMap<String, HashMap<Integer, Integer>> married,

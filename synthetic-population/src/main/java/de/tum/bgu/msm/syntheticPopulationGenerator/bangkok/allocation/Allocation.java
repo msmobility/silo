@@ -3,6 +3,11 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.bangkok.allocation;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.io.output.*;
+import de.tum.bgu.msm.run.io.JobWriterBangkok;
+import de.tum.bgu.msm.run.io.PersonWriterBangkok;
+import de.tum.bgu.msm.schools.DataContainerWithSchools;
+import de.tum.bgu.msm.schools.SchoolsWriter;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.ModuleSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.bangkok.allocation.*;
@@ -15,10 +20,10 @@ import java.util.HashMap;
 public class Allocation extends ModuleSynPop{
 
     private static final Logger logger = Logger.getLogger(Allocation.class);
-    private final DataContainer dataContainer;
+    private final  DataContainerWithSchools dataContainer;
     private HashMap<Person, Integer> educationalLevel;
 
-    public Allocation(DataSetSynPop dataSetSynPop, DataContainer dataContainer){
+    public Allocation(DataSetSynPop dataSetSynPop, DataContainerWithSchools dataContainer){
         super(dataSetSynPop);
         this.dataContainer = dataContainer;
     }
@@ -28,15 +33,20 @@ public class Allocation extends ModuleSynPop{
         logger.info("   Started allocation model.");
         if (PropertiesSynPop.get().main.runAllocation) {
             generateHouseholdsPersonsDwellings();
+            summarizeData(dataContainer, "afterGenerateHHppDD");
             generateVacantDwellings();
+            summarizeData(dataContainer, "afterGenerateVacant");
             generateJobs();
+            summarizeData(dataContainer, "afterGenerateJobs");
             generateAutos();
         } else {
             readPopulation();
         }
         if (PropertiesSynPop.get().main.runJobAllocation) {
             assignJobs();
+            summarizeData(dataContainer, "afterAssignJobs");
             assignSchools();
+            summarizeData(dataContainer, "afterAssignSchools");
             validateTripLengths();
         }
         logger.info("   Completed allocation model.");
@@ -95,5 +105,23 @@ public class Allocation extends ModuleSynPop{
 
     private void generateVacantDwellings(){
         new GenerateVacantDwellings(dataContainer, dataSetSynPop).run();
+    }
+
+    private void summarizeData(DataContainerWithSchools dataContainer, String stage){
+
+        String filehh = "microData/interimFiles/hh_" + stage + ".csv";
+        HouseholdWriter hhwriter = new DefaultHouseholdWriter(dataContainer.getHouseholdDataManager().getHouseholds());
+        hhwriter.writeHouseholds(filehh);
+
+        String filepp = "microData/interimFiles/pp_" + stage + ".csv";
+        PersonWriter ppwriter = new PersonWriterBangkok(dataContainer.getHouseholdDataManager());
+        ppwriter.writePersons(filepp);
+
+        String filedd = "microData/interimFiles/dd_" + stage + ".csv";
+        DwellingWriter ddwriter = new DefaultDwellingWriter(dataContainer.getRealEstateDataManager().getDwellings());
+        ddwriter.writeDwellings(filedd);
+
+
+
     }
 }

@@ -37,12 +37,25 @@ public class PrepareFrequencyMatrix {
                 updateHhAgeGender(age, gender, i);
                 //updateHhNationalityGender(nationality, gender, i);
             }
+            int ddType = (int) dataSetSynPop.getHouseholdDataSet().getValueAt(i,"ddTypeCode");
+            updateDdType(ddType, i);
             frequencyMatrix.setValueAt(i,"population",hhSize);
         }
         dataSetSynPop.setFrequencyMatrix(frequencyMatrix);
         logger.info("   Finished creating the frequency matrix");
 
     }
+
+    private void updateDdType(int ddType, int i){
+        if (ddType == 1) {
+            frequencyMatrix.setValueAt(i, "apartment", 1);
+        } else if (ddType == 3){
+            frequencyMatrix.setValueAt(i, "condo", 1);
+        } else {
+            frequencyMatrix.setValueAt(i, "house", 1);
+        }
+    }
+
 
     private void updateHhNationalityGender(int nationality, int gender, int i) {
         if (nationality > 2){
@@ -95,6 +108,9 @@ public class PrepareFrequencyMatrix {
         for (String attribute : PropertiesSynPop.get().main.attributesMunicipality){
             SiloUtil.addIntegerColumnToTableDataSet(frequencyMatrix, attribute);
         }
+        SiloUtil.addIntegerColumnToTableDataSet(frequencyMatrix, "condo");
+        SiloUtil.addIntegerColumnToTableDataSet(frequencyMatrix, "apartment");
+        SiloUtil.addIntegerColumnToTableDataSet(frequencyMatrix, "house");
     }
 
 }

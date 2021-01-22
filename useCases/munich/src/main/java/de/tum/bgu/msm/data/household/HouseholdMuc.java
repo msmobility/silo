@@ -97,15 +97,15 @@ public class HouseholdMuc implements Household {
     }
 
     private void defineHouseholdNationality() {
-        Nationality householdNationaliy = null;
-        for (Person pp : getPersons().values()) {
-            if (householdNationaliy == null) {
-                householdNationaliy = ((PersonMuc)pp).getNationality();
-            } else if (((PersonMuc)pp).getNationality() != householdNationaliy) {
-                nationality = Nationality.OTHER;
-                return;
-            }
-        }
-        nationality = householdNationaliy;
+        Nationality householdNationaliy = Nationality.OTHER;
+        //for (Person pp : getPersons().values()) {
+        //    if (householdNationaliy == null) {
+         //       householdNationaliy = ((PersonMuc)pp).getNationality();
+        //    } else if ((p).getNationality() != householdNationaliy) {
+        //        nationality = Nationality.OTHER;
+        //        return;
+         //   }
+        //}
+        nationality = Nationality.OTHER;
     }
 }

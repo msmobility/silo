@@ -75,23 +75,25 @@ public class GenerateVacantDwellings {
             float percentageVacantDwellings = dataSetSynPop.getTazAttributes().get(municipality).get("percentageVacantDwelings");
             int vacantDwellings = (int) (percentageVacantDwellings * dataSetSynPop.getTazAttributes().get(municipality).get("households") / 100);
             List<Dwelling> dwellingForCopy = occupiedDwellings.get(municipality);
-            Collections.shuffle(dwellingForCopy);
             int vacantCounter = 0;
-            for (int draw = 0; draw < vacantDwellings; draw++){
-                int tazSelected = municipality;
-                int newDdId = highestDwellingIdInUse++;
-                Dwelling idDwellingToCopy = dwellingForCopy.get(draw);
-                int floorSpace = idDwellingToCopy.getFloorSpace();
-                int year = idDwellingToCopy.getYearBuilt();
-                DwellingType type = idDwellingToCopy.getType();
-                int bedRooms = idDwellingToCopy.getBedrooms();
-                int quality = idDwellingToCopy.getQuality();
-                int price = idDwellingToCopy.getPrice();
-                Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, tazSelected, null, -1, type, bedRooms, quality, price, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
-                realEstateData.addDwelling(dwell);
-                dwell.setUsage(DwellingUsage.VACANT);
-                dwell.setFloorSpace(floorSpace);
-                vacantCounter++;
+            if (dwellingForCopy != null){
+                Collections.shuffle(dwellingForCopy);
+                for (int draw = 0; draw < vacantDwellings; draw++){
+                    int tazSelected = municipality;
+                    int newDdId = highestDwellingIdInUse++;
+                    Dwelling idDwellingToCopy = dwellingForCopy.get(draw);
+                    int floorSpace = idDwellingToCopy.getFloorSpace();
+                    int year = idDwellingToCopy.getYearBuilt();
+                    DwellingType type = idDwellingToCopy.getType();
+                    int bedRooms = idDwellingToCopy.getBedrooms();
+                    int quality = idDwellingToCopy.getQuality();
+                    int price = idDwellingToCopy.getPrice();
+                    Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, tazSelected, null, -1, type, bedRooms, quality, price, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
+                    realEstateData.addDwelling(dwell);
+                    dwell.setUsage(DwellingUsage.VACANT);
+                    dwell.setFloorSpace(floorSpace);
+                    vacantCounter++;
+                }
             }
             logger.info("Municipality " + municipality + ". Generated vacant dwellings: " + vacantCounter);
         }
