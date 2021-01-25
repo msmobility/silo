@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.properties.Properties;
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.config.Config;
@@ -18,6 +19,7 @@ import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
+import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 
 import java.util.Collection;
@@ -152,8 +154,9 @@ public final class MatsimData {
     TripRouter createTripRouter() {
         final RoutingModule carRoutingModule;
         if (config.plansCalcRoute().isInsertingAccessEgressWalk()) {
+            Scenario scenario = ScenarioUtils.createScenario(config);
             carRoutingModule = DefaultRoutingModules.createAccessEgressNetworkRouter(
-                    TransportMode.car, PopulationUtils.getFactory(), carNetwork, leastCostPathCalculatorFactory.createPathCalculator(carNetwork, travelDisutility, travelTime), config.plansCalcRoute());
+                    TransportMode.car, leastCostPathCalculatorFactory.createPathCalculator(carNetwork, travelDisutility, travelTime), scenario, carNetwork, DefaultRoutingModules.createTeleportationRouter(TransportMode.walk, scenario, config.plansCalcRoute().getOrCreateModeRoutingParams(TransportMode.walk)));
         } else {
             carRoutingModule = DefaultRoutingModules.createPureNetworkRouter(
                     TransportMode.car, PopulationUtils.getFactory(), carNetwork, leastCostPathCalculatorFactory.createPathCalculator(carNetwork, travelDisutility, travelTime));
@@ -162,7 +165,7 @@ public final class MatsimData {
 
         if (schedule != null && config.transit().isUseTransit()) {
             final RoutingModule teleportationRoutingModule = DefaultRoutingModules.createTeleportationRouter(
-                    TransportMode.walk, PopulationUtils.getFactory(), config.plansCalcRoute().getOrCreateModeRoutingParams(TransportMode.walk));
+                    TransportMode.walk,  ScenarioUtils.createScenario(config), config.plansCalcRoute().getOrCreateModeRoutingParams(TransportMode.walk));
             final SwissRailRaptor swissRailRaptor = createSwissRailRaptor(RaptorStaticConfig.RaptorOptimization.OneToOneRouting);
             ptRoutingModule = new SwissRailRaptorRoutingModule(swissRailRaptor, schedule, ptNetwork, teleportationRoutingModule);
         } else {
@@ -193,7 +196,7 @@ public final class MatsimData {
 
     RoutingModule getTeleportationRouter(String mode) {
         return DefaultRoutingModules.createTeleportationRouter(
-                mode, PopulationUtils.getFactory(), config.plansCalcRoute().getOrCreateModeRoutingParams(mode));
+                mode, ScenarioUtils.createScenario(config), config.plansCalcRoute().getOrCreateModeRoutingParams(mode));
     }
 
     SwissRailRaptorData getRaptorData(RaptorStaticConfig.RaptorOptimization optimization) {
