@@ -18,8 +18,6 @@ import java.util.Set;
 public class CreateNetwork {
 
     /*
-     * Thicker lines denote pt line
-     *
      * (1)------(2)------(3)------(4)------(5)
      * 	 |		 |		  |		   |	    |
      * 	 |		 |		  |		   |	    |
