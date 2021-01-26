@@ -12,10 +12,34 @@ import java.io.IOException;
 public class DefaultDwellingReader implements DwellingReader {
 
     private final static Logger logger = Logger.getLogger(DefaultDwellingReader.class);
-    private final RealEstateDataManager realEstateDataManager;
+    private final DwellingData dwellingData;
+
+    private final DwellingTypes dwellingTypes;
+    private final DwellingFactory dwellingFactory;
+
+    public DefaultDwellingReader(DwellingData realEstate) {
+        this(realEstate, new DefaultDwellingTypes(),  new DwellingFactoryImpl());
+    }
+
+    public DefaultDwellingReader(DwellingData realEstate,
+                                 DwellingFactory dwellingFactory) {
+        this(realEstate, new DefaultDwellingTypes(),  dwellingFactory);
+    }
+
+    public DefaultDwellingReader(DwellingData realEstate,
+                                 DwellingTypes dwellingTypes) {
+        this(realEstate, dwellingTypes,  new DwellingFactoryImpl());
+    }
 
     public DefaultDwellingReader(RealEstateDataManager realEstate) {
-        this.realEstateDataManager = realEstate;
+        this(realEstate.getDwellingData(), realEstate.getDwellingTypes(), realEstate.getDwellingFactory());
+    }
+
+    public DefaultDwellingReader(DwellingData realEstate, DwellingTypes dwellingTypes,
+                                 DwellingFactory dwellingFactory) {
+        this.dwellingData = realEstate;
+        this.dwellingTypes = dwellingTypes;
+        this.dwellingFactory = dwellingFactory;
     }
 
     @Override
@@ -54,7 +78,7 @@ public class DefaultDwellingReader implements DwellingReader {
                 int zoneId = Integer.parseInt(lineElements[posZone]);
                 int hhId = Integer.parseInt(lineElements[posHh]);
                 String tp = lineElements[posType].replace("\"", "");
-                DwellingType type = DefaultDwellingTypeImpl.valueOf(tp);
+                DwellingType type = dwellingTypes.valueOf(tp);
                 int price = Integer.parseInt(lineElements[posCosts]);
                 int area = Integer.parseInt(lineElements[posRooms]);
                 int quality = Integer.parseInt(lineElements[posQuality]);
@@ -69,8 +93,8 @@ public class DefaultDwellingReader implements DwellingReader {
                     }
                 }
 
-                Dwelling dwelling = realEstateDataManager.getDwellingFactory().createDwelling(id, zoneId, coordinate, hhId, type, area, quality, price, yearBuilt);
-                realEstateDataManager.addDwelling(dwelling);
+                Dwelling dwelling = dwellingFactory.createDwelling(id, zoneId, coordinate, hhId, type, area, quality, price, yearBuilt);
+                dwellingData.addDwelling(dwelling);
                 if (id == SiloUtil.trackDd) {
                     SiloUtil.trackWriter.println("Read dwelling with following attributes from " + path);
                     SiloUtil.trackWriter.println(dwelling.toString());

@@ -92,7 +92,7 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
         // calculate demand by region
         double[][] vacancyByRegion = realEstate.getVacancyRateByTypeAndRegion();
 
-        List<DwellingType> dwellingTypes = realEstate.getDwellingTypes();
+        List<DwellingType> dwellingTypes = realEstate.getDwellingTypes().getTypes();
         double[][] demandByRegion = new double[dwellingTypes.size()][geoData.getRegions().keySet().stream().max(Comparator.naturalOrder()).get() + 1];
         double[][] avePriceByTypeAndZone = calculateScaledAveragePriceByZone(100);
         double[][] avePriceByTypeAndRegion = calculateScaledAveragePriceByRegion(100);
@@ -289,7 +289,7 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
         // calculate scaled average housing price by dwelling type and zone
 
         RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
-        List<DwellingType> dwellingTypes = realEstate.getDwellingTypes();
+        List<DwellingType> dwellingTypes = realEstate.getDwellingTypes().getTypes();
 
         final int highestZoneId = geoData.getZones().keySet().stream().max(Comparator.naturalOrder()).get();
         double[][] avePrice = new double[dwellingTypes.size()][highestZoneId + 1];
@@ -322,7 +322,7 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
     private double[][] calculateScaledAveragePriceByRegion(float scaler) {
 
         RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
-        List<DwellingType> dwellingTypes = realEstate.getDwellingTypes();
+        List<DwellingType> dwellingTypes = realEstate.getDwellingTypes().getTypes();
         final int highestRegionId = geoData.getRegions().keySet().stream().max(Comparator.naturalOrder()).get();
         double[][] avePrice = new double[dwellingTypes.size()][highestRegionId + 1];
         int[][] counter = new int[dwellingTypes.size()][highestRegionId + 1];
@@ -354,7 +354,7 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
     private float[][] calculateAverageSizeByTypeAndByRegion() {
         // calculate average housing size by dwelling type and region
         final int highestRegionId = geoData.getRegions().keySet().stream().max(Comparator.naturalOrder()).get();
-        List<DwellingType> dwellingTypes = dataContainer.getRealEstateDataManager().getDwellingTypes();
+        List<DwellingType> dwellingTypes = dataContainer.getRealEstateDataManager().getDwellingTypes().getTypes();
         float[][] aveSize = new float[dwellingTypes.size()][highestRegionId + 1];
         int[][] counter = new int[dwellingTypes.size()][highestRegionId + 1];
         for (Dwelling dd : dataContainer.getRealEstateDataManager().getDwellings()) {
@@ -401,7 +401,7 @@ public class ConstructionModelMstm extends AbstractModel implements Construction
 
         RealEstateDataManager realEstateDataManager = dataContainer.getRealEstateDataManager();
         double[] prices = realEstateDataManager.getAveragePriceByDwellingType();
-        List<DwellingType> dwellingTypes = realEstateDataManager.getDwellingTypes();
+        List<DwellingType> dwellingTypes = realEstateDataManager.getDwellingTypes().getTypes();
         int[] scaledPrices = new int[prices.length];
         for (int i = 0; i < prices.length; i++) {
             if (prices[i] * 10000 > Integer.MAX_VALUE) {

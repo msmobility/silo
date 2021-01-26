@@ -8,7 +8,6 @@ import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
-import de.tum.bgu.msm.data.household.HouseholdFactoryMuc;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.job.JobUtils;
@@ -926,7 +925,7 @@ public class SyntheticPopJP implements SyntheticPopI {
         for (int i = 1; i <= dwellings.getRowCount(); i++){
             Dwelling dd = DwellingUtils.getFactory().createDwelling((int)dwellings.getValueAt(i,"id"),
                     (int) dwellings.getValueAt(i,"zone"),null,
-                    (int)dwellings.getValueAt(i,"hhID"), DefaultDwellingTypeImpl.MF5plus,(int)dwellings.getValueAt(i,"bedrooms"),
+                    (int)dwellings.getValueAt(i,"hhID"), DefaultDwellingTypes.DefaultDwellingTypeImpl.MF5plus,(int)dwellings.getValueAt(i,"bedrooms"),
                     (int)dwellings.getValueAt(i,"quality"),(int)dwellings.getValueAt(i,"monthlyCost") ,(int)dwellings.getValueAt(i,"yearBuilt"));
             realEstate.addDwelling(dd);
             realEstate.addDwelling(dd);
@@ -1225,7 +1224,7 @@ public class SyntheticPopJP implements SyntheticPopI {
                     int floorSpace = select(sizeDistribution, sizeBracketsDwelling)[0];
                     int usage = (int) microDwellings.getIndexedValueAt(selectedHh, "H_");
                     int buildingSize = (int) microDwellings.getIndexedValueAt(selectedHh, "ddT_");
-                    DefaultDwellingTypeImpl ddType = translateDwellingType(buildingSize);
+                    DefaultDwellingTypes.DefaultDwellingTypeImpl ddType = translateDwellingType(buildingSize);
                     int quality = 1; //depend on year built and type of heating
                     year = selectDwellingYear(year); //convert from year class to actual 4-digit year
                     int price = estimatePrice(ddType, floorSpace);
@@ -1318,13 +1317,13 @@ public class SyntheticPopJP implements SyntheticPopI {
 
 
 
-    private DefaultDwellingTypeImpl translateDwellingType (int pumsDdType) {
+    private DefaultDwellingTypes.DefaultDwellingTypeImpl translateDwellingType (int pumsDdType) {
         // translate micro census dwelling types into 6 MetCouncil Dwelling Types
 
-        DefaultDwellingTypeImpl type;
-        if (pumsDdType == 1) type = DefaultDwellingTypeImpl.SFD; //DETACHED
-        else if (pumsDdType == 2) type = DefaultDwellingTypeImpl.MF234; //apartment
-        else if (pumsDdType == 3) type = DefaultDwellingTypeImpl.MF5plus;//multiapartment
+        DefaultDwellingTypes.DefaultDwellingTypeImpl type;
+        if (pumsDdType == 1) type = DefaultDwellingTypes.DefaultDwellingTypeImpl.SFD; //DETACHED
+        else if (pumsDdType == 2) type = DefaultDwellingTypes.DefaultDwellingTypeImpl.MF234; //apartment
+        else if (pumsDdType == 3) type = DefaultDwellingTypes.DefaultDwellingTypeImpl.MF5plus;//multiapartment
         else {
             //logger.error("Unknown dwelling type " + pumsDdType + " found in PUMS data.");
             type = null;
@@ -2004,9 +2003,9 @@ public class SyntheticPopJP implements SyntheticPopI {
         } else {
             attributesCount.setIndexedValueAt(mun,"H_Rent",attributesCount.getIndexedValueAt(mun,"H_Rent") + 1);
         }
-        if (dwelling.getType().equals(DefaultDwellingTypeImpl.SFA)){
+        if (dwelling.getType().equals(DefaultDwellingTypes.DefaultDwellingTypeImpl.SFA)){
             attributesCount.setIndexedValueAt(mun,"ddT_Detached",attributesCount.getIndexedValueAt(mun,"ddT_Detached") + 1);
-        } else if (dwelling.getType().equals(DefaultDwellingTypeImpl.MF234)){
+        } else if (dwelling.getType().equals(DefaultDwellingTypes.DefaultDwellingTypeImpl.MF234)){
             attributesCount.setIndexedValueAt(mun,"ddT_Apart",attributesCount.getIndexedValueAt(mun,"ddT_Apart") + 1);
         } else {
         attributesCount.setIndexedValueAt(mun,"ddT_Multi",attributesCount.getIndexedValueAt(mun,"ddT_Multi") + 1);
@@ -2358,11 +2357,11 @@ public class SyntheticPopJP implements SyntheticPopI {
         dataSetSynPop.setErrorsSummary(errorsSummary);
     }
 
-    private int estimatePrice(DefaultDwellingTypeImpl ddType, int floorSpace){
+    private int estimatePrice(DefaultDwellingTypes.DefaultDwellingTypeImpl ddType, int floorSpace){
         int averagePricePerSQM = 10;
-        if (ddType.equals(DefaultDwellingTypeImpl.MF234)){
+        if (ddType.equals(DefaultDwellingTypes.DefaultDwellingTypeImpl.MF234)){
             averagePricePerSQM = 5;
-        } else if (ddType.equals(DefaultDwellingTypeImpl.MF5plus)){
+        } else if (ddType.equals(DefaultDwellingTypes.DefaultDwellingTypeImpl.MF5plus)){
             averagePricePerSQM = 5;
         }
         int price = floorSpace * averagePricePerSQM;
@@ -2377,7 +2376,7 @@ public class SyntheticPopJP implements SyntheticPopI {
                 + "_"
                 + properties.main.baseYear
                 + ".csv";
-        HouseholdWriter hhwriter = new DefaultHouseholdWriter(dataContainer.getHouseholdDataManager());
+        HouseholdWriter hhwriter = new DefaultHouseholdWriter(dataContainer.getHouseholdDataManager().getHouseholds());
         hhwriter.writeHouseholds(filehh);
 
         String filepp = properties.main.baseDirectory
@@ -2401,7 +2400,7 @@ public class SyntheticPopJP implements SyntheticPopI {
                 + "_"
                 + properties.main.baseYear
                 + ".csv";
-        JobWriter jjwriter = new DefaultJobWriter(dataContainer.getJobDataManager());
+        JobWriter jjwriter = new DefaultJobWriter(dataContainer.getJobDataManager().getJobs());
         jjwriter.writeJobs(filejj);
 
 

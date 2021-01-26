@@ -18,11 +18,9 @@
  * *********************************************************************** */
 package de.tum.bgu.msm.matsim;
 
-
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
-import de.tum.bgu.msm.matsim.accessibility.MatsimAccessibility;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
@@ -41,6 +39,8 @@ import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.ScenarioUtils;
 
+import java.io.File;
+
 import java.util.Objects;
 
 /**
@@ -54,7 +54,7 @@ public final class MatsimTransportModel implements TransportModel {
     private final Config initialMatsimConfig;
 
     private final MatsimData matsimData;
-    private final MatsimTravelTimes internalTravelTimes;
+    private final MatsimTravelTimesAndCosts internalTravelTimes;
 
     private final DataContainer dataContainer;
 
@@ -66,12 +66,16 @@ public final class MatsimTransportModel implements TransportModel {
         this.dataContainer = Objects.requireNonNull(dataContainer);
         this.initialMatsimConfig = Objects.requireNonNull(matsimConfig,
                 "No initial matsim config provided to SiloModel class!");
+        logger.info("Copying initial config to output folder");
+        File file = new File(properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/matsim/initialConfig.xml");
+        file.getParentFile().mkdirs();
+        ConfigUtils.writeMinimalConfig(initialMatsimConfig, file.getAbsolutePath());
 
         final TravelTimes travelTimes = dataContainer.getTravelTimes();
-        if (travelTimes instanceof MatsimTravelTimes) {
-            this.internalTravelTimes = (MatsimTravelTimes) travelTimes;
+        if (travelTimes instanceof MatsimTravelTimesAndCosts) {
+            this.internalTravelTimes = (MatsimTravelTimesAndCosts) travelTimes;
         } else {
-            this.internalTravelTimes = new MatsimTravelTimes(matsimConfig);
+            this.internalTravelTimes = new MatsimTravelTimesAndCosts(matsimConfig);
         }
         this.matsimData = matsimData;
         this.scenarioAssembler = scenarioAssembler;
@@ -80,7 +84,6 @@ public final class MatsimTransportModel implements TransportModel {
 
     @Override
     public void setup() {
-        initialMatsimConfig.plansCalcRoute().setRoutingRandomness(0);
         internalTravelTimes.initialize(dataContainer.getGeoData(), matsimData);
 
         if (properties.transportModel.matsimInitialEventsFile == null) {
@@ -112,14 +115,13 @@ public final class MatsimTransportModel implements TransportModel {
         TravelTimes travelTimes = dataContainer.getTravelTimes();
         if (year == properties.main.baseYear &&
                 properties.transportModel.transportModelIdentifier == TransportModelPropertiesModule.TransportModelIdentifier.MATSIM){
-            //if using the SimpleCommuteModeChoiceScenarioAssembler, we need some intial travel times (this will use an unlodaded network)
+            //if using the SimpleCommuteModeChoiceScenarioAssembler, we need some initial travel times (this will use an unlodaded network)
             TravelTime myTravelTime = SiloMatsimUtils.getAnEmptyNetworkTravelTime();
             TravelDisutility myTravelDisutility = SiloMatsimUtils.getAnEmptyNetworkTravelDisutility();
             updateTravelTimes(myTravelTime, myTravelDisutility);
         }
         assembledScenario = scenarioAssembler.assembleScenario(initialMatsimConfig, year, travelTimes);
 
-        ConfigUtils.setVspDefaults(assembledScenario.getConfig());
         finalizeConfig(assembledScenario.getConfig(), year);
 
         final Controler controler = new Controler(assembledScenario);
@@ -142,9 +144,10 @@ public final class MatsimTransportModel implements TransportModel {
         config.controler().setWritePlansInterval(Math.max(config.controler().getLastIteration(), 1));
         config.controler().setWriteEventsInterval(Math.max(config.controler().getLastIteration(), 1));
         config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
+        if (properties.transportModel.includeAccessEgress) {
+            config.plansCalcRoute().setInsertingAccessEgressWalk(true);
+        }
         config.transit().setUsingTransitInMobsim(false);
-
-        config.vspExperimental().setWritingOutputEvents(true);
     }
 
     /**

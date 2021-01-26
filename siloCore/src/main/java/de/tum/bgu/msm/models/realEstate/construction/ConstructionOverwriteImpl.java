@@ -82,7 +82,9 @@ public class ConstructionOverwriteImpl extends AbstractModel implements Construc
 
         for (int row = 1; row <= overwrite.getRowCount(); row++) {
             int year = (int) overwrite.getValueAt(row, "year");
-            if (year > properties.main.endYear || year < 0) continue;   // if year > endYear, this row is not relevant for current run
+            if (year > properties.main.endYear || year < 0) {
+                continue;   // if year > endYear, this row is not relevant for current run
+            }
             Integer[] data = new Integer[6];
             int zone = (int) overwrite.getValueAt(row, "zone");
             String type = overwrite.getStringValueAt(row, "type");
@@ -93,8 +95,15 @@ public class ConstructionOverwriteImpl extends AbstractModel implements Construc
             int quantity = (int) overwrite.getValueAt(row, "quantity");
             data[0] = zone;
             data[1] = -1;
-            for (DwellingType dt: dataContainer.getRealEstateDataManager().getDwellingTypes()) if (dt.toString().equalsIgnoreCase(type)) data[1] = dataContainer.getRealEstateDataManager().getDwellingTypes().indexOf(dt);
-            if (data[1] == -1) logger.error("Invalid dwelling type in row " + row + " in file " + fileName + ".");
+            final List<DwellingType> types = dataContainer.getRealEstateDataManager().getDwellingTypes().getTypes();
+            for (DwellingType dt: types) {
+                if (dt.toString().equalsIgnoreCase(type)) {
+                    data[1] = types.indexOf(dt);
+                }
+            }
+            if (data[1] == -1) {
+                logger.error("Invalid dwelling type in row " + row + " in file " + fileName + ".");
+            }
             data[2] = bedrooms;
             data[3] = quality;
             if (restrictions == 0) {
@@ -105,10 +114,14 @@ public class ConstructionOverwriteImpl extends AbstractModel implements Construc
             data[5] = (int) (restrictions * 100);
             if (plannedDwellings.containsKey(year)) {
                 List<Integer[]> list = plannedDwellings.get(year);
-                for (int i = 1; i <= quantity; i++) list.add(data);
+                for (int i = 1; i <= quantity; i++) {
+                    list.add(data);
+                }
             } else {
                 ArrayList<Integer[]> list = new ArrayList<>();
-                for (int i = 1; i <= quantity; i++) list.add(data);
+                for (int i = 1; i <= quantity; i++) {
+                    list.add(data);
+                }
                 plannedDwellings.put(year, list);
             }
         }
@@ -118,8 +131,12 @@ public class ConstructionOverwriteImpl extends AbstractModel implements Construc
     private void addDwellings (int year) {
         // add overwrite dwellings for this year
 
-        if (!useOverwrite) return;
-        if (!plannedDwellings.containsKey(year)) return;
+        if (!useOverwrite) {
+            return;
+        }
+        if (!plannedDwellings.containsKey(year)) {
+            return;
+        }
         logger.info("  Adding dwellings that are given exogenously as an overwrite for the year " + year);
 
         String directory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
@@ -134,14 +151,16 @@ public class ConstructionOverwriteImpl extends AbstractModel implements Construc
             int quality = data[3];
             int price = data[4];
 
-            Dwelling dd = factory.createDwelling(ddId, zoneId, null, -1, dataContainer.getRealEstateDataManager().getDwellingTypes().get(dto), size, quality, price, year);
+            Dwelling dd = factory.createDwelling(ddId, zoneId, null, -1, dataContainer.getRealEstateDataManager().getDwellingTypes().getTypes().get(dto), size, quality, price, year);
             dataContainer.getRealEstateDataManager().addDwelling(dd);
 
             Coordinate coordinate = dataContainer.getGeoData().getZones().get(zoneId).getRandomCoordinate(random);
             dd.setCoordinate(coordinate);
 
-            if (traceOverwriteDwellings) traceFile.println(ddId + "," + zoneId + "," +  dataContainer.getRealEstateDataManager().getDwellingTypes().get(dto).toString() + "," + size + "," +
-                    quality + "," + price  + "," + year);
+            if (traceOverwriteDwellings) {
+                traceFile.println(ddId + "," + zoneId + "," +  dataContainer.getRealEstateDataManager().getDwellingTypes().getTypes().get(dto).toString() + "," + size + "," +
+                        quality + "," + price  + "," + year);
+            }
             if (ddId == SiloUtil.trackDd) {
                 SiloUtil.trackWriter.println("Dwelling " + ddId + " was constructed as an overwrite with these properties: ");
                 SiloUtil.trackWriter.println(dd.toString());
@@ -170,8 +189,12 @@ public class ConstructionOverwriteImpl extends AbstractModel implements Construc
         for (int row = 1; row <= overwriteDwellings.getRowCount(); row++) {
             int ddId = (int) overwriteDwellings.getValueAt(row, "dwellingID");
             Dwelling dd = dataContainer.getRealEstateDataManager().getDwelling(ddId);
-            if (dd == null) overwriteDwellings.setStringValueAt(row, "type", "dwellingWasDemolished");
-            if (dd == null) continue;
+            if (dd == null) {
+                overwriteDwellings.setStringValueAt(row, "type", "dwellingWasDemolished");
+            }
+            if (dd == null) {
+                continue;
+            }
             dwellingRent[row-1] = dd.getPrice();
             if (dd.getResidentId() > 0) {
                 Household hh = householdDataManager.getHouseholdFromId(dd.getResidentId());

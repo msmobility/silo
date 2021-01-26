@@ -305,7 +305,7 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
         }
 
 
-        List<DwellingType> dwellingTypes = dataContainer.getRealEstateDataManager().getDwellingTypes();
+        List<DwellingType> dwellingTypes = dataContainer.getRealEstateDataManager().getDwellingTypes().getTypes();
 
         Multiset<DwellingType> countsByDwellingType = HashMultiset.create(dwellingTypes.size());
 

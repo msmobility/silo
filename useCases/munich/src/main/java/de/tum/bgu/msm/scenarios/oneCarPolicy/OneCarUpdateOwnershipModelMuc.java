@@ -19,16 +19,12 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.util.Random;
 
-/**
- * Implements car ownership level change (subsequent years) for the Munich Metropolitan Area
- * @author Matthew Okrah
- * Created on 28/08/2017 in Munich, Germany.
- */
 public class OneCarUpdateOwnershipModelMuc extends AbstractModel implements ModelUpdateListener {
 
     private static Logger logger = Logger.getLogger(UpdateCarOwnershipModelMuc.class);
 
-    private double[][][][][][][][] carUpdateProb; // [previousCars][hhSize+][hhSize-][income+][income-][license+][changeRes][three probabilities]
+    // [previousCars][hhSize+][hhSize-][income+][income-][license+][changeRes][three probabilities]
+    private double[][][][][][][][] carUpdateProb;
 
     private final Reader reader = new InputStreamReader(UpdateCarOwnershipModelMuc.class.getResourceAsStream("UpdateCarOwnershipCalc"));
 
@@ -43,9 +39,7 @@ public class OneCarUpdateOwnershipModelMuc extends AbstractModel implements Mode
         for(Household household: dataContainer.getHouseholdDataManager().getHouseholds()) {
             household.setAutos(Math.min(household.getAutos(), 1));
         }
-//        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("UpdateCarOwnershipCalc"));
         CarOwnershipJSCalculatorMuc calculator = new CarOwnershipJSCalculatorMuc(reader);
-        //set car update probabilities
         carUpdateProb = new double[4][2][2][2][2][2][2][3];
         for (int prevCar = 0; prevCar < 4; prevCar++){
             for (int sizePlus = 0; sizePlus < 2; sizePlus++){
@@ -80,25 +74,6 @@ public class OneCarUpdateOwnershipModelMuc extends AbstractModel implements Mode
 
     }
 
-    public void summarizeCarUpdate() {
-        // This function summarizes household car ownership update and quits
-        PrintWriter pwa = SiloUtil.openFileForSequentialWriting("microData/interimFiles/carUpdate.csv", false);
-        pwa.println("id, dwelling, zone, license, income, size, autos");
-        HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
-        for (Household hh: householdDataManager.getHouseholds()) {
-            Dwelling dwelling = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId());
-            int homeZone = -1;
-            if(dwelling != null) {
-                homeZone = dwelling.getZoneId();
-            }
-            pwa.println(hh.getId() + "," + hh.getDwellingId() + "," + homeZone + "," +
-                    HouseholdUtil.getHHLicenseHolders(hh)+ "," +  HouseholdUtil.getAnnualHhIncome(hh) + "," + hh.getHhSize() + "," + hh.getAutos());
-        }
-        pwa.close();
-
-        logger.info("Summarized car update and quit.");
-        System.exit(0);
-    }
 
     private void updateCarOwnership() {
 
@@ -138,12 +113,15 @@ public class OneCarUpdateOwnershipModelMuc extends AbstractModel implements Mode
 
                 int action = SiloUtil.select(prob, random);
 
-                if (action == 1){ //add one car
-                    if (newHousehold.getAutos() == 0) { //maximum number of cars is equal to 3
+                if (action == 1){
+                    //add one car
+                    if (newHousehold.getAutos() == 0) {
+                        //maximum number of cars is equal to 1
                         newHousehold.setAutos(1);
                         counter[0]++;
                     }
-                } else if (action == 2) { //remove one car
+                } else if (action == 2) {
+                    //remove one car
                     if (newHousehold.getAutos() > 0){ //cannot have less than zero cars
                         newHousehold.setAutos(0);
                         counter[1]++;

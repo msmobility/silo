@@ -1979,7 +1979,7 @@ public class SyntheticPopCTrace implements SyntheticPopI {
                 int bedRooms = (int) dataHousehold.getIndexedValueAt(hhIdMD, "H03_TOTROOMS");
                 int quality = microDataManager.guessQuality(dataHousehold.getIndexedStringValueAt(hhIdMD,"H07_WATERPIPED"),
                         dataHousehold.getIndexedStringValueAt(hhIdMD,"H10_TOILET"), numberofQualityLevels);
-                DwellingTypeCapeTown type = microDataManager.translateDwellingType(dataHousehold.getIndexedStringValueAt(hhIdMD,"H02_MAINDWELLING"));
+                CapeTownDwellingTypes.DwellingTypeCapeTown type = microDataManager.translateDwellingType(dataHousehold.getIndexedStringValueAt(hhIdMD,"H02_MAINDWELLING"));
                 int price = microDataManager.guessDwellingPrice(hhIncome);
                 int newDdId = realEstate.getNextDwellingId();
                 Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, taz, null, id, type , bedRooms, quality, price, 0); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
@@ -2791,7 +2791,7 @@ public class SyntheticPopCTrace implements SyntheticPopI {
                 + "_"
                 + properties.main.baseYear + 100
                 + ".csv";
-        HouseholdWriter hhwriter = new DefaultHouseholdWriter(dataContainer.getHouseholdDataManager());
+        HouseholdWriter hhwriter = new DefaultHouseholdWriter(dataContainer.getHouseholdDataManager().getHouseholds());
         hhwriter.writeHouseholds(filehh);
 
         String filepp = properties.main.baseDirectory
@@ -2807,7 +2807,7 @@ public class SyntheticPopCTrace implements SyntheticPopI {
                 + "_"
                 + properties.main.baseYear+ 100
                 + ".csv";
-        DwellingWriter ddwriter = new DefaultDwellingWriter(dataContainer.getRealEstateDataManager());
+        DwellingWriter ddwriter = new DefaultDwellingWriter(dataContainer.getRealEstateDataManager().getDwellings());
         ddwriter.writeDwellings(filedd);
 
         String filejj = properties.main.baseDirectory

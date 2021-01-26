@@ -1,18 +1,19 @@
 package de.tum.bgu.msm.models.relocation.moves;
 
-import de.tum.bgu.msm.models.ScriptInputProvider;
-import de.tum.bgu.msm.util.js.JavaScriptCalculator;
+public class RegionProbabilityStrategyImpl implements RegionProbabilityStrategy {
 
-import java.io.InputStreamReader;
+    private final double beta;
 
-public class RegionProbabilityStrategyImpl extends JavaScriptCalculator<Double> implements RegionProbabilityStrategy {
+    public RegionProbabilityStrategyImpl(double beta) {
+        this.beta = beta;
+    }
 
     public RegionProbabilityStrategyImpl() {
-        super(new InputStreamReader(ScriptInputProvider.getRegionProbabilityScriptInput()));
+        this(0.5);
     }
 
     @Override
     public double calculateSelectRegionProbability(double util) {
-        return super.calculate("calculateSelectRegionProbability", util);
+        return Math.exp(beta * util);
     }
 }

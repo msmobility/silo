@@ -10,7 +10,6 @@ import de.tum.bgu.msm.mito.MitoMatsimScenarioAssembler;
 import de.tum.bgu.msm.models.EducationModelMuc;
 import de.tum.bgu.msm.models.MarriageModelMuc;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
-import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipModelMuc;
 import de.tum.bgu.msm.models.construction.ConstructionDemandStrategyMuc;
 import de.tum.bgu.msm.models.demography.birth.BirthModelImpl;
 import de.tum.bgu.msm.models.demography.birth.DefaultBirthStrategy;
@@ -84,9 +83,10 @@ public class OneCarPolicyModelBuilderMuc {
                 new HousingStrategyMuc(dataContainer,
                         properties,
                         dataContainer.getTravelTimes(), new DefaultDwellingProbabilityStrategy(),
-                        new DwellingUtilityStrategyImpl(), new RegionUtilityStrategyMucImpl(), new RegionProbabilityStrategyImpl()), SiloUtil.provideNewRandom());
+                        new DwellingUtilityStrategyImpl(), new RegionUtilityStrategyMucImpl(), new RegionProbabilityStrategyImpl(), new SimpleCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom())),
+                SiloUtil.provideNewRandom());
 
-        CreateCarOwnershipModel carOwnershipModel = new CreateCarOwnershipModelMuc(dataContainer);
+        CreateCarOwnershipModel carOwnershipModel = new OneCarCreateCarOwnershipModelMuc(dataContainer);
 
         DivorceModel divorceModel = new DivorceModelImpl(
                 dataContainer, movesModel, carOwnershipModel, hhFactory,
@@ -128,7 +128,7 @@ public class OneCarPolicyModelBuilderMuc {
         MatsimData matsimData = null;
         if (config != null) {
             final Scenario scenario = ScenarioUtils.loadScenario(config);
-            matsimData = new MatsimData(config, properties, ZoneConnectorManager.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
+            matsimData = new MatsimData(config, properties, ZoneConnectorManagerImpl.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
         }
         switch (properties.transportModel.transportModelIdentifier) {
             case MITO_MATSIM:

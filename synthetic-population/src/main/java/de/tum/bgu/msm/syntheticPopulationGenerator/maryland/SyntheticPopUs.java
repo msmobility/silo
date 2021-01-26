@@ -44,7 +44,6 @@ import java.util.*;
 
 public class SyntheticPopUs implements SyntheticPopI {
 
-    protected static final String PROPERTIES_RUN_SP                  = "run.synth.pop.generator";
     protected static final String PROPERTIES_PUMS_FILES              = "pums.records";
     protected static final String PROPERTIES_PARTLY_COVERED_PUMAS    = "partly.covered.pumas";
     protected static final String PROPERTIES_HOUSEHOLD_CONTROL_TOTAL = "household.control.total";
@@ -76,7 +75,7 @@ public class SyntheticPopUs implements SyntheticPopI {
     private HouseholdDataManager householdData;
     private JobDataManager jobData;
     private SkimTravelTimes travelTimes;
-
+    private PersonfactoryMstm personfactoryMstm = new PersonfactoryMstm();
 
     public SyntheticPopUs(ResourceBundle rb, Properties properties) {
         // constructor
@@ -85,6 +84,7 @@ public class SyntheticPopUs implements SyntheticPopI {
     }
 
 
+    @Override
     public void runSP () {
         // main method to run the synthetic population generator
 
@@ -136,7 +136,9 @@ public class SyntheticPopUs implements SyntheticPopI {
             logger.warn("  Could not find sufficient number of jobs in these PUMA zones (note that most of these " +
                     "zones are outside the MSTM area):");
             Set<Integer> list = jobErrorCounter.keySet();
-            for (Integer puma: list) logger.warn("  -> " + puma + " is missing " + jobErrorCounter.get(puma) + " jobs.");
+            for (Integer puma: list) {
+                logger.warn("  -> " + puma + " is missing " + jobErrorCounter.get(puma) + " jobs.");
+            }
         } else {
             logger.info("  Succeeded in assigning job to every worker.");
         }
@@ -370,7 +372,7 @@ public class SyntheticPopUs implements SyntheticPopI {
                     logger.debug("Household " + serial + " lives in Boat/RV/Van or NA. Skipping.");
                     continue;
                 }
-                DefaultDwellingTypeImpl ddType = translateDwellingType(pumsDdType);
+                DefaultDwellingTypes.DefaultDwellingTypeImpl ddType = translateDwellingType(pumsDdType);
 
                 int bedRooms;
                 try {
@@ -522,7 +524,7 @@ public class SyntheticPopUs implements SyntheticPopI {
                             jobData.getJobFromId(workplace).setWorkerID(newPpId);  // -2 for jobs outside of the study area
                         }
 
-                        MarylandPerson pp = (MarylandPerson) PersonUtils.getFactory().createPerson(newPpId, age, Gender.valueOf(gender), occ, null, workplace, income);
+                        PersonMstm pp = personfactoryMstm.createPerson(newPpId, age, Gender.valueOf(gender), occ, null, workplace, income);
                         pp.setRace(race);
                         householdData.addPerson(pp);
                         householdData.addPersonToHousehold(pp, household);
@@ -551,7 +553,11 @@ public class SyntheticPopUs implements SyntheticPopI {
 
     private boolean checkIfSimplifiedPumaInStudyArea(int simplifiedPumaZone) {
         // check if puma zone is part of study area
-        for (int p: simplifiedPumas) if (simplifiedPumaZone == p) return true;
+        for (int p: simplifiedPumas) {
+            if (simplifiedPumaZone == p) {
+                return true;
+            }
+        }
         return false;
     }
 
@@ -688,7 +694,7 @@ public class SyntheticPopUs implements SyntheticPopI {
     }
 
 
-    private DefaultDwellingTypeImpl translateDwellingType (int pumsDdType) {
+    private DefaultDwellingTypes.DefaultDwellingTypeImpl translateDwellingType (int pumsDdType) {
         // translate 10 PUMA into 6 MetCouncil Dwelling Types
 
         // todo: consider keeping more dwelling types for MSTM implementation. Available in PUMS:
@@ -703,13 +709,18 @@ public class SyntheticPopUs implements SyntheticPopI {
 //        V 09 . A building with 50 or more apartments
 //        V 10 . Boat, RV, van, etc.
 
-        DefaultDwellingTypeImpl type;
-        if (pumsDdType == 1) type = DefaultDwellingTypeImpl.MH;
-        else if (pumsDdType == 2) type = DefaultDwellingTypeImpl.SFD;
-        else if (pumsDdType == 3) type = DefaultDwellingTypeImpl.SFA;
-        else if (pumsDdType == 4 || pumsDdType == 5) type = DefaultDwellingTypeImpl.MF234;
-        else if (pumsDdType >= 6 && pumsDdType <= 9) type = DefaultDwellingTypeImpl.MF5plus;
-        else {
+        DefaultDwellingTypes.DefaultDwellingTypeImpl type;
+        if (pumsDdType == 1) {
+            type = DefaultDwellingTypes.DefaultDwellingTypeImpl.MH;
+        } else if (pumsDdType == 2) {
+            type = DefaultDwellingTypes.DefaultDwellingTypeImpl.SFD;
+        } else if (pumsDdType == 3) {
+            type = DefaultDwellingTypes.DefaultDwellingTypeImpl.SFA;
+        } else if (pumsDdType == 4 || pumsDdType == 5) {
+            type = DefaultDwellingTypes.DefaultDwellingTypeImpl.MF234;
+        } else if (pumsDdType >= 6 && pumsDdType <= 9) {
+            type = DefaultDwellingTypes.DefaultDwellingTypeImpl.MF5plus;
+        } else {
             logger.error("Unknown dwelling type " + pumsDdType + " found in PUMS data.");
             type = null;
         }
@@ -774,7 +785,7 @@ public class SyntheticPopUs implements SyntheticPopI {
                 	Zone homeZone = geoData.getZones().get(homeTaz);
                 	Zone destinationZone = zone;
                     int distance = (int) (travelTimes.getTravelTime(homeZone, destinationZone, Properties.get().transportModel.peakHour_s, "car") + 0.5);
-                    zoneProbabilities.put(zone, commutingTimeProbability.getCommutingTimeProbability(distance) * (double) numberOfJobsInThisZone);
+                    zoneProbabilities.put(zone, commutingTimeProbability.getCommutingTimeProbability(distance, TransportMode.car) * (double) numberOfJobsInThisZone);
                 } else {
                     zoneProbabilities.put(zone, 0.);
                 }
@@ -912,9 +923,13 @@ public class SyntheticPopUs implements SyntheticPopI {
         } catch (Exception e) {
             boolean spacesOnly = true;
             for (int pos = 0; pos < s.length(); pos++) {
-                if (!s.substring(pos, pos+1).equals(" ")) spacesOnly = false;
+                if (!s.substring(pos, pos+1).equals(" ")) {
+                    spacesOnly = false;
+                }
             }
-            if (spacesOnly) return -999;
+            if (spacesOnly) {
+                return -999;
+            }
             else {
                 logger.fatal("String " + s + " cannot be converted into an integer.");
                 return 0;
@@ -939,16 +954,18 @@ public class SyntheticPopUs implements SyntheticPopI {
 
         logger.info("  Adding empty dwellings to match vacancy rate");
 
-        List<DwellingType> dwellingTypes = realEstateData.getDwellingTypes();
+        List<DwellingType> dwellingTypes = realEstateData.getDwellingTypes().getTypes();
         HashMap<String, ArrayList<Integer>> ddPointer = new HashMap<>();
         // summarize vacancy
         final int highestZoneId = geoData.getZones().keySet().stream().max(Comparator.naturalOrder()).get();
-        int[][][] ddCount = new int [highestZoneId + 1][DefaultDwellingTypeImpl.values().length][2];
+        int[][][] ddCount = new int [highestZoneId + 1][DefaultDwellingTypes.DefaultDwellingTypeImpl.values().length][2];
         for (Dwelling dd: realEstateData.getDwellings()) {
             int taz = dd.getZoneId();
             int occ = dd.getResidentId();
             ddCount[taz][dwellingTypes.indexOf(dd.getType())][0]++;
-            if (occ > 0) ddCount[taz][dwellingTypes.indexOf(dd.getType())][1]++;
+            if (occ > 0) {
+                ddCount[taz][dwellingTypes.indexOf(dd.getType())][1]++;
+            }
             // set pointer to this dwelling
             String code = taz + "_" + dd.getType();
             if (ddPointer.containsKey(code)) {
@@ -975,17 +992,23 @@ public class SyntheticPopUs implements SyntheticPopI {
                 vacRateCountyTarget = countyLevelVacancies.getIndexedValueAt(99999, "VacancyRate");  // use average value
             }
             int ddInThisTaz = 0;
-            for (DwellingType dt: DefaultDwellingTypeImpl.values()) {
+            for (DwellingType dt: DefaultDwellingTypes.DefaultDwellingTypeImpl.values()) {
                 String code = taz + "_" + dt;
-                if (!ddPointer.containsKey(code)) continue;
+                if (!ddPointer.containsKey(code)) {
+                    continue;
+                }
                 ddInThisTaz += ddPointer.get(code).size();
             }
             int targetVacantDdThisZone = (int) (ddInThisTaz * vacRateCountyTarget + 0.5);
-            for (DefaultDwellingTypeImpl dt: DefaultDwellingTypeImpl.values()) {
+            for (DefaultDwellingTypes.DefaultDwellingTypeImpl dt: DefaultDwellingTypes.DefaultDwellingTypeImpl.values()) {
                 String code = taz + "_" + dt;
-                if (!ddPointer.containsKey(code)) continue;
+                if (!ddPointer.containsKey(code)) {
+                    continue;
+                }
                 ArrayList<Integer> dList = ddPointer.get(code);
-                if (ddCount[taz][dt.ordinal()][0] == 0) continue; // no values for this zone and dwelling type in modeled data
+                if (ddCount[taz][dt.ordinal()][0] == 0) {
+                    continue; // no values for this zone and dwelling type in modeled data
+                }
                 float vacRateTargetThisDwellingType = (float) expectedVacancies[dt.ordinal()];
                 float targetThisTypeThisZoneAbs = (float) (vacRateTargetThisDwellingType /
                         SiloUtil.getSum(expectedVacancies) * targetVacantDdThisZone);
@@ -1065,17 +1088,19 @@ public class SyntheticPopUs implements SyntheticPopI {
     private void calculateVacancyRate () {
         //calculate and log vacancy rate
 
-        List<DwellingType> dwellingTypes = realEstateData.getDwellingTypes();
+        List<DwellingType> dwellingTypes = realEstateData.getDwellingTypes().getTypes();
 
         int[] ddCount = new int[dwellingTypes.size()];
-        int[] occCount = new int[DefaultDwellingTypeImpl.values().length];
+        int[] occCount = new int[DefaultDwellingTypes.DefaultDwellingTypeImpl.values().length];
         for (Dwelling dd: realEstateData.getDwellings()) {
             int id = dd.getResidentId();
             DwellingType tp = dd.getType();
             ddCount[dwellingTypes.indexOf(tp)]++;
-            if (id > 0) occCount[dwellingTypes.indexOf(tp)]++;
+            if (id > 0) {
+                occCount[dwellingTypes.indexOf(tp)]++;
+            }
         }
-        for (DefaultDwellingTypeImpl tp: DefaultDwellingTypeImpl.values()) {
+        for (DefaultDwellingTypes.DefaultDwellingTypeImpl tp: DefaultDwellingTypes.DefaultDwellingTypeImpl.values()) {
             float rate = SiloUtil.rounder(((float) ddCount[tp.ordinal()] - occCount[tp.ordinal()]) * 100 /
                     ((float) ddCount[tp.ordinal()]), 2);
             logger.info("  Vacancy rate for " + tp + ": " + rate + "%");
@@ -1088,26 +1113,29 @@ public class SyntheticPopUs implements SyntheticPopI {
         logger.info("----Vacant Jobs By Region Start----");
         final int highestRegionId = geoData.getRegions().keySet().stream().max(Comparator.naturalOrder()).get();
         int[] vacantJobsByRegion = new int[highestRegionId + 1];
-        for (Zone zone: geoData.getZones().values()) {
+        for (Zone zone : geoData.getZones().values()) {
             if (vacantJobsByZone.containsKey(zone.getZoneId())) {
                 vacantJobsByRegion[zone.getRegion().getId()] +=
                         vacantJobsByZone.get(zone).length;
             }
         }
-        for (int region: geoData.getRegions().keySet()) {
-            logger.info("----,"+region+","+vacantJobsByRegion[region]);
+        for (int region : geoData.getRegions().keySet()) {
+            logger.info("----," + region + "," + vacantJobsByRegion[region]);
         }
         logger.info("----Vacant Jobs By Region End----");
         logger.info("----Vacant Jobs By PUMA Start----");
         int[] vacantJobsByPuma = new int[9999999];
-        for (Zone zone: geoData.getZones().values()) {
+        for (Zone zone : geoData.getZones().values()) {
             if (vacantJobsByZone.containsKey(zone.getZoneId())) {
                 vacantJobsByPuma[((MstmZone) zone).getPuma()] +=
                         vacantJobsByZone.get(zone).length;
             }
         }
-        for (int i = 0; i < 9999999; i++)
-            if (vacantJobsByPuma[i] > 0) logger.info("----,"+i+","+vacantJobsByPuma[i]);
+        for (int i = 0; i < 9999999; i++) {
+            if (vacantJobsByPuma[i] > 0) {
+                logger.info("----," + i + "," + vacantJobsByPuma[i]);
+            }
+        }
         logger.info("----Vacant Jobs By PUMA End----");
     }
 
@@ -1116,7 +1144,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         // summarize number of people by PersonRole (married, single, child)
 
         int[][] roleCounter = new int[101][3];
-        for (Person pp: householdData.getPersons()) {
+        for (Person pp : householdData.getPersons()) {
             if (pp.getGender() == Gender.MALE) {
                 continue;
             }
@@ -1125,8 +1153,10 @@ public class SyntheticPopUs implements SyntheticPopI {
         }
         logger.info("Person role distribution for women:");
         logger.info("age,single,married,child");
-        for (int i = 0; i <= 100; i++) logger.info(i + "," + roleCounter[i][0] + "," + roleCounter[i][1] + "," +
-                roleCounter[i][2]);
+        for (int i = 0; i <= 100; i++) {
+            logger.info(i + "," + roleCounter[i][0] + "," + roleCounter[i][1] + "," +
+                    roleCounter[i][2]);
+        }
     }
 
     private void summarizeData(DataContainer dataContainer){
@@ -1136,7 +1166,7 @@ public class SyntheticPopUs implements SyntheticPopI {
                 + "_"
                 + properties.main.baseYear
                 + ".csv";
-        HouseholdWriter hhwriter = new DefaultHouseholdWriter(dataContainer.getHouseholdDataManager());
+        HouseholdWriter hhwriter = new DefaultHouseholdWriter(dataContainer.getHouseholdDataManager().getHouseholds());
         hhwriter.writeHouseholds(filehh);
 
         String filepp = properties.main.baseDirectory
@@ -1152,7 +1182,7 @@ public class SyntheticPopUs implements SyntheticPopI {
                 + "_"
                 + properties.main.baseYear
                 + ".csv";
-        DwellingWriter ddwriter = new DefaultDwellingWriter(dataContainer.getRealEstateDataManager());
+        DwellingWriter ddwriter = new DefaultDwellingWriter(dataContainer.getRealEstateDataManager().getDwellings());
         ddwriter.writeDwellings(filedd);
 
         String filejj = properties.main.baseDirectory
@@ -1160,7 +1190,7 @@ public class SyntheticPopUs implements SyntheticPopI {
                 + "_"
                 + properties.main.baseYear
                 + ".csv";
-        JobWriter jjwriter = new DefaultJobWriter(dataContainer.getJobDataManager());
+        JobWriter jjwriter = new DefaultJobWriter(dataContainer.getJobDataManager().getJobs());
         jjwriter.writeJobs(filejj);
 
 

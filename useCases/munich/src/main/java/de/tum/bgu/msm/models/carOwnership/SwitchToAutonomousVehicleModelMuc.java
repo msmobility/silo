@@ -91,7 +91,7 @@ public class SwitchToAutonomousVehicleModelMuc extends AbstractModel implements 
         summary.put("hh", hh);
         summary.put("autos", autos_counter);
         summary.put("avs", av_counter);
-        summary.put("", event_counter);
+        summary.put("events", event_counter);
 
 
         logger.info(" Simulated household switched to AV " + event_counter + " (" +

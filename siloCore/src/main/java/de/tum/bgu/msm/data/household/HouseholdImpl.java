@@ -17,10 +17,9 @@
 package de.tum.bgu.msm.data.household;
 
 import de.tum.bgu.msm.data.person.Person;
+import org.matsim.utils.objectattributes.attributable.Attributes;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -38,6 +37,8 @@ public class HouseholdImpl implements Household {
     private HouseholdType type;
 
     private final Map<Integer, Person> persons;
+
+    private final Attributes attributes = new Attributes();
 
     public HouseholdImpl(int id, int dwellingID, int autos) {
         this.hhId = id;
@@ -103,6 +104,16 @@ public class HouseholdImpl implements Household {
     @Override
     public void setAutos(int autos) {
         this.autos = autos;
+    }
+
+    @Override
+    public Optional<Object> getAttribute(String key) {
+        return Optional.ofNullable(attributes.getAttribute(key));
+    }
+
+    @Override
+    public void setAttribute(String key, Object value) {
+        attributes.putAttribute(key, value);
     }
 
     @Override

@@ -8,7 +8,7 @@ import de.tum.bgu.msm.data.person.PersonFactory;
 import de.tum.bgu.msm.matsim.*;
 import de.tum.bgu.msm.mito.MitoMatsimScenarioAssembler;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
-import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipStrategyTakImpl;
+import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipStrategyTak;
 import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipTak;
 import de.tum.bgu.msm.models.carOwnership.UpdateCarOwnershipTak;
 import de.tum.bgu.msm.models.demography.birth.BirthModelImpl;
@@ -53,7 +53,6 @@ import de.tum.bgu.msm.models.relocation.moves.*;
 import de.tum.bgu.msm.models.transport.MitoDataConverterTak;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.scenarios.oneCarPolicy.OneCarPolicyCarOwnerTak;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
@@ -79,7 +78,7 @@ public class LongCommutePenaltyModelBuilderTak {
                         new DwellingUtilityStrategyImpl(), new DefaultDwellingProbabilityStrategy(),
                         new RegionUtilityStrategyImpl(), new RegionProbabilityStrategyImpl()), SiloUtil.provideNewRandom());
 
-        CreateCarOwnershipModel carOwnershipModel = new CreateCarOwnershipTak(dataContainer, new CreateCarOwnershipStrategyTakImpl());
+        CreateCarOwnershipModel carOwnershipModel = new CreateCarOwnershipTak(dataContainer, new CreateCarOwnershipStrategyTak());
 
         DivorceModel divorceModel = new DivorceModelImpl(
                 dataContainer, movesModel, carOwnershipModel, hhFactory,
@@ -120,7 +119,7 @@ public class LongCommutePenaltyModelBuilderTak {
         MatsimData matsimData = null;
         if (config != null) {
             final Scenario scenario = ScenarioUtils.loadScenario(config);
-            matsimData = new MatsimData(config, properties, ZoneConnectorManager.ZoneConnectorMethod.RANDOM, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
+            matsimData = new MatsimData(config, properties, ZoneConnectorManagerImpl.ZoneConnectorMethod.RANDOM, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
         }
         switch (properties.transportModel.transportModelIdentifier) {
             case MITO_MATSIM:

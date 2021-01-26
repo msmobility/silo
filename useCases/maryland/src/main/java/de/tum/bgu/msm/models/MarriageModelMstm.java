@@ -18,7 +18,7 @@ package de.tum.bgu.msm.models;
 
 import com.google.common.collect.*;
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.person.MarylandPerson;
+import de.tum.bgu.msm.data.person.PersonMstm;
 import de.tum.bgu.msm.data.person.Race;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
@@ -184,11 +184,11 @@ public class MarriageModelMstm extends AbstractModel implements MarriageModel {
 
         final Map<Person, Float> probabilities = new HashMap<>();
 
-        Race personRace = ((MarylandPerson) person).getRace();
+        Race personRace = ((PersonMstm) person).getRace();
         float sum = 0;
         for (Person pp : possiblePartners) {
             float prob;
-            MarylandPerson p = ((MarylandPerson) pp);
+            PersonMstm p = ((PersonMstm) pp);
             if ((preference.sameRace && personRace == p.getRace())
                     || (!preference.sameRace && personRace != p.getRace())) {
                 prob = 10000f;
