@@ -18,6 +18,7 @@
 		<param name="transitScheduleFile" value="schedule2018.xml" />
 		<param name="transitModes" value="pt" />
 		<param name="useTransit" value="true" />
+		<param name="usingTransitInMobsim" value="false" />
 	</module>
 
 	<module name="qsim" >

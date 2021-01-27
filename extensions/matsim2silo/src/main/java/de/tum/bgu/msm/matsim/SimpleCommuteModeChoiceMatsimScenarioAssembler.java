@@ -79,14 +79,16 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
 
                     createHWHPlanAndAddToAlterEgo(populationFactory, matsimAlterEgo, dwellingCoord, job, jobCoord, TransportMode.car);
                 } else {
-                    if (!properties.transportModel.onlySimulateCarTrips) {
+                    // TODO MATSim expects the plans to be there at least in VspPlansCleaner.notifyBeforeMobsim(VspPlansCleaner.java:54).
+                    // Therefore, the intended switch one line below may not work; maybe with other settings
+                    // if (!properties.transportModel.onlySimulateCarTrips) {
                         Coord dwellingCoord = getOrRandomlyChooseDwellingCoord(dwelling);
 
                         Job job = jobDataManager.getJobFromId(person.getJobId());
                         Coord jobCoord = getOrRandomlyChooseJobCoordinate(job);
 
                         createHWHPlanAndAddToAlterEgo(populationFactory, matsimAlterEgo, dwellingCoord, job, jobCoord, mode);
-                    }
+                    // }
                 }
             }
         }
