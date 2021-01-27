@@ -4,6 +4,8 @@ import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.io.output.DefaultResultsMonitor;
+import de.tum.bgu.msm.io.output.HouseholdSatisfactionMonitor;
+import de.tum.bgu.msm.io.output.MultiFileResultsMonitor;
 import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -38,8 +40,13 @@ public class RunFabiland {
         ModelContainer modelContainer = ModelBuilderFabiland.getModelContainer(dataContainer, properties, config);
 
         ResultsMonitor resultsMonitor = new DefaultResultsMonitor(dataContainer, properties);
+        MultiFileResultsMonitor multiFileResultsMonitor = new MultiFileResultsMonitor(dataContainer, properties);
+        HouseholdSatisfactionMonitor householdSatisfactionMonitor = new HouseholdSatisfactionMonitor(dataContainer, properties, modelContainer);
+
         SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
         model.addResultMonitor(resultsMonitor);
+        model.addResultMonitor(multiFileResultsMonitor);
+        model.addResultMonitor(householdSatisfactionMonitor);
         model.runModel();
         logger.info("Finished SILO.");
     }
