@@ -7,6 +7,7 @@ import java.util.ResourceBundle;
 public class RealEstateProperties {
 
     public final String dwellingsFileName;
+    public final String dwellingsIntermediatesFileName;
     public final String dwellingsFinalFileName;
     public final boolean constructionOverwriteDwelling;
     public final boolean traceOverwriteDwellings;
@@ -22,6 +23,7 @@ public class RealEstateProperties {
         PropertiesUtil.newPropertySubmodule("Real state properties");
         PropertiesUtil.newPropertySubmodule("Real state - dwelling input data");
         dwellingsFileName = PropertiesUtil.getStringProperty(bundle, "dwelling.file.ascii", "microData/dd");
+        dwellingsIntermediatesFileName = PropertiesUtil.getStringProperty(bundle, "dwelling.intermediates.file.ascii", "microData/dd");
         dwellingsFinalFileName = PropertiesUtil.getStringProperty(bundle, "dwelling.final.file.ascii", "microData/dd");
 
         PropertiesUtil.newPropertySubmodule("Real state - model parameters and input");
