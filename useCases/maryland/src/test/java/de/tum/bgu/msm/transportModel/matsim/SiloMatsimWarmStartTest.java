@@ -35,7 +35,7 @@ public class SiloMatsimWarmStartTest {
     @Test
     public final void testMain() {
         SiloTestUtils.cleanUpMicrodataFiles();
-        SiloTestUtils.cleanUpOtherFiles();
+        //SiloTestUtils.cleanUpOtherFiles();
 
         boolean cleanupAfterTest = true; // Set to true normally; set to false to be able to inspect files
         String arg = "test/scenarios/annapolis/javaFiles/siloMatsimWarmStart.properties";
@@ -52,6 +52,7 @@ public class SiloMatsimWarmStartTest {
         config.global().setNumberOfThreads(1);
         config.parallelEventHandling().setNumberOfThreads(1);
         config.qsim().setNumberOfThreads(1);
+        config.plansCalcRoute().setRoutingRandomness(0);
 
         try {
             SiloMatsim siloMatsim = new SiloMatsim(arg, config);
