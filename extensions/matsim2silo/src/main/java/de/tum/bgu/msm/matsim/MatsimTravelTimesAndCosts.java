@@ -204,8 +204,8 @@ public final class MatsimTravelTimesAndCosts implements TravelTimes {
             destinationCoord = CoordUtils.createCoord(((MicroLocation) destination).getCoordinate());
         } else if (origin instanceof Zone && destination instanceof Zone) {
             // Non-microlocations case
-            originCoord = matsimData.getZoneConnectorManager().getCoordsForZone((Zone) origin).get(0);
-            destinationCoord = matsimData.getZoneConnectorManager().getCoordsForZone((Zone) destination).get(0);
+            originCoord = matsimData.getZoneConnectorManager().getCoordsForZone(origin.getZoneId()).get(0);
+            destinationCoord = matsimData.getZoneConnectorManager().getCoordsForZone(destination.getZoneId()).get(0);
         } else {
             throw new IllegalArgumentException("Origin and destination have to be consistent in location type!");
         }
@@ -250,21 +250,25 @@ public final class MatsimTravelTimesAndCosts implements TravelTimes {
             final MatsimSkimCreator matsimSkimCreator = new MatsimSkimCreator(matsimData);
             switch (mode) {
                 case TransportMode.car:
-                    skim = matsimSkimCreator.createCarSkim(zones.values());
+                    skim = matsimSkimCreator.createCarSkim(zones.values(), Properties.get().main.numberOfThreads,
+                            Properties.get().transportModel.peakHour_s);
                     break;
                 case TransportMode.pt:
                     if (config.transit().isUseTransit()) {
-                        skim = matsimSkimCreator.createPtSkim(zones.values());
+                        skim = matsimSkimCreator.createPtSkim(zones.values(), Properties.get().main.numberOfThreads,
+                                Properties.get().transportModel.peakHour_s);
                         break;
                     } else {
                         logger.warn("No schedule/ network provided for pt. Will use freespeed factor.");
                         skim = matsimSkimCreator.createFreeSpeedFactorSkim(zones.values(),
-                                config.plansCalcRoute().getModeRoutingParams().get(TransportMode.pt).getTeleportedModeFreespeedFactor());
+                                config.plansCalcRoute().getModeRoutingParams().get(TransportMode.pt).getTeleportedModeFreespeedFactor(),
+                                Properties.get().main.numberOfThreads, Properties.get().transportModel.peakHour_s);
                         break;
                     }
                 default:
                     logger.warn("Defaulting to teleportation.");
-                    skim = matsimSkimCreator.createTeleportedSkim(zones.values(), mode);
+                    skim = matsimSkimCreator.createTeleportedSkim(zones.values(), mode, Properties.get().main.numberOfThreads,
+                            Properties.get().transportModel.peakHour_s);
             }
             skimsByMode.put(mode, skim);
             logger.info("Obtained skim for mode " + mode);
