@@ -176,6 +176,12 @@
             <id>osgeo</id>
             <name>Geotools repository</name>
             <url>http://download.osgeo.org/webdav/geotools</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
         </repository>
         <repository>
             <id>matsim</id>
@@ -242,6 +248,8 @@
         <svnRevision>${buildNumber}</svnRevision>
         <skipTestJar>false</skipTestJar> <!--Overridden in the bintray profile-->
         <jackson.version>2.9.5</jackson.version>
-        <matsimVersion>11.0</matsimVersion>
+        <matsimVersion>13.0-2020w37-SNAPSHOT</matsimVersion>
+<!--        <matsimVersion>12.0</matsimVersion>-->
+        <geotools.version>21.5</geotools.version>
     </properties>
 </project>

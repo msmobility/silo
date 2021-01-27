@@ -6,6 +6,7 @@ import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.geo.GeoData;
+import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix2D;
@@ -125,12 +126,29 @@ public final class MatsimTravelTimesAndCosts implements TravelTimes {
 
     @Override
     public double getTravelTime(Location origin, Location destination, double timeOfDay_s, String mode) {
-        List<? extends PlanElement> planElements = getRoute(origin, destination, timeOfDay_s, mode);
+        List<? extends PlanElement> planElements = getRoute(origin, destination, timeOfDay_s, mode, null);
         double arrivalTime = timeOfDay_s;
 
         if (!planElements.isEmpty()) {
             final Leg lastLeg = (Leg) planElements.get(planElements.size() - 1);
-            arrivalTime = lastLeg.getDepartureTime() + lastLeg.getTravelTime();
+            arrivalTime = lastLeg.getDepartureTime().seconds() + lastLeg.getTravelTime().seconds();
+        }
+
+        double time = arrivalTime - timeOfDay_s;
+
+        //convert to minutes
+        time /= 60.;
+        return time;
+    }
+
+    public double getTravelTime(Location origin, Location destination, double timeOfDay_s, String mode, Person siloPerson) {
+
+        List<? extends PlanElement> planElements = getRoute(origin, destination, timeOfDay_s, mode, siloPerson);
+        double arrivalTime = timeOfDay_s;
+
+        if (!planElements.isEmpty()) {
+            final Leg lastLeg = (Leg) planElements.get(planElements.size() - 1);
+            arrivalTime = lastLeg.getDepartureTime().seconds() + lastLeg.getTravelTime().seconds();
         }
 
         double time = arrivalTime - timeOfDay_s;
@@ -141,7 +159,7 @@ public final class MatsimTravelTimesAndCosts implements TravelTimes {
     }
 
     public double getGeneralizedTravelCosts(Location origin, Location destination, double timeOfDay_s, String mode) {
-        List<? extends PlanElement> planElements = getRoute(origin, destination, timeOfDay_s, mode);
+        List<? extends PlanElement> planElements = getRoute(origin, destination, timeOfDay_s, mode, null);
         RoutingModule routingModule = tripRouter.getRoutingModule(mode);
         PlanCalcScoreConfigGroup cnScoringGroup = config.planCalcScore();
 
@@ -157,12 +175,12 @@ public final class MatsimTravelTimesAndCosts implements TravelTimes {
         } else if (routingModule instanceof SwissRailRaptorRoutingModule || routingModule instanceof FreespeedFactorRoutingModule) {
             for (PlanElement pe : planElements) {
                 if (pe instanceof Leg) {
-                    double time = ((Leg) pe).getTravelTime();
+                    double time = ((Leg) pe).getTravelTime().seconds();
 
                     // overrides individual parameters per person; use default scoring parameters
-                    if (Time.getUndefinedTime() != time) {
+                    //if (Time.getUndefinedTime() != time) {
                         utility += time * (cnScoringGroup.getModes().get(mode).getMarginalUtilityOfTraveling() - cnScoringGroup.getPerforming_utils_hr()) / 3600;
-                    }
+                    //}
                     Double dist = ((Leg) pe).getRoute().getDistance();
                     if (dist != null && dist != 0.) {
                         utility += dist * cnScoringGroup.getModes().get(mode).getMarginalUtilityOfDistance();
@@ -177,7 +195,7 @@ public final class MatsimTravelTimesAndCosts implements TravelTimes {
         return -utility;
     }
 
-    private List<? extends PlanElement> getRoute(Location origin, Location destination, double timeOfDay_s, String mode) {
+    private List<? extends PlanElement> getRoute(Location origin, Location destination, double timeOfDay_s, String mode, Person siloPerson) {
         Coord originCoord;
         Coord destinationCoord;
         if (origin instanceof MicroLocation && destination instanceof MicroLocation) {
@@ -203,7 +221,12 @@ public final class MatsimTravelTimesAndCosts implements TravelTimes {
         ActivityFacilitiesFactoryImpl activityFacilitiesFactory = new ActivityFacilitiesFactoryImpl();
         Facility fromFacility = ((ActivityFacilitiesFactory) activityFacilitiesFactory).createActivityFacility(Id.create(1, ActivityFacility.class), originCoord, fromLink);
         Facility toFacility = ((ActivityFacilitiesFactory) activityFacilitiesFactory).createActivityFacility(Id.create(2, ActivityFacility.class), destinationCoord, toLink);
-        return tripRouter.calcRoute(mode, fromFacility, toFacility, timeOfDay_s, null);
+
+        org.matsim.api.core.v01.population.Person matsimPerson = null;
+        if (siloPerson != null) {
+            matsimPerson = matsimData.getMatsimPopulation().getPersons().get(Id.createPersonId(siloPerson.getId()));
+        }
+        return tripRouter.calcRoute(mode, fromFacility, toFacility, timeOfDay_s, matsimPerson);
     }
 
     @Override

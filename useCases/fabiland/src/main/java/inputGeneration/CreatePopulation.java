@@ -108,7 +108,7 @@ public class CreatePopulation {
     // Octupled population
     private final static int[][] householdsByZone = {
             {2400, 80, 80, 80, 80},
-            {80, 80, 2400, 80, 40},
+            {80, 80, 2400, 80, 80},
             {80, 2400, 8160, 80, 2400},
             {80, 80, 80, 80, 80},
             {80, 80, 2400, 80, 2400}

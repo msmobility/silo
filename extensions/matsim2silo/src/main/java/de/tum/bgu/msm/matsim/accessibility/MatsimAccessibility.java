@@ -8,7 +8,7 @@ import de.tum.bgu.msm.data.accessibility.Accessibility;
 import org.apache.log4j.Logger;
 import org.jfree.util.Log;
 import org.matsim.api.core.v01.Id;
-import org.matsim.contrib.accessibility.interfaces.FacilityDataExchangeInterface;
+import org.matsim.contrib.accessibility.FacilityDataExchangeInterface;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.facilities.ActivityFacility;
 
@@ -37,9 +37,14 @@ public class MatsimAccessibility implements Accessibility, FacilityDataExchangeI
 	
 	// FacilityDataExchangeInterface methods
 	@Override
-	public void setFacilityAccessibilities(ActivityFacility measurePoint, Double timeOfDay, Map<String, Double> accessibilities){
+	public void setFacilityAccessibilities(ActivityFacility measurePoint, Double timeOfDay, String mode, double accessibility){
 		if (timeOfDay == 8 * 60. * 60.) { // TODO Find better way for this check
-			accessibilitiesMap.put(new Tuple<ActivityFacility, Double>(measurePoint, timeOfDay), accessibilities);
+			Tuple<ActivityFacility, Double> key = new Tuple<>(measurePoint, timeOfDay);
+			if (!accessibilitiesMap.containsKey(key)) {
+				Map<String,Double> accessibilitiesByMode = new HashMap<>();
+				accessibilitiesMap.put(key, accessibilitiesByMode);
+			}
+			accessibilitiesMap.get(key).put(mode, accessibility);
 		}
 	}
 		
