@@ -9,6 +9,7 @@ import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.TransportModeNetworkFilter;
 import org.matsim.core.population.PopulationUtils;
@@ -33,6 +34,11 @@ public final class MatsimData {
     private SwissRailRaptorData raptorDataOneToAll;
 
     private final Properties properties;
+
+    public Config getConfig() {
+        return config;
+    }
+
     private Config config;
 
     private final Network carNetwork;
@@ -135,9 +141,10 @@ public final class MatsimData {
 
     TripRouter createTripRouter() {
         final RoutingModule carRoutingModule;
-        if (config.plansCalcRoute().getAccessEgressType() != null) {
+        //TODO accessEgressType can return "none", then it will cause errors in next steps
+        if (config.plansCalcRoute().getAccessEgressType() != null & !config.plansCalcRoute().getAccessEgressType().equals(PlansCalcRouteConfigGroup.AccessEgressType.none)) {
             carRoutingModule = DefaultRoutingModules.createAccessEgressNetworkRouter(
-                    TransportMode.car, leastCostPathCalculatorFactory.createPathCalculator(carNetwork, travelDisutility, travelTime), ScenarioUtils.createScenario(config), carNetwork, null);
+                    TransportMode.car, leastCostPathCalculatorFactory.createPathCalculator(carNetwork, travelDisutility, travelTime), ScenarioUtils.loadScenario(config), carNetwork, null);
         } else {
             carRoutingModule = DefaultRoutingModules.createPureNetworkRouter(
                     TransportMode.car, PopulationUtils.getFactory(), carNetwork, leastCostPathCalculatorFactory.createPathCalculator(carNetwork, travelDisutility, travelTime));

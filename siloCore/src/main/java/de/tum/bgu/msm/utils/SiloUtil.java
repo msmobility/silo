@@ -12,10 +12,7 @@ import de.tum.bgu.msm.properties.PropertiesUtil;
 import omx.OmxMatrix;
 import omx.hdf5.OmxHdf5Datatype;
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.log4j.Appender;
-import org.apache.log4j.FileAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.log4j.*;
 import org.matsim.core.controler.Controler;
 
 import java.io.*;
@@ -72,10 +69,12 @@ public class SiloUtil {
      */
     private static void initLogging(String outputDirectory) throws IOException {
         Logger root = Logger.getRootLogger();
-        FileAppender appender = new FileAppender(Controler.DEFAULTLOG4JLAYOUT, outputDirectory + System.getProperty("file.separator")+ LOG_FILE_NAME, false);
+        Layout DEFAULTLOG4JLAYOUT = new PatternLayout(
+                "%d{ISO8601} %5p %C{1}:%L %m%n");
+        FileAppender appender = new FileAppender(DEFAULTLOG4JLAYOUT, outputDirectory + System.getProperty("file.separator")+ LOG_FILE_NAME, false);
         appender.setName(LOG_FILE_NAME);
         root.addAppender(appender);
-        FileAppender warnErrorAppender = new FileAppender(Controler.DEFAULTLOG4JLAYOUT, outputDirectory + System.getProperty("file.separator")+ LOG_WARN_FILE_NAME, false);
+        FileAppender warnErrorAppender = new FileAppender(DEFAULTLOG4JLAYOUT, outputDirectory + System.getProperty("file.separator")+ LOG_WARN_FILE_NAME, false);
         warnErrorAppender.setName(LOG_WARN_FILE_NAME);
         warnErrorAppender.setThreshold(Level.WARN);
         root.addAppender(warnErrorAppender);

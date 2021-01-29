@@ -242,6 +242,6 @@
         <svnRevision>${buildNumber}</svnRevision>
         <skipTestJar>false</skipTestJar> <!--Overridden in the bintray profile-->
         <jackson.version>2.9.5</jackson.version>
-        <matsimVersion>11.0</matsimVersion>
+        <matsimVersion>13.0-SNAPSHOT</matsimVersion>
     </properties>
 </project>

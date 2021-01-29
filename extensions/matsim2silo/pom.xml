@@ -14,13 +14,8 @@
     <dependencies>
         <dependency>
             <groupId>org.matsim.contrib</groupId>
-            <artifactId>accidents</artifactId>
-            <version>${matsimVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.matsim.contrib</groupId>
             <artifactId>dvrp</artifactId>
-            <version>${matsimVersion}</version>
+            <version>11.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>javax.media</groupId>
@@ -31,6 +26,12 @@
                     <artifactId>jgridshift</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.matsim</groupId>
+            <artifactId>matsim</artifactId>
+            <version>13.0-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 

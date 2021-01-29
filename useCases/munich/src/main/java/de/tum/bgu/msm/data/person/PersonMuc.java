@@ -15,6 +15,11 @@ public class PersonMuc implements PersonWithSchool {
     private int schoolPlace = 0;
     private int schoolId = -1;
 
+    //accident model
+    private double lightInjuryRisk;
+    private double severeInjuryRisk;
+
+
     public PersonMuc(int id, int age,
                      Gender gender, Occupation occupation,
                      PersonRole role, int jobId,
@@ -156,5 +161,21 @@ public class PersonMuc implements PersonWithSchool {
     @Override
     public void setAttribute(String key, Object value) {
         delegate.setAttribute(key, value);
+    }
+
+    public double getLightInjuryRisk() {
+        return lightInjuryRisk;
+    }
+
+    public void setLightInjuryRisk(double lightInjuryRisk) {
+        this.lightInjuryRisk = lightInjuryRisk;
+    }
+
+    public double getSevereInjuryRisk() {
+        return severeInjuryRisk;
+    }
+
+    public void setSevereInjuryRisk(double severeInjuryRisk) {
+        this.severeInjuryRisk = severeInjuryRisk;
     }
 }

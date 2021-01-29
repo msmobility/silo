@@ -1,37 +1,28 @@
 package de.tum.bgu.msm.transportModel.matsim;
 
 import ch.sbb.matsim.routing.pt.raptor.*;
-import com.google.common.collect.Lists;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
-import org.matsim.api.core.v01.population.Activity;
-import org.matsim.api.core.v01.population.Leg;
-import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.controler.Controler;
-import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.population.PopulationUtils;
-import org.matsim.core.router.*;
-import org.matsim.core.router.util.LeastCostPathCalculator;
+import org.matsim.core.router.RoutingModule;
+import org.matsim.core.router.TeleportationRoutingModule;
+import org.matsim.core.router.TripRouter;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.facilities.ActivityFacilitiesFactory;
 import org.matsim.facilities.ActivityFacilitiesFactoryImpl;
 import org.matsim.facilities.ActivityFacility;
 import org.matsim.facilities.Facility;
-import org.matsim.pt.PtConstants;
 import org.matsim.pt.transitSchedule.api.TransitScheduleReader;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
-import org.matsim.vehicles.VehicleReaderV1;
 
-import javax.inject.Provider;
-import java.util.List;
 import java.util.Map;
 
 public class SBBTest {
@@ -91,7 +82,7 @@ public class SBBTest {
         TeleportationRoutingModule teleportationRoutingModule =
                 new TeleportationRoutingModule(
                         TransportMode.transit_walk,
-                        PopulationUtils.getFactory(),
+                        scenario,
                         1.4,
                         1.3);
 
