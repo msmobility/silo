@@ -22,7 +22,4 @@
             <version>${matsimVersion}</version>
         </dependency>
     </dependencies>
-    <properties>
-        <matsimVersion>13.0-SNAPSHOT</matsimVersion>
-    </properties>
 </project>

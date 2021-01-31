@@ -10,6 +10,7 @@ public final class JobDataProperties {
 
     public final String[] jobTypes;
     public final String jobsFileName;
+    public final String jobsIntermediatesFileName;
     public final String jobsFinalFileName;
     public final JobForecastMethod jobForecastMethod;
     public final String jobControlTotalsFileName;
@@ -43,6 +44,7 @@ public final class JobDataProperties {
 
         PropertiesUtil.newPropertySubmodule("Job - synthetic jobs input");
         jobsFileName = PropertiesUtil.getStringProperty(bundle, "job.file.ascii", "microData/jj");
+        jobsIntermediatesFileName = PropertiesUtil.getStringProperty(bundle, "job.intermediates.file.ascii", "microData/jj");
         jobsFinalFileName = PropertiesUtil.getStringProperty(bundle, "job.final.file.ascii", "microData/jj");
 
         PropertiesUtil.newPropertySubmodule("Job - job time input");

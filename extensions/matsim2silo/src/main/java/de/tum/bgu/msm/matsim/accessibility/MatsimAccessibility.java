@@ -5,10 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import de.tum.bgu.msm.data.accessibility.Accessibility;
-import de.tum.bgu.msm.data.Region;
-import de.tum.bgu.msm.data.Zone;
-import de.tum.bgu.msm.data.geo.GeoData;
-import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import org.apache.log4j.Logger;
 import org.jfree.util.Log;
 import org.matsim.api.core.v01.Id;
@@ -16,14 +12,15 @@ import org.matsim.contrib.accessibility.FacilityDataExchangeInterface;
 import org.matsim.core.utils.collections.Tuple;
 import org.matsim.facilities.ActivityFacility;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import de.tum.bgu.msm.data.Region;
+import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.data.geo.GeoData;
+import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 
 /**
  * @author dziemke
  **/
-public class MatsimAccessibility implements Accessibility {
+public class MatsimAccessibility implements Accessibility, FacilityDataExchangeInterface {
 	private static final Logger logger = Logger.getLogger(MatsimAccessibility.class);
 
 	private final GeoData geoData;
@@ -33,20 +30,25 @@ public class MatsimAccessibility implements Accessibility {
 	private Map<Id<ActivityFacility>, Double> autoAccessibilities = new HashMap<>();
 	private Map<Id<ActivityFacility>, Double> transitAccessibilities = new HashMap<>();
 	private IndexedDoubleMatrix1D regionalAccessibilities;
-
+	
 	public MatsimAccessibility(GeoData geoData) {
         this.geoData = geoData;
     }
-
+	
 	// FacilityDataExchangeInterface methods
-//	@Override
-	public void setFacilityAccessibilities(ActivityFacility measurePoint, Double timeOfDay, Map<String, Double> accessibilities){
+	@Override
+	public void setFacilityAccessibilities(ActivityFacility measurePoint, Double timeOfDay, String mode, double accessibility){
 		if (timeOfDay == 8 * 60. * 60.) { // TODO Find better way for this check
-			accessibilitiesMap.put(new Tuple<ActivityFacility, Double>(measurePoint, timeOfDay), accessibilities);
+			Tuple<ActivityFacility, Double> key = new Tuple<>(measurePoint, timeOfDay);
+			if (!accessibilitiesMap.containsKey(key)) {
+				Map<String,Double> accessibilitiesByMode = new HashMap<>();
+				accessibilitiesMap.put(key, accessibilitiesByMode);
+			}
+			accessibilitiesMap.get(key).put(mode, accessibility);
 		}
 	}
-
-
+		
+	@Override
 	public void finish() { }
 
 	// Accessibility interface methods
@@ -65,7 +67,7 @@ public class MatsimAccessibility implements Accessibility {
         logger.info("Calculating regional accessibilities");
         regionalAccessibilities.assign(calculateRegionalAccessibility(geoData.getRegions().values(), autoAccessibilities));
     }
-
+	
     @Override
     public double getAutoAccessibilityForZone(Zone zone) {
     	Id<ActivityFacility> afId = Id.create(zone.getId(), ActivityFacility.class);
@@ -73,7 +75,7 @@ public class MatsimAccessibility implements Accessibility {
     	// logger.info("Auto accessibility of zone " + zone + " is " + autoAccessibility);
 		return autoAccessibility;
     }
-
+    
     @Override
     public double getTransitAccessibilityForZone(Zone zone) {
     	// logger.warn("Transit accessibilities not yet properly implemented.");
@@ -87,7 +89,7 @@ public class MatsimAccessibility implements Accessibility {
     public double getRegionalAccessibility(Region region) {
     	return regionalAccessibilities.getIndexed(region.getId());
     }
-
+    
     // Other methods
     private static void scaleAccessibility(Map<Id<ActivityFacility>, Double> accessibility) {
 		double highestAccessibility = Double.MIN_VALUE; // TODO Rather use minus infinity
@@ -101,7 +103,7 @@ public class MatsimAccessibility implements Accessibility {
         	accessibility.put(measurePointId, accessibility.get(measurePointId) * scaleFactor);
         }
     }
-
+	
 	private static IndexedDoubleMatrix1D calculateRegionalAccessibility(Collection<Region> regions, Map<Id<ActivityFacility>, Double> autoAccessibilities) {
 		final IndexedDoubleMatrix1D matrix = new IndexedDoubleMatrix1D(regions);
         for (Region region : regions) {
@@ -123,7 +125,7 @@ public class MatsimAccessibility implements Accessibility {
 	@Override
 	public void prepareYear(int year) {
 		Log.warn("Preparing year in accessibilities.");
-        calculateHansenAccessibilities(year);
+        calculateHansenAccessibilities(year);		
 	}
 
 	@Override
