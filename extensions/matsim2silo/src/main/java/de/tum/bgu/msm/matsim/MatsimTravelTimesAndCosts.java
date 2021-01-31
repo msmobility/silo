@@ -130,7 +130,7 @@ public final class MatsimTravelTimesAndCosts implements TravelTimes {
 
         if (!planElements.isEmpty()) {
             final Leg lastLeg = (Leg) planElements.get(planElements.size() - 1);
-            arrivalTime = lastLeg.getDepartureTime() + lastLeg.getTravelTime();
+            arrivalTime = lastLeg.getDepartureTime().seconds()+ lastLeg.getTravelTime().seconds();
         }
 
         double time = arrivalTime - timeOfDay_s;
@@ -157,10 +157,10 @@ public final class MatsimTravelTimesAndCosts implements TravelTimes {
         } else if (routingModule instanceof SwissRailRaptorRoutingModule || routingModule instanceof FreespeedFactorRoutingModule) {
             for (PlanElement pe : planElements) {
                 if (pe instanceof Leg) {
-                    double time = ((Leg) pe).getTravelTime();
+                    double time = ((Leg) pe).getTravelTime().seconds();
 
                     // overrides individual parameters per person; use default scoring parameters
-                    if (Time.getUndefinedTime() != time) {
+                    if (((Leg) pe).getTravelTime().isDefined()) {
                         utility += time * (cnScoringGroup.getModes().get(mode).getMarginalUtilityOfTraveling() - cnScoringGroup.getPerforming_utils_hr()) / 3600;
                     }
                     Double dist = ((Leg) pe).getRoute().getDistance();

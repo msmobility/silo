@@ -90,7 +90,7 @@ public class NoiseDataContainerImpl implements DataContainerWithSchools {
                 + "_"
                 + year
                 + ".csv";
-        new DefaultHouseholdWriter(delegate.getHouseholdDataManager()).writeHouseholds(fileHh);
+        new DefaultHouseholdWriter(delegate.getHouseholdDataManager().getHouseholds()).writeHouseholds(fileHh);
 
         String filePp = outputDirectory
                 + properties.householdData.personFinalFileName

@@ -1,14 +1,12 @@
 package de.tum.bgu.msm.transportModel.matsim;
 
-import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
-import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
+import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypes;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingFactoryImpl;
-import de.tum.bgu.msm.data.dwelling.DwellingImpl;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdMuc;
 import de.tum.bgu.msm.data.person.Gender;
@@ -32,7 +30,10 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.testcases.MatsimTestUtils;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 
@@ -75,7 +76,7 @@ public class SiloNoiseTest {
             }
         }
 
-        NoiseDwelling refDwelling = new NoiseDwellingIml(new DwellingFactoryImpl().createDwelling(1, 20, null, -1, DefaultDwellingTypeImpl.MF234, 1, 1, 1000, 1980));
+        NoiseDwelling refDwelling = new NoiseDwellingIml(new DwellingFactoryImpl().createDwelling(1, 20, null, -1, DefaultDwellingTypes.DefaultDwellingTypeImpl.MF234, 1, 1, 1000, 1980));
         refDwelling.setNoiseImmision(45);
 
         Household poor = new HouseholdMuc(1, 1, 2);

@@ -95,7 +95,7 @@ public class DataBuilderDisability {
         PersonReader personReader = new PersonReaderMucDisability(dataContainer.getHouseholdDataManager(), new DefaultDisabilityStrategy());
         personReader.readData(personFile);
 
-        DwellingReader ddReader = new DwellingReaderMuc(dataContainer.getRealEstateDataManager(), new DwellingFactoryImpl());
+        DwellingReader ddReader = new DwellingReaderMuc(dataContainer.getRealEstateDataManager().getDwellingData(), new DwellingFactoryImpl());
         String dwellingsFile = properties.main.baseDirectory + properties.realEstate.dwellingsFileName + "_" + year + ".csv";
         ddReader.readData(dwellingsFile);
 

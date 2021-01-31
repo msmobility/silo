@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.scenarios.noise;
 
 import de.tum.bgu.msm.data.Region;
-import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
+import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypes;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
@@ -18,7 +18,8 @@ import org.matsim.api.core.v01.TransportMode;
 
 import java.util.Objects;
 
-import static de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl.MF234;
+import static de.tum.bgu.msm.data.dwelling.DefaultDwellingTypes.DefaultDwellingTypeImpl.MF234;
+
 
 /**
  * This relocation model is based on a stated preference study by J.D. Hunt
@@ -252,13 +253,13 @@ public class HuntNoiseSensitiveDwellingUtilityStrategy implements HousingStrateg
 //        final DwellingType type = MF234;
 
 
-        if(type.equals(DefaultDwellingTypeImpl.SFD)) {
+        if(type.equals(DefaultDwellingTypes.DefaultDwellingTypeImpl.SFD)) {
             return SINGLE_FAMILY;
-        } else if( type.equals(DefaultDwellingTypeImpl.SFA)) {
+        } else if( type.equals(DefaultDwellingTypes.DefaultDwellingTypeImpl.SFA)) {
             return DUPLEX;
         } else if(type.equals(MF234)) {
             return TOWNHOUSE;
-        } else if(type.equals(DefaultDwellingTypeImpl.MF5plus)) {
+        } else if(type.equals(DefaultDwellingTypes.DefaultDwellingTypeImpl.MF5plus)) {
             return HIGHRISE;
         } else {
             //can only happen for mobile home which shouldn't exist in muc

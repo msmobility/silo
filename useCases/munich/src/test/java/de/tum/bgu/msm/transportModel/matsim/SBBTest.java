@@ -88,11 +88,11 @@ public class SBBTest {
 
         RaptorStaticConfig raptorConfig = RaptorUtils.createStaticConfig(config);
         raptorConfig.setOptimization(RaptorStaticConfig.RaptorOptimization.OneToAllRouting);
-        SwissRailRaptorData raptorData = SwissRailRaptorData.create(scenario.getTransitSchedule(), raptorConfig, scenario.getNetwork());
+        SwissRailRaptorData raptorData = SwissRailRaptorData.create(scenario.getTransitSchedule(), null, raptorConfig, scenario.getNetwork(), null);
         SwissRailRaptor raptor = new SwissRailRaptor(raptorData, new DefaultRaptorParametersForPerson(config), null,  new DefaultRaptorStopFinder(
                         null,
                         new DefaultRaptorIntermodalAccessEgress(),
-                        null));
+                        null), null, null);
 
         RoutingModule routingModule =
                 new SwissRailRaptorRoutingModule(

@@ -6,6 +6,8 @@ import de.tum.bgu.msm.data.dwelling.DwellingUsage;
 import de.tum.bgu.msm.matsim.noise.NoiseDwelling;
 import org.locationtech.jts.geom.Coordinate;
 
+import java.util.Optional;
+
 public class NoiseDwellingIml implements NoiseDwelling {
 
     private final Dwelling delegate;
@@ -98,6 +100,16 @@ public class NoiseDwellingIml implements NoiseDwelling {
     @Override
     public DwellingUsage getUsage() {
         return delegate.getUsage();
+    }
+
+    @Override
+    public Optional<Object> getAttribute(String key) {
+        return Optional.empty();
+    }
+
+    @Override
+    public void setAttribute(String key, Object value) {
+
     }
 
     @Override

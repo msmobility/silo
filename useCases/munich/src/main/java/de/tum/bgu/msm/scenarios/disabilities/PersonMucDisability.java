@@ -4,6 +4,8 @@ import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.schools.PersonWithSchool;
 
+import java.util.Optional;
+
 public class PersonMucDisability implements PersonWithSchool {
 
     private final PersonMuc delegate;
@@ -142,5 +144,15 @@ public class PersonMucDisability implements PersonWithSchool {
     @Override
     public boolean hasDriverLicense() {
         return delegate.hasDriverLicense();
+    }
+
+    @Override
+    public Optional<Object> getAttribute(String key) {
+        return Optional.empty();
+    }
+
+    @Override
+    public void setAttribute(String key, Object value) {
+
     }
 }

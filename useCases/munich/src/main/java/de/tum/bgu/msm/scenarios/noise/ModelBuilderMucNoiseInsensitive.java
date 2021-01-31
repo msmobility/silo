@@ -37,6 +37,7 @@ import de.tum.bgu.msm.models.demography.marriage.DefaultMarriageStrategy;
 import de.tum.bgu.msm.models.demography.marriage.MarriageModel;
 import de.tum.bgu.msm.models.jobmography.JobMarketUpdate;
 import de.tum.bgu.msm.models.jobmography.JobMarketUpdateImpl;
+import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
 import de.tum.bgu.msm.models.realEstate.construction.*;
 import de.tum.bgu.msm.models.realEstate.demolition.DefaultDemolitionStrategy;
 import de.tum.bgu.msm.models.realEstate.demolition.DemolitionModel;
@@ -78,7 +79,7 @@ public class ModelBuilderMucNoiseInsensitive {
                 = new HousingStrategyMuc(dataContainer, properties,
                 dataContainer.getTravelTimes(), new DefaultDwellingProbabilityStrategy(),
                 new DwellingUtilityStrategyImpl(), new RegionUtilityStrategyMucImpl(),
-                new RegionProbabilityStrategyImpl());
+                new RegionProbabilityStrategyImpl(), new SimpleCommuteModeChoice(dataContainer, properties, SiloUtil.getRandomObject()));
 
         HuntNoiseInsensitiveDwellingUtilityStrategy housingStrategy
                 = new HuntNoiseInsensitiveDwellingUtilityStrategy(dataContainer.getTravelTimes(),
