@@ -36,6 +36,9 @@ import java.util.Random;
 public class NoiseModel extends AbstractModel implements ModelUpdateListener {
 
         private static final Logger logger = Logger.getLogger(NoiseModel.class);
+
+        private final Config initialConfig;
+
         private final RealEstateDataManager realEstateDataManager;
         private final MatsimData matsimData;
         private int latestMatsimYear = -1;
@@ -43,8 +46,9 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
         private final NoiseReceiverPoints noiseReceiverPoints;
 
 
-        public NoiseModel(DataContainer data, Properties properties, Random random, MatsimData matsimData) {
+        public NoiseModel(Config initialConfig, DataContainer data, Properties properties, Random random, MatsimData matsimData) {
                 super(data, properties, random);
+                this.initialConfig = initialConfig;
                 this.realEstateDataManager = data.getRealEstateDataManager();
                 this.matsimData = matsimData;
                 this.noiseReceiverPoints = new NoiseReceiverPoints();
@@ -140,20 +144,18 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
                 final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/"
                                                                    + properties.main.scenarioName + "/matsim/" + latestMatsimYear + "/";
 
-                String populationPath = outputDirectoryRoot + latestMatsimYear + ".output_plans.xml.gz";
-
-                Config config = ConfigUtils.createConfig();
+                Config config = ConfigUtils.createConfig(initialConfig.getContext());
                 config.controler().setOutputDirectory(outputDirectoryRoot);
                 config.controler().setRunId(String.valueOf(latestMatsimYear));
                 final MutableScenario scenario = ScenarioUtils.createMutableScenario(config);
 
-                new PopulationReader(scenario).readFile(populationPath);
+//                new PopulationReader(scenario).readFile(populationPath);
 
                 scenario.setNetwork(matsimData.getCarNetwork());
 
                 scenario.addScenarioElement(NoiseReceiverPoints.NOISE_RECEIVER_POINTS, noiseReceiverPoints);
 
-                NoiseConfigGroup noiseParameters = ConfigUtils.addOrGetModule(scenario.getConfig(), NoiseConfigGroup.class);
+                NoiseConfigGroup noiseParameters = ConfigUtils.addOrGetModule(initialConfig, NoiseConfigGroup.class);
                 noiseParameters.setInternalizeNoiseDamages(false);
                 noiseParameters.setComputeCausingAgents(false);
                 noiseParameters.setComputeNoiseDamages(false);
@@ -161,8 +163,11 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
                 noiseParameters.setComputeAvgNoiseCostPerLinkAndTime(false);
                 noiseParameters.setThrowNoiseEventsCaused(false);
                 noiseParameters.setThrowNoiseEventsAffected(false);
+                noiseParameters.setNoiseComputationMethod(NoiseConfigGroup.NoiseComputationMethod.RLS19);
                 noiseParameters.setWriteOutputIteration(0);
-                noiseParameters.setScaleFactor(10);
+                noiseParameters.setScaleFactor(1./initialConfig.qsim().getFlowCapFactor());
+                config.addModule(noiseParameters);
+
                 config.qsim().setEndTime(24 * 60 * 60);
 
                 noiseParameters.setConsiderNoiseBarriers(true);
@@ -212,17 +217,21 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
                 scenario.setNetwork(matsimData.getCarNetwork());
                 scenario.addScenarioElement(NoiseReceiverPoints.NOISE_RECEIVER_POINTS, noiseReceiverPoints);
 
-                NoiseConfigGroup noiseParameters = ConfigUtils.addOrGetModule(scenario.getConfig(), NoiseConfigGroup.class);
+                NoiseConfigGroup noiseParameters = ConfigUtils.addOrGetModule(initialConfig, NoiseConfigGroup.class);
                 noiseParameters.setInternalizeNoiseDamages(false);
                 noiseParameters.setComputeCausingAgents(false);
                 noiseParameters.setComputeNoiseDamages(false);
                 noiseParameters.setComputePopulationUnits(false);
                 noiseParameters.setComputeAvgNoiseCostPerLinkAndTime(false);
                 noiseParameters.setThrowNoiseEventsCaused(false);
+                noiseParameters.setNoiseComputationMethod(NoiseConfigGroup.NoiseComputationMethod.RLS19);
                 noiseParameters.setThrowNoiseEventsAffected(false);
                 noiseParameters.setWriteOutputIteration(0);
-                noiseParameters.setScaleFactor(10);
+                noiseParameters.setScaleFactor(1./initialConfig.qsim().getFlowCapFactor());
+                config.addModule(noiseParameters);
+
                 config.qsim().setEndTime(24 * 60 * 60);
+
 
                 noiseParameters.setConsiderNoiseBarriers(true);
                 noiseParameters.setNoiseBarriersFilePath("C:\\Users\\Nico\\tum\\diss\\noise\\aggBuildingPoly.geojson");

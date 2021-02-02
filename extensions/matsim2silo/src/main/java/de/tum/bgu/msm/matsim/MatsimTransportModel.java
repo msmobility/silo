@@ -160,6 +160,7 @@ public final class MatsimTransportModel implements TransportModel {
         assembledScenario = scenarioAssembler.assembleScenario(initialMatsimConfig, year, travelTimes);
 
         finalizeConfig(assembledScenario.getConfig(), year);
+        assembledScenario.getConfig().transit().setUsingTransitInMobsim(false);
 
         final Controler controler = new Controler(assembledScenario);
 

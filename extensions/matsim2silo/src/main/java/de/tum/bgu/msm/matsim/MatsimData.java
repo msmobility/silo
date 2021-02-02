@@ -110,7 +110,7 @@ public final class MatsimData {
         this.ptNetwork = ptNetwork;
     }
 
-    ZoneConnectorManager getZoneConnectorManager() {
+    public ZoneConnectorManager getZoneConnectorManager() {
         return zoneConnectorManager;
     }
 
@@ -130,11 +130,11 @@ public final class MatsimData {
 
         if (config.transit().isUseTransit() && schedule != null) {
             RaptorStaticConfig raptorConfig = RaptorUtils.createStaticConfig(config);
-            raptorData = SwissRailRaptorData.create(schedule, null, raptorConfig, ptNetwork, null);
+            raptorData = SwissRailRaptorData.create(schedule, raptorConfig, ptNetwork);
 
             RaptorStaticConfig raptorConfigOneToAll = RaptorUtils.createStaticConfig(config);
             raptorConfigOneToAll.setOptimization(RaptorStaticConfig.RaptorOptimization.OneToAllRouting);
-            raptorDataOneToAll = SwissRailRaptorData.create(schedule, null, raptorConfigOneToAll, ptNetwork, null);
+            raptorDataOneToAll = SwissRailRaptorData.create(schedule, raptorConfigOneToAll, ptNetwork);
 
             parametersForPerson = new DefaultRaptorParametersForPerson(config);
             defaultRaptorStopFinder = new DefaultRaptorStopFinder(
@@ -187,9 +187,9 @@ public final class MatsimData {
     SwissRailRaptor createSwissRailRaptor(RaptorStaticConfig.RaptorOptimization optimitzaion) {
         switch (optimitzaion) {
             case OneToAllRouting:
-                return new SwissRailRaptor(raptorDataOneToAll, parametersForPerson, routeSelector, defaultRaptorStopFinder, null, null);
+                return new SwissRailRaptor(raptorDataOneToAll, parametersForPerson, routeSelector, defaultRaptorStopFinder);
             case OneToOneRouting:
-                return new SwissRailRaptor(raptorData, parametersForPerson, routeSelector, defaultRaptorStopFinder, null, null);
+                return new SwissRailRaptor(raptorData, parametersForPerson, routeSelector, defaultRaptorStopFinder);
             default:
                 throw new RuntimeException("Unrecognized raptor optimization!");
         }

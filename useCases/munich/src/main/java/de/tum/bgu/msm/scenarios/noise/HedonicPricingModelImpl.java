@@ -20,16 +20,19 @@ public class HedonicPricingModelImpl extends AbstractModel implements PricingMod
 
     private final PricingStrategy strategy;
     private final HedonicPricingModelPredictor hedonicPredictor;
+    private final OsmAccessibilityCalculator accessibilityCalculator;
 
-    public HedonicPricingModelImpl(DataContainer dataContainer, Properties properties, PricingStrategy strategy, Random rnd, HedonicPricingModelPredictor hedonicPredictor) {
+    public HedonicPricingModelImpl(DataContainer dataContainer, Properties properties, PricingStrategy strategy, Random rnd, HedonicPricingModelPredictor hedonicPredictor, OsmAccessibilityCalculator accessibilityCalculator) {
         super(dataContainer, properties, rnd);
         this.strategy = strategy;
         this.hedonicPredictor = hedonicPredictor;
+        this.accessibilityCalculator = accessibilityCalculator;
     }
 
     @Override
     public void setup() {
-       updateRealEstatePrices(properties.main.baseYear);
+        accessibilityCalculator.calculateAccessibilities(properties.main.baseYear);
+        updateRealEstatePrices(properties.main.baseYear);
     }
 
     @Override
@@ -56,7 +59,8 @@ public class HedonicPricingModelImpl extends AbstractModel implements PricingMod
         final Map<Integer, Double> currentRentByRegion = dataContainer.getRealEstateDataManager().calculateRegionalPrices();
 
         for (Dwelling dd : dataContainer.getRealEstateDataManager().getDwellings()) {
-            dd.setPrice((int) hedonicPredictor.predictPrice(dd));
+            final double predictPrice = hedonicPredictor.predictPrice(dd);
+            dd.setPrice((int) predictPrice);
         }
 
         final Map<Integer, Double> newRentByRegion = dataContainer.getRealEstateDataManager().calculateRegionalPrices();

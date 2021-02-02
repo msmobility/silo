@@ -60,9 +60,9 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.0</version>
                 <configuration>
-                    <release>8</release>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <release>11</release>
+                    <source>11</source>
+                    <target>11</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -168,7 +168,7 @@
             <!-- Geotools is not on Maven central -->
             <id>osgeo</id>
             <name>Geotools repository</name>
-            <url>http://download.osgeo.org/webdav/geotools</url>
+            <url>https://repo.osgeo.org/repository/release/</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>

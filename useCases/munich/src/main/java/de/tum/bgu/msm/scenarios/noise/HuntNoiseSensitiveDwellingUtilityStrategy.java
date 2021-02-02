@@ -33,9 +33,6 @@ import static de.tum.bgu.msm.data.dwelling.DefaultDwellingTypes.DefaultDwellingT
  */
 public class HuntNoiseSensitiveDwellingUtilityStrategy implements HousingStrategy {
 
-    private static final double MEDIUM_NOISE_DISCOUNT = 0.056;
-    private static final double LOUD_NOISE_DISCOUNT = 0.096;
-
     private static final int LOW_INCOME = 1;
     private static final int HIGH_INCOME = 2;
     private static final int AVERAGE_INCOME = 0;
@@ -194,14 +191,6 @@ public class HuntNoiseSensitiveDwellingUtilityStrategy implements HousingStrateg
 
     private double getNoiseAdjustedPrice(NoiseDwelling dwelling) {
         double price = dwelling.getPrice() / 0.68;
-        final double noiseImmission = dwelling.getNoiseImmission();
-        if (noiseImmission > 55) {
-            if (noiseImmission > 65) {
-                price *= (1 - LOUD_NOISE_DISCOUNT);
-            } else {
-                price *= (1 - MEDIUM_NOISE_DISCOUNT);
-            }
-        }
         return price;
     }
 

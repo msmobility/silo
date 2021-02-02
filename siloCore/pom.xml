@@ -70,9 +70,9 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.0</version>
                 <configuration>
-                    <release>8</release>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <release>11</release>
+                    <source>11</source>
+                    <target>11</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -227,6 +227,12 @@
             <groupId>org.geotools</groupId>
             <artifactId>gt-main</artifactId>
             <version>${geotools.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.locationtech.jts</groupId>
+                    <artifactId>jts-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.geotools</groupId>
@@ -242,7 +248,6 @@
             <groupId>org.geotools</groupId>
             <artifactId>gt-epsg-hsql</artifactId>
             <version>${geotools.version}</version>
-            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.geotools</groupId>
@@ -252,7 +257,7 @@
         <dependency>
             <groupId>org.locationtech.jts</groupId>
             <artifactId>jts-core</artifactId>
-            <version>1.17.1</version>
+            <version>1.16.0</version>
         </dependency>
         <dependency>
             <groupId>common-base</groupId>
@@ -339,7 +344,7 @@
         <dependency>
             <groupId>com.github.msmobility</groupId>
             <artifactId>mito</artifactId>
-            <version>v28102020</version>
+            <version>master</version>
             <exclusions>
                 <exclusion>
                     <groupId>javax.media</groupId>
@@ -386,9 +391,9 @@
         <geotools.version>21.5</geotools.version>
         <skipTestJar>false</skipTestJar> <!--Overridden in the bintray profile-->
         <matsimVersion>13.0-2020w37-SNAPSHOT</matsimVersion>
-<!--        <matsimVersion>12.0</matsimVersion>-->
+        <!--        <matsimVersion>12.0</matsimVersion>-->
         <java.version>1.8</java.version>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
     </properties>
 </project>

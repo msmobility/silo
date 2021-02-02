@@ -1,9 +1,12 @@
 package de.tum.bgu.msm.scenarios.noise;
 
 import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.matsim.noise.NoiseDwelling;
 
 import java.util.function.Supplier;
+
+import static de.tum.bgu.msm.scenarios.noise.NKHedonicPricingModelState.FIRST_TIME_USE_STATE;
 
 public class NKHedonicPricingModelPredictor implements HedonicPricingModelPredictor {
 
@@ -36,12 +39,18 @@ public class NKHedonicPricingModelPredictor implements HedonicPricingModelPredic
     private final static double INTERCEPT_AREA = 8.1063;
     private final static double BETA_ROOMS_AREA = 26.0538;
 
+    private final GeoData geoData;
+
+    public NKHedonicPricingModelPredictor(GeoData geoData) {
+        this.geoData = geoData;
+    }
+
     @Override
     public double predictPrice(Dwelling dwelling) {
 
         double logPrice = INTERCEPT;
 
-        logPrice += BETA_LOG_AREA * estimateArea(dwelling);
+        logPrice += BETA_LOG_AREA * Math.log(estimateArea(dwelling));
 
         final double noiseImmission = ((NoiseDwelling) dwelling).getNoiseImmission();
         if(noiseImmission < 55) {
@@ -55,7 +64,8 @@ public class NKHedonicPricingModelPredictor implements HedonicPricingModelPredic
         }
 
         try {
-            logPrice += BETA_ACCESSIBILITY * dwelling.getAttribute("matsim_accessibility").map(o ->(Double) o).orElseThrow((Supplier<Throwable>) RuntimeException::new);
+            final Object matsim_accessibility = geoData.getZones().get(dwelling.getZoneId()).getAttributes().get("matsim_accessibility");
+            logPrice += BETA_ACCESSIBILITY * (Double) matsim_accessibility;
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         }
@@ -68,7 +78,7 @@ public class NKHedonicPricingModelPredictor implements HedonicPricingModelPredic
     }
 
     private double getStateImpact(Dwelling dwelling) {
-        final NKHedonicPricingModelState state = (NKHedonicPricingModelState) dwelling.getAttribute("state").get();
+        final NKHedonicPricingModelState state = (NKHedonicPricingModelState) dwelling.getAttribute("state").orElse(FIRST_TIME_USE_STATE);
         switch (state) {
             case FIRST_TIME_USE_STATE:
                 return BETA_FIRST_TIME_USE_STATE;
@@ -100,7 +110,6 @@ public class NKHedonicPricingModelPredictor implements HedonicPricingModelPredic
     }
 
     private double estimateArea(Dwelling dwelling) {
-        double area = INTERCEPT_AREA + BETA_ROOMS_AREA * dwelling.getBedrooms();
-        return area;
+        return INTERCEPT_AREA + BETA_ROOMS_AREA * dwelling.getBedrooms();
     }
 }

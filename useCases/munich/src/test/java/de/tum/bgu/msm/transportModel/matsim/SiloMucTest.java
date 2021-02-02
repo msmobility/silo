@@ -3,6 +3,7 @@ package de.tum.bgu.msm.transportModel.matsim;
 import de.tum.bgu.msm.DataBuilder;
 import de.tum.bgu.msm.ModelBuilderMuc;
 import de.tum.bgu.msm.SiloModel;
+import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.io.output.DefaultResultsMonitor;
 import de.tum.bgu.msm.io.output.ResultsMonitor;
@@ -41,10 +42,10 @@ public class SiloMucTest {
         String path = "./test/muc/siloMucTest.properties";
         Properties properties = SiloUtil.siloInitialization(path);
 
-        NoiseDataContainerImpl dataContainer = DataBuilderNoise.getModelDataForMuc(properties, null);
+        DataContainerWithSchools dataContainer = DataBuilder.getModelDataForMuc(properties, null);
         DataBuilder.read(properties, dataContainer);
 
-        ModelContainer modelContainer = ModelBuilderMucNoise.getModelContainerForMuc(dataContainer, properties, null);
+        ModelContainer modelContainer = ModelBuilderMuc.getModelContainerForMuc(dataContainer, properties, null);
 
         ResultsMonitor resultsMonitor = new DefaultResultsMonitor(dataContainer, properties);
         SiloModel siloModel = new SiloModel(properties, dataContainer, modelContainer);

@@ -148,7 +148,7 @@ public class ModelBuilderMucNoiseInsensitive {
             default:
                 transportModel = null;
         }
-        NoiseModel noiseModel  = new NoiseModel(dataContainer, properties, SiloUtil.provideNewRandom(), transportModel.getMatsimData());
+        NoiseModel noiseModel  = new NoiseModel(config, dataContainer, properties, SiloUtil.provideNewRandom(), transportModel.getMatsimData());
 
 
 

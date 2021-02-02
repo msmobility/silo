@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.transportModel.matsim;
 
+import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.Region;
@@ -67,14 +68,15 @@ public class SiloNoiseTest {
         NoiseDataContainerImpl dataContainer = DataBuilderNoise.getModelDataForMuc(properties, config);
         DataBuilderNoise.read(properties, dataContainer);
         ModelContainer modelContainer = ModelBuilderMucNoise.getModelContainerForMuc(dataContainer, properties, config);
+
         ResultsMonitor resultsMonitor = new ResultsMonitorMuc(dataContainer, properties);
 
         final List<ModelUpdateListener> modelUpdateListeners = modelContainer.getModelUpdateListeners();
-        for(ModelUpdateListener listenr: modelUpdateListeners) {
-            if(listenr instanceof NoiseModel) {
-                listenr.endYear(2011);
-            }
-        }
+//        for(ModelUpdateListener listenr: modelUpdateListeners) {
+//            if(listenr instanceof NoiseModel) {
+//                listenr.endYear(2011);
+//            }
+//        }
 
         NoiseDwelling refDwelling = new NoiseDwellingIml(new DwellingFactoryImpl().createDwelling(1, 20, null, -1, DefaultDwellingTypes.DefaultDwellingTypeImpl.MF234, 1, 1, 1000, 1980));
         refDwelling.setNoiseImmision(45);
@@ -128,32 +130,32 @@ public class SiloNoiseTest {
 
         Random random = new Random(42);
 
-        dataContainer.getRealEstateDataManager().addDwelling(refDwelling);
-        for(Dwelling dwelling: dataContainer.getRealEstateDataManager().getDwellings()) {
-            ((NoiseDwelling)dwelling).setNoiseImmision(((NoiseDwelling) dwelling).getNoiseImmission()+random.nextInt(25));
-            if(dwelling == refDwelling) {
-                continue;
-            }
-            dwelling.setPrice(1000);
+//        dataContainer.getRealEstateDataManager().addDwelling(refDwelling);
+//        for(Dwelling dwelling: dataContainer.getRealEstateDataManager().getDwellings()) {
+//            ((NoiseDwelling)dwelling).setNoiseImmision(((NoiseDwelling) dwelling).getNoiseImmission()+random.nextInt(25));
+//            if(dwelling == refDwelling) {
+//                continue;
+//            }
+//            dwelling.setPrice(1000);
+//
+//            final double v = strategy.calculateHousingUtility(poor, dwelling);
+//            final double v2 = strategy.calculateHousingUtility(avg, dwelling);
+//            final double v3 = strategy.calculateHousingUtility(rich, dwelling);
+//
+//            final double v4 = strategyIns.calculateHousingUtility(poor, dwelling);
+//            final double v5 = strategyIns.calculateHousingUtility(avg, dwelling);
+//            final double v6 = strategyIns.calculateHousingUtility(rich, dwelling);
+//            writer.write(((NoiseDwelling)dwelling).getNoiseImmission()+","+dwelling.getPrice()
+//                    +","+dwelling.getType()+","+v+","+v2+","+v3+","+v4+","+v5+","+v6);
+//            writer.newLine();
+//        }
+//        writer.flush();
+//        writer.close();
 
-            final double v = strategy.calculateHousingUtility(poor, dwelling);
-            final double v2 = strategy.calculateHousingUtility(avg, dwelling);
-            final double v3 = strategy.calculateHousingUtility(rich, dwelling);
-
-            final double v4 = strategyIns.calculateHousingUtility(poor, dwelling);
-            final double v5 = strategyIns.calculateHousingUtility(avg, dwelling);
-            final double v6 = strategyIns.calculateHousingUtility(rich, dwelling);
-            writer.write(((NoiseDwelling)dwelling).getNoiseImmission()+","+dwelling.getPrice()
-                    +","+dwelling.getType()+","+v+","+v2+","+v3+","+v4+","+v5+","+v6);
-            writer.newLine();
-        }
-        writer.flush();
-        writer.close();
 
 
-
-//        SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
-//        model.addResultMonitor(resultsMonitor);
-//        model.runModel();
+        SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
+        model.addResultMonitor(resultsMonitor);
+        model.runModel();
     }
 }

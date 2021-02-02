@@ -44,7 +44,6 @@ import de.tum.bgu.msm.models.realEstate.demolition.DemolitionModel;
 import de.tum.bgu.msm.models.realEstate.demolition.DemolitionModelImpl;
 import de.tum.bgu.msm.models.realEstate.pricing.DefaultPricingStrategy;
 import de.tum.bgu.msm.models.realEstate.pricing.PricingModel;
-import de.tum.bgu.msm.models.realEstate.pricing.PricingModelImpl;
 import de.tum.bgu.msm.models.realEstate.renovation.DefaultRenovationStrategy;
 import de.tum.bgu.msm.models.realEstate.renovation.RenovationModel;
 import de.tum.bgu.msm.models.realEstate.renovation.RenovationModelImpl;
@@ -148,9 +147,12 @@ public class ModelBuilderMucNoise {
             default:
                 transportModel = null;
         }
-        NoiseModel noiseModel  = new NoiseModel(dataContainer, properties, SiloUtil.provideNewRandom(), transportModel.getMatsimData());
+        NoiseModel noiseModel  = new NoiseModel(config, dataContainer, properties, SiloUtil.provideNewRandom(), transportModel.getMatsimData());
 
 
+        PricingModel pricing = new HedonicPricingModelImpl(dataContainer, properties,
+                new DefaultPricingStrategy(), SiloUtil.getRandomObject(), new NKHedonicPricingModelPredictor(dataContainer.getGeoData()),
+                new OsmAccessibilityCalculator(config, properties, dataContainer.getGeoData(), matsimData.getZoneConnectorManager()));
 
         final ModelContainer modelContainer = new ModelContainer(
                 birthModel, birthdayModel,
@@ -158,7 +160,7 @@ public class ModelBuilderMucNoise {
                 divorceModel, driversLicenseModel,
                 educationModel, employmentModel,
                 leaveParentsModel, jobMarketUpdateModel,
-                construction, demolition, null, renovation,
+                construction, demolition, pricing, renovation,
                 null, inOutMigration, movesModel, transportModel);
 
         modelContainer.registerModelUpdateListener(new UpdateCarOwnershipModelMuc(dataContainer, properties, SiloUtil.provideNewRandom()));
