@@ -92,21 +92,22 @@ public class ReadZonalData {
             float primaryJobs = zoneAttributes.getValueAt(i, "pri");
             float secondaryJobs = zoneAttributes.getValueAt(i, "sec");
             float tertiaryJobs = zoneAttributes.getValueAt(i, "ter");
+            float percentVacantJobs = zoneAttributes.getValueAt(i, "percentVacantJobs");
+            float ratioJobs = 1 + percentVacantJobs / 100;
             tazs.add(taz);
             int[] previousTaz = {taz};
             cityTAZ.put(city,previousTaz);
             Map<Integer, Float> probabilities = new HashMap<>();
             probabilities.put(taz, probability);
             probabilityZone.put(city, probabilities);
-            schoolCapacity.put(taz,1,capacitySchool);
-
+            schoolCapacity.put(taz,1, (int) (capacitySchool * ratioJobs));
             HashMap<String, Float> Attributes = new HashMap<>();
             Attributes.put("percentageVacantDwelings", percentageVacantDwellings);
             Attributes.put("income", averageIncome);
             Attributes.put("households", households);
-            Attributes.put("pri", primaryJobs);
-            Attributes.put("sec", secondaryJobs);
-            Attributes.put("ter", tertiaryJobs);
+            Attributes.put("pri", primaryJobs * ratioJobs);
+            Attributes.put("sec", secondaryJobs * ratioJobs);
+            Attributes.put("ter", tertiaryJobs * ratioJobs);
             attributesZone.put(city, Attributes);
         }
         dataSetSynPop.setAreas(SiloUtil.convertArrayListToFloatArray(areas));
@@ -129,7 +130,7 @@ public class ReadZonalData {
         for (int row = 1; row <= distances.getRowCount(); row++){
             int origin = (int) distances.getValueAt(row, "InputID") - 1;
             int destination = (int) distances.getValueAt(row, "TargetID") - 1;
-            float value = distances.getValueAt(row, "Distance") / 1000;
+            float value = distances.getValueAt(row, "distance") / 1000;
             distanceMatrix.setValueAt(origin, destination, value);
         }
 

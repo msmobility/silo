@@ -70,5 +70,6 @@ public abstract class AbstractPropertiesSynPop {
     public String zoneShapeFile;
     public String microDataHouseholds;
     public String microDataPersons;
+    public TableDataSet incomeCoefficients;
 
 }

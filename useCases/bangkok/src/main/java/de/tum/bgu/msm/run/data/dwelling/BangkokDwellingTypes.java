@@ -24,27 +24,27 @@ public class BangkokDwellingTypes implements DwellingTypes {
     public enum DwellingTypeBangkok implements DwellingType {
 
         /**
-         * Refers to "High rise condominium"
+         * Refers to "Condo"
          */
         HIGH_RISE_CONDOMINIUM_30(0.0021f,0.01f),
         /**
-         * Refers to "High rise condominium"
+         * Refers to "Condo"
          */
         HIGH_RISE_CONDOMINIUM_50(0.0036f,0.01f),
         /**
-         * Refers to "
+         * Refers to "apartment"
          */
         LOW_RISE_CONDOMINIUM_30(0.0047f,0.03f),
         /**
-         * Refers to "
+         * Refers to "apartment"
          */
         LOW_RISE_CONDOMINIUM_50(0.007f,0.03f),
         /**
-         * Refers to "
+         * Refers to "detached house"
          */
         DETATCHED_HOUSE_120 (0.06f,0.05f),
         /**
-         * Refers to "
+         * Refers to "detached house"
          */
         DETATCHED_HOUSE_200 (0.100f,0.05f);
 

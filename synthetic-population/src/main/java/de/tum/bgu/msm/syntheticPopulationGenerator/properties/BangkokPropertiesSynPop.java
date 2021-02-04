@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.properties;
 
+import com.fasterxml.jackson.databind.annotation.JsonAppend;
 import de.tum.bgu.msm.properties.PropertiesUtil;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.commons.math.distribution.GammaDistributionImpl;
@@ -97,6 +98,7 @@ public class BangkokPropertiesSynPop extends AbstractPropertiesSynPop {
         microPersonsFileName = PropertiesUtil.getStringProperty(bundle, "micro.persons", "microData/interimFiles/microPersons.csv");
         microHouseholdsFileName = PropertiesUtil.getStringProperty(bundle, "micro.households", "microData/interimFiles/microHouseholds.csv");
 
+        incomeCoefficients = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle, "income.coefficients","input/syntheticPopulation/incomeCoefficients.csv"));
     }
 
 }
