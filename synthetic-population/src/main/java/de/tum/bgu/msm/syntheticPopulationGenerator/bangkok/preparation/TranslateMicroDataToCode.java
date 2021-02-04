@@ -79,16 +79,18 @@ public class TranslateMicroDataToCode {
     }
 
     private void translateOccupation(int personCount) {
-        int occupation = (int) dataSetSynPop.getPersonDataSet().getValueAt(personCount,"employmentStatus");
-        if (occupation > 0){
-            dataSetSynPop.getPersonDataSet().setValueAt(personCount,"employmentCode", 1);
+        if ((int) dataSetSynPop.getPersonDataSet().getValueAt(personCount,"age") < 16){
+            dataSetSynPop.getPersonDataSet().setValueAt(personCount,"employmentCode", 4);
         } else {
-            if ((int) dataSetSynPop.getPersonDataSet().getValueAt(personCount,"employmentStatus") < 6){
-                dataSetSynPop.getPersonDataSet().setValueAt(personCount,"employmentCode", 0);
-            } else if ((int) dataSetSynPop.getPersonDataSet().getValueAt(personCount,"employmentStatus") < 16){
-                dataSetSynPop.getPersonDataSet().setValueAt(personCount,"employmentCode", 3);
+            int occupation = (int) dataSetSynPop.getPersonDataSet().getValueAt(personCount, "employmentStatus");
+            if (occupation == 0) {
+                dataSetSynPop.getPersonDataSet().setValueAt(personCount, "employmentCode", 3);
+            } else if (occupation == 9) {
+                dataSetSynPop.getPersonDataSet().setValueAt(personCount, "employmentCode", 3);
+            } else if (occupation == 3) {
+                dataSetSynPop.getPersonDataSet().setValueAt(personCount, "employmentCode", 2);
             } else {
-                dataSetSynPop.getPersonDataSet().setValueAt(personCount,"employmentCode", 2);
+                dataSetSynPop.getPersonDataSet().setValueAt(personCount, "employmentCode", 1);
             }
         }
         // 1 = Employer
@@ -100,6 +102,12 @@ public class TranslateMicroDataToCode {
         // 7 = Members of bundles
         // 9 = Unknown
         // blank = not eligible to ask
+
+        //in our internal code:
+        // 1 = employed with pay
+        // 2 = employed without pay
+        // 3 = unemployed or retiree
+        // 4 = student
     }
 
 
@@ -272,7 +280,7 @@ public class TranslateMicroDataToCode {
         // 1 = Single house
         // 2 = Townhouse/Semi-detached house
         // 3 = Condominium
-        // 4 = Flat/apartment/dormitory
+        // 4 = Flat/apartment/dormitory - low rise condo
         // 5 = Row/rowhouse
         // 6 = Home room
         // 7 = Office room
