@@ -2,8 +2,14 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.bangkok.allocation;
 
 
 import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
+import de.tum.bgu.msm.data.person.Gender;
+import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.io.output.*;
+import de.tum.bgu.msm.run.data.dwelling.BangkokDwellingTypes;
 import de.tum.bgu.msm.run.io.JobWriterBangkok;
 import de.tum.bgu.msm.run.io.PersonWriterBangkok;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
@@ -16,6 +22,8 @@ import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class Allocation extends ModuleSynPop{
 
@@ -32,9 +40,9 @@ public class Allocation extends ModuleSynPop{
     public void run(){
         logger.info("   Started allocation model.");
         if (PropertiesSynPop.get().main.runAllocation) {
+            generateJobs();
             generateHouseholdsPersonsDwellings();
             generateVacantDwellings();
-            generateJobs();
             generateAutos();
         } else {
             readPopulation();

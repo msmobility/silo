@@ -13,6 +13,7 @@ import de.tum.bgu.msm.data.job.JobFactoryMuc;
 import de.tum.bgu.msm.data.job.JobMuc;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.run.data.dwelling.BangkokDwellingTypes;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
@@ -60,7 +61,6 @@ public class ReadPopulation {
             String[] header = recString.split(",");
             int posId    = SiloUtil.findPositionInArray("id", header);
             int posDwell = SiloUtil.findPositionInArray("dwelling",header);
-            int posTaz   = SiloUtil.findPositionInArray("zone",header);
             int posAutos = SiloUtil.findPositionInArray("autos",header);
 
             // read line
@@ -108,7 +108,6 @@ public class ReadPopulation {
             int posOccupation = SiloUtil.findPositionInArray("occupation",header);
             int posWorkplace = SiloUtil.findPositionInArray("workplace",header);
             int posIncome = SiloUtil.findPositionInArray("income",header);
-            int posNationality = SiloUtil.findPositionInArray("nationality",header);
             int posLicense = SiloUtil.findPositionInArray("driversLicense",header);
 
 
@@ -129,17 +128,11 @@ public class ReadPopulation {
                 PersonMuc pp = (PersonMuc) ppFactory.createPerson(id, age, gender, occupation, pr, workplace, income); //this automatically puts it in id->person map in Person class
                 householdData.addPerson(pp);
                 householdData.addPersonToHousehold(pp, householdData.getHouseholdFromId(hhid));
-                String nationality = lineElements[posNationality];
-                Nationality nat = Nationality.GERMAN;
-                if (nationality.equals("other")){
-                    nat = Nationality.OTHER;
-                }
                 String licenseStr = lineElements[posLicense];
                 boolean license = false;
                 if (licenseStr.equals("true")){
                     license = true;
                 }
-                pp.setNationality(nat);
                 pp.setDriverLicense(license);
                 if (id == SiloUtil.trackPp) {
                     SiloUtil.trackWriter.println("Read person with following attributes from " + fileName);
@@ -177,7 +170,6 @@ public class ReadPopulation {
             int posQuality = SiloUtil.findPositionInArray("quality",header);
             int posCosts   = SiloUtil.findPositionInArray("monthlyCost",header);
             int posYear    = SiloUtil.findPositionInArray("yearBuilt",header);
-            int posUse     = SiloUtil.findPositionInArray("usage",header);
             int posCoordX = -1;
             int posCoordY = -1;
             try {
@@ -195,7 +187,7 @@ public class ReadPopulation {
                 int zoneId      = Integer.parseInt(lineElements[posZone]);
                 int hhId      = Integer.parseInt(lineElements[posHh]);
                 String tp     = lineElements[posType].replace("\"", "");
-                DefaultDwellingTypes.DefaultDwellingTypeImpl type = DefaultDwellingTypes.DefaultDwellingTypeImpl.valueOf(tp);
+                BangkokDwellingTypes.DwellingTypeBangkok type = BangkokDwellingTypes.DwellingTypeBangkok.valueOf(tp);
                 int price     = Integer.parseInt(lineElements[posCosts]);
                 int area      = Integer.parseInt(lineElements[posRooms]);
                 int quality   = Integer.parseInt(lineElements[posQuality]);

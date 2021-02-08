@@ -44,6 +44,7 @@ public class GenerateHouseholdsPersonsDwellings {
     private HouseholdDataManager householdData;
     private RealEstateDataManager realEstate;
     private Map<Integer, Map<String, Double>> zonalSummary = new LinkedHashMap<>();
+    private Map<Integer, Map<String, Double>> allocationErrors = new LinkedHashMap<>();
 
     public GenerateHouseholdsPersonsDwellings(DataContainer dataContainer, DataSetSynPop dataSetSynPop, HashMap<Person, Integer> educationalLevel){
         this.dataContainer = dataContainer;
@@ -78,6 +79,7 @@ public class GenerateHouseholdsPersonsDwellings {
                 }
             }
             recalculateIncomeAndDwellingPrice(municipality);
+            allocationErrorsByZone(municipality);
         }
         outputSummaryByZone();
     }
@@ -119,7 +121,7 @@ public class GenerateHouseholdsPersonsDwellings {
             zonalSummary.get(municipality).put("males"+age, maleYoungerThan - countAgeMale);
             countAgeMale = maleYoungerThan;
             double femaleYoungerThan = (double) personMap.values().stream().filter(x->x.getGender().equals(Gender.FEMALE)).filter(x->x.getAge() <= age).count();
-            zonalSummary.get(municipality).put("males"+age, femaleYoungerThan - countAgeFemale);
+            zonalSummary.get(municipality).put("females"+age, femaleYoungerThan - countAgeFemale);
             countAgeFemale = femaleYoungerThan;
         }
         int[] ageBrackets = new int[]{18,35,65,109};
@@ -130,6 +132,51 @@ public class GenerateHouseholdsPersonsDwellings {
             countAge = youngerThan;
         }
     }
+
+    private void allocationErrorsByZone(int municipality) {
+
+        Map<String, String> attributes = new LinkedHashMap<>();
+        attributes.put("fem109", "females109");
+        attributes.put("male109", "males109");
+        attributes.put("fem89", "females89");
+        attributes.put("male89", "males89");
+        attributes.put("fem79", "females79");
+        attributes.put("male79", "males79");
+        attributes.put("fem9", "females9");
+        attributes.put("male9", "males9");
+        attributes.put("fem69", "females69");
+        attributes.put("male69", "males69");
+        attributes.put("fem19", "females19");
+        attributes.put("male19", "males19");
+        attributes.put("fem29", "females29");
+        attributes.put("male29", "males29");
+        attributes.put("fem59", "females59");
+        attributes.put("male59", "males59");
+        attributes.put("fem39", "females39");
+        attributes.put("male39", "males39");
+        attributes.put("fem49", "females49");
+        attributes.put("male49", "males49");
+        attributes.put("females", "females");
+        attributes.put("males", "males");
+        attributes.put("population", "population");
+        attributes.put("households", "hhTotal");
+        allocationErrors.putIfAbsent(municipality, new LinkedHashMap<>());
+        for (String attributeMarginals : attributes.keySet()) {
+            allocationErrors.get(municipality).put(attributes.get(attributeMarginals), Math.abs((zonalSummary.get(municipality).get(attributes.get(attributeMarginals)) -
+                    PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, attributeMarginals)) /
+                            PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, attributeMarginals)));
+        }
+        allocationErrors.get(municipality).put("condo", Math.abs((zonalSummary.get(municipality).get("high_rise50") +zonalSummary.get(municipality).get("high_rise30")-
+                PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, "condo") )/
+                        PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, "condo")));
+        allocationErrors.get(municipality).put("apartment", Math.abs((zonalSummary.get(municipality).get("low_rise50") +zonalSummary.get(municipality).get("low_rise30")-
+                PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, "apartment")) /
+                        PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, "apartment")));
+        allocationErrors.get(municipality).put("house", Math.abs((zonalSummary.get(municipality).get("detached_120") +zonalSummary.get(municipality).get("detached_200")-
+                PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, "house")) /
+                        PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, "house")));
+    }
+
 
     private void recalculateIncomeAndDwellingPrice(int municipality) {
         double averageIncomeByZoneCensus = PropertiesSynPop.get().main.cellsMatrix.getIndexedValueAt(municipality, "income");
@@ -176,6 +223,22 @@ public class GenerateHouseholdsPersonsDwellings {
             pw.println(zoneStr);
         }
         pw.close();
+
+        PrintWriter pw1 = SiloUtil.openFileForSequentialWriting("microData/interimFiles/allocationErrors.csv", false);
+        AtomicReference<String> header1 = new AtomicReference<>("zone");
+        for (String key : allocationErrors.get(1).keySet()) {
+            header1.set(header1 + "," + key);
+        }
+        pw1.println(header1);
+        AtomicReference<String> zoneStr1 = new AtomicReference<>("");
+        for (int municipality : dataSetSynPop.getMunicipalities()) {
+            zoneStr1.set(Integer.toString(municipality));
+            for (Double value : allocationErrors.get(municipality).values()) {
+                zoneStr1.set(zoneStr1 + "," + value);
+            }
+            pw1.println(zoneStr1);
+        }
+        pw1.close();
     }
 
     private Household generateHousehold(){

@@ -42,6 +42,7 @@ public class GenerateJobs {
     private void generateJobsByTypeAtMunicipalityWithReplacement(int municipality, String jobType){
         JobDataManager jobData = dataContainer.getJobDataManager();
             int totalJobs = (int) PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, jobType);
+            totalJobs = (int) Math.round(totalJobs * 1.3);
             for (int job = 0; job < totalJobs; job++){
                 int id = jobData.getNextJobId();
                 int tazSelected = SiloUtil.select(jobsByTaz);
@@ -60,7 +61,7 @@ public class GenerateJobs {
         jobsByTaz = new HashMap<>();
         jobsByTaz.clear();
         for (int taz : dataSetSynPop.getTazByMunicipality().get(municipality)){
-            jobsByTaz.put(taz, PropertiesSynPop.get().main.cellsMatrix.getIndexedValueAt(taz, jobType));
+            jobsByTaz.put(taz, (float) Math.round(PropertiesSynPop.get().main.cellsMatrix.getIndexedValueAt(taz, jobType) * 1.3));
         }
     }
 }
