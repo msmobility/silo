@@ -375,7 +375,7 @@ public class GenerateHouseholdsPersonsDwellings {
             return"low_rise";
         } else if (ddType.equals(BangkokDwellingTypes.DwellingTypeBangkok.LOW_RISE_CONDOMINIUM_50)) {
             return "low_rise";
-        } else if (ddType.equals(BangkokDwellingTypes.DwellingTypeBangkok.LOW_RISE_CONDOMINIUM_50)) {
+        } else if (ddType.equals(BangkokDwellingTypes.DwellingTypeBangkok.DETATCHED_HOUSE_120)) {
             return "detached_house";
         } else {
             return "detached_house";
