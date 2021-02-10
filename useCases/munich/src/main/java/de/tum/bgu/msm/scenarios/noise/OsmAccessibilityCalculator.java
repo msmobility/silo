@@ -28,6 +28,7 @@ public class OsmAccessibilityCalculator implements FacilityDataExchangeInterface
     private final Config config;
     private final Properties properties;
     private final GeoData geoData;
+    private final ZoneConnectorManager zoneConnectorManager;
 
     private final Envelope envelope = new Envelope();
     private final ActivityFacilities facilities;
@@ -37,6 +38,7 @@ public class OsmAccessibilityCalculator implements FacilityDataExchangeInterface
         this.config = config;
         this.properties = properties;
         this.geoData = geoData;
+        this.zoneConnectorManager = zoneConnectorManager;
 
         facilities = FacilitiesUtils.createActivityFacilities();
 
@@ -48,10 +50,17 @@ public class OsmAccessibilityCalculator implements FacilityDataExchangeInterface
                     .createActivityFacility(Id.create(value.getId(), ActivityFacility.class), coord);
             facilities.addActivityFacility(activityFacility);
         }
+
     }
 
 
     public void calculateAccessibilities(int year) {
+
+
+        if (properties.main.baseYear != year && !(properties.transportModel.transportModelYears.contains(year + 1))) {
+            return;
+        }
+
 
         String opportunitiesFile = "C:/Users/Nico/tum/facilities_amenities.xml";
 
@@ -59,6 +68,7 @@ public class OsmAccessibilityCalculator implements FacilityDataExchangeInterface
 
         AccessibilityConfigGroup acg = ConfigUtils.addOrGetModule(config, AccessibilityConfigGroup.class);
         acg.setComputingAccessibilityForMode(Modes4Accessibility.car, true);
+        acg.setComputingAccessibilityForMode(Modes4Accessibility.freespeed, false);
         acg.setUseParallelization(true);
         acg.setTileSize_m(100); // Must be set even though meaningless in given-facilities case
 

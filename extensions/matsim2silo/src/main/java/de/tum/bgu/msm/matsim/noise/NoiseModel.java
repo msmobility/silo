@@ -163,6 +163,7 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
                 noiseParameters.setComputeAvgNoiseCostPerLinkAndTime(false);
                 noiseParameters.setThrowNoiseEventsCaused(false);
                 noiseParameters.setThrowNoiseEventsAffected(false);
+                noiseParameters.setConsiderNoiseBarriers(true);
                 noiseParameters.setNoiseComputationMethod(NoiseConfigGroup.NoiseComputationMethod.RLS19);
                 noiseParameters.setWriteOutputIteration(0);
                 noiseParameters.setScaleFactor(1./initialConfig.qsim().getFlowCapFactor());
@@ -224,6 +225,7 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
                 noiseParameters.setComputePopulationUnits(false);
                 noiseParameters.setComputeAvgNoiseCostPerLinkAndTime(false);
                 noiseParameters.setThrowNoiseEventsCaused(false);
+                noiseParameters.setConsiderNoiseBarriers(true);
                 noiseParameters.setNoiseComputationMethod(NoiseConfigGroup.NoiseComputationMethod.RLS19);
                 noiseParameters.setThrowNoiseEventsAffected(false);
                 noiseParameters.setWriteOutputIteration(0);

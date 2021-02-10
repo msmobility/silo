@@ -72,11 +72,11 @@ public class SiloNoiseTest {
         ResultsMonitor resultsMonitor = new ResultsMonitorMuc(dataContainer, properties);
 
         final List<ModelUpdateListener> modelUpdateListeners = modelContainer.getModelUpdateListeners();
-//        for(ModelUpdateListener listenr: modelUpdateListeners) {
-//            if(listenr instanceof NoiseModel) {
-//                listenr.endYear(2011);
-//            }
-//        }
+        for(ModelUpdateListener listenr: modelUpdateListeners) {
+            if(listenr instanceof NoiseModel) {
+                listenr.endYear(2011);
+            }
+        }
 
         NoiseDwelling refDwelling = new NoiseDwellingIml(new DwellingFactoryImpl().createDwelling(1, 20, null, -1, DefaultDwellingTypes.DefaultDwellingTypeImpl.MF234, 1, 1, 1000, 1980));
         refDwelling.setNoiseImmision(45);
@@ -130,32 +130,40 @@ public class SiloNoiseTest {
 
         Random random = new Random(42);
 
-//        dataContainer.getRealEstateDataManager().addDwelling(refDwelling);
-//        for(Dwelling dwelling: dataContainer.getRealEstateDataManager().getDwellings()) {
-//            ((NoiseDwelling)dwelling).setNoiseImmision(((NoiseDwelling) dwelling).getNoiseImmission()+random.nextInt(25));
-//            if(dwelling == refDwelling) {
-//                continue;
-//            }
-//            dwelling.setPrice(1000);
-//
-//            final double v = strategy.calculateHousingUtility(poor, dwelling);
-//            final double v2 = strategy.calculateHousingUtility(avg, dwelling);
-//            final double v3 = strategy.calculateHousingUtility(rich, dwelling);
-//
-//            final double v4 = strategyIns.calculateHousingUtility(poor, dwelling);
-//            final double v5 = strategyIns.calculateHousingUtility(avg, dwelling);
-//            final double v6 = strategyIns.calculateHousingUtility(rich, dwelling);
-//            writer.write(((NoiseDwelling)dwelling).getNoiseImmission()+","+dwelling.getPrice()
-//                    +","+dwelling.getType()+","+v+","+v2+","+v3+","+v4+","+v5+","+v6);
-//            writer.newLine();
-//        }
-//        writer.flush();
-//        writer.close();
+        dataContainer.getRealEstateDataManager().addDwelling(refDwelling);
+        for(Dwelling dwelling: dataContainer.getRealEstateDataManager().getDwellings()) {
+            ((NoiseDwelling)dwelling).setNoiseImmision(((NoiseDwelling) dwelling).getNoiseImmission()+random.nextInt(25));
+            if(dwelling == refDwelling) {
+                continue;
+            }
+            double price = 1000;
+            if(((NoiseDwelling) dwelling).getNoiseImmission() > 75) {
+                price = price * (1 -0.1005);
+            } else if(((NoiseDwelling) dwelling).getNoiseImmission() > 65) {
+                price = price * (1 -0.0583);
+            } else if(((NoiseDwelling) dwelling).getNoiseImmission() > 55) {
+                price = price * (1  -0.0360);
+            }
+            dwelling.setPrice((int) price);
+
+            final double v = strategy.calculateHousingUtility(poor, dwelling);
+            final double v2 = strategy.calculateHousingUtility(avg, dwelling);
+            final double v3 = strategy.calculateHousingUtility(rich, dwelling);
+
+            final double v4 = strategyIns.calculateHousingUtility(poor, dwelling);
+            final double v5 = strategyIns.calculateHousingUtility(avg, dwelling);
+            final double v6 = strategyIns.calculateHousingUtility(rich, dwelling);
+            writer.write(((NoiseDwelling)dwelling).getNoiseImmission()+","+dwelling.getPrice()
+                    +","+dwelling.getType()+","+v+","+v2+","+v3+","+v4+","+v5+","+v6);
+            writer.newLine();
+        }
+        writer.flush();
+        writer.close();
 
 
 
-        SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
-        model.addResultMonitor(resultsMonitor);
-        model.runModel();
+//        SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
+//        model.addResultMonitor(resultsMonitor);
+//        model.runModel();
     }
 }
