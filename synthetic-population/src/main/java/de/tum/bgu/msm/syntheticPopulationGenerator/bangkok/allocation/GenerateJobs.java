@@ -28,9 +28,8 @@ public class GenerateJobs {
     public void run(){
         logger.info("   Running module: job generation");
         for (int municipality : dataSetSynPop.getMunicipalities()){
-            logger.info("   Municipality " + municipality + ". Starting to generate jobs");
             for (String jobType : PropertiesSynPop.get().main.jobStringType) {
-                if (PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, jobType) > 0.1) {
+                if (PropertiesSynPop.get().main.cellsMatrix.getIndexedValueAt(municipality, jobType) > 0.1) {
                     initializeTAZprobability(municipality, jobType);
                     generateJobsByTypeAtMunicipalityWithReplacement(municipality, jobType);
                 }
@@ -41,8 +40,8 @@ public class GenerateJobs {
 
     private void generateJobsByTypeAtMunicipalityWithReplacement(int municipality, String jobType){
         JobDataManager jobData = dataContainer.getJobDataManager();
-            int totalJobs = (int) PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, jobType);
-            totalJobs = (int) Math.round(totalJobs * 1.3);
+            int totalJobs = (int) PropertiesSynPop.get().main.cellsMatrix.getIndexedValueAt(municipality, jobType);
+            totalJobs = (int) Math.round(totalJobs * PropertiesSynPop.get().main.jobScaler);
             for (int job = 0; job < totalJobs; job++){
                 int id = jobData.getNextJobId();
                 int tazSelected = SiloUtil.select(jobsByTaz);
@@ -61,7 +60,7 @@ public class GenerateJobs {
         jobsByTaz = new HashMap<>();
         jobsByTaz.clear();
         for (int taz : dataSetSynPop.getTazByMunicipality().get(municipality)){
-            jobsByTaz.put(taz, (float) Math.round(PropertiesSynPop.get().main.cellsMatrix.getIndexedValueAt(taz, jobType) * 1.3));
+            jobsByTaz.put(taz, (float) Math.round(PropertiesSynPop.get().main.cellsMatrix.getIndexedValueAt(taz, jobType) * PropertiesSynPop.get().main.jobScaler));
         }
     }
 }

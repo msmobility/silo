@@ -46,6 +46,7 @@ public class Allocation extends ModuleSynPop{
             generateAutos();
         } else {
             readPopulation();
+            generateJobs();
         }
         if (PropertiesSynPop.get().main.runJobAllocation) {
             assignJobs();

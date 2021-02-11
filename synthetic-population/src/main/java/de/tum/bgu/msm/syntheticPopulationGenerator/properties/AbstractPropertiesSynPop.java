@@ -71,5 +71,6 @@ public abstract class AbstractPropertiesSynPop {
     public String microDataHouseholds;
     public String microDataPersons;
     public TableDataSet incomeCoefficients;
+    public double jobScaler;
 
 }

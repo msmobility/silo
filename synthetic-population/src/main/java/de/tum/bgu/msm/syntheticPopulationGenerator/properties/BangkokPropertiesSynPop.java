@@ -99,6 +99,7 @@ public class BangkokPropertiesSynPop extends AbstractPropertiesSynPop {
         microHouseholdsFileName = PropertiesUtil.getStringProperty(bundle, "micro.households", "microData/interimFiles/microHouseholds.csv");
 
         incomeCoefficients = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle, "income.coefficients","input/syntheticPopulation/incomeCoefficients.csv"));
+        jobScaler = PropertiesUtil.getDoubleProperty(bundle,"job.scaler",1.0);
     }
 
 }

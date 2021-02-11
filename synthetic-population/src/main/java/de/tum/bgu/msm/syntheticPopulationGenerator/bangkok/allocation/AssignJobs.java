@@ -60,7 +60,7 @@ public class AssignJobs {
 
             Household hh = pp.getHousehold();
             int origin = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
-            int selectedJobType = guessjobType(origin);
+            int selectedJobType = 0; //guessjobType(origin);
             int[] workplace = selectWorkplace(origin, selectedJobType);
             if (workplace[0] > 0) {
                 int jobID = idVacantJobsByZoneType.get(workplace[0])[numberVacantJobsByZoneByType.get(workplace[0]) - 1];
@@ -169,7 +169,7 @@ public class AssignJobs {
         for (Job jj: jobs) {
             //set all jobs vacant to allocate them
             jj.setWorkerID(-1);
-            int type = jobIntTypes.get(jj.getType());
+            int type = 0;//jobIntTypes.get(jj.getType());
             int typeZone = type + jj.getZoneId() * 100;
             //update the set of zones that have ID
             if (numberVacantJobsByZoneByType.get(typeZone) == 0){
@@ -199,8 +199,8 @@ public class AssignJobs {
         //fill the Hashmaps with IDs
         for (Job jj: jobs) {
             //all jobs are vacant in this step of the synthetic population
-            int type = jobIntTypes.get(jj.getType());
-            int typeZone = jobIntTypes.get(jj.getType()) + jj.getZoneId() * 100;
+            int type = 0;//jobIntTypes.get(jj.getType());
+            int typeZone = 0 + jj.getZoneId() * 100;
             //update the list of job IDs per zone and job type
             int [] previousJobIDs = idVacantJobsByZoneType.get(typeZone);
             previousJobIDs[numberVacantJobsByZoneByType.get(typeZone)] = jj.getId();
