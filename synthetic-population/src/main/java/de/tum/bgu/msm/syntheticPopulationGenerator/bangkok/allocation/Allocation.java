@@ -46,7 +46,6 @@ public class Allocation extends ModuleSynPop{
             generateAutos();
         } else {
             readPopulation();
-            generateJobs();
         }
         if (PropertiesSynPop.get().main.runJobAllocation) {
             assignJobs();
@@ -74,7 +73,7 @@ public class Allocation extends ModuleSynPop{
         new AssignSchools(dataContainer, dataSetSynPop).run();
     }
 
-    public void generateAutos() {new CarOwnership().run();}
+    public void generateAutos() {new CarOwnership(dataContainer).run();}
 
     public void readPopulation(){
         educationalLevel = new HashMap<>();

@@ -39,7 +39,7 @@ public class ReadPopulation {
         readHouseholdData(Properties.get().main.startYear);
         readPersonData(Properties.get().main.startYear);
         readDwellingData(Properties.get().main.startYear);
-        //readJobData(Properties.get().main.startYear);
+        readJobData(Properties.get().main.startYear);
     }
 
 
