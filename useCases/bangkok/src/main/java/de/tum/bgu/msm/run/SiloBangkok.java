@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.run;
 
 import de.tum.bgu.msm.SiloModel;
+import de.tum.bgu.msm.container.DefaultDataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.io.output.HouseholdSatisfactionMonitor;
 import de.tum.bgu.msm.io.output.MultiFileResultsMonitor;
@@ -30,7 +31,7 @@ public class SiloBangkok {
             config = ConfigUtils.loadConfig(args[1]);
         }
         logger.info("Started SILO land use model for the Munich Metropolitan Area");
-        DataContainerWithSchoolsImpl dataContainer = DataBuilderBangkok.getModelDataForBangkok(properties, config);
+        DefaultDataContainer dataContainer = DataBuilderBangkok.getModelDataForBangkok(properties, config);
         DataBuilderBangkok.read(properties, dataContainer);
         ModelContainer modelContainer = ModelBuilderBangkok.getModelContainerForBangkok(dataContainer, properties, config);
 

@@ -447,16 +447,18 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
         double[] landUseData = developmentTable.getColumnAsDouble("DevLandUse");
 
         for (int i = 0; i < zoneIdData.length; i++) {
+            if(geoData.getZones().containsKey(zoneIdData[i])) {
 
-            Map<DwellingType, Boolean> constraints = new HashMap<>();
-            for (DwellingType dwellingType : dwellingTypes.getTypes()) {
-                constraints.put(dwellingType, constraintData.get(dwellingType)[i] == 1);
+                Map<DwellingType, Boolean> constraints = new HashMap<>();
+                for (DwellingType dwellingType : dwellingTypes.getTypes()) {
+                    constraints.put(dwellingType, constraintData.get(dwellingType)[i] == 1);
+                }
+                int thisZoneCapacity = (int) (dwellingCapacityData[i] * properties.main.scaleFactor);
+                double thisZoneLandUse = landUseData[i] * properties.main.scaleFactor;
+
+                Development development = new DevelopmentImpl(thisZoneLandUse, thisZoneCapacity, constraints, Properties.get().geo.useCapacityForDwellings);
+                geoData.getZones().get(zoneIdData[i]).setDevelopment(development);
             }
-            int thisZoneCapacity = (int) (dwellingCapacityData[i] * properties.main.scaleFactor);
-            double thisZoneLandUse = landUseData[i]  * properties.main.scaleFactor;
-
-            Development development = new DevelopmentImpl(thisZoneLandUse, thisZoneCapacity, constraints, Properties.get().geo.useCapacityForDwellings);
-            geoData.getZones().get(zoneIdData[i]).setDevelopment(development);
         }
 
     }

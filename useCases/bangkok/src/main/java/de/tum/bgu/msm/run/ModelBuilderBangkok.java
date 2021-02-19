@@ -1,9 +1,11 @@
 package de.tum.bgu.msm.run;
 
+import de.tum.bgu.msm.container.DefaultDataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.matsim.*;
 import de.tum.bgu.msm.mito.MitoMatsimScenarioAssembler;
 import de.tum.bgu.msm.models.demography.education.EducationModelImpl;
+import de.tum.bgu.msm.models.demography.marriage.MarriageModelImpl;
 import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
 import de.tum.bgu.msm.models.relocation.moves.*;
@@ -59,7 +61,7 @@ import org.matsim.core.scenario.ScenarioUtils;
 
 public class ModelBuilderBangkok {
 
-    public static ModelContainer getModelContainerForBangkok(DataContainerWithSchools dataContainer, Properties properties, Config config) {
+    public static ModelContainer getModelContainerForBangkok(DefaultDataContainer dataContainer, Properties properties, Config config) {
 
         PersonFactory ppFactory = dataContainer.getHouseholdDataManager().getPersonFactory();
         HouseholdFactory hhFactory = dataContainer.getHouseholdDataManager().getHouseholdFactory();
@@ -74,10 +76,10 @@ public class ModelBuilderBangkok {
         MovesModelImpl movesModel = new MovesModelImpl(
                 dataContainer, properties,
                 new DefaultMovesStrategy(),
-                new HousingStrategyBangkok(dataContainer,
+                new SimpleCommuteModeChoiceHousingStrategyImpl(dataContainer,
                         properties, dataContainer.getTravelTimes(),
-                        new DwellingUtilityStrategyBangkok(), new RegionUtilityStrategyBangkok(),
-                        new DefaultDwellingProbabilityStrategy(), new RegionProbabilityStrategyImpl())
+                        new DwellingUtilityStrategyImpl(), new DefaultDwellingProbabilityStrategy(),
+                        new RegionUtilityStrategyImpl(), new RegionProbabilityStrategyImpl())
                 , SiloUtil.provideNewRandom());
 
         CreateCarOwnershipModel carOwnershipModel = null;
@@ -113,7 +115,7 @@ public class ModelBuilderBangkok {
         DemolitionModel demolition = new DemolitionModelImpl(dataContainer, movesModel,
                 inOutMigration, properties, new DefaultDemolitionStrategy(), SiloUtil.provideNewRandom());
 
-        MarriageModel marriageModel = new MarriageModelBangkok(dataContainer, movesModel, inOutMigration,
+        MarriageModel marriageModel = new MarriageModelImpl(dataContainer, movesModel, inOutMigration,
                 carOwnershipModel, hhFactory, properties, new DefaultMarriageStrategy(), SiloUtil.provideNewRandom());
 
 

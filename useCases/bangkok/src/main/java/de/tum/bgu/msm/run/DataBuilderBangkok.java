@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.run;
 
+import de.tum.bgu.msm.container.DefaultDataContainer;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.accessibility.AccessibilityImpl;
 import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
@@ -16,6 +17,7 @@ import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.io.input.*;
 import de.tum.bgu.msm.matsim.MatsimTravelTimesAndCosts;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.run.data.dwelling.BangkokDwellingTypes;
 import de.tum.bgu.msm.run.io.GeoDataReaderBangkok;
 import de.tum.bgu.msm.schools.*;
 import org.matsim.core.config.Config;
@@ -25,7 +27,7 @@ public class DataBuilderBangkok {
     private DataBuilderBangkok() {
     }
 
-    public static DataContainerWithSchoolsImpl getModelDataForBangkok(Properties properties, Config config) {
+    public static DefaultDataContainer getModelDataForBangkok(Properties properties, Config config) {
 
         HouseholdData householdData = new HouseholdDataImpl();
         JobData jobData = new JobDataImpl();
@@ -60,25 +62,23 @@ public class DataBuilderBangkok {
         JobFactory jobFactory = new JobFactoryImpl();
 
         RealEstateDataManager realEstateDataManager = new RealEstateDataManagerImpl(
-                new DefaultDwellingTypes(), dwellingData, householdData, geoData, new DwellingFactoryImpl(), properties);
+                new BangkokDwellingTypes(), dwellingData, householdData, geoData, new DwellingFactoryImpl(), properties);
 
         JobDataManager jobDataManager = new JobDataManagerImpl(
                 properties, jobFactory, jobData, geoData, travelTimes, commutingTimeProbability);
 
-        SchoolDataImpl schoolData = new SchoolDataImpl(geoData, dwellingData, properties);
 
         final HouseholdFactory hhFactory = new HouseholdFactoryImpl();
         HouseholdDataManager householdDataManager = new HouseholdDataManagerImpl(
                 householdData, dwellingData, new PersonFactoryImpl(),
                 hhFactory, properties, realEstateDataManager);
 
-        //SchoolData schoolData = new SchoolDataImpl(geoData, dwellingData, properties);
 
-        return new DataContainerWithSchoolsImpl(geoData, realEstateDataManager, jobDataManager, householdDataManager, travelTimes, accessibility,
-                commutingTimeProbability, schoolData, properties);
+        return new DefaultDataContainer(geoData, realEstateDataManager, jobDataManager, householdDataManager, travelTimes, accessibility,
+                commutingTimeProbability, properties);
     }
 
-    static public void read(Properties properties, DataContainerWithSchools dataContainer){
+    static public void read(Properties properties, DefaultDataContainer dataContainer){
 
         GeoDataReader reader = new GeoDataReaderBangkok(dataContainer.getGeoData());
         String pathShp = properties.main.baseDirectory + properties.geo.zoneShapeFile;
@@ -105,10 +105,6 @@ public class DataBuilderBangkok {
         JobReader jjReader = new DefaultJobReader(dataContainer.getJobDataManager());
         String jobsFile = properties.main.baseDirectory + properties.jobData.jobsFileName + "_" + year + ".csv";
         jjReader.readData(jobsFile);
-
-/*        SchoolReader ssReader = new SchoolReaderImpl(dataContainer.getSchoolData());
-        String schoolsFile = properties.main.baseDirectory + properties.schoolData.schoolsFileName + "_" + year + ".csv";
-        ssReader.readData(schoolsFile);*/
 
         MicroDataScaler microDataScaler = new MicroDataScaler(dataContainer, properties);
         microDataScaler.scale();
