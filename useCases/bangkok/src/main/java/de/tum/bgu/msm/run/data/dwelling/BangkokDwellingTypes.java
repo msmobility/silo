@@ -26,27 +26,27 @@ public class BangkokDwellingTypes implements DwellingTypes {
         /**
          * Refers to "Condo"
          */
-        HIGH_RISE_CONDOMINIUM_30(0.0021f,0.01f),
+        HIGH_RISE_CONDOMINIUM_30(0.000519f,0.01f),
         /**
          * Refers to "Condo"
          */
-        HIGH_RISE_CONDOMINIUM_50(0.0036f,0.01f),
+        HIGH_RISE_CONDOMINIUM_50(0.000889f,0.01f),
         /**
          * Refers to "apartment"
          */
-        LOW_RISE_CONDOMINIUM_30(0.0047f,0.03f),
+        LOW_RISE_CONDOMINIUM_30(0.001161f,0.03f),
         /**
          * Refers to "apartment"
          */
-        LOW_RISE_CONDOMINIUM_50(0.007f,0.03f),
+        LOW_RISE_CONDOMINIUM_50(0.001729f,0.03f),
         /**
          * Refers to "detached house"
          */
-        DETATCHED_HOUSE_120 (0.06f,0.05f),
+        DETATCHED_HOUSE_120 (0.01482f,0.05f),
         /**
          * Refers to "detached house"
          */
-        DETATCHED_HOUSE_200 (0.100f,0.05f);
+        DETATCHED_HOUSE_200 (0.0247f,0.05f);
 
         private final float acresNeeded;
         private final float structuralVacancy;
