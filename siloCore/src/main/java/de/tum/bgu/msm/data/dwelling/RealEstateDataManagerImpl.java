@@ -186,6 +186,7 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
         for (Dwelling dd : dwellingData.getDwellings()) {
             if (dd.getResidentId() == -1) {
                 int dwellingId = dd.getId();
+                //logger.info(dwellingId);
                 int region = geoData.getZones().get(dd.getZoneId()).getRegion().getId();
                 vacDwellingsByRegion.putIfAbsent(region, new ArrayList<>());
                 vacDwellingsByRegion.get(region).add(dd);
@@ -206,14 +207,19 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
         }
     }
 
+    /**
+     *
+     * @return map of rent by region. Infinity value if no dwellings are present in that region
+     */
     @Override
     public Map<Integer, Double> calculateRegionalPrices() {
         final Map<Integer, Zone> zones = geoData.getZones();
         final Map<Integer, List<Dwelling>> dwellingsByRegion =
                 dwellingData.getDwellings().parallelStream().collect(Collectors.groupingByConcurrent(d ->
                         zones.get(d.getZoneId()).getRegion().getId()));
-        final Map<Integer, Double> rentsByRegion = dwellingsByRegion.entrySet().parallelStream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().stream().mapToDouble(Dwelling::getPrice).average().getAsDouble()));
+        //We set
+        final Map<Integer, Double> rentsByRegion = geoData.getRegions().entrySet().parallelStream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> dwellingsByRegion.getOrDefault(e.getKey(),Collections.emptyList()).stream().mapToDouble(Dwelling::getPrice).average().orElse(Double.POSITIVE_INFINITY)));
         return rentsByRegion;
     }
 

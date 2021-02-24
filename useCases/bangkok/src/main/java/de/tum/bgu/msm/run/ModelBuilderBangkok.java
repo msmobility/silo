@@ -3,17 +3,11 @@ package de.tum.bgu.msm.run;
 import de.tum.bgu.msm.container.DefaultDataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.matsim.*;
-import de.tum.bgu.msm.mito.MitoMatsimScenarioAssembler;
 import de.tum.bgu.msm.models.demography.education.EducationModelImpl;
 import de.tum.bgu.msm.models.demography.marriage.MarriageModelImpl;
 import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
 import de.tum.bgu.msm.models.relocation.moves.*;
-import de.tum.bgu.msm.run.models.relocation.demography.MarriageModelBangkok;
-import de.tum.bgu.msm.run.models.relocation.relocation.DwellingUtilityStrategyBangkok;
-import de.tum.bgu.msm.run.models.relocation.relocation.HousingStrategyBangkok;
-import de.tum.bgu.msm.run.models.relocation.relocation.RegionUtilityStrategyBangkok;
-import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.person.PersonFactory;
@@ -54,6 +48,7 @@ import de.tum.bgu.msm.models.realEstate.renovation.RenovationModelImpl;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigration;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.run.models.realEstate.construction.BangkokConstructionLocationStrategy;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
@@ -100,7 +95,7 @@ public class ModelBuilderBangkok {
         JobMarketUpdate jobMarketUpdateModel = new JobMarketUpdateImpl(dataContainer, properties, SiloUtil.provideNewRandom());
 
         ConstructionModel construction = new ConstructionModelImpl(dataContainer, ddFactory,
-                properties, new DefaultConstructionLocationStrategy(), new DefaultConstructionDemandStrategy(), SiloUtil.provideNewRandom());
+                properties, new BangkokConstructionLocationStrategy(), new DefaultConstructionDemandStrategy(), SiloUtil.provideNewRandom());
 
 
         PricingModel pricing = new PricingModelImpl(dataContainer, properties, new DefaultPricingStrategy(), SiloUtil.provideNewRandom());

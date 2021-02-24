@@ -42,11 +42,11 @@ public class BangkokDwellingTypes implements DwellingTypes {
         /**
          * Refers to "detached house"
          */
-        DETATCHED_HOUSE_120 (0.01482f,0.05f),
+        DETATCHED_HOUSE_120(0.01482f,0.05f),
         /**
          * Refers to "detached house"
          */
-        DETATCHED_HOUSE_200 (0.0247f,0.05f);
+        DETATCHED_HOUSE_200(0.0247f,0.05f);
 
         private final float acresNeeded;
         private final float structuralVacancy;

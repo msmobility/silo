@@ -21,7 +21,10 @@ import org.locationtech.jts.geom.Coordinate;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class ReadPopulation {
 
@@ -38,6 +41,7 @@ public class ReadPopulation {
         logger.info("   Running module: read population");
         readHouseholdData(Properties.get().main.startYear);
         readPersonData(Properties.get().main.startYear);
+        checkMarriedPersons();
         readDwellingData(Properties.get().main.startYear);
         readJobData(Properties.get().main.startYear);
     }
@@ -268,6 +272,37 @@ public class ReadPopulation {
             logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
         }
         logger.info("Finished reading " + recCount + " jobs.");
+    }
+
+    private void checkMarriedPersons(){
+        for (Household hh : dataContainer.getHouseholdDataManager().getHouseholds()){
+            Map<Integer, Person> marriedMales = new LinkedHashMap<>();
+            Map<Integer, Person> marriedFemales = new LinkedHashMap<>();
+            int id = 0;
+            int femid = 0;
+            for (Person pp : hh.getPersons().values()){
+                if (pp.getRole().equals(PersonRole.MARRIED) && pp.getGender().equals(Gender.MALE)){
+                    marriedMales.put(id++, pp);
+                } else if (pp.getRole().equals(PersonRole.MARRIED) && pp.getGender().equals(Gender.FEMALE)) {
+                    marriedFemales.put(femid++, pp);
+                }
+            }
+            if (id != femid){
+                int idMarriedFem = 1;
+                for (Person pp : marriedMales.values()){
+                    if (marriedFemales.get(idMarriedFem) != null){
+                        marriedFemales.remove(idMarriedFem);
+                        idMarriedFem++;
+                        } else {
+                           pp.setRole(PersonRole.SINGLE);
+                        }
+                    }
+                for (Person pp: marriedFemales.values()){
+                    pp.setRole(PersonRole.SINGLE);
+                }
+            }
+
+        }
     }
 
 }
