@@ -17,6 +17,7 @@ import de.tum.bgu.msm.data.job.JobType;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.events.MicroEvent;
+import de.tum.bgu.msm.events.impls.household.MigrationEvent;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -46,6 +47,8 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
     private PrintWriter ddCountW;
     private PrintWriter landRegionW;
     private PrintWriter eventCountW;
+    private PrintWriter ddQualW;
+    private PrintWriter migrantsW;
 
     public MultiFileResultsMonitor(DataContainer dataContainer, Properties properties) {
         this.dataContainer = dataContainer;
@@ -68,9 +71,11 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
             labourParticipationRateW = new PrintWriter(new File(pathname + "labourParticipationRate.csv"));
             commutingDistanceW = new PrintWriter(new File(pathname + "commutingDistance.csv"));
             carOwnW = new PrintWriter(new File(pathname + "carOwnership.csv"));
+            ddQualW = new PrintWriter(new File(pathname + "dwellingQualityLevel.csv"));
             ddCountW = new PrintWriter(new File(pathname + "dwellings.csv"));
             landRegionW = new PrintWriter(new File(pathname + "landRegions.csv"));
             eventCountW = new PrintWriter(new File(pathname + "eventCounts.csv"));
+            migrantsW = new PrintWriter(new File(pathname + "persMigrants.csv"));
         } catch (FileNotFoundException e) {
             logger.error("Cannot write the result file: " + pathname, e);
         }
@@ -78,7 +83,7 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
 
 
     @Override
-    public void endYear(int year, Multiset<Class<? extends MicroEvent>> eventCounter) {
+    public void endYear(int year, Multiset<Class<? extends MicroEvent>> eventCounter, List<MicroEvent> events) {
         summarizePopulationByAgeAndGender(year);
         summarizeHouseholdsByType(year);
         summarizeHouseholdsBySize(year);
@@ -87,11 +92,13 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
         summarizeLabourParticipationRates(year);
         summarizeAverageCommutingDistanceByRegion(year);
         summarizeCarOwnership(year);
+        summarizeDwellingsByQuality(year);
         summarizeDwellings(year);
         summarizeAvailableLandByRegion(year);
         //summarizeHousingCostsByIncomeGroup(year);
         //summarizeJobsByRegionAndType(year);
         summarizeEventCounts(eventCounter, year);
+        summarizeMigration(year, events);
 
         popYearW.flush();
         hhTypeW.flush();
@@ -104,6 +111,7 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
         ddCountW.flush();
         landRegionW.flush();
         eventCountW.flush();
+        migrantsW.flush();
     }
 
 
@@ -124,8 +132,8 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
 
     }
 
-//    private void summarizePopulationByRace() {
-//        int ppRace[] = new int[4];
+//    private void summarizePopulationByRace(int year) {
+//        int ppRace[] = new int[];
 //        for (Person per : dataContainer.getHouseholdDataManager().getPersons()) {
 //            ppRace[per.getRace().ordinal()]++;
 //        }
@@ -175,9 +183,9 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
             hhSizeW.println("year,size,count");
         }
 
-        for (int i = 0; i< hhs.length; i++) {
+        for (int i = 0; i < hhs.length; i++) {
             String row = String.valueOf(year);
-            int thisHhSize = i+1;
+            int thisHhSize = i + 1;
             row = row + "," + thisHhSize;
             row = row + "," + hhs[i];
             hhSizeW.println(row);
@@ -289,21 +297,24 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
         carOwnW.println(year + ",3," + carOwnership[3]);
     }
 
+    private void summarizeDwellingsByQuality(int year) {
+
+        if (year == properties.main.baseYear) {
+            ddQualW.println("year,QualityLevel,Dwellings");
+        }
+
+        for (int qual = 1; qual <= Properties.get().main.qualityLevels; qual++) {
+            String row = year + "," + qual + "," + dataContainer.getRealEstateDataManager().getUpdatedQualityShares().getOrDefault(qual, 0.);
+            ddQualW.println(row);
+        }
+    }
+
 
     private void summarizeDwellings(int year) {
-
-        //todo
-//        popYearW.println("QualityLevel,Dwellings");
-//        for (int qual = 1; qual <= Properties.get().main.qualityLevels; qual++) {
-//            String row = qual + "," + dataContainer.getRealEstateDataManager().getUpdatedQualityShares().getOrDefault(qual, 0.);
-//            popYearW.println(row);
-//        }
-
 
         if (year == properties.main.baseYear) {
             ddCountW.println("year,type,count,price,vacancy");
         }
-
 
         List<DwellingType> dwellingTypes = dataContainer.getRealEstateDataManager().getDwellingTypes();
 
@@ -411,6 +422,34 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
     }
 
 
+    private void summarizeMigration(int year, List<MicroEvent> events){
+
+        if (year == properties.main.baseYear) {
+            migrantsW.println("year,Key,Value");
+        }
+
+        int countInmigrants = 0;
+        int countOutmigrants = 0;
+        for (MicroEvent event : events){
+            if (event instanceof MigrationEvent){
+                MigrationEvent.Type type = ((MigrationEvent) event).getType();
+                if (type.equals(MigrationEvent.Type.IN)){
+                    countInmigrants += ((MigrationEvent) event).getHousehold().getHhSize();
+                } else {
+                    countOutmigrants += ((MigrationEvent) event).getHousehold().getHhSize();
+                }
+            }
+        }
+
+        popYearW.println(year + ",InmigrantsPP," + countInmigrants);
+        popYearW.println(year + ",OutmigrantsPP," + countOutmigrants);
+
+
+
+
+    }
+
+
     @Override
     public void endSimulation() {
         popYearW.close();
@@ -421,6 +460,7 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
         labourParticipationRateW.close();
         commutingDistanceW.close();
         carOwnW.close();
+        ddQualW.close();
         ddCountW.close();
         landRegionW.close();
         eventCountW.close();

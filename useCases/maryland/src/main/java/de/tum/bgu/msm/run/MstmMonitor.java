@@ -47,7 +47,7 @@ public class MstmMonitor implements ResultsMonitor {
     }
 
     @Override
-    public void endYear(int year, Multiset<Class<? extends MicroEvent>> eventCounter) {
+    public void endYear(int year, Multiset<Class<? extends MicroEvent>> eventCounter, List<MicroEvent> events) {
 
     }
 
