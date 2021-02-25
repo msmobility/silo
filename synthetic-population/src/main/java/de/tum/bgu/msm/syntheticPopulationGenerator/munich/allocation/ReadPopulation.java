@@ -8,7 +8,6 @@ import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.job.JobFactoryMuc;
 import de.tum.bgu.msm.data.job.JobMuc;
-import de.tum.bgu.msm.data.job.JobUtils;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -193,7 +192,7 @@ public class ReadPopulation {
                 int zoneId      = Integer.parseInt(lineElements[posZone]);
                 int hhId      = Integer.parseInt(lineElements[posHh]);
                 String tp     = lineElements[posType].replace("\"", "");
-                DefaultDwellingTypeImpl type = DefaultDwellingTypeImpl.valueOf(tp);
+                DefaultDwellingTypes.DefaultDwellingTypeImpl type = DefaultDwellingTypes.DefaultDwellingTypeImpl.valueOf(tp);
                 int price     = Integer.parseInt(lineElements[posCosts]);
                 int area      = Integer.parseInt(lineElements[posRooms]);
                 int quality   = Integer.parseInt(lineElements[posQuality]);

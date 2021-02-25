@@ -3,10 +3,7 @@ package de.tum.bgu.msm.scenarios.av;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
-import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
-import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
-import de.tum.bgu.msm.data.dwelling.RealEstateDataManagerImpl;
+import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdMuc;
@@ -179,7 +176,7 @@ public class ParkingBasedHousingStrategyMuc implements HousingStrategy {
                 transitAccessibilityUtility, workDistanceUtility);
 
         if (!dd.getAttribute("PARKING_SPACES").isPresent()){
-            dd.setAttribute("PARKING_SPACES", ParkingDataManager.getNumberOfParkingSpaces((DefaultDwellingTypeImpl) dd.getType()));
+            dd.setAttribute("PARKING_SPACES", ParkingDataManager.getNumberOfParkingSpaces((DefaultDwellingTypes.DefaultDwellingTypeImpl) dd.getType()));
         }
 
 

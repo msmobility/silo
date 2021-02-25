@@ -1,12 +1,8 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.capeTown.preparation;
 
-import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
-import de.tum.bgu.msm.data.dwelling.DwellingType;
-import de.tum.bgu.msm.data.dwelling.DwellingTypeCapeTown;
+import de.tum.bgu.msm.data.dwelling.CapeTownDwellingTypes;
 import de.tum.bgu.msm.data.dwelling.DwellingUsage;
 import de.tum.bgu.msm.data.person.*;
-
-import javax.management.relation.Role;
 
 public class MicroDataManager {
 
@@ -117,36 +113,36 @@ public class MicroDataManager {
     }
 
 
-    public DwellingTypeCapeTown translateDwellingType(String ddTypeStr){
-        DwellingTypeCapeTown dwellingType = null; //default value
+    public CapeTownDwellingTypes.DwellingTypeCapeTown translateDwellingType(String ddTypeStr){
+        CapeTownDwellingTypes.DwellingTypeCapeTown dwellingType = null; //default value
         //used for categories: House or brick/concrete block structure on a separate stand or yard,
         //Semi-detached house, Town house (semi-detached house in complex)
         if (ddTypeStr.equals("House or brick/concrete block structure on a separate stand or yard")) {
-            dwellingType = DwellingTypeCapeTown.FORMAL;
+            dwellingType = CapeTownDwellingTypes.DwellingTypeCapeTown.FORMAL;
         } else if (ddTypeStr.equals("Traditional dwelling/hut/structure made of traditional materials")){
-            dwellingType = DwellingTypeCapeTown.INFORMAL;
+            dwellingType = CapeTownDwellingTypes.DwellingTypeCapeTown.INFORMAL;
         } else if (ddTypeStr.equals("Flat or apartment in a block of flats")){
-            dwellingType = DwellingTypeCapeTown.MULTIFAMILY;
+            dwellingType = CapeTownDwellingTypes.DwellingTypeCapeTown.MULTIFAMILY;
         } else if (ddTypeStr.equals("Cluster house in complex")){
-            dwellingType = DwellingTypeCapeTown.MULTIFAMILY;
+            dwellingType = CapeTownDwellingTypes.DwellingTypeCapeTown.MULTIFAMILY;
         } else if (ddTypeStr.equals("Town house (semi-detached house in complex)")){
-            dwellingType = DwellingTypeCapeTown.SEMIDETACHED;
+            dwellingType = CapeTownDwellingTypes.DwellingTypeCapeTown.SEMIDETACHED;
         } else if (ddTypeStr.equals("Semi-detached house")){
-            dwellingType = DwellingTypeCapeTown.SEMIDETACHED;
+            dwellingType = CapeTownDwellingTypes.DwellingTypeCapeTown.SEMIDETACHED;
         } else if (ddTypeStr.equals("House/flat/room in back yard")){
-            dwellingType = DwellingTypeCapeTown.FORMAL;
+            dwellingType = CapeTownDwellingTypes.DwellingTypeCapeTown.FORMAL;
         } else if (ddTypeStr.equals("Informal dwelling/shack in back yard")){
-            dwellingType = DwellingTypeCapeTown.BACKYARD_INFORMAL;
+            dwellingType = CapeTownDwellingTypes.DwellingTypeCapeTown.BACKYARD_INFORMAL;
         } else if (ddTypeStr.equals("Room/flatlet on a property or a larger dwelling/servants'quarters/granny flat")){
-            dwellingType = DwellingTypeCapeTown.INFORMAL;
+            dwellingType = CapeTownDwellingTypes.DwellingTypeCapeTown.INFORMAL;
         } else if (ddTypeStr.equals("Informal dwelling/shack NOT in back yard e.g. in an informal/squatter settlement or on farm")){
-            dwellingType = DwellingTypeCapeTown.INFORMAL;
+            dwellingType = CapeTownDwellingTypes.DwellingTypeCapeTown.INFORMAL;
         } else if (ddTypeStr.equals("Caravan/tent")){
-            dwellingType = DwellingTypeCapeTown.INFORMAL;
+            dwellingType = CapeTownDwellingTypes.DwellingTypeCapeTown.INFORMAL;
         } else if (ddTypeStr.equals("Other")){
-            dwellingType = DwellingTypeCapeTown.FORMAL;
+            dwellingType = CapeTownDwellingTypes.DwellingTypeCapeTown.FORMAL;
         } else if (ddTypeStr.equals("Unspecified")){
-            dwellingType = DwellingTypeCapeTown.FORMAL;
+            dwellingType = CapeTownDwellingTypes.DwellingTypeCapeTown.FORMAL;
         }
         return dwellingType;
     }

@@ -1,7 +1,7 @@
 package run;
 
 import data.OnTheFlyCommutingTimeProbability;
-import data.SandboxDwellingType;
+import data.SandboxDwellingTypes;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.DefaultDataContainer;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
@@ -57,7 +57,7 @@ public class DataBuilderFabiland {
         new JobType(properties.jobData.jobTypes);
 
         RealEstateDataManager realEstateManager = new RealEstateDataManagerImpl(
-                SandboxDwellingType.values(),
+                new SandboxDwellingTypes(),
                 dwellingData,
                 householdData, geoData,
                 new DwellingFactoryImpl(),
@@ -104,7 +104,7 @@ public class DataBuilderFabiland {
     }
 
     private static void readDwellings(Properties properties, RealEstateDataManager realEstateManager, int year) {
-        DwellingReader ddReader = new DefaultDwellingReader(realEstateManager, SandboxDwellingType::valueOf);
+        DwellingReader ddReader = new DefaultDwellingReader(realEstateManager);
         String dwellingsFile = properties.main.baseDirectory + properties.realEstate.dwellingsFileName + "_" + year + ".csv";
         ddReader.readData(dwellingsFile);
     }
@@ -122,4 +122,5 @@ public class DataBuilderFabiland {
         PersonReader personReader = new DefaultPersonReader(householdData);
         personReader.readData(personFile);
     }
+
 }

@@ -1,4 +1,6 @@
-[![Build Status](https://travis-ci.org/msmobility/silo.svg?branch=master)](https://travis-ci.org/msmobility/silo)
+
+![CI status](https://github.com/msmobility/silo/workflows/Java%20CI/badge.svg)
+
 
 # siloCode
 SILO Model Java Code

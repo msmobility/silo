@@ -85,6 +85,22 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
     public void endYear(int year) {
         householdMementos.clear();
         adjustIncome();
+
+        final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
+
+        if (Properties.get().householdData.householdIntermediatesFileName != "") {
+            String filehh = outputDirectory + "/" + properties.householdData.householdFinalFileName + "_"
+                    + year
+                    + ".csv";
+            new DefaultHouseholdWriter(this.householdData.getHouseholds()).writeHouseholds(filehh);
+        }
+
+        if (Properties.get().householdData.personIntermediatesFileName != "") {
+            String filepp = outputDirectory + "/" + properties.householdData.personIntermediatesFileName + "_"
+                    + year
+                    + ".csv";
+            new DefaultPersonWriter(householdData).writePersons(filepp);
+        }
     }
 
     @Override

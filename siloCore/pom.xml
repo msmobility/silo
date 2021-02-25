@@ -194,6 +194,12 @@
             <id>osgeo</id>
             <name>Geotools repository</name>
             <url>https://repo.osgeo.org/repository/release/</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
         </repository>
         <repository>
             <id>matsim</id>
@@ -212,48 +218,41 @@
 
     <dependencies>
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.15</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>javax.mail</groupId>
-                    <artifactId>mail</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>javax.jms</groupId>
-                    <artifactId>jms</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.sun.jdmk</groupId>
-                    <artifactId>jmxtools</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.sun.jmx</groupId>
-                    <artifactId>jmxri</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <version>4.13.1</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-main</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-referencing</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-shapefile</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-epsg-hsql</artifactId>
+            <version>${geotools.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.geotools</groupId>
             <artifactId>gt-opengis</artifactId>
             <version>${geotools.version}</version>
         </dependency>
-        <!--<dependency>-->
-        <!--<groupId>com.vividsolutions</groupId>-->
-        <!--<artifactId>jts</artifactId>-->
-        <!--<version>1.16</version>-->
-        <!--</dependency>-->
         <dependency>
-            <groupId>org.jfree</groupId>
-            <artifactId>jcommon</artifactId>
-            <version>1.0.23</version>
+            <groupId>org.locationtech.jts</groupId>
+            <artifactId>jts-core</artifactId>
+            <version>1.17.1</version>
         </dependency>
         <dependency>
             <groupId>common-base</groupId>
@@ -320,38 +319,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!--<dependency>-->
-        <!--<groupId>org.matsim.contrib</groupId>-->
-        <!--<artifactId>matsim4urbansim</artifactId>-->
-        <!--<version>${matsimVersion}</version>-->
-        <!--<scope>compile</scope>-->
-        <!--<exclusions>-->
-        <!--<exclusion>-->
-        <!--<groupId>javax.media</groupId>-->
-        <!--<artifactId>jai_core</artifactId>-->
-        <!--</exclusion>-->
-        <!--<exclusion>-->
-        <!--<groupId>jgridshift</groupId>-->
-        <!--<artifactId>jgridshift</artifactId>-->
-        <!--</exclusion>-->
-        <!--</exclusions>-->
-        <!--</dependency>-->
-        <dependency>
-            <groupId>org.matsim.contrib</groupId>
-            <artifactId>matrixbasedptrouter</artifactId>
-            <version>${matsimVersion}</version>
-            <scope>compile</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>javax.media</groupId>
-                    <artifactId>jai_core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>jgridshift</groupId>
-                    <artifactId>jgridshift</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
         <dependency>
             <groupId>junit-addons</groupId>
             <artifactId>junit-addons</artifactId>
@@ -369,13 +336,10 @@
             <artifactId>jxl</artifactId>
             <version>2.6</version>
         </dependency>
-        <!--  		This is the "jitpack" deployment:
-         -->
-
         <dependency>
             <groupId>com.github.msmobility</groupId>
             <artifactId>mito</artifactId>
-            <version>master</version>
+            <version>v28102020</version>
             <exclusions>
                 <exclusion>
                     <groupId>javax.media</groupId>
@@ -385,20 +349,21 @@
                     <groupId>jgridshift</groupId>
                     <artifactId>jgridshift</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jfree</groupId>
+                    <artifactId>jfreechart</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>com.github.SchweizerischeBundesbahnen</groupId>
-            <artifactId>matsim-sbb-extensions</artifactId>
-            <version>11.2</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.6</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-math3 -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-math3</artifactId>
@@ -409,14 +374,19 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.9</version>
         </dependency>
-
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <version>2.12.0</version>
+        </dependency>
     </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <svnRevision>${buildNumber}</svnRevision>
-        <geotools.version>20.2</geotools.version>
+        <geotools.version>21.5</geotools.version>
         <skipTestJar>false</skipTestJar> <!--Overridden in the bintray profile-->
-        <matsimVersion>11.0</matsimVersion>
+        <matsimVersion>13.0-2020w37-SNAPSHOT</matsimVersion>
+<!--        <matsimVersion>12.0</matsimVersion>-->
         <java.version>1.8</java.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>

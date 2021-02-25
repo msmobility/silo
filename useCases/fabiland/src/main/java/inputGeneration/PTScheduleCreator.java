@@ -28,16 +28,16 @@ public class PTScheduleCreator {
 	private static final double PT_OPERATION_END_TIME = 24 * 3600.;
 
 	public static void main(String[] args) {
-	    //String scenarioName = "_2-l_x";
+	    String scenarioName = "_2-l_x_lh";
         //String scenarioName = "_2-l_u";
         //String scenarioName = "_1-l_lower-u";
-        String scenarioName = "_1-l_upper-u";
+        //String scenarioName = "_1-l_upper-u";
         //String scenarioName = "_1-l_ne";
         //String scenarioName = "_1-l_nes";
         //String scenarioName = "_1-l_ring";
 
-        String inputNetwork = "useCases/fabiland/scenario/matsimInput/nw_cap75.xml";
-        String outputNetwork = "useCases/fabiland/scenario/matsimInput/nw_cap75" + scenarioName + ".xml";
+        String inputNetwork = "useCases/fabiland/scenario/matsimInput/nw_cap240.xml";
+        String outputNetwork = "useCases/fabiland/scenario/matsimInput/nw_cap240" + scenarioName + ".xml";
         String outputPTSchedule = "useCases/fabiland/scenario/matsimInput/ts" + scenarioName + ".xml";
         String outputPTVehicles = "useCases/fabiland/scenario/matsimInput/tv" + scenarioName + ".xml";
 

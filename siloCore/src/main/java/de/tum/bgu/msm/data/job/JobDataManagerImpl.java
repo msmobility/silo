@@ -91,7 +91,16 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
     }
 
     @Override
-    public void endYear(int year) {}
+    public void endYear(int year) {
+        if (Properties.get().jobData.jobsIntermediatesFileName != "") {
+            final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName +"/";
+            String filejj = outputDirectory
+                    + properties.jobData.jobsIntermediatesFileName
+                    + "_"
+                    + year + ".csv";
+            new DefaultJobWriter(this.jobData.getJobs()).writeJobs(filejj);
+        }
+    }
 
     @Override
     public void endSimulation() {

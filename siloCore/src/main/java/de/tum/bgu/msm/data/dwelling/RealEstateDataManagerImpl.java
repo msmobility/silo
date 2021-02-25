@@ -1,7 +1,6 @@
 package de.tum.bgu.msm.data.dwelling;
 
 import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multiset;
 import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.data.Zone;
@@ -51,8 +50,6 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
      */
     private final Map<Integer, Double> initialQualityShares = new HashMap<>();
 
-
-
     private int highestDwellingIdInUse;
     private static final Map<IncomeCategory, Map<Integer, Float>> ddPriceByIncomeCategory = new EnumMap<>(IncomeCategory.class);
 
@@ -61,9 +58,9 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
     private double[] avePrice;
     private double[] aveVac;
 
-    private final List<DwellingType> dwellingTypes;
+    private final DwellingTypes dwellingTypes;
 
-    public RealEstateDataManagerImpl(DwellingType[] dwellingTypes, DwellingData dwellingData,
+    public RealEstateDataManagerImpl(DwellingTypes dwellingTypes, DwellingData dwellingData,
                                      HouseholdData householdData, GeoData geoData,
                                      DwellingFactory dwellingFactory, Properties properties) {
         this.dwellingData = dwellingData;
@@ -72,12 +69,17 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
         this.dwellingFactory = dwellingFactory;
         this.properties = properties;
 
-        this.dwellingTypes = Lists.newArrayList(dwellingTypes);
+        this.dwellingTypes = dwellingTypes;
     }
 
     @Override
     public DwellingFactory getDwellingFactory() {
         return dwellingFactory;
+    }
+
+    @Override
+    public DwellingData getDwellingData() {
+        return dwellingData;
     }
 
     @Override
@@ -99,7 +101,17 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
     }
 
     @Override
-    public void endYear(int year) {}
+    public void endYear(int year) {
+        if (properties.realEstate.dwellingsIntermediatesFileName != "") {
+            final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/";
+            String filedd = outputDirectory
+                    + properties.realEstate.dwellingsIntermediatesFileName
+                    + "_"
+                    + year
+                    + ".csv";
+            new DefaultDwellingWriter(this.dwellingData.getDwellings()).writeDwellings(filedd);
+        }
+    }
 
     @Override
     public void endSimulation() {
@@ -150,8 +162,8 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
     }
 
     @Override
-    public List<DwellingType> getDwellingTypes() {
-        return Collections.unmodifiableList(dwellingTypes);
+    public DwellingTypes getDwellingTypes() {
+        return dwellingTypes;
     }
 
     @Override
@@ -306,12 +318,12 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
         // calculate region-wide average dwelling costs and vacancy by dwelling type
         logger.info("Updating region-wide average dwelling costs and vacancies:");
 
-        int distinctDdTypes = dwellingTypes.size();
+        int distinctDdTypes = dwellingTypes.getTypes().size();
         int[][] vacOcc = SiloUtil.setArrayToValue(new int[2][distinctDdTypes], 0);
         long[] price = SiloUtil.setArrayToValue(new long[distinctDdTypes], 0);
 
         for (Dwelling dd : dwellingData.getDwellings()) {
-            int dto = dwellingTypes.indexOf(dd.getType());
+            int dto = dwellingTypes.getTypes().indexOf(dd.getType());
             price[dto] += dd.getPrice();
 
             if (dd.getResidentId() > 0) {
@@ -325,8 +337,8 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
 
         DecimalFormat df = new DecimalFormat("#.##");
         df.setRoundingMode(RoundingMode.HALF_UP);
-        for (DwellingType dt : dwellingTypes) {
-            int dto = dwellingTypes.indexOf(dt);
+        for (DwellingType dt : dwellingTypes.getTypes()) {
+            int dto = dwellingTypes.getTypes().indexOf(dt);
 
             if (vacOcc[0][dto] + vacOcc[1][dto] > 0) {
                 aveVac[dto] = (double) vacOcc[0][dto] / (double) (vacOcc[0][dto] + vacOcc[1][dto]);
@@ -345,10 +357,10 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
     public double[][] getVacancyRateByTypeAndRegion() {
         // calculate vacancy rate by region and dwelling type
         final int highestRegionId = geoData.getRegions().keySet().stream().mapToInt(Integer::intValue).max().getAsInt();
-        int[][][] vacOcc = SiloUtil.setArrayToValue(new int[2][dwellingTypes.size()][highestRegionId + 1], 0);
+        int[][][] vacOcc = SiloUtil.setArrayToValue(new int[2][dwellingTypes.getTypes().size()][highestRegionId + 1], 0);
 
         for (Dwelling dd : dwellingData.getDwellings()) {
-            int dto = dwellingTypes.indexOf(dd.getType());
+            int dto = dwellingTypes.getTypes().indexOf(dd.getType());
             if (dd.getResidentId() > 0) {
                 vacOcc[1][dto][geoData.getZones().get(dd.getZoneId()).getRegion().getId()]++;
             } else {
@@ -356,9 +368,9 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
             }
         }
 
-        double[][] vacRate = new double[dwellingTypes.size()][highestRegionId + 1];
-        for (DwellingType dt : dwellingTypes) {
-            int dto = dwellingTypes.indexOf(dt);
+        double[][] vacRate = new double[dwellingTypes.getTypes().size()][highestRegionId + 1];
+        for (DwellingType dt : dwellingTypes.getTypes()) {
+            int dto = dwellingTypes.getTypes().indexOf(dt);
             for (int region : geoData.getRegions().keySet()) {
                 if ((vacOcc[0][dto][region] + vacOcc[1][dto][region]) > 0) {
                     vacRate[dto][region] = (double) vacOcc[0][dto][region] / (double) (vacOcc[0][dto][region] + vacOcc[1][dto][region]);
@@ -394,10 +406,10 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
         // return number of dwellings by type and region
         final int highestRegionId = geoData.getRegions().keySet().stream().mapToInt(Integer::intValue).max().getAsInt();
         int[][] dwellingCount =
-                SiloUtil.setArrayToValue(new int[dwellingTypes.size()][highestRegionId + 1], 1);
+                SiloUtil.setArrayToValue(new int[dwellingTypes.getTypes().size()][highestRegionId + 1], 1);
 
         for (Dwelling dd : dwellingData.getDwellings()) {
-            dwellingCount[dwellingTypes.indexOf(dd.getType())][geoData.getZones().get(dd.getZoneId()).getRegion().getId()]++;
+            dwellingCount[dwellingTypes.getTypes().indexOf(dd.getType())][geoData.getZones().get(dd.getZoneId()).getRegion().getId()]++;
         }
         return dwellingCount;
     }
@@ -438,7 +450,7 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
 
         int[] zoneIdData = developmentTable.getColumnAsInt("Zone");
         Map<DwellingType, int[]> constraintData = new HashMap<>();
-        for (DwellingType dwellingType : dwellingTypes) {
+        for (DwellingType dwellingType : dwellingTypes.getTypes()) {
             constraintData.put(dwellingType, developmentTable.getColumnAsInt(dwellingType.toString()));
         }
         int[] dwellingCapacityData = developmentTable.getColumnAsInt("DevCapacity");
@@ -447,7 +459,7 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
         for (int i = 0; i < zoneIdData.length; i++) {
 
             Map<DwellingType, Boolean> constraints = new HashMap<>();
-            for (DwellingType dwellingType : dwellingTypes) {
+            for (DwellingType dwellingType : dwellingTypes.getTypes()) {
                 constraints.put(dwellingType, constraintData.get(dwellingType)[i] == 1);
             }
             int thisZoneCapacity = (int) (dwellingCapacityData[i] * properties.main.scaleFactor);

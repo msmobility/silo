@@ -13,9 +13,9 @@ import java.io.IOException;
 public class DwellingReaderTak implements DwellingReader {
 
     private final static Logger logger = Logger.getLogger(DwellingReaderTak.class);
-    private final RealEstateDataManager dwellingData;
+    private final DwellingData dwellingData;
 
-    public DwellingReaderTak(RealEstateDataManager dwellingData) {
+    public DwellingReaderTak(DwellingData dwellingData) {
         this.dwellingData= dwellingData;
     }
 
@@ -54,19 +54,20 @@ public class DwellingReaderTak implements DwellingReader {
                 int zoneId      = Integer.parseInt(lineElements[posZone]);
                 int hhId      = Integer.parseInt(lineElements[posHh]);
                 String tp     = lineElements[posType].replace("\"", "");
-                DwellingType type = DefaultDwellingTypeImpl.valueOf(tp);
+                DwellingType type = DefaultDwellingTypes.DefaultDwellingTypeImpl.valueOf(tp);
                 int price     = Integer.parseInt(lineElements[posCosts]);
                 int area      = Integer.parseInt(lineElements[posRooms]);
                 int quality   = Integer.parseInt(lineElements[posQuality]);
                 int yearBuilt = Integer.parseInt(lineElements[posYear]);
-                DwellingUsage usage = DwellingUsage.valueOf(lineElements[posusage]);
-                int floorSpace = Integer.parseInt(lineElements[posflooSPace]);
-                Coordinate coordinate = new Coordinate(Double.parseDouble(lineElements[posCoordX]), Double.parseDouble(lineElements[posCoordY]));
+//                DwellingUsage usage = DwellingUsage.valueOf(lineElements[posusage]);
+//                int floorSpace = Integer.parseInt(lineElements[posflooSPace]);
+                Coordinate coordinate = null;
+//                coordinate = new Coordinate(Double.parseDouble(lineElements[posCoordX]), Double.parseDouble(lineElements[posCoordY]));
 
                 Dwelling dwelling = factory.createDwelling(id, zoneId, coordinate, hhId, type, area, quality, price, yearBuilt);
                 dwellingData.addDwelling(dwelling);
-                dwelling.setUsage(usage);
-                dwelling.setFloorSpace(floorSpace);
+//                dwelling.setUsage(usage);
+//                dwelling.setFloorSpace(floorSpace);
                 if (id == SiloUtil.trackDd) {
                     SiloUtil.trackWriter.println("Read dwelling with following attributes from " + path);
                     SiloUtil.trackWriter.println(dwelling.toString());
