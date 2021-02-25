@@ -316,7 +316,7 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
             ddCountW.println("year,type,count,price,vacancy");
         }
 
-        List<DwellingType> dwellingTypes = dataContainer.getRealEstateDataManager().getDwellingTypes();
+        List<DwellingType> dwellingTypes = dataContainer.getRealEstateDataManager().getDwellingTypes().getTypes();
 
         Multiset<DwellingType> countsByDwellingType = HashMultiset.create(dwellingTypes.size());
 
@@ -464,6 +464,7 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
         ddCountW.close();
         landRegionW.close();
         eventCountW.close();
+        migrantsW.close();
     }
 
 }
