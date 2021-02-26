@@ -4,22 +4,17 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.math.Quantiles;
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdType;
-import de.tum.bgu.msm.data.household.HouseholdUtil;
-import de.tum.bgu.msm.data.job.Job;
-import de.tum.bgu.msm.data.job.JobType;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.events.MicroEvent;
 import de.tum.bgu.msm.events.impls.household.MigrationEvent;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
@@ -28,7 +23,6 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.Formatter;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class MultiFileResultsMonitor implements ResultsMonitor {
@@ -42,7 +36,7 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
     private PrintWriter labourParticipationRateW;
     private DataContainer dataContainer;
     private Properties properties;
-    private PrintWriter commutingDistanceW;
+    private PrintWriter commutingTimeW;
     private PrintWriter carOwnW;
     private PrintWriter ddCountW;
     private PrintWriter landRegionW;
@@ -69,11 +63,11 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
             hhAveSizeW = new PrintWriter(new File(pathname + "aveHhSize.csv"));
             hhAveIncomeW = new PrintWriter(new File(pathname + "hhAveIncome.csv"));
             labourParticipationRateW = new PrintWriter(new File(pathname + "labourParticipationRate.csv"));
-            commutingDistanceW = new PrintWriter(new File(pathname + "commutingDistance.csv"));
+            commutingTimeW = new PrintWriter(new File(pathname + "regionAvCommutingTime.csv"));
             carOwnW = new PrintWriter(new File(pathname + "carOwnership.csv"));
             ddQualW = new PrintWriter(new File(pathname + "dwellingQualityLevel.csv"));
             ddCountW = new PrintWriter(new File(pathname + "dwellings.csv"));
-            landRegionW = new PrintWriter(new File(pathname + "landRegions.csv"));
+            landRegionW = new PrintWriter(new File(pathname + "regionAvailableLand.csv"));
             eventCountW = new PrintWriter(new File(pathname + "eventCounts.csv"));
             migrantsW = new PrintWriter(new File(pathname + "persMigrants.csv"));
         } catch (FileNotFoundException e) {
@@ -106,7 +100,7 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
         hhAveSizeW.flush();
         hhAveIncomeW.flush();
         labourParticipationRateW.flush();
-        commutingDistanceW.flush();
+        commutingTimeW.flush();
         carOwnW.flush();
         ddCountW.flush();
         landRegionW.flush();
@@ -248,8 +242,10 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
 
         for (int ag = 0; ag < 5; ag++) {
             Formatter f = new Formatter();
-            f.format("%s,%f,%f", grp[ag], labP[1][0][ag] / (labP[0][0][ag] + labP[1][0][ag]), labP[1][1][ag] / (labP[0][1][ag] + labP[1][1][ag]));
-            labourParticipationRateW.println(year + "," + f.toString());
+            float rateMale = labP[1][0][ag] / (labP[0][0][ag] + labP[1][0][ag]);
+            float rateFemale = labP[1][1][ag] / (labP[0][1][ag] + labP[1][1][ag]);
+            //f.format("%s,%f,%f", grp[ag], rateMale, rateFemale);
+            labourParticipationRateW.println(year + "," + grp[ag] + "," + rateMale + "," +rateFemale );
         }
     }
 
@@ -272,11 +268,11 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
         }
 
         if (year == properties.main.baseYear) {
-            commutingDistanceW.println("year,region,time");
+            commutingTimeW.println("year,aveCommuteDistByRegion,minutes");
         }
 
         for (int i : dataContainer.getGeoData().getRegions().keySet()) {
-            commutingDistanceW.println(year + "," + i + "," + commDist[0][i] / commDist[1][i]);
+            commutingTimeW.println(year + "," + i + "," + commDist[0][i] / commDist[1][i]);
         }
     }
 
@@ -344,9 +340,9 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
                     dataContainer.getRealEstateDataManager().getAvailableCapacityForConstruction(zone);
         }
         for (int region : geoData.getRegions().keySet()) {
-            Formatter f = new Formatter();
-            f.format("%d,%f", region, availLand[region]);
-            landRegionW.println(year + "," + f.toString());
+            //Formatter f = new Formatter();
+            //f.format("%d,%f", region, availLand[region]);
+            landRegionW.println(year + "," + region + "," + availLand[region]);
         }
 
     }
@@ -441,8 +437,8 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
             }
         }
 
-        popYearW.println(year + ",InmigrantsPP," + countInmigrants);
-        popYearW.println(year + ",OutmigrantsPP," + countOutmigrants);
+        migrantsW.println(year + ",InmigrantsPP," + countInmigrants);
+        migrantsW.println(year + ",OutmigrantsPP," + countOutmigrants);
 
 
 
@@ -458,7 +454,7 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
         hhAveSizeW.close();
         hhAveIncomeW.close();
         labourParticipationRateW.close();
-        commutingDistanceW.close();
+        commutingTimeW.close();
         carOwnW.close();
         ddQualW.close();
         ddCountW.close();
