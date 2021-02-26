@@ -17,6 +17,7 @@ import org.matsim.api.core.v01.TransportMode;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.List;
 
 public class ModeChoiceResultsMonitor implements ResultsMonitor {
 
@@ -71,7 +72,7 @@ public class ModeChoiceResultsMonitor implements ResultsMonitor {
     }
 
     @Override
-    public void endYear(int year, Multiset<Class<? extends MicroEvent>> eventCounter) {
+    public void endYear(int year, Multiset<Class<? extends MicroEvent>> eventCounter, List<MicroEvent> events) {
 
         for (Household household : dataContainer.getHouseholdDataManager().getHouseholds()) {
 
