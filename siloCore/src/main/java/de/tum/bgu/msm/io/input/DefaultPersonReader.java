@@ -54,6 +54,10 @@ public class DefaultPersonReader implements PersonReader{
                 PersonRole pr  = PersonRole.valueOf(relShp.toUpperCase());
                 Occupation occupation = Occupation.valueOf(Integer.parseInt(lineElements[posOccupation]));
                 int workplace  = Integer.parseInt(lineElements[posWorkplace]);
+                //todo remove the workplace if they are not employed - temporary if school ids or zones are stored there
+                if (!occupation.equals(Occupation.EMPLOYED)){
+                    workplace = -1;
+                }
                 int income     = Integer.parseInt(lineElements[posIncome]);
                 boolean license = Boolean.parseBoolean(lineElements[posDriver]);
                 //todo temporary assign driving license since this is not in the current SP version

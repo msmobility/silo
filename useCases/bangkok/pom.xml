@@ -9,7 +9,7 @@
 </parent>
 <modelVersion>4.0.0</modelVersion>
 
-<artifactId>capeTown</artifactId>
+<artifactId>bangkok</artifactId>
 <dependencies>
     <dependency>
         <groupId>com.github.msmobility</groupId>

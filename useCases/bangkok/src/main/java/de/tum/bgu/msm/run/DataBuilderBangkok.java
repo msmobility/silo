@@ -19,7 +19,6 @@ import de.tum.bgu.msm.matsim.MatsimTravelTimesAndCosts;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.run.data.dwelling.BangkokDwellingTypes;
 import de.tum.bgu.msm.run.io.GeoDataReaderBangkok;
-import de.tum.bgu.msm.schools.*;
 import org.matsim.core.config.Config;
 
 public class DataBuilderBangkok {
