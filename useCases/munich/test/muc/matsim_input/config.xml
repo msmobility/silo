@@ -18,13 +18,13 @@
 		<param name="transitScheduleFile" value="schedule2018.xml" />
 		<param name="transitModes" value="pt" />
 		<param name="useTransit" value="true" />
+		<param name="usingTransitInMobsim" value="false" />
 	</module>
 
 	<module name="qsim" >
 		<param name="trafficDynamics" value="withHoles" />
 		<!-- Note that this setting is independent from the "global" threads setting -->
 		<param name="numberOfThreads" value="1" />
-		<param name="usingThreadpool" value="false" />
 		<param name="flowCapacityFactor" value="0.01" />
 		<param name="storageCapacityFactor" value="0.01" />
 	</module>

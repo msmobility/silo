@@ -1,10 +1,9 @@
 package de.tum.bgu.msm.scenarios.longCommutePenalty;
 
 import de.tum.bgu.msm.DataBuilder;
-import de.tum.bgu.msm.ModelBuilderMuc;
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.container.ModelContainer;
-import de.tum.bgu.msm.io.ResultsMonitorMuc;
+import de.tum.bgu.msm.io.MultiFileResultsMonitorMuc;
 import de.tum.bgu.msm.io.output.HouseholdSatisfactionMonitor;
 import de.tum.bgu.msm.io.output.MultiFileResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
@@ -37,7 +36,7 @@ public class RunLongCommutePenaltyMuc {
         DataBuilder.read(properties, dataContainer);
         ModelContainer modelContainer = LongCommutePenaltyModelBuilderMuc.getModelContainerForMuc(dataContainer, properties, config);
         SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
-        model.addResultMonitor(new ResultsMonitorMuc(dataContainer, properties));
+        model.addResultMonitor(new MultiFileResultsMonitorMuc(dataContainer, properties));
         model.addResultMonitor(new MultiFileResultsMonitor(dataContainer, properties));
         model.addResultMonitor(new HouseholdSatisfactionMonitor(dataContainer, properties, modelContainer));
         model.runModel();

@@ -4,12 +4,15 @@ import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.io.output.DefaultResultsMonitor;
+import de.tum.bgu.msm.io.output.HouseholdSatisfactionMonitor;
+import de.tum.bgu.msm.io.output.MultiFileResultsMonitor;
 import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 
 public class RunFabiland {
 
@@ -27,7 +30,8 @@ public class RunFabiland {
 
         // The following is obviously just a dirty quickfix until access/egress is default in MATSim
         if (properties.transportModel.includeAccessEgress) {
-            config.plansCalcRoute().setInsertingAccessEgressWalk(true);
+//            config.plansCalcRoute().setInsertingAccessEgressWalk(true); // in matsim-12
+            config.plansCalcRoute().setAccessEgressType(PlansCalcRouteConfigGroup.AccessEgressType.accessEgressModeToLink); // in matsim-13-w37
         }
 
         DataContainer dataContainer = DataBuilderFabiland.buildDataContainer(properties, config);
@@ -36,8 +40,13 @@ public class RunFabiland {
         ModelContainer modelContainer = ModelBuilderFabiland.getModelContainer(dataContainer, properties, config);
 
         ResultsMonitor resultsMonitor = new DefaultResultsMonitor(dataContainer, properties);
+        MultiFileResultsMonitor multiFileResultsMonitor = new MultiFileResultsMonitor(dataContainer, properties);
+        HouseholdSatisfactionMonitor householdSatisfactionMonitor = new HouseholdSatisfactionMonitor(dataContainer, properties, modelContainer);
+
         SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
         model.addResultMonitor(resultsMonitor);
+        model.addResultMonitor(multiFileResultsMonitor);
+        model.addResultMonitor(householdSatisfactionMonitor);
         model.runModel();
         logger.info("Finished SILO.");
     }
