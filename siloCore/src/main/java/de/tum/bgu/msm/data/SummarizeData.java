@@ -70,8 +70,8 @@ public final class SummarizeData {
         switch (action) {
             case "open":
                 String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
-                spatialResultWriter_2 = SiloUtil.openFileForSequentialWriting(directory + "/" + RESULT_FILE_SPATIAL +
-                        "_2.csv", Properties.get().main.startYear != Properties.get().main.baseYear);
+                spatialResultWriter_2 = SiloUtil.openFileForSequentialWriting(directory + "/siloResults/" + RESULT_FILE_SPATIAL +
+                        ".csv", Properties.get().main.startYear != Properties.get().main.baseYear);
                 break;
             case "close":
                 spatialResultWriter_2.close();
