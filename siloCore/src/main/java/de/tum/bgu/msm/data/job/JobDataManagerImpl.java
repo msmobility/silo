@@ -82,12 +82,13 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
     public void setup() {
         identifyHighestJobId();
         calculateEmploymentForecast();
-        identifyVacantJobs();
+        identifyVacantJobs(); //this step may be not needed - seem to be a duplicate of the method execution in the first "prepare year"
     }
 
     @Override
     public void prepareYear(int year) {
         calculateJobDensityByZone();
+        identifyVacantJobs();
     }
 
     @Override
@@ -456,5 +457,10 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
     @Override
     public JobFactory getFactory() {
         return jobFactory;
+    }
+
+    @Override
+    public Map<Integer, List<Job>> getVacantJobsByRegion() {
+        return vacantJobsByRegion;
     }
 }
