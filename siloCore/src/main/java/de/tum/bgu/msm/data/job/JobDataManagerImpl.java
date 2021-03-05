@@ -93,7 +93,7 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
 
     @Override
     public void endYear(int year) {
-        if (Properties.get().jobData.jobsIntermediatesFileName != "") {
+        if (!Properties.get().jobData.jobsIntermediatesFileName.equals("")) {
             final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName +"/";
             String filejj = outputDirectory
                     + properties.jobData.jobsIntermediatesFileName

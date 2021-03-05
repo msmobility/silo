@@ -17,6 +17,7 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
+import java.io.PrintWriter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -42,6 +43,8 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
     private float betaForZoneChoice;
     private float priceIncreaseForNewDwelling;
     private Map<Integer, List<Dwelling>> dwellingsByRegion;
+    PrintWriter pwd;
+
 
     public ConstructionModelImpl(DataContainer dataContainer, DwellingFactory factory,
                                  Properties properties, ConstructionLocationStrategy locationStrategy,
@@ -59,6 +62,13 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
         // set up model to evaluate zones for construction of new dwellings
         betaForZoneChoice = properties.realEstate.constructionLogModelBeta;
         priceIncreaseForNewDwelling = properties.realEstate.constructionLogModelInflator;
+
+        pwd = SiloUtil.openFileForSequentialWriting(properties.main.baseDirectory +
+                "/scenOutput/" +
+                properties.main.scenarioName +
+                "/constructionModel.csv", false);
+        pwd.print("year,region,dd_type,dd,dd_demand,dd_price,dd_size");
+        pwd.println();
     }
 
     @Override
@@ -174,6 +184,27 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
                 }
             }
         }
+
+        for(int region : geoData.getRegions().keySet()){
+            for (DwellingType dt : dwellingTypes){
+                int ddTypeIndex = dwellingTypes.indexOf(dt);
+                double dd = existingDwellings[ddTypeIndex][region];
+                double demand = demandByRegion[ddTypeIndex][region];
+                double price = avePriceByTypeAndRegion[ddTypeIndex][region];
+                double size = aveSizeByTypeAndRegion[ddTypeIndex][region];
+
+                pwd.println(year + "," +
+                        region +  "," +
+                        dt.toString() + "," +
+                        dd + "," +
+                        demand + "," +
+                        price +  "," +
+                        size);
+
+
+            }
+        }
+
         logger.info("Planning of construction done. Planned " + events.size() + " dwellings.");
         if(unrealizedDemandCounter > 0) {
             logger.warn("There have been " + unrealizedDemandCounter + " dwellings that could not be built " +
@@ -203,7 +234,7 @@ public class ConstructionModelImpl extends AbstractModel implements Construction
 
     @Override
     public void endSimulation() {
-
+        pwd.close();
     }
 
     private double[][] calculateScaledAveragePriceByZone(float scaler) {

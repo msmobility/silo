@@ -102,7 +102,7 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
 
     @Override
     public void endYear(int year) {
-        if (properties.realEstate.dwellingsIntermediatesFileName != "") {
+        if (!properties.realEstate.dwellingsIntermediatesFileName.equals("")) {
             final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/";
             String filedd = outputDirectory
                     + properties.realEstate.dwellingsIntermediatesFileName
