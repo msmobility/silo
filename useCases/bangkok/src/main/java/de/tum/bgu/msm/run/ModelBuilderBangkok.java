@@ -48,6 +48,7 @@ import de.tum.bgu.msm.models.realEstate.renovation.RenovationModelImpl;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigration;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.run.models.realEstate.RenovationStrategyBangkok;
 import de.tum.bgu.msm.run.models.realEstate.construction.BangkokConstructionLocationStrategy;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.matsim.api.core.v01.Scenario;
@@ -100,7 +101,7 @@ public class ModelBuilderBangkok {
 
         PricingModel pricing = new PricingModelImpl(dataContainer, properties, new DefaultPricingStrategy(), SiloUtil.provideNewRandom());
 
-        RenovationModel renovation = new RenovationModelImpl(dataContainer, properties, new DefaultRenovationStrategy(), SiloUtil.provideNewRandom());
+        RenovationModel renovation = new RenovationModelImpl(dataContainer, properties, new RenovationStrategyBangkok(), SiloUtil.provideNewRandom());
 
         ConstructionOverwrite constructionOverwrite = new ConstructionOverwriteImpl(dataContainer, ddFactory, properties, SiloUtil.provideNewRandom());
 
