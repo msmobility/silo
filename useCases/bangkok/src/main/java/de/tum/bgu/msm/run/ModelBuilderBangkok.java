@@ -6,6 +6,7 @@ import de.tum.bgu.msm.matsim.*;
 import de.tum.bgu.msm.models.demography.education.EducationModelImpl;
 import de.tum.bgu.msm.models.demography.marriage.MarriageModelImpl;
 import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
+import de.tum.bgu.msm.models.realEstate.pricing.BangkokPricingStrategy;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
 import de.tum.bgu.msm.models.relocation.moves.*;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
@@ -39,10 +40,8 @@ import de.tum.bgu.msm.models.realEstate.construction.*;
 import de.tum.bgu.msm.models.realEstate.demolition.DefaultDemolitionStrategy;
 import de.tum.bgu.msm.models.realEstate.demolition.DemolitionModel;
 import de.tum.bgu.msm.models.realEstate.demolition.DemolitionModelImpl;
-import de.tum.bgu.msm.models.realEstate.pricing.DefaultPricingStrategy;
 import de.tum.bgu.msm.models.realEstate.pricing.PricingModel;
 import de.tum.bgu.msm.models.realEstate.pricing.PricingModelImpl;
-import de.tum.bgu.msm.models.realEstate.renovation.DefaultRenovationStrategy;
 import de.tum.bgu.msm.models.realEstate.renovation.RenovationModel;
 import de.tum.bgu.msm.models.realEstate.renovation.RenovationModelImpl;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigration;
@@ -99,7 +98,7 @@ public class ModelBuilderBangkok {
                 properties, new BangkokConstructionLocationStrategy(), new DefaultConstructionDemandStrategy(), SiloUtil.provideNewRandom());
 
 
-        PricingModel pricing = new PricingModelImpl(dataContainer, properties, new DefaultPricingStrategy(), SiloUtil.provideNewRandom());
+        PricingModel pricing = new PricingModelImpl(dataContainer, properties, new BangkokPricingStrategy(), SiloUtil.provideNewRandom());
 
         RenovationModel renovation = new RenovationModelImpl(dataContainer, properties, new RenovationStrategyBangkok(), SiloUtil.provideNewRandom());
 
