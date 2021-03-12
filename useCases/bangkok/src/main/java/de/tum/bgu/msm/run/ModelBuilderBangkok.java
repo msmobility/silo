@@ -6,7 +6,7 @@ import de.tum.bgu.msm.matsim.*;
 import de.tum.bgu.msm.models.demography.education.EducationModelImpl;
 import de.tum.bgu.msm.models.demography.marriage.MarriageModelImpl;
 import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
-import de.tum.bgu.msm.models.realEstate.pricing.BangkokPricingStrategy;
+import de.tum.bgu.msm.run.models.realEstate.BangkokPricingStrategy;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
 import de.tum.bgu.msm.models.relocation.moves.*;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
@@ -71,7 +71,7 @@ public class ModelBuilderBangkok {
         MovesModelImpl movesModel = new MovesModelImpl(
                 dataContainer, properties,
                 new DefaultMovesStrategy(),
-                new SimpleCommuteModeChoiceHousingStrategyImpl(dataContainer,
+                new SimpleCommuteHousingStrategyWithoutCarOwnership(dataContainer,
                         properties, dataContainer.getTravelTimes(),
                         new DwellingUtilityStrategyImpl(), new DefaultDwellingProbabilityStrategy(),
                         new RegionUtilityStrategyImpl(), new RegionProbabilityStrategyImpl())
