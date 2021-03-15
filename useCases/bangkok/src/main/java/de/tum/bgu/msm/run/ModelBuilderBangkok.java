@@ -6,6 +6,7 @@ import de.tum.bgu.msm.matsim.*;
 import de.tum.bgu.msm.models.demography.education.EducationModelImpl;
 import de.tum.bgu.msm.models.demography.marriage.MarriageModelImpl;
 import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
+import de.tum.bgu.msm.run.models.carOwnership.CreateCarOwnershipBangkok;
 import de.tum.bgu.msm.run.models.realEstate.BangkokPricingStrategy;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
 import de.tum.bgu.msm.models.relocation.moves.*;
@@ -56,6 +57,9 @@ import org.matsim.core.scenario.ScenarioUtils;
 
 public class ModelBuilderBangkok {
 
+    private static float K_MC_CALIBRATION_PT = - 0.6f;
+
+
     public static ModelContainer getModelContainerForBangkok(DefaultDataContainer dataContainer, Properties properties, Config config) {
 
         PersonFactory ppFactory = dataContainer.getHouseholdDataManager().getPersonFactory();
@@ -74,10 +78,10 @@ public class ModelBuilderBangkok {
                 new SimpleCommuteHousingStrategyWithoutCarOwnership(dataContainer,
                         properties, dataContainer.getTravelTimes(),
                         new DwellingUtilityStrategyImpl(), new DefaultDwellingProbabilityStrategy(),
-                        new RegionUtilityStrategyImpl(), new RegionProbabilityStrategyImpl())
+                        new RegionUtilityStrategyImpl(), new RegionProbabilityStrategyImpl(), K_MC_CALIBRATION_PT)
                 , SiloUtil.provideNewRandom());
 
-        CreateCarOwnershipModel carOwnershipModel = null;
+        CreateCarOwnershipModel carOwnershipModel = new CreateCarOwnershipBangkok(dataContainer);
 
         DivorceModel divorceModel = new DivorceModelImpl(
                 dataContainer, movesModel, carOwnershipModel, hhFactory,

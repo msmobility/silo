@@ -16,7 +16,6 @@ import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoice;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoiceMapping;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoiceWithoutCarOwnership;
-import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -75,13 +74,14 @@ public class SimpleCommuteHousingStrategyWithoutCarOwnership implements HousingS
                                                            TravelTimes travelTimes,
                                                            DwellingUtilityStrategy dwellingUtilityStrategy,
                                                            DwellingProbabilityStrategy dwellingProbabilityStrategy,
-                                                           RegionUtilityStrategy regionUtilityStrategy, RegionProbabilityStrategy regionProbabilityStrategy) {
+                                                           RegionUtilityStrategy regionUtilityStrategy,
+                                                           RegionProbabilityStrategy regionProbabilityStrategy, float k_calibration_pt) {
         this.dataContainer = dataContainer;
         geoData = dataContainer.getGeoData();
         this.properties = properties;
         this.travelTimes = travelTimes;
         accessibility = dataContainer.getAccessibility();
-        this.commuteModeChoice = new CommuteModeChoiceWithoutCarOwnership(dataContainer, properties, SiloUtil.provideNewRandom());
+        this.commuteModeChoice = new CommuteModeChoiceWithoutCarOwnership(dataContainer, properties, SiloUtil.provideNewRandom(), k_calibration_pt);
         this.dwellingUtilityStrategy = dwellingUtilityStrategy;
         this.dwellingProbabilityStrategy = dwellingProbabilityStrategy;
         this.regionUtilityStrategy = regionUtilityStrategy;

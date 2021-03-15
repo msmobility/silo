@@ -19,6 +19,7 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ModalSharesResultMonitor implements ResultsMonitor {
 
@@ -72,6 +73,9 @@ public class ModalSharesResultMonitor implements ResultsMonitor {
         Map<Integer, Double> timeByPt = new HashMap<>();
         Map<Integer, Integer> doNotTravel = new HashMap<>();
 
+        AtomicInteger car = new AtomicInteger();
+        AtomicInteger pt = new AtomicInteger();
+
         for (Household household : dataContainer.getHouseholdDataManager().getHouseholds()) {
 
             household.getAttribute("COMMUTE_MODE_CHOICE_MAPPING").ifPresent(cmcm -> {
@@ -87,12 +91,14 @@ public class ModalSharesResultMonitor implements ResultsMonitor {
                             double timeCar = dataContainer.getTravelTimes().getTravelTime(dd, jj, properties.transportModel.peakHour_s, TransportMode.car);
                             timeByCar.putIfAbsent(dd.getZoneId(), 0.);
                             timeByCar.put(dd.getZoneId(), timeByCar.get(dd.getZoneId()) + timeCar);
+                            car.getAndIncrement();
                         } else if (commuteMode.mode.equals(TransportMode.pt)) {
                             tripsByPt.putIfAbsent(dd.getZoneId(), 0);
                             tripsByPt.put(dd.getZoneId(), tripsByPt.get(dd.getZoneId()) + 1);
                             double timePt = dataContainer.getTravelTimes().getTravelTime(dd, jj, properties.transportModel.peakHour_s, TransportMode.pt);
                             timeByPt.putIfAbsent(dd.getZoneId(), 0.);
                             timeByPt.put(dd.getZoneId(), timeByPt.get(dd.getZoneId()) + timePt);
+                            pt.getAndIncrement();
                         } else {
                             //another mode
                         }
@@ -104,6 +110,9 @@ public class ModalSharesResultMonitor implements ResultsMonitor {
                 }
             });
         }
+
+        logger.info("Modal share of car is " + car.doubleValue()/(car.get() + pt.get()));
+        logger.info("Modal share of pt is " + pt.doubleValue()/(car.get() + pt.get()));
 
         for (Zone zone : dataContainer.getGeoData().getZones().values()) {
             pw.print(year);
