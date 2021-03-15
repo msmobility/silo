@@ -5,6 +5,7 @@ import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.matsim.*;
 import de.tum.bgu.msm.models.demography.education.EducationModelImpl;
 import de.tum.bgu.msm.models.demography.marriage.MarriageModelImpl;
+import de.tum.bgu.msm.models.modeChoice.CommuteModeChoiceWithoutCarOwnership;
 import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
 import de.tum.bgu.msm.run.models.carOwnership.CreateCarOwnershipBangkok;
 import de.tum.bgu.msm.run.models.realEstate.BangkokPricingStrategy;
@@ -50,6 +51,7 @@ import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.run.models.realEstate.RenovationStrategyBangkok;
 import de.tum.bgu.msm.run.models.realEstate.construction.BangkokConstructionLocationStrategy;
+import de.tum.bgu.msm.run.models.transport.MatsimPopulationConeversorAndWriter;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
@@ -118,25 +120,25 @@ public class ModelBuilderBangkok {
                 carOwnershipModel, hhFactory, properties, new DefaultMarriageStrategy(), SiloUtil.provideNewRandom());
 
 
-        TransportModel transportModel;
+        TransportModel transportModel = null;
         MatsimScenarioAssembler scenarioAssembler;
 
 
         MatsimData matsimData = null;
-        if (config != null) {
-            final Scenario scenario = ScenarioUtils.loadScenario(config);
-            matsimData = new MatsimData(config, properties, ZoneConnectorManager.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
-        }
-        switch (properties.transportModel.transportModelIdentifier) {
-            case MATSIM:
-                SimpleCommuteModeChoice commuteModeChoice = new SimpleCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom());
-                scenarioAssembler = new SimpleCommuteModeChoiceMatsimScenarioAssembler(dataContainer, properties, commuteModeChoice);
-                transportModel = new MatsimTransportModel(dataContainer, config, properties, scenarioAssembler, matsimData);
-                break;
-            case NONE:
-            default:
-                transportModel = null;
-        }
+//        if (config != null) {
+//            final Scenario scenario = ScenarioUtils.loadScenario(config);
+//            matsimData = new MatsimData(config, properties, ZoneConnectorManager.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
+//        }
+//        switch (properties.transportModel.transportModelIdentifier) {
+//            case MATSIM:
+//                CommuteModeChoiceWithoutCarOwnership commuteModeChoice = new CommuteModeChoiceWithoutCarOwnership(dataContainer, properties, SiloUtil.provideNewRandom(), K_MC_CALIBRATION_PT);
+//                scenarioAssembler = new SimpleCommuteModeChoiceMatsimScenarioAssembler(dataContainer, properties, commuteModeChoice);
+//                transportModel = new MatsimTransportModel(dataContainer, config, properties, scenarioAssembler, matsimData);
+//                break;
+//            case NONE:
+//            default:
+//                transportModel = null;
+//        }
 
         final ModelContainer modelContainer = new ModelContainer(
                 birthModel, birthdayModel,
@@ -148,6 +150,9 @@ public class ModelBuilderBangkok {
                 constructionOverwrite, inOutMigration, movesModel, transportModel);
 
         //modelContainer.registerModelUpdateListener(new UpdateCarOwnershipModelMuc(dataContainer, properties, SiloUtil.provideNewRandom()));
+        CommuteModeChoiceWithoutCarOwnership commuteModeChoice = new CommuteModeChoiceWithoutCarOwnership(dataContainer, properties, SiloUtil.provideNewRandom(), K_MC_CALIBRATION_PT);
+        scenarioAssembler = new SimpleCommuteModeChoiceMatsimScenarioAssembler(dataContainer, properties, commuteModeChoice);
+        modelContainer.registerModelUpdateListener(new MatsimPopulationConeversorAndWriter(dataContainer, scenarioAssembler, properties, config));
 
         return modelContainer;
     }
