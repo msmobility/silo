@@ -2,6 +2,7 @@ package de.tum.bgu.msm.scenarios.excessCommuteMatching;
 
 import blogspot.software_and_algorithms.stern_library.optimization.HungarianAlgorithm;
 import cern.colt.map.tint.OpenIntIntHashMap;
+import cern.colt.map.tobject.OpenIntObjectHashMap;
 import com.google.common.collect.Iterables;
 import com.google.common.math.LongMath;
 import de.tum.bgu.msm.DataBuilder;
@@ -47,50 +48,54 @@ public class OneStepMatches {
     private final static double SCALE_FACTER = 0.05;
 
     public static void main(String[] args) {
-
-        double t0 = System.currentTimeMillis();
-        String path = "F:\\models\\muc/siloMuc.properties";
-        String matchBaseDirectory = "F:\\models\\msm-papers\\data\\thePerfectMatch";
-
+        String path = "C:\\Users\\Nico\\tum\\fabilut\\gitproject\\muc/siloMuc.properties";
         Properties properties = SiloUtil.siloInitialization(path);
-        DataContainerWithSchools dataContainer = DataBuilder.getModelDataForMuc(properties, null);
-        DataBuilder.read(properties, dataContainer);
 
-        logger.info("Number of people before sampling: " + dataContainer.getHouseholdDataManager().getPersons().size());
-        logger.info("Number of workers before sampling: " + dataContainer.getHouseholdDataManager().getPersons().stream().filter(pp -> pp.getOccupation()== Occupation.EMPLOYED).count());
-        logger.info("Number of jobs before sampling: " + dataContainer.getJobDataManager().getJobs().stream().filter(jj -> jj.getWorkerId() > 0).count());
-        logger.info("Number of vacant jobs before sampling: " + dataContainer.getJobDataManager().getJobs().stream().filter(jj -> jj.getWorkerId() == -1).count());
+        for (int i = 5; i < 10; i++) {
 
-        //sampling
-        scale(SCALE_FACTER,dataContainer);
+            double t0 = System.currentTimeMillis();
+            String matchBaseDirectory = "C:\\Users\\Nico\\tum\\msm-papers\\data\\thePerfectMatch_"+i;
+            new File(matchBaseDirectory).mkdirs();
 
-        logger.info("Number of people after sampling: " + dataContainer.getHouseholdDataManager().getPersons().size());
-        logger.info("Number of workers after sampling: " + dataContainer.getHouseholdDataManager().getPersons().stream().filter(pp -> pp.getOccupation()== Occupation.EMPLOYED).count());
-        logger.info("Number of jobs after sampling: " + dataContainer.getJobDataManager().getJobs().stream().filter(jj -> jj.getWorkerId() > 0).count());
-        logger.info("Number of vacant jobs after sampling: " + dataContainer.getJobDataManager().getJobs().stream().filter(jj -> jj.getWorkerId() == -1).count());
+            DataContainerWithSchools dataContainer = DataBuilder.getModelDataForMuc(properties, null);
+            DataBuilder.read(properties, dataContainer);
+
+            logger.info("Number of people before sampling: " + dataContainer.getHouseholdDataManager().getPersons().size());
+            logger.info("Number of workers before sampling: " + dataContainer.getHouseholdDataManager().getPersons().stream().filter(pp -> pp.getOccupation() == Occupation.EMPLOYED).count());
+            logger.info("Number of jobs before sampling: " + dataContainer.getJobDataManager().getJobs().stream().filter(jj -> jj.getWorkerId() > 0).count());
+            logger.info("Number of vacant jobs before sampling: " + dataContainer.getJobDataManager().getJobs().stream().filter(jj -> jj.getWorkerId() == -1).count());
+
+            //sampling
+            scale(SCALE_FACTER, dataContainer, i);
+
+            logger.info("Number of people after sampling: " + dataContainer.getHouseholdDataManager().getPersons().size());
+            logger.info("Number of workers after sampling: " + dataContainer.getHouseholdDataManager().getPersons().stream().filter(pp -> pp.getOccupation() == Occupation.EMPLOYED).count());
+            logger.info("Number of jobs after sampling: " + dataContainer.getJobDataManager().getJobs().stream().filter(jj -> jj.getWorkerId() > 0).count());
+            logger.info("Number of vacant jobs after sampling: " + dataContainer.getJobDataManager().getJobs().stream().filter(jj -> jj.getWorkerId() == -1).count());
 
 
-        Network network = NetworkUtils.createNetwork();
-        new MatsimNetworkReader(network).readFile("F:\\models\\muc/input\\mito\\trafficAssignment/studyNetworkDense.xml");
+            Network network = NetworkUtils.createNetwork();
+            new MatsimNetworkReader(network).readFile("C:\\Users\\Nico\\tum\\fabilut\\gitproject\\muc/input\\mito\\trafficAssignment/studyNetworkDense.xml");
 
-        //write out origin matches and travel time before match
-        String output = matchBaseDirectory + "/originMatches_" + SCALE_FACTER + "_oneStep.csv";
-        calculateCurrentTT(output,network,dataContainer);
+            //write out origin matches and travel time before match
+            String output = matchBaseDirectory + "/originMatches_" + SCALE_FACTER + "_oneStep.csv";
+            calculateCurrentTT(output, network, dataContainer);
 
-        final Map<String, List<Job>> jobsBySector = dataContainer.getJobDataManager().getJobs().stream().collect(Collectors.groupingBy(Job::getType));
-        final List<Person> workersList = dataContainer.getHouseholdDataManager().getPersons().stream().filter(pp -> pp.getOccupation() == Occupation.EMPLOYED).collect(Collectors.toList());
+            final Map<String, List<Job>> jobsBySector = dataContainer.getJobDataManager().getJobs().stream().collect(Collectors.groupingBy(Job::getType));
+            final List<Person> workersList = dataContainer.getHouseholdDataManager().getPersons().stream().filter(pp -> pp.getOccupation() == Occupation.EMPLOYED).collect(Collectors.toList());
 
-        //run matching algorithm by sector
-        for(String sector : jobsBySector.keySet()){
-            final List<Job> jobs = jobsBySector.get(sector);
-            final List<Person> workers = workersList.stream().filter(pp -> sector.equals(dataContainer.getJobDataManager().getJobFromId(pp.getJobId()).getType())).collect(Collectors.toList());
-            logger.info("Start matches for sector " + sector + " with " + jobs.size() + " jobs and " + workers.size() + " workers");
-            final Map<Integer, Tuple<Integer, Double>> jobByPersonCurrent = matchSector(sector, workers, jobs, dataContainer, network);
-            logger.info("Writing matches for sector " + sector);
-            writeMatches(matchBaseDirectory, sector, jobByPersonCurrent);
+            //run matching algorithm by sector
+            for (String sector : jobsBySector.keySet()) {
+                final List<Job> jobs = jobsBySector.get(sector);
+                final List<Person> workers = workersList.stream().filter(pp -> sector.equals(dataContainer.getJobDataManager().getJobFromId(pp.getJobId()).getType())).collect(Collectors.toList());
+                logger.info("Start matches for sector " + sector + " with " + jobs.size() + " jobs and " + workers.size() + " workers");
+                final Map<Integer, Tuple<Integer, Double>> jobByPersonCurrent = matchSector(sector, workers, jobs, dataContainer, network);
+                logger.info("Writing matches for sector " + sector);
+                writeMatches(matchBaseDirectory, sector, jobByPersonCurrent);
+            }
+
+            logger.info("Scale Facter: " + SCALE_FACTER + "|Run time: " + (System.currentTimeMillis() - t0));
         }
-
-        logger.info("Scale Facter: " + SCALE_FACTER + "|Run time: " + (System.currentTimeMillis()-t0));
     }
 
 
@@ -119,10 +124,13 @@ public class OneStepMatches {
         OpenIntIntHashMap index2Worker = new OpenIntIntHashMap();
         OpenIntIntHashMap index2Job = new OpenIntIntHashMap();
 
+        OpenIntObjectHashMap jobs2Node = new OpenIntObjectHashMap();
+
         Set<InitialNode> toNodes = new HashSet<>();
         int j = 0;
         for (Job job: jobs) {
             Node node = NetworkUtils.getNearestNode(carNetwork, CoordUtils.createCoord(job.getCoordinate()));
+            jobs2Node.put(job.getId(), node);
             toNodes.add(new InitialNode(node, 0., 0.));
             jobs2Index.put(job.getId(), j);
             index2Job.put(j, job.getId());
@@ -140,7 +148,6 @@ public class OneStepMatches {
         double[][] costMatrix = new double[workers.size()][jobs.size()];
 
         LeastCostPathCalculatorFactory multiNodeFactory = new FastMultiNodeDijkstraFactory(true);
-        FreespeedTravelTimeAndDisutility freespeed = new FreespeedTravelTimeAndDisutility(ConfigUtils.createConfig().planCalcScore());
 
         final int partitionSize = (int) ((double) workers.size() / (Properties.get().main.numberOfThreads)) + 1;
         Iterable<List<Person>> partitions = Iterables.partition(workers, partitionSize);
@@ -149,10 +156,11 @@ public class OneStepMatches {
         AtomicInteger id = new AtomicInteger();
 
         for (List<Person> partition : partitions) {
-            MultiNodePathCalculator calculator = (MultiNodePathCalculator) multiNodeFactory.createPathCalculator(carNetwork, freespeed, freespeed);
 
             executor.addTaskToQueue(() -> {
                 try {
+                    FreespeedTravelTimeAndDisutility freespeed = new FreespeedTravelTimeAndDisutility(ConfigUtils.createConfig().planCalcScore());
+                    MultiNodePathCalculator calculator = (MultiNodePathCalculator) multiNodeFactory.createPathCalculator(carNetwork, freespeed, freespeed);
                     int counterr = id.incrementAndGet();
                     int counter = 0;
 
@@ -169,11 +177,11 @@ public class OneStepMatches {
                         calculator.calcLeastCostPath(originNode, aggregatedToNodes, Properties.get().transportModel.peakHour_s, null, null);
 
                         for(Job job: jobs) {
-                            Node destinationNode = NetworkUtils.getNearestNode(carNetwork, CoordUtils.createCoord(job.getCoordinate()));
+                            Node destinationNode = (Node) jobs2Node.get(job.getId());
                             double travelTime = calculator.constructPath(originNode, destinationNode, Properties.get().transportModel.peakHour_s).travelTime;
                             //convert to minutes
                             travelTime /= 60.;
-                            costMatrix[worker2Index.get(personId)][jobs2Index.get(job.getId())] = travelTime;
+                            costMatrix[worker2Index.get(personId)][jobs2Index.get(job.getId())] =  (int) travelTime;
                         }
 
                         counter++;
@@ -200,7 +208,8 @@ public class OneStepMatches {
         return jobByPerson;
     }
 
-    public static void scale(double scaleFactor, DataContainerWithSchools dataContainer) {
+    public static void scale(double scaleFactor, DataContainerWithSchools dataContainer, long seed) {
+        Random random = new Random(seed);
         //scale households
         HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
         Collection<Household> households = householdDataManager.getHouseholds();
@@ -213,7 +222,7 @@ public class OneStepMatches {
         Map<String,List<Job>> occupiedJobBySectorBeforeSampling = jobs.stream().filter(jj -> jj.getWorkerId() > 0).collect(Collectors.groupingBy(Job::getType));
 
         for (Household hh : households) {
-            if (SiloUtil.getRandomNumberAsDouble() > scaleFactor) {
+            if (random.nextDouble() > scaleFactor) {
                 int dwellingId = hh.getDwellingId();
                 for (Person person : hh.getPersons().values()) {
                     person.setHousehold(null);
@@ -248,7 +257,7 @@ public class OneStepMatches {
 */
         for (Job jj : jobs) {
             if (jj.getWorkerId() == -1) {
-                if (SiloUtil.getRandomNumberAsDouble() > scaleFactor) {
+                if (random.nextDouble() > scaleFactor) {
                     jobDataManager.removeJob(jj.getId());
                 }
             }
@@ -338,7 +347,7 @@ public class OneStepMatches {
     }
 
     public static synchronized void writeToFile(String path, String building) throws FileNotFoundException {
-        PrintWriter bd = new PrintWriter(new FileOutputStream(path, true));
+        PrintWriter bd = new PrintWriter(new FileOutputStream(new File(path), true));
         bd.write(building);
         bd.close();
     }
