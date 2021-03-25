@@ -17,5 +17,3 @@ A possibility is
 
 -----
 
-For a full step-by-step guide of the overall setup, pelase see "SILO-MATSim_Installation.docx" in this directory
-
