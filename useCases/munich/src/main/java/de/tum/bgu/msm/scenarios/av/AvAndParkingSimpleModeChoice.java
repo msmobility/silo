@@ -106,6 +106,10 @@ public class AvAndParkingSimpleModeChoice implements CommuteModeChoice {
         }
     }
 
+    @Override
+    public CommuteModeChoiceMapping assignRegionalCommuteModeChoiceToFindNewJobs(Region jobRegion, Zone homeZone, TravelTimes travelTimes, Person person) {
+        return null;
+    }
 
 
 }

@@ -24,10 +24,12 @@ import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
 import de.tum.bgu.msm.data.geo.GeoData;
-import de.tum.bgu.msm.data.person.Occupation;
-import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.output.DefaultJobWriter;
+import de.tum.bgu.msm.models.modeChoice.CommuteModeChoice;
+import de.tum.bgu.msm.models.modeChoice.CommuteModeChoiceMapping;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.modules.JobDataProperties;
 import de.tum.bgu.msm.simulator.UpdateListener;
@@ -47,9 +49,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * Author: Rolf Moeckel, PB Albuquerque
  * Created on 22 February 2013 in Rhede
  **/
-public class JobDataManagerImpl implements UpdateListener, JobDataManager {
-    
-    private final static Logger logger = Logger.getLogger(JobDataManagerImpl.class);
+public class JobDataManagerWithCommuteModeChoice implements UpdateListener, JobDataManager {
+
+    private final static Logger logger = Logger.getLogger(JobDataManagerWithCommuteModeChoice.class);
 
     private final GeoData geoData;
     private final Properties properties;
@@ -64,17 +66,20 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
     private final Map<Integer, List<Job>> vacantJobsByRegion = new LinkedHashMap<>();
     private final Map<Integer, Double> zonalJobDensity;
 
-    private final Map<Integer, Map<Integer,Map<String,Float>>> jobsByYearByZoneByIndustry = new ConcurrentHashMap<>();
+    private final Map<Integer, Map<Integer, Map<String, Float>>> jobsByYearByZoneByIndustry = new ConcurrentHashMap<>();
 
-    public JobDataManagerImpl(Properties properties,
-                              JobFactory jobFactory, JobData jobData, GeoData geoData,
-                              TravelTimes travelTimes, CommutingTimeProbability commutingTimeProbability) {
+    private final CommuteModeChoice commuteModeChoice;
+
+    public JobDataManagerWithCommuteModeChoice(Properties properties,
+                                               JobFactory jobFactory, JobData jobData, GeoData geoData,
+                                               TravelTimes travelTimes, CommutingTimeProbability commutingTimeProbability, CommuteModeChoice commuteModeChoice) {
         this.geoData = geoData;
         this.properties = properties;
         this.jobFactory = jobFactory;
         this.jobData = jobData;
         this.travelTimes = travelTimes;
         this.commutingTimeProbability = commutingTimeProbability;
+        this.commuteModeChoice = commuteModeChoice;
         this.zonalJobDensity = new HashMap<>();
     }
 
@@ -94,7 +99,7 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
     @Override
     public void endYear(int year) {
         if (!Properties.get().jobData.jobsIntermediatesFileName.equals("")) {
-            final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName +"/";
+            final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/";
             String filejj = outputDirectory
                     + properties.jobData.jobsIntermediatesFileName
                     + "_"
@@ -105,7 +110,7 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
 
     @Override
     public void endSimulation() {
-        final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName +"/";
+        final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/";
         String filejj = outputDirectory
                 + properties.jobData.jobsFinalFileName
                 + "_"
@@ -122,7 +127,7 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
     public Collection<Job> getJobs() {
         return jobData.getJobs();
     }
-    
+
     @Override
     public void removeJob(int id) {
         jobData.removeJob(id);
@@ -130,7 +135,7 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
 
     private void identifyHighestJobId() {
         highestJobIdInUse = 0;
-        for (Job job: jobData.getJobs()) {
+        for (Job job : jobData.getJobs()) {
             highestJobIdInUse = Math.max(highestJobIdInUse, job.getId());
         }
     }
@@ -155,7 +160,7 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
         if (properties.jobData.jobForecastMethod.equals(JobDataProperties.JobForecastMethod.INTERPOLATION)) {
             interpolateEmploymentForecast();
             logger.info("Forecasted jobs from employment forecast file");
-        } else if (properties.jobData.jobForecastMethod.equals(JobDataProperties.JobForecastMethod.RATE)){
+        } else if (properties.jobData.jobForecastMethod.equals(JobDataProperties.JobForecastMethod.RATE)) {
             calculateEmploymentForecastWithRate();
             logger.info("Forecasted jobs with growth rate");
         }
@@ -167,15 +172,15 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
         Map<Integer, Map<String, Float>> jobCountBaseyear = new HashMap<>();
         jobsByYearByZoneByIndustry.put(year, jobCountBaseyear);
         //initialize maps with count = 0
-        for (Zone zone : geoData.getZones().values()){
+        for (Zone zone : geoData.getZones().values()) {
             Map<String, Float> jobsInThisZone = new HashMap<>();
             jobCountBaseyear.put(zone.getZoneId(), jobsInThisZone);
-            for (String jobType : JobType.getJobTypes()){
+            for (String jobType : JobType.getJobTypes()) {
                 jobsInThisZone.put(jobType, 0.f);
             }
         }
         //count jobs in SP of base year
-        for (Job job : jobData.getJobs()){
+        for (Job job : jobData.getJobs()) {
             int zoneId = job.getZoneId();
             String jobType = job.getType();
             jobCountBaseyear.get(zoneId).put(jobType, jobCountBaseyear.get(zoneId).get(jobType) + 1);
@@ -183,14 +188,14 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
         logger.info("Count of jobs in synthetic population of the base year completed");
         //forecast the following years
         year++;
-        while (year <= properties.main.endYear){
+        while (year <= properties.main.endYear) {
             Map<Integer, Map<String, Float>> jobCountThisyear = new HashMap<>();
             jobsByYearByZoneByIndustry.put(year, jobCountThisyear);
             for (int zone : geoData.getZones().keySet()) {
                 Map<String, Float> jobCountThisZone = new HashMap<>();
-                for (String jobType : JobType.getJobTypes()){
-                    jobCountThisZone.put(jobType, (float)(jobCountBaseyear.get(zone).get(jobType)*
-                            Math.pow(1+properties.jobData.growthRateInPercentByJobType.get(jobType)/100,year - properties.main.startYear)));
+                for (String jobType : JobType.getJobTypes()) {
+                    jobCountThisZone.put(jobType, (float) (jobCountBaseyear.get(zone).get(jobType) *
+                            Math.pow(1 + properties.jobData.growthRateInPercentByJobType.get(jobType) / 100, year - properties.main.startYear)));
                 }
                 jobCountThisyear.put(zone, jobCountThisZone);
             }
@@ -198,7 +203,7 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
         }
     }
 
-    private void interpolateEmploymentForecast(){
+    private void interpolateEmploymentForecast() {
 
         TableDataSet jobs;
         try {
@@ -245,58 +250,58 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
         String dir = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/employmentForecast/";
         SiloUtil.createDirectoryIfNotExistingYet(dir);
 
-            int previousFixedYear = Integer.parseInt(yearsGiven[0]);
-            int nextFixedYear;
-            int interpolatedYear = previousFixedYear;
-            for (int i = 0; i < yearsGiven.length - 1; i++) {
-                nextFixedYear = Integer.parseInt(yearsGiven[i + 1]);
-                while (interpolatedYear <= nextFixedYear) {
-                    Map<Integer, Map<String, Float>> jobsThisyear = new HashMap<>();
-                    jobsByYearByZoneByIndustry.put(2000 + interpolatedYear, jobsThisyear);
-                    final String forecastFileName = dir + properties.jobData.employmentForeCastFile + (2000 + interpolatedYear) + ".csv";
-                    final PrintWriter pw = SiloUtil.openFileForSequentialWriting(forecastFileName, false);
-                    final StringBuilder builder = new StringBuilder("zone");
-                    for (String jobType : JobType.getJobTypes()) {
-                        builder.append(",").append(jobType);
+        int previousFixedYear = Integer.parseInt(yearsGiven[0]);
+        int nextFixedYear;
+        int interpolatedYear = previousFixedYear;
+        for (int i = 0; i < yearsGiven.length - 1; i++) {
+            nextFixedYear = Integer.parseInt(yearsGiven[i + 1]);
+            while (interpolatedYear <= nextFixedYear) {
+                Map<Integer, Map<String, Float>> jobsThisyear = new HashMap<>();
+                jobsByYearByZoneByIndustry.put(2000 + interpolatedYear, jobsThisyear);
+                final String forecastFileName = dir + properties.jobData.employmentForeCastFile + (2000 + interpolatedYear) + ".csv";
+                final PrintWriter pw = SiloUtil.openFileForSequentialWriting(forecastFileName, false);
+                final StringBuilder builder = new StringBuilder("zone");
+                for (String jobType : JobType.getJobTypes()) {
+                    builder.append(",").append(jobType);
+                }
+                builder.append("\n");
+                for (int zone : geoData.getZones().keySet()) {
+                    Map<String, Float> jobsThisZone = new HashMap<>();
+                    jobsThisyear.put(zone, jobsThisZone);
+                    builder.append(zone);
+                    for (int jobTp = 0; jobTp < JobType.getNumberOfJobTypes(); jobTp++) {
+                        final int index = jobs.getIndexedRowNumber(zone);
+                        float currentValue;
+                        if (interpolatedYear == previousFixedYear) {
+                            //todo look at a different place if it is the base year!
+                            currentValue = jobs.getValueAt(index, JobType.getJobType(jobTp) + yearsGiven[i]);
+                        } else if (interpolatedYear == nextFixedYear) {
+                            currentValue = jobs.getValueAt(index, JobType.getJobType(jobTp) + yearsGiven[i + 1]);
+                        } else {
+                            final float previousFixedValue = jobs.getValueAt(index, JobType.getJobType(jobTp) + yearsGiven[i]);
+                            final float nextFixedValue = jobs.getValueAt(index, JobType.getJobType(jobTp) + yearsGiven[i + 1]);
+                            currentValue = previousFixedValue + (nextFixedValue - previousFixedValue) * (interpolatedYear - previousFixedYear) /
+                                    (nextFixedYear - previousFixedYear);
+                        }
+
+                        jobsThisZone.put(JobType.getJobType(jobTp), currentValue);
+                        builder.append(",").append(currentValue);
                     }
                     builder.append("\n");
-                    for (int zone : geoData.getZones().keySet()) {
-                        Map<String, Float> jobsThisZone = new HashMap<>();
-                        jobsThisyear.put(zone, jobsThisZone);
-                        builder.append(zone);
-                        for (int jobTp = 0; jobTp < JobType.getNumberOfJobTypes(); jobTp++) {
-                            final int index = jobs.getIndexedRowNumber(zone);
-                            float currentValue;
-                            if (interpolatedYear == previousFixedYear) {
-                                //todo look at a different place if it is the base year!
-                                currentValue = jobs.getValueAt(index, JobType.getJobType(jobTp) + yearsGiven[i]);
-                            } else if (interpolatedYear == nextFixedYear) {
-                                currentValue = jobs.getValueAt(index, JobType.getJobType(jobTp) + yearsGiven[i + 1]);
-                            } else {
-                                final float previousFixedValue = jobs.getValueAt(index, JobType.getJobType(jobTp) + yearsGiven[i]);
-                                final float nextFixedValue = jobs.getValueAt(index, JobType.getJobType(jobTp) + yearsGiven[i + 1]);
-                                currentValue = previousFixedValue + (nextFixedValue - previousFixedValue) * (interpolatedYear - previousFixedYear) /
-                                        (nextFixedYear - previousFixedYear);
-                            }
-
-                            jobsThisZone.put(JobType.getJobType(jobTp), currentValue);
-                            builder.append(",").append(currentValue);
-                        }
-                        builder.append("\n");
-                    }
-                    pw.print(builder.toString());
-                    pw.close();
-                    interpolatedYear++;
                 }
-                previousFixedYear = nextFixedYear;
+                pw.print(builder.toString());
+                pw.close();
+                interpolatedYear++;
             }
+            previousFixedYear = nextFixedYear;
+        }
 
 
     }
-    
+
 
     @Override
-    public float getJobForecast(int year, int zone, String jobType){
+    public float getJobForecast(int year, int zone, String jobType) {
         return jobsByYearByZoneByIndustry.get(year).get(zone).get(jobType);
     }
 
@@ -321,6 +326,7 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
 
     /**
      * Person quits job and the job is added to the vacantJobList
+     *
      * @param makeJobAvailableToOthers
      * @param person
      */
@@ -341,15 +347,15 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
         person.setIncome((int) (person.getAnnualIncome() * 0.6 + 0.5));
         //todo: think about smarter retirement/social welfare algorithm to adjust income after employee leaves work.
     }
-    
+
     private int getNumberOfVacantJobsByRegion(int region) {
         return vacantJobsByRegion.getOrDefault(region, Collections.EMPTY_LIST).size();
     }
-    
+
     @Override
     public Job findVacantJob(Zone homeZone, Collection<Region> regions) {
         // select vacant job for person living in homeZone
-
+        //todo move find vacant job to a model
         Sampler<Region> regionSampler = new Sampler<>(regions.size(), Region.class, SiloUtil.getRandomObject());
 
         if (homeZone != null) {
@@ -357,11 +363,16 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
             for (Region reg : regions) {
                 int numberOfVacantJobs = getNumberOfVacantJobsByRegion(reg.getId());
                 if (numberOfVacantJobs > 0) {
-                    int travelTime_min = (int) ((travelTimes.getTravelTimeToRegion(homeZone, reg,
-                            properties.transportModel.peakHour_s, TransportMode.car) + 0.5));
-                    //todo make region probability sensitve to mode choice to find a vacant job
-                    final double prob = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, travelTime_min), TransportMode.car) * (double) numberOfVacantJobs;
-                    regionSampler.incrementalAdd(reg, prob);
+
+                    CommuteModeChoiceMapping mapping =
+                            commuteModeChoice.assignRegionalCommuteModeChoiceToFindNewJobs(reg,
+                                    homeZone,
+                                    travelTimes,
+                                    OneWorker());
+
+
+                    final double prob = mapping.getMode(OneWorker()).utility;
+                            regionSampler.incrementalAdd(reg, prob);
                 }
             }
             if (regionSampler.getCumulatedProbability() == 0) {
@@ -406,8 +417,10 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
     }
 
 
+
     /**
      * add job jobId to vacancy list
+     *
      * @param job
      */
     private void addJobToVacancyList(Job job) {
@@ -419,9 +432,7 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
         if (job.getId() == SiloUtil.trackJj) {
             SiloUtil.trackWriter.println("Added job " + job.getId() + " to list of vacant jobs.");
         }
-        }
-
-
+    }
 
 
     private void calculateJobDensityByZone() {
@@ -463,4 +474,104 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
     public Map<Integer, List<Job>> getVacantJobsByRegion() {
         return vacantJobsByRegion;
     }
+
+    private Person OneWorker() {
+        return new Person() {
+            @Override
+            public void setHousehold(Household householdId) {
+
+            }
+
+            @Override
+            public Household getHousehold() {
+                return null;
+            }
+
+            @Override
+            public void setRole(PersonRole pr) {
+
+            }
+
+            @Override
+            public void birthday() {
+
+            }
+
+            @Override
+            public void setIncome(int newIncome) {
+
+            }
+
+            @Override
+            public void setWorkplace(int newWorkplace) {
+
+            }
+
+            @Override
+            public void setOccupation(Occupation newOccupation) {
+
+            }
+
+            @Override
+            public int getAge() {
+                return 0;
+            }
+
+            @Override
+            public Gender getGender() {
+                return null;
+            }
+
+            @Override
+            public Occupation getOccupation() {
+                return null;
+            }
+
+            @Override
+            public int getAnnualIncome() {
+                return 0;
+            }
+
+            @Override
+            public PersonType getType() {
+                return null;
+            }
+
+            @Override
+            public PersonRole getRole() {
+                return null;
+            }
+
+            @Override
+            public int getJobId() {
+                return 0;
+            }
+
+            @Override
+            public void setDriverLicense(boolean driverLicense) {
+
+            }
+
+            @Override
+            public boolean hasDriverLicense() {
+                return false;
+            }
+
+            @Override
+            public Optional<Object> getAttribute(String key) {
+                return Optional.empty();
+            }
+
+            @Override
+            public void setAttribute(String key, Object value) {
+
+            }
+
+            @Override
+            public int getId() {
+                return -1;
+            }
+        };
+    }
+
 }

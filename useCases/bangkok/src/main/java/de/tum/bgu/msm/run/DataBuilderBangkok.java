@@ -13,9 +13,12 @@ import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.io.input.*;
 import de.tum.bgu.msm.matsim.MatsimTravelTimesAndCosts;
+import de.tum.bgu.msm.models.modeChoice.CommuteModeChoice;
+import de.tum.bgu.msm.models.modeChoice.CommuteModeChoiceWithoutCarOwnership;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.run.data.dwelling.BangkokDwellingTypes;
 import de.tum.bgu.msm.run.io.GeoDataReaderBangkok;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.matsim.core.config.Config;
 
 public class DataBuilderBangkok {
@@ -60,8 +63,10 @@ public class DataBuilderBangkok {
         RealEstateDataManager realEstateDataManager = new RealEstateDataManagerImpl(
                 new BangkokDwellingTypes(), dwellingData, householdData, geoData, new DwellingFactoryImpl(), properties);
 
-        JobDataManager jobDataManager = new JobDataManagerImpl(
-                properties, jobFactory, jobData, geoData, travelTimes, commutingTimeProbability);
+        CommuteModeChoice commuteModeChoice = new CommuteModeChoiceWithoutCarOwnership(commutingTimeProbability, travelTimes, geoData,
+                properties, SiloUtil.provideNewRandom(), 10f, 3f);
+        JobDataManager jobDataManager = new JobDataManagerWithCommuteModeChoice(
+                properties, jobFactory, jobData, geoData, travelTimes, commutingTimeProbability, commuteModeChoice);
 
 
         final HouseholdFactory hhFactory = new HouseholdFactoryImpl();

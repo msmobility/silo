@@ -1,7 +1,6 @@
 package de.tum.bgu.msm.scenarios.av;
 
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.DataSet;
 import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
@@ -16,8 +15,6 @@ import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoice;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoiceMapping;
-import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
-import de.tum.bgu.msm.modules.modeChoice.ModeChoice;
 import de.tum.bgu.msm.properties.Properties;
 import org.matsim.api.core.v01.TransportMode;
 
@@ -172,5 +169,10 @@ public class ParkingSimpleMoceChoice implements CommuteModeChoice {
         }
 
         return commuteModeChoiceMapping;
+    }
+
+    @Override
+    public CommuteModeChoiceMapping assignRegionalCommuteModeChoiceToFindNewJobs(Region jobRegion, Zone homeZone, TravelTimes travelTimes, Person person) {
+        return null;
     }
 }

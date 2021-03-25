@@ -30,13 +30,32 @@ public class CommuteModeChoiceWithoutCarOwnership implements CommuteModeChoice {
     private int B_EXP_HOUSING_UTILITY = 20;
 
 
+    /*
+    Constructor called to mode choice model for housing
+     */
     public CommuteModeChoiceWithoutCarOwnership(DataContainer dataContainer,
                                                 Properties properties, Random random, float bTime, float bPt) {
         this.properties = properties;
         this.commutingTimeProbability = dataContainer.getCommutingTimeProbability();
         this.jobDataManager = dataContainer.getJobDataManager();
         this.random = random;
-        geoData = dataContainer.getGeoData();
+        this.geoData = dataContainer.getGeoData();
+        B_TIME = bTime;
+        B_PT = bPt;
+    }
+
+
+
+    /*
+    Constructor called to mode choice model for job search
+     */
+    public CommuteModeChoiceWithoutCarOwnership(CommutingTimeProbability commutingTimeProbability, TravelTimes travelTimes,
+                                                GeoData geoData, Properties properties, Random random, float bTime, float bPt) {
+        this.properties = properties;
+        this.commutingTimeProbability = commutingTimeProbability;
+        this.jobDataManager = null;
+        this.random = random;
+        this.geoData = geoData;
         B_TIME = bTime;
         B_PT = bPt;
     }
@@ -77,7 +96,7 @@ public class CommuteModeChoiceWithoutCarOwnership implements CommuteModeChoice {
                 if (random.nextDouble() < probabilityCar) {
                     commuteModeChoiceMapping.assignMode(new CommuteModeChoiceMapping.CommuteMode(TransportMode.car, Math.pow(commutingTimeProbabilityCar, B_EXP_HOUSING_UTILITY)), pp);
                 } else {
-                    commuteModeChoiceMapping.assignMode(new CommuteModeChoiceMapping.CommuteMode(TransportMode.pt,  Math.pow(commutingTimeProbabilityPt, B_EXP_HOUSING_UTILITY)), pp);
+                    commuteModeChoiceMapping.assignMode(new CommuteModeChoiceMapping.CommuteMode(TransportMode.pt, Math.pow(commutingTimeProbabilityPt, B_EXP_HOUSING_UTILITY)), pp);
 
                 }
             }
@@ -128,5 +147,41 @@ public class CommuteModeChoiceWithoutCarOwnership implements CommuteModeChoice {
             }
         }
         return commuteModeChoiceMapping;
+    }
+
+    @Override
+    public CommuteModeChoiceMapping assignRegionalCommuteModeChoiceToFindNewJobs(Region jobRegion, Zone homeZone, TravelTimes travelTimes, Person person) {
+
+        CommuteModeChoiceMapping commuteModeChoiceMapping = new CommuteModeChoiceMapping(1);
+
+        int ptMinutes = (int) travelTimes.getTravelTimeFromRegion(jobRegion, homeZone,
+                (int) properties.transportModel.peakHour_s, TransportMode.pt);
+        float commutingTimeProbabilityPt = commutingTimeProbability.getCommutingTimeProbability(ptMinutes, TransportMode.pt);
+        double ptUtility = B_PT + B_TIME * commutingTimeProbabilityPt;
+
+        int carMinutes = (int) travelTimes.getTravelTimeFromRegion(jobRegion, homeZone,
+                (int) properties.transportModel.peakHour_s, TransportMode.car);
+        float commutingTimeProbabilityCar = this.commutingTimeProbability.getCommutingTimeProbability(carMinutes, TransportMode.car);
+        double carUtility = B_TIME * commutingTimeProbabilityCar;
+
+        ptUtility = Math.exp(ptUtility);
+        carUtility = Math.exp(carUtility);
+
+        double probabilityCar = 0;
+        if (carUtility == 0 && ptUtility == 0) {
+            probabilityCar = 0.5;
+        } else {
+            probabilityCar = carUtility / (carUtility + ptUtility);
+        }
+
+
+        if (random.nextDouble() < probabilityCar) {
+            commuteModeChoiceMapping.assignMode(new CommuteModeChoiceMapping.CommuteMode(TransportMode.car, Math.pow(commutingTimeProbabilityCar, B_EXP_HOUSING_UTILITY)), person);
+        } else {
+            commuteModeChoiceMapping.assignMode(new CommuteModeChoiceMapping.CommuteMode(TransportMode.pt, Math.pow(commutingTimeProbabilityPt, B_EXP_HOUSING_UTILITY)), person);
+
+        }
+
+    return commuteModeChoiceMapping;
     }
 }

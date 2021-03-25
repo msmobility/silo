@@ -165,4 +165,9 @@ public class SimpleCommuteModeChoice implements CommuteModeChoice {
 
         return commuteModeChoiceMapping;
     }
+
+    @Override
+    public CommuteModeChoiceMapping assignRegionalCommuteModeChoiceToFindNewJobs(Region jobRegion, Zone homeZone, TravelTimes travelTimes, Person person) {
+        return null;
+    }
 }
