@@ -6,7 +6,6 @@ import de.tum.bgu.msm.matsim.*;
 import de.tum.bgu.msm.models.demography.education.EducationModelImpl;
 import de.tum.bgu.msm.models.demography.marriage.MarriageModelImpl;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoiceWithoutCarOwnership;
-import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
 import de.tum.bgu.msm.run.models.carOwnership.CreateCarOwnershipBangkok;
 import de.tum.bgu.msm.run.models.realEstate.BangkokPricingStrategy;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
@@ -51,7 +50,6 @@ import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.run.models.realEstate.RenovationStrategyBangkok;
 import de.tum.bgu.msm.run.models.realEstate.construction.BangkokConstructionLocationStrategy;
-import de.tum.bgu.msm.run.models.transport.MatsimPopulationConeversorAndWriter;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
@@ -59,7 +57,9 @@ import org.matsim.core.scenario.ScenarioUtils;
 
 public class ModelBuilderBangkok {
 
-    private static float K_MC_CALIBRATION_PT = - 0.6f;
+    private static float bTime = 10f;
+    private static float bPt = 3f;
+
 
 
     public static ModelContainer getModelContainerForBangkok(DefaultDataContainer dataContainer, Properties properties, Config config) {
@@ -80,7 +80,7 @@ public class ModelBuilderBangkok {
                 new SimpleCommuteHousingStrategyWithoutCarOwnership(dataContainer,
                         properties, dataContainer.getTravelTimes(),
                         new DwellingUtilityStrategyImpl(), new DefaultDwellingProbabilityStrategy(),
-                        new RegionUtilityStrategyImpl(), new RegionProbabilityStrategyImpl(), K_MC_CALIBRATION_PT)
+                        new RegionUtilityStrategyImpl(), new RegionProbabilityStrategyImpl(), bTime, bPt)
                 , SiloUtil.provideNewRandom());
 
         CreateCarOwnershipModel carOwnershipModel = new CreateCarOwnershipBangkok(dataContainer);
@@ -125,20 +125,21 @@ public class ModelBuilderBangkok {
 
 
         MatsimData matsimData = null;
-//        if (config != null) {
-//            final Scenario scenario = ScenarioUtils.loadScenario(config);
-//            matsimData = new MatsimData(config, properties, ZoneConnectorManager.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
-//        }
-//        switch (properties.transportModel.transportModelIdentifier) {
-//            case MATSIM:
-//                CommuteModeChoiceWithoutCarOwnership commuteModeChoice = new CommuteModeChoiceWithoutCarOwnership(dataContainer, properties, SiloUtil.provideNewRandom(), K_MC_CALIBRATION_PT);
-//                scenarioAssembler = new SimpleCommuteModeChoiceMatsimScenarioAssembler(dataContainer, properties, commuteModeChoice);
-//                transportModel = new MatsimTransportModel(dataContainer, config, properties, scenarioAssembler, matsimData);
-//                break;
-//            case NONE:
-//            default:
-//                transportModel = null;
-//        }
+        if (config != null) {
+            final Scenario scenario = ScenarioUtils.loadScenario(config);
+            matsimData = new MatsimData(config, properties, ZoneConnectorManager.ZoneConnectorMethod.RANDOM, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
+        }
+        switch (properties.transportModel.transportModelIdentifier) {
+            case MATSIM:
+                CommuteModeChoiceWithoutCarOwnership commuteModeChoice = new CommuteModeChoiceWithoutCarOwnership(dataContainer,
+                        properties, SiloUtil.provideNewRandom(), bTime, bPt);
+                scenarioAssembler = new SimpleCommuteModeChoiceMatsimScenarioAssembler(dataContainer, properties, commuteModeChoice);
+                transportModel = new MatsimTransportModel(dataContainer, config, properties, scenarioAssembler, matsimData);
+                break;
+            case NONE:
+            default:
+                transportModel = null;
+        }
 
         final ModelContainer modelContainer = new ModelContainer(
                 birthModel, birthdayModel,
@@ -150,9 +151,10 @@ public class ModelBuilderBangkok {
                 constructionOverwrite, inOutMigration, movesModel, transportModel);
 
         //modelContainer.registerModelUpdateListener(new UpdateCarOwnershipModelMuc(dataContainer, properties, SiloUtil.provideNewRandom()));
-        CommuteModeChoiceWithoutCarOwnership commuteModeChoice = new CommuteModeChoiceWithoutCarOwnership(dataContainer, properties, SiloUtil.provideNewRandom(), K_MC_CALIBRATION_PT);
-        scenarioAssembler = new SimpleCommuteModeChoiceMatsimScenarioAssembler(dataContainer, properties, commuteModeChoice);
-        modelContainer.registerModelUpdateListener(new MatsimPopulationConeversorAndWriter(dataContainer, scenarioAssembler, properties, config));
+        //test to print MATSim plans only
+//        CommuteModeChoiceWithoutCarOwnership commuteModeChoice = new CommuteModeChoiceWithoutCarOwnership(dataContainer, properties, SiloUtil.provideNewRandom(), K_MC_CALIBRATION_PT);
+//        scenarioAssembler = new SimpleCommuteModeChoiceMatsimScenarioAssembler(dataContainer, properties, commuteModeChoice);
+//        modelContainer.registerModelUpdateListener(new MatsimPopulationConeversorAndWriter(dataContainer, scenarioAssembler, properties, config));
 
         return modelContainer;
     }

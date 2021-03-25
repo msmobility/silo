@@ -75,13 +75,13 @@ public class SimpleCommuteHousingStrategyWithoutCarOwnership implements HousingS
                                                            DwellingUtilityStrategy dwellingUtilityStrategy,
                                                            DwellingProbabilityStrategy dwellingProbabilityStrategy,
                                                            RegionUtilityStrategy regionUtilityStrategy,
-                                                           RegionProbabilityStrategy regionProbabilityStrategy, float k_calibration_pt) {
+                                                           RegionProbabilityStrategy regionProbabilityStrategy, float bTimePt, float bPt) {
         this.dataContainer = dataContainer;
         geoData = dataContainer.getGeoData();
         this.properties = properties;
         this.travelTimes = travelTimes;
         accessibility = dataContainer.getAccessibility();
-        this.commuteModeChoice = new CommuteModeChoiceWithoutCarOwnership(dataContainer, properties, SiloUtil.provideNewRandom(), k_calibration_pt);
+        this.commuteModeChoice = new CommuteModeChoiceWithoutCarOwnership(dataContainer, properties, SiloUtil.provideNewRandom(), bTimePt, bPt);
         this.dwellingUtilityStrategy = dwellingUtilityStrategy;
         this.dwellingProbabilityStrategy = dwellingProbabilityStrategy;
         this.regionUtilityStrategy = regionUtilityStrategy;

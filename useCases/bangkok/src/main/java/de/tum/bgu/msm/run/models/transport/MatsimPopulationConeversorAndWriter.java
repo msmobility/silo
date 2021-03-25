@@ -59,7 +59,6 @@ public class MatsimPopulationConeversorAndWriter implements ModelUpdateListener 
             Scenario scenario = scenarioAssembler.assembleScenario(initialMatsimConfig, year, dataContainer.getTravelTimes());
             PopulationWriter populationWriter = new PopulationWriter(scenario.getPopulation());
             populationWriter.write(properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/matsim/plans_" + year + ".xml.gz");
-            //throw new RuntimeException();
         }
 
 

@@ -1,10 +1,7 @@
 package de.tum.bgu.msm.run;
 
 import de.tum.bgu.msm.container.DefaultDataContainer;
-import de.tum.bgu.msm.data.accessibility.Accessibility;
-import de.tum.bgu.msm.data.accessibility.AccessibilityImpl;
-import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
-import de.tum.bgu.msm.data.accessibility.CommutingTimeProbabilityImpl;
+import de.tum.bgu.msm.data.accessibility.*;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.geo.DefaultGeoData;
 import de.tum.bgu.msm.data.geo.GeoData;
@@ -52,7 +49,7 @@ public class DataBuilderBangkok {
                 throw new RuntimeException("Travel time not recognized! Please set property \"travel.time\" accordingly!");
         }
 
-        CommutingTimeProbability commutingTimeProbability = new CommutingTimeProbabilityImpl(properties);
+        CommutingTimeProbability commutingTimeProbability = new CommutingTimeProbabilityExponential(-0.01f, -0.01f);
 
         //TODO: revise this!
         new JobType(properties.jobData.jobTypes);
