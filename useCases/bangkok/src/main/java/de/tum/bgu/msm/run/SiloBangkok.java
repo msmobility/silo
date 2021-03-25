@@ -30,7 +30,7 @@ public class SiloBangkok {
         if (args.length > 1 && args[1] != null) {
             config = ConfigUtils.loadConfig(args[1]);
         }
-        logger.info("Started SILO land use model for the Munich Metropolitan Area");
+        logger.info("Started SILO land use model for the Bangkok Metropolitan Area");
         DefaultDataContainer dataContainer = DataBuilderBangkok.getModelDataForBangkok(properties, config);
         DataBuilderBangkok.read(properties, dataContainer);
         ModelContainer modelContainer = ModelBuilderBangkok.getModelContainerForBangkok(dataContainer, properties, config);
