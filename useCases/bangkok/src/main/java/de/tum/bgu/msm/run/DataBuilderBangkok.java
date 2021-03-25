@@ -15,6 +15,7 @@ import de.tum.bgu.msm.io.input.*;
 import de.tum.bgu.msm.matsim.MatsimTravelTimesAndCosts;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoice;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoiceWithoutCarOwnership;
+import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.run.data.dwelling.BangkokDwellingTypes;
 import de.tum.bgu.msm.run.io.GeoDataReaderBangkok;
@@ -52,7 +53,9 @@ public class DataBuilderBangkok {
                 throw new RuntimeException("Travel time not recognized! Please set property \"travel.time\" accordingly!");
         }
 
-        CommutingTimeProbability commutingTimeProbability = new CommutingTimeProbabilityExponential(-0.01f, -0.01f);
+        CommutingTimeProbability commutingTimeProbability =
+                new CommutingTimeProbabilityExponential(properties.accessibility.betaTimeCarExponentialCommutingTime,
+                        properties.accessibility.betaTimePtExponentialCommutingTime);
 
         //TODO: revise this!
         new JobType(properties.jobData.jobTypes);
@@ -63,8 +66,8 @@ public class DataBuilderBangkok {
         RealEstateDataManager realEstateDataManager = new RealEstateDataManagerImpl(
                 new BangkokDwellingTypes(), dwellingData, householdData, geoData, new DwellingFactoryImpl(), properties);
 
-        CommuteModeChoice commuteModeChoice = new CommuteModeChoiceWithoutCarOwnership(commutingTimeProbability, travelTimes, geoData,
-                properties, SiloUtil.provideNewRandom(), 10f, 3f);
+        SimpleCommuteModeChoice commuteModeChoice = new SimpleCommuteModeChoice(commutingTimeProbability, travelTimes, geoData,
+                properties, SiloUtil.provideNewRandom());
         JobDataManager jobDataManager = new JobDataManagerWithCommuteModeChoice(
                 properties, jobFactory, jobData, geoData, travelTimes, commutingTimeProbability, commuteModeChoice);
 

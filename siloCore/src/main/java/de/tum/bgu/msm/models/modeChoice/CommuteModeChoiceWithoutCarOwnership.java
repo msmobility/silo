@@ -25,23 +25,26 @@ public class CommuteModeChoiceWithoutCarOwnership implements CommuteModeChoice {
     private final JobDataManager jobDataManager;
     private final GeoData geoData;
     private Random random;
-    private final float B_TIME;
-    private final float B_PT;
-    private int B_EXP_HOUSING_UTILITY = 20;
+
+    public final float B_TIME;
+    public final float B_PT;
+    public final float B_EXP_HOUSING_UTILITY;
+
 
 
     /*
     Constructor called to mode choice model for housing
      */
     public CommuteModeChoiceWithoutCarOwnership(DataContainer dataContainer,
-                                                Properties properties, Random random, float bTime, float bPt) {
+                                                Properties properties, Random random) {
         this.properties = properties;
         this.commutingTimeProbability = dataContainer.getCommutingTimeProbability();
         this.jobDataManager = dataContainer.getJobDataManager();
         this.random = random;
         this.geoData = dataContainer.getGeoData();
-        B_TIME = bTime;
-        B_PT = bPt;
+        B_TIME = properties.moves.B_TIME;
+        B_PT = properties.moves.B_PT;
+        B_EXP_HOUSING_UTILITY = properties.moves.B_EXP_HOUSING_UTILITY;
     }
 
 
@@ -50,14 +53,15 @@ public class CommuteModeChoiceWithoutCarOwnership implements CommuteModeChoice {
     Constructor called to mode choice model for job search
      */
     public CommuteModeChoiceWithoutCarOwnership(CommutingTimeProbability commutingTimeProbability, TravelTimes travelTimes,
-                                                GeoData geoData, Properties properties, Random random, float bTime, float bPt) {
+                                                GeoData geoData, Properties properties, Random random) {
         this.properties = properties;
         this.commutingTimeProbability = commutingTimeProbability;
         this.jobDataManager = null;
         this.random = random;
         this.geoData = geoData;
-        B_TIME = bTime;
-        B_PT = bPt;
+        B_TIME = properties.moves.B_TIME;
+        B_PT = properties.moves.B_PT;
+        B_EXP_HOUSING_UTILITY = properties.moves.B_EXP_HOUSING_UTILITY;
     }
 
 

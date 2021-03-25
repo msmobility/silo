@@ -6,6 +6,7 @@ import de.tum.bgu.msm.matsim.*;
 import de.tum.bgu.msm.models.demography.education.EducationModelImpl;
 import de.tum.bgu.msm.models.demography.marriage.MarriageModelImpl;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoiceWithoutCarOwnership;
+import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
 import de.tum.bgu.msm.run.models.carOwnership.CreateCarOwnershipBangkok;
 import de.tum.bgu.msm.run.models.realEstate.BangkokPricingStrategy;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
@@ -57,8 +58,8 @@ import org.matsim.core.scenario.ScenarioUtils;
 
 public class ModelBuilderBangkok {
 
-    private static float bTime = 10f;
-    private static float bPt = 3f;
+//    private static float bTime = 10f;
+//    private static float bPt = 3f;
 
 
 
@@ -80,7 +81,7 @@ public class ModelBuilderBangkok {
                 new SimpleCommuteHousingStrategyWithoutCarOwnership(dataContainer,
                         properties, dataContainer.getTravelTimes(),
                         new DwellingUtilityStrategyImpl(), new DefaultDwellingProbabilityStrategy(),
-                        new RegionUtilityStrategyImpl(), new RegionProbabilityStrategyImpl(), bTime, bPt)
+                        new RegionUtilityStrategyImpl(), new RegionProbabilityStrategyImpl())
                 , SiloUtil.provideNewRandom());
 
         CreateCarOwnershipModel carOwnershipModel = new CreateCarOwnershipBangkok(dataContainer);
@@ -132,7 +133,7 @@ public class ModelBuilderBangkok {
         switch (properties.transportModel.transportModelIdentifier) {
             case MATSIM:
                 CommuteModeChoiceWithoutCarOwnership commuteModeChoice = new CommuteModeChoiceWithoutCarOwnership(dataContainer,
-                        properties, SiloUtil.provideNewRandom(), bTime, bPt);
+                        properties, SiloUtil.provideNewRandom());
                 scenarioAssembler = new SimpleCommuteModeChoiceMatsimScenarioAssembler(dataContainer, properties, commuteModeChoice);
                 transportModel = new MatsimTransportModel(dataContainer, config, properties, scenarioAssembler, matsimData);
                 break;

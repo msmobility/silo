@@ -17,6 +17,10 @@ public final class MovesProperties {
 
     public final boolean trackRelocations;
 
+    public final float B_TIME = 10f;
+    public final float B_PT = 3f;
+    public final float B_EXP_HOUSING_UTILITY = 20f;
+
     public enum PopulationControlTotalMethod {
         POPULATION, MIGRATION, RATE;
     }

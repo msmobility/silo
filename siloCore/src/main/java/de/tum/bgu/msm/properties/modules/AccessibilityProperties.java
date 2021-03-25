@@ -42,6 +42,9 @@ public class AccessibilityProperties {
     public final double skimFileFactorTransit;
     public final Set<Integer> skimYears;
 
+    public final float betaTimeCarExponentialCommutingTime = -0.01f;
+    public final float betaTimePtExponentialCommutingTime = -0.01f;
+
     public AccessibilityProperties(ResourceBundle bundle, int startYear) {
         PropertiesUtil.newPropertySubmodule("Accessibility properties");
         this.bundle = bundle;
