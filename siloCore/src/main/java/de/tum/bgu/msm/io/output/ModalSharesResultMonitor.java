@@ -49,9 +49,13 @@ public class ModalSharesResultMonitor implements ResultsMonitor {
             pw.print(",");
             pw.print("tripsPt");
             pw.print(",");
+            pw.print("tripsOther");
+            pw.print(",");
             pw.print("totalTimeCar");
             pw.print(",");
             pw.print("totalTimePt");
+            pw.print(",");
+            pw.print("totalTimeOther");
             pw.print(",");
             pw.print("doNotTravel");
             pw.println();
@@ -69,12 +73,15 @@ public class ModalSharesResultMonitor implements ResultsMonitor {
 
         Map<Integer, Integer> tripsByCar = new HashMap<>();
         Map<Integer, Integer> tripsByPt = new HashMap<>();
+        Map<Integer, Integer>tripsByOther = new HashMap<>();
         Map<Integer, Double> timeByCar = new HashMap<>();
         Map<Integer, Double> timeByPt = new HashMap<>();
+        Map<Integer, Double> timeByOther = new HashMap<>();
         Map<Integer, Integer> doNotTravel = new HashMap<>();
 
         AtomicInteger car = new AtomicInteger();
         AtomicInteger pt = new AtomicInteger();
+        AtomicInteger other = new AtomicInteger();
 
         for (Household household : dataContainer.getHouseholdDataManager().getHouseholds()) {
 
@@ -100,7 +107,12 @@ public class ModalSharesResultMonitor implements ResultsMonitor {
                             timeByPt.put(dd.getZoneId(), timeByPt.get(dd.getZoneId()) + timePt);
                             pt.getAndIncrement();
                         } else {
-                            //another mode
+                            tripsByOther.putIfAbsent(dd.getZoneId(), 0);
+                            tripsByOther.put(dd.getZoneId(), tripsByOther.get(dd.getZoneId()) + 1);
+                            double timeCar = dataContainer.getTravelTimes().getTravelTime(dd, jj, properties.transportModel.peakHour_s, TransportMode.car);
+                            timeByOther.putIfAbsent(dd.getZoneId(), 0.);
+                            timeByOther.put(dd.getZoneId(), timeByOther.get(dd.getZoneId()) + timeCar);
+                            other.getAndIncrement();
                         }
                     } else {
                         //not a commuter
@@ -111,8 +123,9 @@ public class ModalSharesResultMonitor implements ResultsMonitor {
             });
         }
 
-        logger.info("Modal share of car is " + car.doubleValue()/(car.get() + pt.get()));
-        logger.info("Modal share of pt is " + pt.doubleValue()/(car.get() + pt.get()));
+        logger.info("Modal share of car is " + car.doubleValue()/(car.get() + pt.get() + other.get()));
+        logger.info("Modal share of pt is " + pt.doubleValue()/(car.get() + pt.get() + other.get()));
+        logger.info("Modal share of other is " + other.doubleValue()/(car.get() + pt.get() + other.get()));
 
         for (Zone zone : dataContainer.getGeoData().getZones().values()) {
             pw.print(year);
@@ -123,9 +136,13 @@ public class ModalSharesResultMonitor implements ResultsMonitor {
             pw.print(",");
             pw.print(tripsByPt.getOrDefault(zone.getZoneId(), 0));
             pw.print(",");
+            pw.print(tripsByOther.getOrDefault(zone.getZoneId(), 0));
+            pw.print(",");
             pw.print(timeByCar.getOrDefault(zone.getZoneId(), 0.));
             pw.print(",");
             pw.print(timeByPt.getOrDefault(zone.getZoneId(), 0.));
+            pw.print(",");
+            pw.print(timeByOther.getOrDefault(zone.getZoneId(), 0.));
             pw.print(",");
             pw.print(doNotTravel.getOrDefault(zone.getZoneId(), 0));
             pw.println();

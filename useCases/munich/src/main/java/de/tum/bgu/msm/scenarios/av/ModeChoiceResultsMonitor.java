@@ -76,7 +76,7 @@ public class ModeChoiceResultsMonitor implements ResultsMonitor {
 
         for (Household household : dataContainer.getHouseholdDataManager().getHouseholds()) {
 
-            household.getAttribute("COMUTE_MODE_CHOICE_MAPPING").ifPresent(cmcm -> {
+            household.getAttribute("COMMUTE_MODE_CHOICE_MAPPING").ifPresent(cmcm -> {
                 CommuteModeChoiceMapping commuteModeChoiceMapping = (CommuteModeChoiceMapping) cmcm;
                 for (Person person : household.getPersons().values()){
 

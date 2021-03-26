@@ -127,7 +127,7 @@ public class HousingStrategyMuc implements HousingStrategy {
         double workDistanceUtility = 1;
 
         CommuteModeChoiceMapping commuteModeChoiceMapping = commuteModeChoice.assignCommuteModeChoice(dd, travelTimes, hh);
-        hh.setAttribute("COMUTE_MODE_CHOICE_MAPPING", commuteModeChoiceMapping);
+        hh.setAttribute("COMMUTE_MODE_CHOICE_MAPPING", commuteModeChoiceMapping);
 
 
         for (Person pp : hh.getPersons().values()) {
