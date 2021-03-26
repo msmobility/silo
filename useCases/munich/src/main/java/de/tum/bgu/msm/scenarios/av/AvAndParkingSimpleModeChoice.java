@@ -82,7 +82,7 @@ public class AvAndParkingSimpleModeChoice implements CommuteModeChoice {
                     double ptUtility = B_PT + B_TIME * commutingTimeProbabilityPt;
                     int avMinutes = (int) travelTimes.getTravelTime(from, job,
                             job.getStartTimeInSeconds().orElse((int) properties.transportModel.peakHour_s), TransportMode.car);
-                    double commutingTimeProbabilityAv = this.commutingTimeProbability.getCommutingTimeProbability(avMinutes, "av");
+                    double commutingTimeProbabilityAv = commutingTimeProbability.getCommutingTimeProbability(avMinutes, "av");
                     double avUtility = B_TIME * commutingTimeProbabilityAv;
 
                     ptUtility = Math.exp(ptUtility);
@@ -124,7 +124,7 @@ public class AvAndParkingSimpleModeChoice implements CommuteModeChoice {
                     double commutingTimeProbabilityPt = commutingTimeProbability.getCommutingTimeProbability(ptMinutes, TransportMode.pt);
                     double ptUtility = B_PT + B_TIME * commutingTimeProbabilityPt;
                     int avMinutes = (int) travelTimes.getTravelTimeFromRegion(region, jobZone, job.getStartTimeInSeconds().orElse((int) properties.transportModel.peakHour_s), TransportMode.car);
-                    double commutingTimeProbabilityAv = this.commutingTimeProbability.getCommutingTimeProbability(avMinutes, "av");
+                    double commutingTimeProbabilityAv = commutingTimeProbability.getCommutingTimeProbability(avMinutes, "av");
                     double avUtility = B_TIME * commutingTimeProbabilityAv;
 
                     ptUtility = Math.exp(ptUtility);

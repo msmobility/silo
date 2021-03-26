@@ -17,9 +17,9 @@ public final class MovesProperties {
 
     public final boolean trackRelocations;
 
-    public final float B_TIME = 10f;
-    public final float B_PT = 3f;
-    public final float B_EXP_HOUSING_UTILITY = 20f;
+    public final float B_TIME;
+    public final float B_PT;
+    public final float B_EXP_HOUSING_UTILITY;
 
     public enum PopulationControlTotalMethod {
         POPULATION, MIGRATION, RATE;
@@ -38,6 +38,10 @@ public final class MovesProperties {
         provideLowIncomeSubsidy = PropertiesUtil.getBooleanProperty(bundle, "provide.housing.subsidy.to.low.inc", false);
 
         trackRelocations = PropertiesUtil.getBooleanProperty(bundle, "track.relocations", true);
+
+        B_TIME = (float) PropertiesUtil.getDoubleProperty(bundle, "mode.choice.impedance.coefficient", 10f);
+        B_PT = (float) PropertiesUtil.getDoubleProperty(bundle, "mode.choice.pt.asc", 3f);
+        B_EXP_HOUSING_UTILITY = (float) PropertiesUtil.getDoubleProperty(bundle, "mc.housing.time.coefficient.ratio", 20f);
 
     }
 }

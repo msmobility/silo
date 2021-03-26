@@ -26,6 +26,7 @@ import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import org.apache.log4j.Logger;
 
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.LongAdder;
@@ -220,7 +221,7 @@ public class ParkingBasedHousingStrategyMuc implements HousingStrategy {
                     final int averageRegionalRent;
                     final float regAcc;
                     float priceUtil;
-                    if (rentsByRegion.containsKey(region)) {
+                    if (rentsByRegion.containsKey(region.getId())) {
                         averageRegionalRent = rentsByRegion.get(region.getId()).intValue();
                         priceUtil = (float) convertPriceToUtility(averageRegionalRent, incomeCategory);
                         regAcc = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region));

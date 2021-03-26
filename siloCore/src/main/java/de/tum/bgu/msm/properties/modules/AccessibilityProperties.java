@@ -42,8 +42,8 @@ public class AccessibilityProperties {
     public final double skimFileFactorTransit;
     public final Set<Integer> skimYears;
 
-    public final float betaTimeCarExponentialCommutingTime = -0.01f;
-    public final float betaTimePtExponentialCommutingTime = -0.01f;
+    public final float betaTimeCarExponentialCommutingTime;
+    public final float betaTimePtExponentialCommutingTime;
 
     public AccessibilityProperties(ResourceBundle bundle, int startYear) {
         PropertiesUtil.newPropertySubmodule("Accessibility properties");
@@ -74,6 +74,9 @@ public class AccessibilityProperties {
         skimFileFactorCar = PropertiesUtil.getDoubleProperty(bundle, "skims.factor.car", 1.);
         transitPeakSkim = PropertiesUtil.getStringProperty(bundle,"transit.peak.time.matrix.name", "travelTimeTransit");
         skimFileFactorTransit = PropertiesUtil.getDoubleProperty(bundle, "skims.factor.transit", 1/60.);
+
+        betaTimeCarExponentialCommutingTime = (float) PropertiesUtil.getDoubleProperty(bundle, "beta.time.utility.car", -0.01);
+        betaTimePtExponentialCommutingTime = (float) PropertiesUtil.getDoubleProperty(bundle, "beta.time.utility.pt", -0.01);
     }
 
     public String autoSkimFile(int year) {
