@@ -87,9 +87,9 @@ public class MitoDataConverterMucWithAVs implements MitoDataConverter {
             household.setHomeZone(zone);
 
 
-            //hard coded because the properties are not yet available?
-            household.getAdditionalAttributes().put("AVs", ((HouseholdMuc) siloHousehold).getAutonomous());
-            household.getAdditionalAttributes().put("autos", ((HouseholdMuc) siloHousehold).getAutos());
+            //the following attributes cannot be passed to mito
+            //household.getAdditionalAttributes().put("AVs", ((HouseholdMuc) siloHousehold).getAutonomous());
+            //household.getAdditionalAttributes().put("autos", ((HouseholdMuc) siloHousehold).getAutos());
 
             Coordinate coordinate;
             if (dwelling.getCoordinate() != null) {

@@ -72,18 +72,26 @@ public class ParkingDataManager implements ModelUpdateListener {
     private void readParkingDataByZone(DataContainer dataContainer, Properties properties) {
 
         try {
-            BufferedReader br = new BufferedReader(new FileReader(properties.geo.parkingZonalDataFile));
+            BufferedReader br = new BufferedReader(new FileReader(properties.main.baseDirectory + properties.geo.parkingZonalDataFile));
 
             String[] header = br.readLine().split(",");
             int zoneIndex = SiloUtil.findPositionInArray("zone", header);
             int parkingQualityIndex = SiloUtil.findPositionInArray("index", header);
 
             String line;
+            int zonesNotFound  = 0;
             while ((line = br.readLine()) != null){
                 String[] splitLine = line.split(",");
                 Zone zone = dataContainer.getGeoData().getZones().get(Integer.parseInt(splitLine[zoneIndex]));
-                zone.getAttributes().put("PARKING", Integer.parseInt(splitLine[parkingQualityIndex]));
+                if (zone != null){
+                    int parkingQuality = Integer.parseInt(splitLine[parkingQualityIndex]);
+                    zone.getAttributes().put("PARKING", new LocationParkingData(parkingQuality));
+                } else {
+                    zonesNotFound++;
+                }
             }
+
+            logger.warn("Zones with parking data not present in the simulation: "  + zonesNotFound);
 
 
         } catch (FileNotFoundException e) {
