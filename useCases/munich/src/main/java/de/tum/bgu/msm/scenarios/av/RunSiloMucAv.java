@@ -29,7 +29,8 @@ public class RunSiloMucAv {
         DataContainerWithSchools dataContainer = DataBuilderForAV.getModelDataForMuc(properties, config);
         DataBuilderForAV.read(properties, dataContainer);
         boolean useAv = Boolean.parseBoolean(args[2]);
-        ModelContainer modelContainer = ModelBuilderMucAv.getModelContainerAvForMuc(dataContainer, properties, config, useAv);
+        String avSwitchCalculator = args[3];
+        ModelContainer modelContainer = ModelBuilderMucAv.getModelContainerAvForMuc(dataContainer, properties, config, useAv, avSwitchCalculator);
 
         SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
         model.addResultMonitor(new MultiFileResultsMonitorMuc(dataContainer, properties));
