@@ -40,7 +40,7 @@ public final class MovesProperties {
         trackRelocations = PropertiesUtil.getBooleanProperty(bundle, "track.relocations", true);
 
         B_TIME = (float) PropertiesUtil.getDoubleProperty(bundle, "mode.choice.impedance.coefficient", 10f);
-        B_PT = (float) PropertiesUtil.getDoubleProperty(bundle, "mode.choice.pt.asc", 3f);
+        B_PT = (float) PropertiesUtil.getDoubleProperty(bundle, "mode.choice.pt.asc", 0f);
         B_EXP_HOUSING_UTILITY = (float) PropertiesUtil.getDoubleProperty(bundle, "mc.housing.time.coefficient.ratio", 20f);
 
     }

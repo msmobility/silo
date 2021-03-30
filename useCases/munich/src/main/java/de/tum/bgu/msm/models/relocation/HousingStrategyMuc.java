@@ -205,7 +205,7 @@ public class HousingStrategyMuc implements HousingStrategy {
                     final int averageRegionalRent;
                     final float regAcc;
                     float priceUtil;
-                    if (rentsByRegion.containsKey(region)) {
+                    if (rentsByRegion.containsKey(region.getId())) {
                         averageRegionalRent = rentsByRegion.get(region.getId()).intValue();
                         priceUtil = (float) convertPriceToUtility(averageRegionalRent, incomeCategory);
                         regAcc = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region));
