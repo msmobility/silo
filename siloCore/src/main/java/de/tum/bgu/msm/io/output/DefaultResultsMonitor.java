@@ -283,12 +283,16 @@ public class DefaultResultsMonitor implements ResultsMonitor {
         int[][] rentByIncome = new int[10][10];
         long [] rents = new long[10];
         for (Household hh : dataContainer.getHouseholdDataManager().getHouseholds()) {
-            int hhInc = HouseholdUtil.getAnnualHhIncome(hh);
-            int rent = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId()).getPrice();
-            int incCat = Math.min((hhInc / 10000), 9);
-            int rentCat = Math.min((rent / 250), 9);
-            rentByIncome[incCat][rentCat]++;
-            rents[incCat] += rent;
+            try {
+                int hhInc = HouseholdUtil.getAnnualHhIncome(hh);
+                int rent = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId()).getPrice();
+                int incCat = Math.min((hhInc / 10000), 9);
+                int rentCat = Math.min((rent / 250), 9);
+                rentByIncome[incCat][rentCat]++;
+                rents[incCat] += rent;
+            } catch (NullPointerException e){
+                logger.warn("A household has a null dwelling");
+            }
         }
         for (int i = 0; i < 10; i++) {
             String line = String.valueOf((i + 1) * 10000);

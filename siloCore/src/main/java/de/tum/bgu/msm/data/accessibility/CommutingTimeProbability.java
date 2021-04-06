@@ -55,7 +55,7 @@ public class CommutingTimeProbability implements ModelUpdateListener {
 	}
 
 	public float getCommutingTimeProbability(int minutes) {
-		if (minutes < workTripLengthFrequencyDistribution.length) {
+		if (minutes < workTripLengthFrequencyDistribution.length && minutes > 0) {
 			return workTripLengthFrequencyDistribution[minutes];
 		} else {
 			return 0;
