@@ -83,9 +83,10 @@ public class SiloMatsimMucTest {
         checkPlans();
         checkEvents();
 
-		if (CLEANUP_AFTER_TEST) {
-			IOUtils.deleteDirectoryRecursively(Paths.get(dir.getAbsolutePath()));
-		}
+//		if (CLEANUP_AFTER_TEST) {
+//			IOUtils.deleteDirectoryRecursively(Paths.get(dir.getAbsolutePath()));
+//          Cannot delete a logfile that it is in use!
+//		}
 	}
 
     private void checkEvents() {
