@@ -82,17 +82,18 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
     public void setup() {
         identifyHighestJobId();
         calculateEmploymentForecast();
-        identifyVacantJobs();
+        identifyVacantJobs(); //this step may be not needed - seem to be a duplicate of the method execution in the first "prepare year"
     }
 
     @Override
     public void prepareYear(int year) {
         calculateJobDensityByZone();
+        identifyVacantJobs();
     }
 
     @Override
     public void endYear(int year) {
-        if (Properties.get().jobData.jobsIntermediatesFileName != "") {
+        if (!Properties.get().jobData.jobsIntermediatesFileName.equals("")) {
             final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName +"/";
             String filejj = outputDirectory
                     + properties.jobData.jobsIntermediatesFileName
@@ -357,7 +358,7 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
                 int numberOfVacantJobs = getNumberOfVacantJobsByRegion(reg.getId());
                 if (numberOfVacantJobs > 0) {
                     int travelTime_min = (int) ((travelTimes.getTravelTimeToRegion(homeZone, reg,
-                            properties.transportModel.peakHour_s, TransportMode.car) + 0.5) / 60.);
+                            properties.transportModel.peakHour_s, TransportMode.car) + 0.5));
                     //todo make region probability sensitve to mode choice to find a vacant job
                     final double prob = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, travelTime_min), TransportMode.car) * (double) numberOfVacantJobs;
                     regionSampler.incrementalAdd(reg, prob);
@@ -368,7 +369,7 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
                 for (Region reg : regions) {
                     if (getNumberOfVacantJobsByRegion(reg.getId()) > 0) {
                         int travelTime_min = (int) ((travelTimes.getTravelTimeToRegion(homeZone, reg,
-                                properties.transportModel.peakHour_s, TransportMode.car) + 0.5) / 60.);
+                                properties.transportModel.peakHour_s, TransportMode.car) + 0.5));
                         final double prob = 1. / Math.max(1, travelTime_min);
                         regionSampler.incrementalAdd(reg, prob);
                     }
@@ -456,5 +457,10 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
     @Override
     public JobFactory getFactory() {
         return jobFactory;
+    }
+
+    @Override
+    public Map<Integer, List<Job>> getVacantJobsByRegion() {
+        return vacantJobsByRegion;
     }
 }

@@ -205,7 +205,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
                 // if utility it normalized by regional attibutes other than number of vacant dwellings, it could happen
                 // that a region is chosen with 0 vacant dwellings. To avoid this case, set utility to 0 if no vacant
                 // dwellings are available in that region.
-                utility = 0;
+                utility = 0.;
             } else {
                 utility = housingStrategy.calculateRegionalUtility(household, region);
             }

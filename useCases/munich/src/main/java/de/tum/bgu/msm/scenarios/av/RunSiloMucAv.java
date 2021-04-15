@@ -5,6 +5,7 @@ import de.tum.bgu.msm.SiloMuc;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.io.MultiFileResultsMonitorMuc;
 import de.tum.bgu.msm.io.output.HouseholdSatisfactionMonitor;
+import de.tum.bgu.msm.io.output.ModalSharesResultMonitor;
 import de.tum.bgu.msm.io.output.MultiFileResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
@@ -28,7 +29,8 @@ public class RunSiloMucAv {
         DataContainerWithSchools dataContainer = DataBuilderForAV.getModelDataForMuc(properties, config);
         DataBuilderForAV.read(properties, dataContainer);
         boolean useAv = Boolean.parseBoolean(args[2]);
-        ModelContainer modelContainer = ModelBuilderMucAv.getModelContainerAvForMuc(dataContainer, properties, config, useAv);
+        String avSwitchCalculator = args[3];
+        ModelContainer modelContainer = ModelBuilderMucAv.getModelContainerAvForMuc(dataContainer, properties, config, useAv, avSwitchCalculator);
 
         SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
         model.addResultMonitor(new MultiFileResultsMonitorMuc(dataContainer, properties));
@@ -38,6 +40,7 @@ public class RunSiloMucAv {
             model.addResultMonitor(new AVOwnershipResultsMonitor(modelContainer, dataContainer, properties));
         }
         model.addResultMonitor(new ModeChoiceResultsMonitor(dataContainer, properties));
+        model.addResultMonitor(new ModalSharesResultMonitor(dataContainer, properties));
         model.runModel();
         logger.info("Finished SILO.");
     }

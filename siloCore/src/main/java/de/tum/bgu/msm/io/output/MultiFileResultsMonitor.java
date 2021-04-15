@@ -10,7 +10,9 @@ import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdType;
+import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.person.Gender;
+import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.events.MicroEvent;
 import de.tum.bgu.msm.events.impls.household.MigrationEvent;
@@ -23,6 +25,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.Formatter;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class MultiFileResultsMonitor implements ResultsMonitor {
@@ -43,6 +46,7 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
     private PrintWriter eventCountW;
     private PrintWriter ddQualW;
     private PrintWriter migrantsW;
+    private PrintWriter vacantJobsRegionW;
 
     public MultiFileResultsMonitor(DataContainer dataContainer, Properties properties) {
         this.dataContainer = dataContainer;
@@ -56,7 +60,8 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
         String pathname = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/siloResults/";
         try {
             File file = new File(pathname + "popYear.csv");
-            file.getParentFile().mkdirs();
+            //
+            // file.getParentFile().mkdirs();
             popYearW = new PrintWriter(file);
             hhTypeW = new PrintWriter(new File(pathname + "hhType.csv"));
             hhSizeW = new PrintWriter(new File(pathname + "hhSize.csv"));
@@ -70,6 +75,7 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
             landRegionW = new PrintWriter(new File(pathname + "regionAvailableLand.csv"));
             eventCountW = new PrintWriter(new File(pathname + "eventCounts.csv"));
             migrantsW = new PrintWriter(new File(pathname + "persMigrants.csv"));
+            vacantJobsRegionW = new PrintWriter(new File(pathname + "vacantJobsRegion.csv"));
         } catch (FileNotFoundException e) {
             logger.error("Cannot write the result file: " + pathname, e);
         }
@@ -93,6 +99,7 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
         //summarizeJobsByRegionAndType(year);
         summarizeEventCounts(eventCounter, year);
         summarizeMigration(year, events);
+        summarizeVacantJobsByRegion(year);
 
         popYearW.flush();
         hhTypeW.flush();
@@ -106,6 +113,18 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
         landRegionW.flush();
         eventCountW.flush();
         migrantsW.flush();
+        vacantJobsRegionW.flush();
+    }
+
+    private void summarizeVacantJobsByRegion(int year) {
+        if (year == properties.main.baseYear) {
+            vacantJobsRegionW.println("year,region,vacants");
+        }
+        Map<Integer, List<Job>> vacantJobsByRegion = dataContainer.getJobDataManager().getVacantJobsByRegion();
+        for (int region : vacantJobsByRegion.keySet()) {
+            vacantJobsRegionW.println(year + "," + region + "," + vacantJobsByRegion.get(region).size());
+        }
+
     }
 
 
@@ -245,7 +264,7 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
             float rateMale = labP[1][0][ag] / (labP[0][0][ag] + labP[1][0][ag]);
             float rateFemale = labP[1][1][ag] / (labP[0][1][ag] + labP[1][1][ag]);
             //f.format("%s,%f,%f", grp[ag], rateMale, rateFemale);
-            labourParticipationRateW.println(year + "," + grp[ag] + "," + rateMale + "," +rateFemale );
+            labourParticipationRateW.println(year + "," + grp[ag] + "," + rateMale + "," + rateFemale);
         }
     }
 
@@ -418,7 +437,7 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
     }
 
 
-    private void summarizeMigration(int year, List<MicroEvent> events){
+    private void summarizeMigration(int year, List<MicroEvent> events) {
 
         if (year == properties.main.baseYear) {
             migrantsW.println("year,Key,Value");
@@ -426,10 +445,10 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
 
         int countInmigrants = 0;
         int countOutmigrants = 0;
-        for (MicroEvent event : events){
-            if (event instanceof MigrationEvent){
+        for (MicroEvent event : events) {
+            if (event instanceof MigrationEvent) {
                 MigrationEvent.Type type = ((MigrationEvent) event).getType();
-                if (type.equals(MigrationEvent.Type.IN)){
+                if (type.equals(MigrationEvent.Type.IN)) {
                     countInmigrants += ((MigrationEvent) event).getHousehold().getHhSize();
                 } else {
                     countOutmigrants += ((MigrationEvent) event).getHousehold().getHhSize();
@@ -439,8 +458,6 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
 
         migrantsW.println(year + ",InmigrantsPP," + countInmigrants);
         migrantsW.println(year + ",OutmigrantsPP," + countOutmigrants);
-
-
 
 
     }
@@ -461,6 +478,7 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
         landRegionW.close();
         eventCountW.close();
         migrantsW.close();
+        vacantJobsRegionW.close();
     }
 
 }

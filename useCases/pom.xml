@@ -168,6 +168,7 @@
         <module>austin</module>
         <module>capeTown</module>
         <module>fabiland</module>
+        <module>bangkok</module>
     </modules>
 
     <repositories>

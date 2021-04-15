@@ -14,8 +14,10 @@ import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.io.input.*;
 import de.tum.bgu.msm.matsim.MatsimTravelTimesAndCosts;
+import de.tum.bgu.msm.models.modeChoice.CommuteModeChoice;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.*;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.matsim.core.config.Config;
 
 public class DataBuilderForAV {
@@ -62,8 +64,10 @@ public class DataBuilderForAV {
         RealEstateDataManager realEstateDataManager = new RealEstateDataManagerImpl(
                new DefaultDwellingTypes(), dwellingData, householdData, geoData, new DwellingFactoryImpl(), properties);
 
-        JobDataManager jobDataManager = new JobDataManagerImpl(
-                properties, jobFactory, jobData, geoData, travelTimes, commutingTimeProbability);
+        CommuteModeChoice commuteModeChoice = new AvAndParkingSimpleModeChoice(commutingTimeProbability, travelTimes, geoData, properties, SiloUtil.provideNewRandom());
+
+        JobDataManager jobDataManager = new JobDataManagerWithCommuteModeChoice(
+                properties, jobFactory, jobData, geoData, travelTimes, commutingTimeProbability, commuteModeChoice);
 
         final HouseholdFactoryMuc hhFactory = new HouseholdFactoryMuc();
         HouseholdDataManager householdDataManager = new HouseholdDataManagerImpl(

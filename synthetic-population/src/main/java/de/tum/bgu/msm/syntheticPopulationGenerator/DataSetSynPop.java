@@ -46,6 +46,7 @@ public class DataSetSynPop {
     private ArrayList<Integer> municipalitiesWithZeroPopulation;
 
     private Matrix distanceTazToTaz;
+    private float[] areas;
 
     private HashMap<Integer, ArrayList> boroughsByCounty;
 
@@ -62,7 +63,7 @@ public class DataSetSynPop {
     private HashMap<Integer, HashMap<Integer, Integer>> householdsForFrequencyMatrix;
     private HashMap<Integer, Integer> municipalityCounty;
 
-
+    private HashMap<Integer, HashMap<String, Float>> tazAttributes;
 
     public TableDataSet getWeights() {
         return weights;
@@ -327,5 +328,21 @@ public class DataSetSynPop {
 
     public void setMunicipalityCounty(HashMap<Integer, Integer> municipalityCounty) {
         this.municipalityCounty = municipalityCounty;
+    }
+
+    public float[] getAreas() {
+        return areas;
+    }
+
+    public void setAreas(float[] areas) {
+        this.areas = areas;
+    }
+
+    public HashMap<Integer, HashMap<String, Float>> getTazAttributes() {
+        return tazAttributes;
+    }
+
+    public void setTazAttributes(HashMap<Integer, HashMap<String, Float>> tazAttributes) {
+        this.tazAttributes = tazAttributes;
     }
 }

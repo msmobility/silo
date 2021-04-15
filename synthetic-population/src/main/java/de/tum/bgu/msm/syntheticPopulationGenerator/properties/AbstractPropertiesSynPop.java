@@ -66,5 +66,11 @@ public abstract class AbstractPropertiesSynPop {
     public TableDataSet schoolLocationlist;
     public boolean runMicrolocation;
     public TableDataSet zonalDataIPU;
+    public String zoneFilename;
+    public String zoneShapeFile;
+    public String microDataHouseholds;
+    public String microDataPersons;
+    public TableDataSet incomeCoefficients;
+    public double jobScaler;
 
 }
