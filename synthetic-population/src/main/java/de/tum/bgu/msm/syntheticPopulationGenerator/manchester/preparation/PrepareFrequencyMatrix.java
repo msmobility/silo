@@ -85,9 +85,7 @@ public class PrepareFrequencyMatrix {
 
     private void updateHhAgeGender(int age, int gender, int i) {
         int rowAgeBracket = age - 1;
-        if(age>9){
-            System.out.println();
-        }
+
         if (gender == 1){
             int value = 1 + (int) frequencyMatrix.getValueAt(i,PropertiesSynPop.get().main.ageBracketsPerson[rowAgeBracket] + "Male" );
             frequencyMatrix.setValueAt(i, PropertiesSynPop.get().main.ageBracketsPerson[rowAgeBracket]+ "Male",value);

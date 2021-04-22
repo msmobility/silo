@@ -14,13 +14,6 @@
     <orderEntry type="module" module-name="siloCore" />
     <orderEntry type="library" name="Maven: log4j:log4j:1.2.15" level="project" />
     <orderEntry type="library" name="Maven: org.geotools:gt-opengis:20.2" level="project" />
-    <orderEntry type="library" name="Maven: commons-pool:commons-pool:1.5.4" level="project" />
-    <orderEntry type="library" name="Maven: systems.uom:systems-common-java8:0.7.2" level="project" />
-    <orderEntry type="library" name="Maven: tec.uom:uom-se:1.0.8" level="project" />
-    <orderEntry type="library" name="Maven: javax.measure:unit-api:1.0" level="project" />
-    <orderEntry type="library" name="Maven: tec.uom.lib:uom-lib-common:1.0.2" level="project" />
-    <orderEntry type="library" name="Maven: si.uom:si-quantity:0.7.1" level="project" />
-    <orderEntry type="library" name="Maven: si.uom:si-units-java8:0.7.1" level="project" />
     <orderEntry type="library" name="Maven: org.jfree:jcommon:1.0.23" level="project" />
     <orderEntry type="library" name="Maven: common-base:common-base:0.0.3" level="project" />
     <orderEntry type="library" name="Maven: sawdust:sawdust:1" level="project" />
@@ -42,6 +35,7 @@
     <orderEntry type="library" name="Maven: org.geotools.jdbc:gt-jdbc-postgis:20.2" level="project" />
     <orderEntry type="library" name="Maven: org.postgresql:postgresql:42.1.1" level="project" />
     <orderEntry type="library" name="Maven: org.geotools:gt-jdbc:20.2" level="project" />
+    <orderEntry type="library" name="Maven: org.geotools:gt-data:20.2" level="project" />
     <orderEntry type="library" name="Maven: commons-dbcp:commons-dbcp:1.4" level="project" />
     <orderEntry type="library" name="Maven: commons-collections:commons-collections:3.2.2" level="project" />
     <orderEntry type="library" name="Maven: org.matsim.contrib:matrixbasedptrouter:11.0" level="project" />
@@ -97,10 +91,10 @@
     <orderEntry type="library" name="Maven: org.geotools:gt-referencing:20.2" level="project" />
     <orderEntry type="library" name="Maven: org.ejml:ejml-ddense:0.34" level="project" />
     <orderEntry type="library" name="Maven: org.ejml:ejml-core:0.34" level="project" />
+    <orderEntry type="library" name="Maven: commons-pool:commons-pool:1.5.4" level="project" />
     <orderEntry type="library" name="Maven: org.geotools:gt-metadata:20.2" level="project" />
     <orderEntry type="library" name="Maven: net.sf.geographiclib:GeographicLib-Java:1.49" level="project" />
     <orderEntry type="library" name="Maven: org.geotools:gt-shapefile:20.2" level="project" />
-    <orderEntry type="library" name="Maven: org.geotools:gt-data:20.2" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: org.geotools:gt-epsg-hsql:20.2" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: org.hsqldb:hsqldb:2.4.1" level="project" />
     <orderEntry type="library" name="Maven: org.jfree:jfreechart:1.0.19" level="project" />
