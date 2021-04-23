@@ -149,7 +149,7 @@ public final class MatsimData {
         return (MultiNodePathCalculator) multiNodeFactory.createPathCalculator(carNetwork, travelDisutility, travelTime);
     }
 
-    MultiNodePathCalculator createFreeSpeedMultiNodePathCalculator() {
+    public MultiNodePathCalculator createFreeSpeedMultiNodePathCalculator() {
         FreespeedTravelTimeAndDisutility freespeed = new FreespeedTravelTimeAndDisutility(config.planCalcScore());
         return (MultiNodePathCalculator) multiNodeFactory.createPathCalculator(carNetwork, freespeed, freespeed);
     }
@@ -184,7 +184,7 @@ public final class MatsimData {
         return bd.build();
     }
 
-    SwissRailRaptor createSwissRailRaptor(RaptorStaticConfig.RaptorOptimization optimitzaion) {
+    public SwissRailRaptor createSwissRailRaptor(RaptorStaticConfig.RaptorOptimization optimitzaion) {
         switch (optimitzaion) {
             case OneToAllRouting:
                 return new SwissRailRaptor(raptorDataOneToAll, parametersForPerson, routeSelector, defaultRaptorStopFinder);
@@ -206,7 +206,7 @@ public final class MatsimData {
                 mode, scenario, config.plansCalcRoute().getModeRoutingParams().get(mode));
     }
 
-    SwissRailRaptorData getRaptorData(RaptorStaticConfig.RaptorOptimization optimization) {
+    public SwissRailRaptorData getRaptorData(RaptorStaticConfig.RaptorOptimization optimization) {
         switch (optimization) {
             case OneToAllRouting:
                 return raptorDataOneToAll;
@@ -217,7 +217,7 @@ public final class MatsimData {
         }
     }
 
-    RaptorParameters getRaptorParameters() {
+    public RaptorParameters getRaptorParameters() {
         return raptorParameters;
     }
 
