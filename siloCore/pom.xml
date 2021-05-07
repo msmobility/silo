@@ -184,11 +184,11 @@
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
-        <repository>
-            <id>oss-jfrog-artifactory</id>
-            <name>artifactory-snapshots</name>
-            <url>https://oss.jfrog.org/oss-snapshot-local</url>
-        </repository>
+<!--        <repository>-->
+<!--            <id>oss-jfrog-artifactory</id>-->
+<!--            <name>artifactory-snapshots</name>-->
+<!--            <url>https://oss.jfrog.org/oss-snapshot-local</url>-->
+<!--        </repository>-->
         <repository>
             <!-- Geotools is not on Maven central -->
             <id>osgeo</id>
@@ -203,11 +203,7 @@
         </repository>
         <repository>
             <id>matsim</id>
-            <url>http://dl.bintray.com/matsim/matsim</url>
-        </repository>
-        <repository>
-            <id>ojo-snapshots</id>
-            <url>http://oss.jfrog.org/libs-snapshot</url>
+            <url>https://repo.matsim.org/repository/matsim</url>
         </repository>
         <repository>
             <id>bintray-msmobility-maven</id>
@@ -273,52 +269,52 @@
             <groupId>org.matsim</groupId>
             <artifactId>matsim</artifactId>
             <version>${matsimVersion}</version>
-            <type>jar</type>
-            <scope>compile</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>javax.media</groupId>
-                    <artifactId>jai_core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>jgridshift</groupId>
-                    <artifactId>jgridshift</artifactId>
-                </exclusion>
-            </exclusions>
+<!--            <type>jar</type>-->
+<!--            <scope>compile</scope>-->
+<!--            <exclusions>-->
+<!--                <exclusion>-->
+<!--                    <groupId>javax.media</groupId>-->
+<!--                    <artifactId>jai_core</artifactId>-->
+<!--                </exclusion>-->
+<!--                <exclusion>-->
+<!--                    <groupId>jgridshift</groupId>-->
+<!--                    <artifactId>jgridshift</artifactId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
         </dependency>
-        <dependency>
-            <groupId>org.matsim</groupId>
-            <artifactId>matsim</artifactId>
-            <version>${matsimVersion}</version>
-            <type>test-jar</type>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>javax.media</groupId>
-                    <artifactId>jai_core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>jgridshift</groupId>
-                    <artifactId>jgridshift</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.matsim.contrib</groupId>
-            <artifactId>accessibility</artifactId>
-            <version>${matsimVersion}</version>
-            <scope>compile</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>javax.media</groupId>
-                    <artifactId>jai_core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>jgridshift</groupId>
-                    <artifactId>jgridshift</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.matsim</groupId>-->
+<!--            <artifactId>matsim</artifactId>-->
+<!--            <version>${matsimVersion}</version>-->
+<!--            <type>test-jar</type>-->
+<!--            <scope>test</scope>-->
+<!--            <exclusions>-->
+<!--                <exclusion>-->
+<!--                    <groupId>javax.media</groupId>-->
+<!--                    <artifactId>jai_core</artifactId>-->
+<!--                </exclusion>-->
+<!--                <exclusion>-->
+<!--                    <groupId>jgridshift</groupId>-->
+<!--                    <artifactId>jgridshift</artifactId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.matsim.contrib</groupId>-->
+<!--            <artifactId>accessibility</artifactId>-->
+<!--            <version>${matsimVersion}</version>-->
+<!--            <scope>compile</scope>-->
+<!--            <exclusions>-->
+<!--                <exclusion>-->
+<!--                    <groupId>javax.media</groupId>-->
+<!--                    <artifactId>jai_core</artifactId>-->
+<!--                </exclusion>-->
+<!--                <exclusion>-->
+<!--                    <groupId>jgridshift</groupId>-->
+<!--                    <artifactId>jgridshift</artifactId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>junit-addons</groupId>
             <artifactId>junit-addons</artifactId>
@@ -385,8 +381,8 @@
         <svnRevision>${buildNumber}</svnRevision>
         <geotools.version>21.5</geotools.version>
         <skipTestJar>false</skipTestJar> <!--Overridden in the bintray profile-->
-        <matsimVersion>13.0-2020w37-SNAPSHOT</matsimVersion>
-<!--        <matsimVersion>12.0</matsimVersion>-->
+<!--        <matsimVersion>13.0-2020w37-SNAPSHOT</matsimVersion>-->
+        <matsimVersion>13.0</matsimVersion>
         <java.version>1.8</java.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>

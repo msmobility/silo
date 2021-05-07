@@ -40,16 +40,16 @@
             <groupId>org.matsim.contrib</groupId>
             <artifactId>emissions</artifactId>
             <version>${matsimVersion}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>javax.media</groupId>
-                    <artifactId>jai_core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>jgridshift</groupId>
-                    <artifactId>jgridshift</artifactId>
-                </exclusion>
-            </exclusions>
+<!--            <exclusions>-->
+<!--                <exclusion>-->
+<!--                    <groupId>javax.media</groupId>-->
+<!--                    <artifactId>jai_core</artifactId>-->
+<!--                </exclusion>-->
+<!--                <exclusion>-->
+<!--                    <groupId>jgridshift</groupId>-->
+<!--                    <artifactId>jgridshift</artifactId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
         </dependency>
     </dependencies>
 </project>
