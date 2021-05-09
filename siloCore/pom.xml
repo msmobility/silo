@@ -183,7 +183,7 @@
         <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
-        </repository>
+        </repository>         
         <repository>
             <id>oss-jfrog-artifactory</id>
             <name>artifactory-snapshots</name>
@@ -203,7 +203,7 @@
         </repository>
         <repository>
             <id>matsim</id>
-            <url>http://dl.bintray.com/matsim/matsim</url>
+            <url>https://repo.matsim.org/repository/matsim</url>
         </repository>
         <repository>
             <id>ojo-snapshots</id>
