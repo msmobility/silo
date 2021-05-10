@@ -189,6 +189,10 @@
             <url>https://repo.matsim.org/repository/matsim</url>
         </repository>
         <repository>
+            <id>matsim-snapshots</id>
+            <url>https://repo.matsim.org/repository/matsim-snapshots/</url>
+        </repository>
+        <repository>
             <id>ojo-snapshots</id>
             <url>http://oss.jfrog.org/libs-snapshot</url>
         </repository>
