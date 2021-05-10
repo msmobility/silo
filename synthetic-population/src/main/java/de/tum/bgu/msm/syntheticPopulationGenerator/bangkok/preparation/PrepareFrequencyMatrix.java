@@ -1,7 +1,6 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.bangkok.preparation;
 
-import com.google.common.primitives.Ints;
-import com.pb.common.datafile.TableDataSet;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;

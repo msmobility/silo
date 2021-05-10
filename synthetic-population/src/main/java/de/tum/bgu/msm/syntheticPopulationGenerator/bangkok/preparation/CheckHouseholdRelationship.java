@@ -1,11 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.bangkok.preparation;
 
 
-import com.pb.common.datafile.TableDataSet;
-import de.tum.bgu.msm.data.household.Household;
-import de.tum.bgu.msm.data.household.HouseholdDataManager;
-import de.tum.bgu.msm.data.person.Person;
-import de.tum.bgu.msm.data.person.PersonRole;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
