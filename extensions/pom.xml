@@ -178,20 +178,23 @@
         </repository>
         <repository>
             <id>matsim</id>
-            <url>http://dl.bintray.com/matsim/matsim</url>
+            <url>https://repo.matsim.org/repository/matsim</url>
         </repository>
         <repository>
             <id>ojo-snapshots</id>
             <url>http://oss.jfrog.org/libs-snapshot</url>
         </repository>
         <repository>
-            <id>bintray-msmobility-maven</id>
-            <name>bintray</name>
-            <url>http://dl.bintray.com/msmobility/maven</url>
-        </repository>
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
+            <id>msm</id>
+            <url>https://dl.cloudsmith.io/public/msmobility/msm/maven/</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
         </repository>
     </repositories>
 
