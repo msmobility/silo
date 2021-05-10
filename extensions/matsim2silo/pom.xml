@@ -11,6 +11,13 @@
 
     <artifactId>matsim2silo</artifactId>
 
+    <repositories>
+        <repository>
+            <id>matsim-snapshots</id>
+            <url>https://oss.jfrog.org/artifactory/simple/oss-snapshot-local/org/matsim/</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>org.matsim.contrib</groupId>
