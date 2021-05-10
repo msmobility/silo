@@ -168,7 +168,7 @@
             <!-- Geotools is not on Maven central -->
             <id>osgeo</id>
             <name>Geotools repository</name>
-            <url>http://download.osgeo.org/webdav/geotools</url>
+            <url>https://download.osgeo.org/webdav/geotools</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
@@ -179,10 +179,6 @@
         <repository>
             <id>matsim</id>
             <url>https://repo.matsim.org/repository/matsim</url>
-        </repository>
-        <repository>
-            <id>ojo-snapshots</id>
-            <url>http://oss.jfrog.org/libs-snapshot</url>
         </repository>
         <repository>
             <id>msm</id>
