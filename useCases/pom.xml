@@ -190,7 +190,7 @@
         </repository>
         <repository>
             <id>matsim-snapshots</id>
-            <url>http://oss.jfrog.org/artifactory/simple/oss-snapshot-local/org/matsim/</url>
+            <url>https://oss.jfrog.org/artifactory/simple/oss-snapshot-local/org/matsim/</url>
         </repository>
         <repository>
             <id>ojo-snapshots</id>
