@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.perth;
 
-import com.pb.common.datafile.TableDataSet;
-import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
+import de.tum.bgu.msm.common.util.ResourceUtil;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;

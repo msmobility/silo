@@ -110,27 +110,8 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- 	<plugin>
-                    <groupId>com.igormaznitsa</groupId>
-                    <artifactId>jute</artifactId>
-                    <version>1.1.1</version>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>jute</goal>
-                            </goals>
-                            <configuration>
-                                <verbose>true</verbose>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-             -->
+
             <plugin>
-                <!-- Usage (change version numbers, of course) mvn release:prepare -Darguments="-DskipTests
-            -Pbintray" -DreleaseVersion=0.7.1 -DdevelopmentVersion=0.7.2-SNAPSHOT -B
-            mvn release:perform -Darguments="-DskipTests -Pbintray" -DreleaseVersion=0.7.1
-            -DdevelopmentVersion=0.7.2-SNAPSHOT -B -->
                 <artifactId>maven-release-plugin</artifactId>
                 <version>2.5.1</version>
             </plugin>
@@ -181,9 +162,17 @@
 
     <repositories>
         <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>         
+            <id>msm</id>
+            <url>https://dl.cloudsmith.io/public/msmobility/msm/maven/</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+        </repository>
         <repository>
             <id>oss-jfrog-artifactory</id>
             <name>artifactory-snapshots</name>
@@ -208,11 +197,6 @@
         <repository>
             <id>ojo-snapshots</id>
             <url>http://oss.jfrog.org/libs-snapshot</url>
-        </repository>
-        <repository>
-            <id>bintray-msmobility-maven</id>
-            <name>bintray</name>
-            <url>http://dl.bintray.com/msmobility/maven</url>
         </repository>
     </repositories>
 
@@ -255,14 +239,9 @@
             <version>1.17.1</version>
         </dependency>
         <dependency>
-            <groupId>common-base</groupId>
-            <artifactId>common-base</artifactId>
-            <version>0.0.3</version>
-        </dependency>
-        <dependency>
-            <groupId>sawdust</groupId>
-            <artifactId>sawdust</artifactId>
-            <version>1</version>
+            <groupId>de.tum.bgu.msm</groupId>
+            <artifactId>msm-commons</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>omx</groupId>
@@ -333,7 +312,7 @@
         <dependency>
             <groupId>com.github.msmobility</groupId>
             <artifactId>mito</artifactId>
-            <version>v28102020</version>
+            <version>master</version>
             <exclusions>
                 <exclusion>
                     <groupId>javax.media</groupId>
