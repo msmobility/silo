@@ -14,7 +14,7 @@
     <repositories>
         <repository>
             <id>matsim-snapshots</id>
-            <url>https://oss.jfrog.org/artifactory/simple/oss-snapshot-local/org/matsim/</url>
+            <url>https://oss.jfrog.org/artifactory/simple/oss-snapshot-local/</url>
         </repository>
     </repositories>
 
@@ -23,16 +23,6 @@
             <groupId>org.matsim.contrib</groupId>
             <artifactId>dvrp</artifactId>
             <version>${matsimVersion}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>javax.media</groupId>
-                    <artifactId>jai_core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>jgridshift</groupId>
-                    <artifactId>jgridshift</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
     </dependencies>
 </project>
