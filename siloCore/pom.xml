@@ -16,6 +16,14 @@
     <url>silo.zone</url>
     <inceptionYear>2015</inceptionYear>
 
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
