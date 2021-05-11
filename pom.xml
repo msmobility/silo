@@ -1,11 +1,73 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.github.msmobility</groupId>
+	<groupId>de.tum.bgu.msm</groupId>
 	<artifactId>silo-parent</artifactId>
 	<packaging>pom</packaging>
 	<version>0.1.0-SNAPSHOT</version>
 	<name>silo-parent</name>
+
+	<licenses>
+		<license>
+			<name>GNU General Public License</name>
+			<url>${basedir}/LICENSE</url>
+		</license>
+	</licenses>
+
+	<scm>
+		<url>https://github.com/msmobility/silo</url>
+		<connection>scm:git:git://github.com/msmobility/silo.git</connection>
+		<developerConnection>scm:git:git@github.com:msmobility/silo.git</developerConnection>
+	</scm>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>msm</id>
+			<url>https://maven.cloudsmith.io/msmobility/msm/</url>
+		</snapshotRepository>
+		<repository>
+			<id>msm-snapshots</id>
+			<url>https://maven.cloudsmith.io/msmobility/msm/</url>
+		</repository>
+	</distributionManagement>
+
+	<repositories>
+		<repository>
+			<id>msm</id>
+			<url>https://dl.cloudsmith.io/public/msmobility/msm/maven/</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>oss-jfrog-artifactory</id>
+			<name>artifactory-snapshots</name>
+			<url>https://oss.jfrog.org/oss-snapshot-local</url>
+		</repository>
+		<repository>
+			<!-- Geotools is not on Maven central -->
+			<id>osgeo</id>
+			<name>Geotools repository</name>
+			<url>https://repo.osgeo.org/repository/release/</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</repository>
+		<repository>
+			<id>ojo-snapshots</id>
+			<url>http://oss.jfrog.org/libs-snapshot</url>
+		</repository>
+
+	</repositories>
+
 	<modules>
 		<module>useCases</module>
 		<module>siloCore</module>
@@ -13,4 +75,63 @@
         <module>analysis</module>
         <module>extensions</module>
     </modules>
+
+	<build>
+		<defaultGoal>compiler:compile</defaultGoal>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>buildnumber-maven-plugin</artifactId>
+				<version>1.0</version>
+				<executions>
+					<execution>
+						<phase>validate</phase>
+						<goals>
+							<goal>create</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<doCheck>false</doCheck>
+					<doUpdate>false</doUpdate>
+					<revisionOnScmFailure>unknown</revisionOnScmFailure>
+					<timestampFormat>{0,date,yyyy-MM-dd HH:mm:ss}</timestampFormat>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.0</version>
+				<configuration>
+					<release>11</release>
+					<source>11</source>
+					<target>11</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.8</version>
+				<configuration>
+					<excludes>
+						<exclude>**/*$*</exclude> <!-- exclude all inner classes -->
+					</excludes>
+
+					<!--execute each test in separate JVM (slow, but otherwise it does not-->
+					<!--work, and no problem as long as there are only integration tests):-->
+					<forkMode>always</forkMode>
+
+					<!-- avoid out of memory errors: -->
+					<argLine>-Xmx2000m -Djava.awt.headless=true
+						-Dmatsim.preferLocalDtds=true -Dncsa.hdf.hdf5lib.H5.hdf5lib=${hdf5lib-absolute-path}</argLine>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<properties>
+		<geotools.version>21.5</geotools.version>
+		<matsimVersion>13.0-2020w37-SNAPSHOT</matsimVersion>
+		<jackson.version>2.9.5</jackson.version>
+	</properties>
 </project>
