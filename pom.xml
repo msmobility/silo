@@ -124,7 +124,7 @@
 
 					<!-- avoid out of memory errors: -->
 					<argLine>-Xmx2000m -Djava.awt.headless=true
-						-Dmatsim.preferLocalDtds=true -Dncsa.hdf.hdf5lib.H5.hdf5lib=${hdf5lib-absolute-path}</argLine>
+						-Dmatsim.preferLocalDtds=true</argLine>
 				</configuration>
 			</plugin>
 		</plugins>
