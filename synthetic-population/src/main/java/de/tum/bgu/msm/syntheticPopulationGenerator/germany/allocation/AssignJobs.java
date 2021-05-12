@@ -1,15 +1,16 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.germany.allocation;
 
 import com.google.common.math.LongMath;
+import com.google.inject.internal.cglib.core.$LocalVariablesSorter;
 import com.pb.common.datafile.TableDataSet;
 import com.pb.common.matrix.Matrix;
 import com.pb.common.matrix.RowVector;
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.job.Job;
-import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonMuc;
@@ -19,6 +20,7 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.util.*;
+import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
 public class AssignJobs {
@@ -27,15 +29,15 @@ public class AssignJobs {
 
     private final DataSetSynPop dataSetSynPop;
     private final DataContainer dataContainer;
-    private Matrix travelTimeImpedance;
+    private Matrix tripLengthImpedance;
 
     private HashMap<String, Integer> jobIntTypes;
     protected HashMap<Integer, int[]> idVacantJobsByZoneType;
     protected HashMap<Integer, Integer> numberVacantJobsByType;
     protected HashMap<Integer, int[]> idZonesVacantJobsByType;
     protected HashMap<Integer, Integer> numberVacantJobsByZoneByType;
+    protected HashMap<Integer, Integer> numberTotalJobsByZoneByType;
     protected HashMap<Integer, Integer> numberZonesByType;
-
 
     private String[] jobStringTypes;
     private ArrayList<Person> workerArrayList;
@@ -51,13 +53,14 @@ public class AssignJobs {
 
     public void run() {
         logger.info("   Running module: job de.tum.bgu.msm.syntheticPopulationGenerator.germany.disability");
-        calculateTravelTimeImpedance();
+        calculateTripLengthImpedance();
         identifyVacantJobsByZoneType();
         shuffleWorkers();
         logger.info("Number of workers " + workerArrayList.size());
         RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
         HouseholdDataManager households = dataContainer.getHouseholdDataManager();
-        TableDataSet cellsMatrix = PropertiesSynPop.get().main.cellsMatrix;
+        //TableDataSet cellsMatrix = PropertiesSynPop.get().main.cellsMatrix;
+
         for (Person pp : workerArrayList){
             String selectedJobTypeAsString = (String) ((PersonMuc) pp).getAdditionalAttributes().get("jobType");
             ///todo found some empty job types
@@ -93,29 +96,24 @@ public class AssignJobs {
                 logger.info("   Assigned " + assignedJobs + " jobs.");
             }
             assignedJobs++;
+
+
         }
         logger.info("   Finished job de.tum.bgu.msm.syntheticPopulationGenerator.germany.disability. Assigned " + assignedJobs + " jobs.");
+
     }
 
 
 
-   private void calculateTravelTimeImpedance(){
+   private void calculateTripLengthImpedance(){
 
-        travelTimeImpedance = new Matrix(dataSetSynPop.getTravelTimeTazToTaz().getRowCount(), dataSetSynPop.getTravelTimeTazToTaz().getColumnCount());
-        Map<Integer, Float> utilityHBW = dataSetSynPop.getTripLengthDistribution().column("HBW");
-        for (int i = 1; i <= dataSetSynPop.getTravelTimeTazToTaz().getRowCount(); i ++){
-            for (int j = 1; j <= dataSetSynPop.getTravelTimeTazToTaz().getColumnCount(); j++){
-                int travelTime = (int) dataSetSynPop.getTravelTimeTazToTaz().getValueAt(i,j);
-                float utility = 0.00000001f;
-                travelTimeImpedance.setValueAt(i, j, travelTime);
-                //if (travelTime < 140){
-                //    utility = utilityHBW.get(travelTime);
-                //}
-                if (i==j && travelTime >= 1_000_000_000){
-                    //utility = utilityHBW.get(5);
-                    travelTimeImpedance.setValueAt(i, j, 5);
-                }
-                //travelTimeImpedance.setValueAt(i, j, utility);
+
+        tripLengthImpedance = new Matrix(dataSetSynPop.getTripLengthTazToTaz().getRowCount(), dataSetSynPop.getTripLengthTazToTaz().getColumnCount());
+        for (int i = 1; i <= dataSetSynPop.getTripLengthTazToTaz().getRowCount(); i ++){
+            for (int j = 1; j <= dataSetSynPop.getTripLengthTazToTaz().getColumnCount(); j++){
+                int tripLength = (int) dataSetSynPop.getTripLengthTazToTaz().getValueAt(i,j);
+                tripLengthImpedance.setValueAt(i, j, tripLength);
+
             }
         }
     }
@@ -134,12 +132,13 @@ public class AssignJobs {
         int[] workplace = new int[2];
         if (numberZonesByType.get(selectedJobType) > 0) {
             double[] probs = new double[numberZonesByType.get(selectedJobType)];
-            double alpha = 0.5000;   //0.50, 0.40, 0.30, 0.25, 0.15
-            double gamma =-0.0090;  //-0.0150
+            double alpha = 0.2700;  // 0.6500;  0.6000; 0.5500
+            double gamma =-0.0200;  //-0.0300; -0.0200;-0.0050
             int[] ids = idZonesVacantJobsByType.get(selectedJobType);
-            RowVector traveltimes = travelTimeImpedance.getRow(homeTaz);
-            IntStream.range(0, probs.length).parallel().forEach(id -> probs[id] = Math.exp(Math.exp(traveltimes.getValueAt((ids[id]-selectedJobType)/100 )*gamma) * Math.pow(numberVacantJobsByZoneByType.get(ids[id]), alpha)));
-            workplace = select(probs, ids);
+            RowVector triplength = tripLengthImpedance.getRow(homeTaz);
+            IntStream.range(0, probs.length).parallel().forEach(id -> probs[id] = Math.exp(Math.exp(triplength.getValueAt((ids[id]-selectedJobType)/100 )*gamma) * Math.pow(numberTotalJobsByZoneByType.get(ids[id]),alpha) )); //100%: *0.2; Bayern*1.2; Bayern_noType *1.2*0.05; Bayern_oneType_moreVacant
+            //IntStream.range(0, probs.length).parallel().forEach(id -> probs[id] = Math.exp(Math.exp(triplength.getValueAt((ids[id]-selectedJobType)/100 )*gamma)));
+            workplace = randomSelect(triplength, probs, ids,selectedJobType);
         } else {
             workplace[0] = -2;
         }
@@ -180,22 +179,19 @@ public class AssignJobs {
         idZonesVacantJobsByType = new HashMap<>();
         numberZonesByType = new HashMap<>();
         numberVacantJobsByZoneByType = new HashMap<>();
-        jobIntTypes = new HashMap<>();
-        for (int i = 0; i < PropertiesSynPop.get().main.jobStringType.length; i++) {
-            jobIntTypes.put(PropertiesSynPop.get().main.jobStringType[i], i);
-        }
-        int[] cellsID = PropertiesSynPop.get().main.cellsMatrix.getColumnAsInt("ID_cell");
+        numberTotalJobsByZoneByType = new HashMap<>();
 
         //create the counter hashmaps
-
         for (int i = 0; i < PropertiesSynPop.get().main.jobStringType.length; i++){
             int type = jobIntTypes.get(PropertiesSynPop.get().main.jobStringType[i]);
             numberZonesByType.put(type,0);
             numberVacantJobsByType.put(type,0);
             for (int taz : jobsByTaz.getColumnAsInt("taz")){
                 numberVacantJobsByZoneByType.put(type + taz * 100, 0);
+                numberTotalJobsByZoneByType.put(type + taz * 100, 0);
             }
         }
+
         //get the totals
         int count = 0;
         for (Job jj: jobs) {
@@ -210,6 +206,7 @@ public class AssignJobs {
             //update the number of vacant jobs per job type
             numberVacantJobsByType.put(type, numberVacantJobsByType.get(type) + 1);
             numberVacantJobsByZoneByType.put(typeZone, numberVacantJobsByZoneByType.get(typeZone) + 1);
+            numberTotalJobsByZoneByType.put(typeZone, numberTotalJobsByZoneByType.get(typeZone) + 1);
             count++;
 
         }
@@ -226,6 +223,7 @@ public class AssignJobs {
                 int[] dummy2 = SiloUtil.createArrayWithValue(numberVacantJobsByZoneByType.get(typeZone), 0);
                 idVacantJobsByZoneType.put(typeZone, dummy2);
                 numberVacantJobsByZoneByType.put(typeZone, 0);
+                numberTotalJobsByZoneByType.put(typeZone, 0);
             }
         }
         //fill the Hashmaps with IDs
@@ -246,6 +244,7 @@ public class AssignJobs {
             }
             //update the number of vacant jobs per job type
             numberVacantJobsByZoneByType.put(typeZone, numberVacantJobsByZoneByType.get(typeZone) + 1);
+            numberTotalJobsByZoneByType.put(typeZone, numberTotalJobsByZoneByType.get(typeZone) + 1);
 
         }
     }
@@ -271,74 +270,83 @@ public class AssignJobs {
         }
     }
 
-
-    public int guessjobType(Gender gender, int educationLevel){
-        int jobType = 0;
-        float[] cumProbability;
-        switch (gender){
-            case MALE:
-                switch (educationLevel) {
-                    case 0:
-                        cumProbability = new float[]{0.01853f,0.265805f,0.279451f,0.382040f,0.591423f,0.703214f,0.718372f,0.792528f,0.8353f,1.0f};
-                        break;
-                    case 1:
-                        cumProbability = new float[]{0.01853f,0.265805f,0.279451f,0.382040f,0.591423f,0.703214f,0.718372f,0.792528f,0.8353f,1.0f};
-                        break;
-                    case 2:
-                        cumProbability = new float[]{0.025005f,0.331942f,0.355182f,0.486795f,0.647928f,0.0748512f,0.779124f,0.838452f,0.900569f,1f};
-                        break;
-                    case 3:
-                        cumProbability = new float[]{0.008533f,0.257497f,0.278324f,0.323668f,0.39151f,0.503092f,0.55153f,0.588502f,0.795734f,1f};
-                        break;
-                    case 4:
-                        cumProbability = new float[]{0.004153f,0.154197f,0.16906f,0.19304f,0.246807f,0.347424f,0.387465f,0.418509f,0.4888415f,1f};
-                        break;
-                    default: cumProbability = new float[]{0.025005f,0.331942f,0.355182f,0.486795f,0.647928f,0.0748512f,0.779124f,0.838452f,0.900569f,1f};
-                }
-                break;
-            case FEMALE:
-                switch (educationLevel) {
-                    case 0:
-                        cumProbability = new float[]{0.012755f,0.153795f,0.159108f,0.174501f,0.448059f,0.49758f,0.517082f,0.616346f,0.655318f,1f};
-                        break;
-                    case 1:
-                        cumProbability = new float[]{0.012755f,0.153795f,0.159108f,0.174501f,0.448059f,0.49758f,0.517082f,0.616346f,0.655318f,1f};
-                        break;
-                    case 2:
-                        cumProbability = new float[]{0.013754f,0.137855f,0.145129f,0.166915f,0.389282f,0.436095f,0.479727f,0.537868f,0.603158f,1f};
-                        break;
-                    case 3:
-                        cumProbability = new float[]{0.005341f,0.098198f,0.109149f,0.125893f,0.203838f,0.261698f,0.314764f,0.366875f,0.611298f,1f};
-                        break;
-                    case 4:
-                        cumProbability = new float[]{0.002848f,0.061701f,0.069044f,0.076051f,0.142332f,0.197382f,0.223946f,0.253676f,0.327454f,1f};
-                        break;
-                    default: cumProbability = new float[]{0.013754f,0.137855f,0.145129f,0.166915f,0.389282f,0.436095f,0.479727f,0.537868f,0.603158f,1f};
-                }
-                break;
-            default: cumProbability = new float[]{0.025005f,0.331942f,0.355182f,0.486795f,0.647928f,0.0748512f,0.779124f,0.838452f,0.900569f,1f};
-        }
-        float threshold = SiloUtil.getRandomNumberAsFloat();
-        for (int i = 0; i < cumProbability.length; i++) {
-            if (cumProbability[i] > threshold) {
-                return i;
-            }
-        }
-        return cumProbability.length - 1;
-
-    }
-
-
-    public static int[] select (double[] probabilities, int[] id) {
+    public static int[] randomSelect(RowVector triplength, double[] probabilities, int[] id, int selectedJobType) {
         // select item based on probabilities (for zero-based float array)
         double sumProb = Arrays.stream(probabilities).sum();
+
         int[] results = new int[2];
         double selPos = sumProb * SiloUtil.getRandomNumberAsFloat();
         double sum = 0;
         for (int i = 0; i < probabilities.length; i++) {
+
             sum += probabilities[i];
+
             if (sum > selPos) {
-                //return i;
+                results[0] = id[i];
+                results[1] = i;
+                return results;
+            }
+        }
+        results[0] = id[probabilities.length - 1];
+        results[1] = probabilities.length - 1;
+        return results;
+    }
+
+    public static int[] limitedRansomSelect(RowVector triplength, double[] probabilities, int[] id, int selectedJobType) {
+        // select item based on probabilities (for zero-based float array)
+        Vector<Float> seqDistance = new Vector<>();
+
+        for (int k=0; k < probabilities.length; k++){
+            seqDistance.add(triplength.getValueAt((id[k]-selectedJobType)/100));
+        }
+        Collections.sort(seqDistance);
+
+        Float threshold;
+
+        if(seqDistance.size()>=100){
+            threshold = seqDistance.get(100);
+        }else{
+            threshold = seqDistance.get(seqDistance.size());
+        }
+
+        double sumProb = 0;
+        for (int j=0; j < probabilities.length; j++){
+            if (triplength.getValueAt((id[j]-selectedJobType)/100)<=threshold){
+                sumProb += probabilities[j];
+            }else{
+                sumProb += 0;
+            }
+        }
+
+        int[] results = new int[2];
+        double selPos = sumProb * SiloUtil.getRandomNumberAsFloat();
+        double sum = 0;
+        for (int i = 0; i < probabilities.length; i++) {
+
+            if (triplength.getValueAt((id[i]-selectedJobType)/100)<=100){
+                sum += probabilities[i];
+            }
+
+            if (sum > selPos) {
+                results[0] = id[i];
+                results[1] = i;
+                return results;
+            }
+        }
+        results[0] = id[probabilities.length - 1];
+        results[1] = probabilities.length - 1;
+        return results;
+    }
+
+    public static int[] maxUtilitySelect(RowVector triplength, double[] probabilities, int[] id, int selectedJobType) {
+        // select item based on probabilities (for zero-based float array)
+        double maxProb = Arrays.stream(probabilities).max().getAsDouble();
+
+        int[] results = new int[2];
+
+        for (int i = 0; i < probabilities.length; i++) {
+
+            if (probabilities[i] == maxProb) {
                 results[0] = id[i];
                 results[1] = i;
                 return results;

@@ -7,8 +7,8 @@ import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.household.HouseholdMuc;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
+import de.tum.bgu.msm.syntheticPopulationGenerator.germany.preparation.MicroDataManager;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.disability.DisabilityBase;
-import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.MicroDataManager;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -62,7 +62,7 @@ public class GenerateHouseholdsPersons {
                 int hhSelected = hhSelection.get(draw);
                 int tazSelected = tazSelection.get(draw);
                 Household household = generateHousehold(tazSelected);
-                generatePersons(hhSelected, household);
+                generatePersons(hhSelected, household, tazSelected);
             }
             logger.info("   Municipality " + municipality + ". Generated " + householdCounter  + " households.");
         }
@@ -78,6 +78,7 @@ public class GenerateHouseholdsPersons {
         householdCounter++;
         int coordX = dataSetSynPop.getZoneCoordinates().get(taz,"coordX");
         int coordY = dataSetSynPop.getZoneCoordinates().get(taz,"coordY");
+        //check whats in Zone features
         ((HouseholdMuc)household).setAdditionalAttributes("zone", taz);
         ((HouseholdMuc)household).setAdditionalAttributes("coordX", coordX);
         ((HouseholdMuc)household).setAdditionalAttributes("coordY", coordY);
@@ -85,7 +86,7 @@ public class GenerateHouseholdsPersons {
     }
 
 
-    private void generatePersons(int hhSelected, Household hh){
+    private void generatePersons(int hhSelected, Household hh, int taz){
 
         int hhSize = dataSetSynPop.getHouseholdTable().get(hhSelected, "hhSize");
         PersonFactory factory = householdData.getPersonFactory();
@@ -93,10 +94,17 @@ public class GenerateHouseholdsPersons {
             int id = householdData.getNextPersonId();
             int personSelected = dataSetSynPop.getHouseholdTable().get(hhSelected, "personCount") + person;
             int age = dataSetSynPop.getPersonTable().get(personSelected, "age");
+
+            float BBSR = PropertiesSynPop.get().main.cellsMatrix.getValueAt(taz,"BBSR_Type");
+
+
             Gender gender = Gender.valueOf(dataSetSynPop.getPersonTable().get(personSelected, "gender"));
             Occupation occupation = Occupation.valueOf(dataSetSynPop.getPersonTable().get(personSelected, "occupation"));
             int income = microDataManager.translateIncome(dataSetSynPop.getPersonTable().get(personSelected, "income"));
-            boolean license = MicroDataManager.obtainLicense(gender, age);
+
+            boolean license = MicroDataManager.obtainLicense(gender, age, BBSR);
+
+
             String jobtype = microDataManager.translateJobType(dataSetSynPop.getPersonTable().get(personSelected, "sectorComplete"));
             int school = dataSetSynPop.getPersonTable().get(personSelected, "school");
             PersonMuc pers = (PersonMuc) factory.createPerson(id, age, gender, occupation,PersonRole.SINGLE, 0, income); //(int id, int age, int gender, Race race, int occupation, int workplace, int income)

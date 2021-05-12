@@ -249,58 +249,214 @@ public class MicroDataManager {
     }
 
 
-    public static boolean obtainLicense(Gender gender, int age){
+    public static boolean obtainLicense(Gender gender, int age, float BBSR){
         boolean license = false;
         int row = 1;
         int threshold = 0;
-        if (age > 17) {
-            if (age < 29) {
-                if (gender == Gender.MALE) {
-                    threshold = 86;
-                } else {
-                    threshold = 87;
-                }
-            } else if (age < 39) {
-                if (gender == Gender.MALE) {
-                    threshold = 95;
-                } else {
-                    threshold = 94;
-                }
-            } else if (age < 49) {
-                if (gender == Gender.MALE) {
-                    threshold = 97;
-                } else {
-                    threshold = 95;
-                }
-            } else if (age < 59) {
-                if (gender == Gender.MALE) {
-                    threshold = 96;
-                } else {
-                    threshold = 89;
-                }
-            } else if (age < 64) {
-                if (gender == Gender.MALE) {
-                    threshold = 95;
-                } else {
-                    threshold = 86;
-                }
-            } else if (age < 74) {
-                if (gender == Gender.MALE) {
-                    threshold = 95;
-                } else {
-                    threshold = 71;
-                }
-            } else {
-                if (gender == Gender.MALE) {
-                    threshold = 88;
-                } else {
-                    threshold = 44;
-                }
-            }
-            if (SiloUtil.getRandomNumberAsDouble() * 100 < threshold) {
-                license = true;
-            }
+
+        switch((int) BBSR){
+
+            case 10:
+
+               if (age > 17) {
+                    if (age < 29) {
+                        if (gender == Gender.MALE) {
+                            threshold = 80;
+                        } else {
+                            threshold = 76;
+                        }
+                    } else if (age < 39) {
+                        if (gender == Gender.MALE) {
+                            threshold = 88;
+                        } else {
+                            threshold = 91;
+                        }
+                    } else if (age < 49) {
+                        if (gender == Gender.MALE) {
+                            threshold = 92;
+                        } else {
+                            threshold = 91;
+                        }
+                    } else if (age < 59) {
+                        if (gender == Gender.MALE) {
+                            threshold = 92;
+                        } else {
+                            threshold = 86;
+                        }
+                    } else if (age < 64) {
+                        if (gender == Gender.MALE) {
+                            threshold = 87;
+                        } else {
+                            threshold = 84;
+                        }
+                    } else if (age < 74) {
+                        if (gender == Gender.MALE) {
+                            threshold = 94;
+                        } else {
+                            threshold = 80;
+                        }
+                    } else {
+                        if (gender == Gender.MALE) {
+                            threshold = 93;
+                        } else {
+                            threshold = 64;
+                        }
+                    }
+                break;
+               }
+
+            case 20:
+
+               if (age > 17) {
+                    if (age < 29) {
+                        if (gender == Gender.MALE) {
+                            threshold = 84;
+                        } else {
+                            threshold = 87;
+                        }
+                    } else if (age < 39) {
+                        if (gender == Gender.MALE) {
+                            threshold = 91;
+                        } else {
+                            threshold = 91;
+                        }
+                    } else if (age < 49) {
+                        if (gender == Gender.MALE) {
+                            threshold = 95;
+                        } else {
+                            threshold = 96;
+                        }
+                    } else if (age < 59) {
+                        if (gender == Gender.MALE) {
+                            threshold = 97;
+                        } else {
+                            threshold = 94;
+                        }
+                    } else if (age < 64) {
+                        if (gender == Gender.MALE) {
+                            threshold = 97;
+                        } else {
+                            threshold = 93;
+                        }
+                    } else if (age < 74) {
+                        if (gender == Gender.MALE) {
+                            threshold = 97;
+                        } else {
+                            threshold = 91;
+                        }
+                    } else {
+                        if (gender == Gender.MALE) {
+                            threshold = 96;
+                        } else {
+                            threshold = 77;
+                        }
+                    }
+                break;
+               }
+
+            case 30:
+
+               if (age > 17) {
+                    if (age < 29) {
+                        if (gender == Gender.MALE) {
+                            threshold = 81;
+                        } else {
+                            threshold = 85;
+                        }
+                    } else if (age < 39) {
+                        if (gender == Gender.MALE) {
+                            threshold = 91;
+                        } else {
+                            threshold = 93;
+                        }
+                    } else if (age < 49) {
+                        if (gender == Gender.MALE) {
+                            threshold = 96;
+                        } else {
+                            threshold = 95;
+                        }
+                    } else if (age < 59) {
+                        if (gender == Gender.MALE) {
+                            threshold = 96;
+                        } else {
+                            threshold = 92;
+                        }
+                    } else if (age < 64) {
+                        if (gender == Gender.MALE) {
+                            threshold = 95;
+                        } else {
+                            threshold = 95;
+                        }
+                    } else if (age < 74) {
+                        if (gender == Gender.MALE) {
+                            threshold = 99;
+                        } else {
+                            threshold = 88;
+                        }
+                    } else {
+                        if (gender == Gender.MALE) {
+                            threshold = 96;
+                        } else {
+                            threshold = 69;
+                        }
+                    }
+                break;
+               }
+
+            case 40:
+
+               if (age > 17) {
+                    if (age < 29) {
+                        if (gender == Gender.MALE) {
+                            threshold = 80;
+                        } else {
+                            threshold = 89;
+                        }
+                    } else if (age < 39) {
+                        if (gender == Gender.MALE) {
+                            threshold = 93;
+                        } else {
+                            threshold = 94;
+                        }
+                    } else if (age < 49) {
+                        if (gender == Gender.MALE) {
+                            threshold = 96;
+                        } else {
+                            threshold = 94;
+                        }
+                    } else if (age < 59) {
+                        if (gender == Gender.MALE) {
+                            threshold = 93;
+                        } else {
+                            threshold = 95;
+                        }
+                    } else if (age < 64) {
+                        if (gender == Gender.MALE) {
+                            threshold = 96;
+                        } else {
+                            threshold = 88;
+                        }
+                    } else if (age < 74) {
+                        if (gender == Gender.MALE) {
+                            threshold = 98;
+                        } else {
+                            threshold = 88;
+                        }
+                    } else {
+                        if (gender == Gender.MALE) {
+                            threshold = 97;
+                        } else {
+                            threshold = 65;
+                        }
+                    }
+                break;
+               }
+           default:
         }
+
+        if (SiloUtil.getRandomNumberAsDouble() * 100 < threshold) {
+        license = true;
+    }
         return license;
     }
 
@@ -380,7 +536,7 @@ public class MicroDataManager {
         } else if (sector < 550){
             sectorString = "Trns";
         } else if (sector < 580){
-            sectorString = "Hosp";
+            sectorString =  "Hosp";
         } else if (sector < 640){
             sectorString = "Info";
         } else if (sector < 680){

@@ -28,6 +28,8 @@ public class ValidateTripLengthDistribution {
     private TableDataSet cellsMatrix;
     private TableDataSet municipalityODMatrix;
     private TableDataSet countyODMatrix;
+    long totalTripLength =0 ;
+    long numWorkers =0;
 
     public ValidateTripLengthDistribution(DataContainer dataContainer, DataSetSynPop dataSetSynPop){
         this.dataSetSynPop = dataSetSynPop;
@@ -38,23 +40,26 @@ public class ValidateTripLengthDistribution {
         logger.info("   Running module: read population");
         initializeODmatrices();
         summarizeCommutersTripLength();
-        //summarizeStudentsTripLength();
+        summarizeStudentsTripLength();
+        System.out.println("total trip length: "+ (totalTripLength) );
+        System.out.println("number of workers: "+ (numWorkers) );
+
     }
 
 
     private void summarizeCommutersTripLength(){
         ArrayList<Person> workerArrayList = obtainWorkers();
-        Frequency travelTimes = obtainFlows(workerArrayList);
+        Frequency travelTimes = obtainWorkerFlows(workerArrayList);
         summarizeFlows(travelTimes, "microData/"+PropertiesSynPop.get().main.state+"/interimFiles/tripLengthDistributionWork.csv");
-        SiloUtil.writeTableDataSet(municipalityODMatrix, "microData/"+PropertiesSynPop.get().main.state+"/interimFiles/odMatrixMunicipalityFinal.csv");
-        SiloUtil.writeTableDataSet(countyODMatrix, "microData/"+PropertiesSynPop.get().main.state+"/interimFiles/odMatrixCountyFinal.csv");
+        //SiloUtil.writeTableDataSet(municipalityODMatrix, "microData/"+PropertiesSynPop.get().main.state+"/interimFiles/odMatrixMunicipalityFinal.csv");
+        //SiloUtil.writeTableDataSet(countyODMatrix, "microData/"+PropertiesSynPop.get().main.state+"/interimFiles/odMatrixCountyFinal.csv");
     }
 
 
     private void summarizeStudentsTripLength(){
-        for (int school = 1; school <= 3 ; school++){
+        for (int school = 3; school <= 3 ; school++){
             ArrayList<Person> studentArrayList = obtainStudents(school);
-            Frequency travelTimes = obtainFlows(studentArrayList);
+            Frequency travelTimes = obtainStudentFlows(studentArrayList);
             summarizeFlows(travelTimes, "microData/"+PropertiesSynPop.get().main.state+"/interimFiles/tripLengthDistributionSchool" + school + ".csv");
         }
     }
@@ -65,43 +70,53 @@ public class ValidateTripLengthDistribution {
         for (Person pp : dataContainer.getHouseholdDataManager().getPersons()){
             if (pp.getOccupation() == Occupation.EMPLOYED){
                 workerArrayList.add(pp);
+                numWorkers = numWorkers+1;
             }
         }
         return workerArrayList;
     }
 
 
-    private Frequency obtainFlows(ArrayList<Person> personArrayList){
+    private Frequency obtainWorkerFlows(ArrayList<Person> personArrayList){
         Frequency commuteDistance = new Frequency();
         RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
         JobDataManager jobDataManager = dataContainer.getJobDataManager();
-        TableDataSet cellsMatrix = PropertiesSynPop.get().main.cellsMatrix;
-        int origin=-2;
         for (Person pp : personArrayList){
             //TODO not part of the public person api anymore
-            if (pp.getJobId() > 0){
+            if (pp.getJobId() > 0 && jobDataManager.getJobFromId(pp.getJobId()).getZoneId()>0){
                 Household hh = pp.getHousehold();
-                //int ddOrigin = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
-                //for(int cells : cellsMatrix.getColumnAsInt("ID_cell")) {
-                    //if ( cells == ddOrigin) {
-                        //origin = (int) cellsMatrix.getIndexedValueAt(cells, "TAZ");
-                origin = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
-                    //    break;
-                    //}
-                //}
+                int origin = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
                 int destination = jobDataManager.getJobFromId(pp.getJobId()).getZoneId();
-                int value = (int) dataSetSynPop.getTravelTimeTazToTaz().getValueAt(origin, destination);
+                int value = (int) dataSetSynPop.getTripLengthTazToTaz().getValueAt(origin, destination);
                 commuteDistance.addValue(value);
+                totalTripLength = value + totalTripLength;
             }
         }
         return commuteDistance;
     }
 
+    private Frequency obtainStudentFlows(ArrayList<Person> personArrayList){
+        Frequency studentCommuteTime = new Frequency();
+        RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
+        JobDataManager jobDataManager = dataContainer.getJobDataManager();
+        for (Person pp : personArrayList){
+            //TODO not part of the public person api anymore
+            //if (pp.getJobId() > 0){
+                Household hh = pp.getHousehold();
+                int origin = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
+                int destination = ((PersonMuc) pp).getSchoolPlace();
+                int value = (int) dataSetSynPop.getTripLengthTazToTaz().getValueAt(origin, destination);
+                studentCommuteTime.addValue(value);
+            //}
+        }
+        return studentCommuteTime;
+    }
+
 
     private void summarizeFlows(Frequency travelTimes, String fileName){
         //to obtain the trip length distribution
-        int[] timeThresholds1 = new int[799];
-        double[] frequencyTT1 = new double[799];
+        int[] timeThresholds1 = new int[1200];
+        double[] frequencyTT1 = new double[1200];
         for (int row = 0; row < timeThresholds1.length; row++) {
             timeThresholds1[row] = row + 1;
             frequencyTT1[row] = travelTimes.getCumPct(timeThresholds1[row]);
@@ -127,13 +142,14 @@ public class ValidateTripLengthDistribution {
 
 
     private ArrayList<Person> obtainStudents (int school){
-        ArrayList<Person> workerArrayList = new ArrayList<>();
+        ArrayList<Person> studentArrayList = new ArrayList<>();
         for (Person pp : dataContainer.getHouseholdDataManager().getPersons()) {
-            if (pp.getOccupation() == Occupation.STUDENT & ((PersonMuc)pp).getSchoolType() == school) {
-                workerArrayList.add(pp);
+            if (pp.getOccupation() == Occupation.STUDENT & (int) ((PersonMuc)pp).getAdditionalAttributes().get("schoolType") == school) {
+                //((PersonMuc)pp).getSchoolType()
+                studentArrayList.add(pp);
             }
         }
-        return workerArrayList;
+        return studentArrayList;
     }
 
 
@@ -141,17 +157,17 @@ public class ValidateTripLengthDistribution {
         cellsMatrix = PropertiesSynPop.get().main.cellsMatrix;
         cellsMatrix.buildIndex(cellsMatrix.getColumnPosition("ID_cell"));
         municipalityODMatrix = new TableDataSet();
-        municipalityODMatrix.appendColumn(dataSetSynPop.getCityIDs(),"id");
+        municipalityODMatrix.appendColumn(dataSetSynPop.getCityIDs(),"ID_city");
         for (int municipality : dataSetSynPop.getMunicipalities()){
             SiloUtil.addIntegerColumnToTableDataSet(municipalityODMatrix, Integer.toString(municipality));
         }
-        municipalityODMatrix.buildIndex(municipalityODMatrix.getColumnPosition("id"));
+        municipalityODMatrix.buildIndex(municipalityODMatrix.getColumnPosition("ID_city"));
         countyODMatrix = new TableDataSet();
-        countyODMatrix.appendColumn(dataSetSynPop.getCountyIDs(), "id");
+        countyODMatrix.appendColumn(dataSetSynPop.getCountyIDs(), "Region");
         for (int county : dataSetSynPop.getCounties()){
             SiloUtil.addIntegerColumnToTableDataSet(countyODMatrix, Integer.toString(county));
         }
-        countyODMatrix.buildIndex(countyODMatrix.getColumnPosition("id"));
+        countyODMatrix.buildIndex(countyODMatrix.getColumnPosition("Region"));
     }
 
 }

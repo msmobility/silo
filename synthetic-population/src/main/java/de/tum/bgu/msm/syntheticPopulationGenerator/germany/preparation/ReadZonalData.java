@@ -32,7 +32,7 @@ public class ReadZonalData {
     public void run() {
         readCities();
         readZones();
-        readTravelTimeMatrix();
+        readTripLengthMatrix();
         readTripLengthFrequencyDistribution();
     }
 
@@ -150,25 +150,24 @@ public class ReadZonalData {
         dataSetSynPop.setTazs(tazs);
         dataSetSynPop.setTazIDs(tazs.stream().mapToInt(i -> i).toArray());
         dataSetSynPop.setZoneCoordinates(zoneCoordinates);
-
     }
 
-    private void readTravelTimeMatrix(){
+    private void readTripLengthMatrix(){
         //Read the skim matrix
         logger.info("   Starting to read OMX matrix");
-        OmxFile travelTimeOmx = new OmxFile(PropertiesSynPop.get().main.omxFileName);
-        travelTimeOmx.openReadOnly();
-        Matrix travelTimeMatrix = SiloUtil.convertOmxToMatrix(travelTimeOmx.getMatrix("mat1"));
-        OmxLookup omxLookUp = travelTimeOmx.getLookup("lookup1");
+        OmxFile tripLengthOmx = new OmxFile(PropertiesSynPop.get().main.omxFileName);
+        tripLengthOmx.openReadOnly();
+        Matrix tripLengthMatrix = SiloUtil.convertOmxToMatrix(tripLengthOmx.getMatrix("mat1"));
+        OmxLookup omxLookUp = tripLengthOmx.getLookup("lookup1");
         int[] externalNumbers = (int[]) omxLookUp.getLookup();
-        travelTimeMatrix.setExternalNumbersZeroBased(externalNumbers);
-        for (int i = 1; i <= travelTimeMatrix.getRowCount(); i++){
-            for (int j = 1; j <= travelTimeMatrix.getColumnCount(); j++){
-                //UNIT:minute
-                travelTimeMatrix.setValueAt(i,j, travelTimeMatrix.getValueAt(i,j)/60);
+        tripLengthMatrix.setExternalNumbersZeroBased(externalNumbers);
+        for (int i = 1; i <= tripLengthMatrix.getRowCount(); i++){
+            for (int j = 1; j <= tripLengthMatrix.getColumnCount(); j++){
+                //UNIT:kilometers
+                tripLengthMatrix.setValueAt(i,j, tripLengthMatrix.getValueAt(i,j)/1000);
             }
         }
-        dataSetSynPop.setTravelTimeTazToTaz(travelTimeMatrix);
+        dataSetSynPop.setTripLengthTazToTaz(tripLengthMatrix);
         logger.info("Read OMX matrix");
     }
 

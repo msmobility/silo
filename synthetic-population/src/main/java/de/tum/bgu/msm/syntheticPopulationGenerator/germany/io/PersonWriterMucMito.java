@@ -33,6 +33,8 @@ public class PersonWriterMucMito implements PersonWriter {
         pwp.print("schoolId");
         pwp.print(",");
         pwp.print("schoolType");
+        pwp.print(",");
+        pwp.print("schoolPlace");
 
         pwp.println();
         for (Person pp : householdData.getPersons()) {
@@ -59,6 +61,8 @@ public class PersonWriterMucMito implements PersonWriter {
             pwp.print(((PersonMuc)pp).getSchoolId());
             pwp.print(",");
             pwp.print(((PersonMuc)pp).getAdditionalAttributes().get("schoolType"));
+            pwp.print(",");
+            pwp.print(((PersonMuc)pp).getSchoolPlace());
             pwp.println();
             if (pp.getId() == SiloUtil.trackPp) {
                 SiloUtil.trackingFile("Writing pp " + pp.getId() + " to micro data file.");

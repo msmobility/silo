@@ -5,7 +5,6 @@ import com.pb.common.matrix.Matrix;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.Household;
-import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonMuc;
@@ -25,8 +24,8 @@ public class AssignSchools {
     private ArrayList<Person> studentArrayList;
     private int assignedStudents;
 
-    private Matrix travelTimeImpedancePrimarySecondary;
-    private Matrix travelTimeImpedanceTertiary;
+    private Matrix tripLengthImpedancePrimarySecondary;
+    private Matrix tripLengthImpedanceTertiary;
     private Map<Integer, Map<Integer,Integer>> schoolCapacityMap;
     private Map<Integer, Integer> numberOfVacantPlacesByType;
 
@@ -37,13 +36,13 @@ public class AssignSchools {
 
     public void run() {
         logger.info("   Running module: school de.tum.bgu.msm.syntheticPopulationGenerator.germany.disability");
-        calculateTravelTimeImpedance();
+        calculateTripLengthImpedance();
         initializeSchoolCapacity();
         shuffleStudents();
 
-        for (Person pp : dataContainer.getHouseholdDataManager().getPersons()){
-            pp.setDriverLicense(obtainLicense(pp.getGender(),pp.getAge()));
-        }
+        //for (Person pp : dataContainer.getHouseholdDataManager().getPersons()){
+        //    pp.setDriverLicense(obtainLicense(pp.getGender(),pp.getAge()));
+        //}
 
 
         double logging = 2;
@@ -54,13 +53,16 @@ public class AssignSchools {
             int schooltaz;
             Household household = pp.getHousehold();
             int hometaz = realEstate.getDwelling(household.getDwellingId()).getZoneId();
-            if (pp.getSchoolType() == 3){
+            if ((int) pp.getAdditionalAttributes().get("schoolType") == 3){
+                //pp.getAdditionalAttributes().get("schoolType");;pp.getSchoolType()
                 schooltaz = selectTertiarySchool(hometaz);
             } else {
-                schooltaz = selectPrimarySecondarySchool(hometaz, pp.getSchoolType());
+                schooltaz = 0;
+                //schooltaz = selectPrimarySecondarySchool(hometaz, pp.getSchoolType());
             }
             if (schooltaz > 0) {
                 pp.setSchoolPlace(schooltaz);
+                //pp.setAdditionalAttributes("schoolPlace",schooltaz);
             }
             if (assignedStudents == logging){
                 logger.info("   Assigned " + assignedStudents + " schools.");
@@ -72,28 +74,16 @@ public class AssignSchools {
     }
 
 
-    private void calculateTravelTimeImpedance(){
+    private void calculateTripLengthImpedance(){
 
-        travelTimeImpedanceTertiary = new Matrix(dataSetSynPop.getTravelTimeTazToTaz().getRowCount(), dataSetSynPop.getTravelTimeTazToTaz().getColumnCount());
-        travelTimeImpedancePrimarySecondary = new Matrix(dataSetSynPop.getTravelTimeTazToTaz().getRowCount(), dataSetSynPop.getTravelTimeTazToTaz().getColumnCount());
+        tripLengthImpedanceTertiary = new Matrix(dataSetSynPop.getTripLengthTazToTaz().getRowCount(), dataSetSynPop.getTripLengthTazToTaz().getColumnCount());
+        tripLengthImpedancePrimarySecondary = new Matrix(dataSetSynPop.getTripLengthTazToTaz().getRowCount(), dataSetSynPop.getTripLengthTazToTaz().getColumnCount());
         Map<Integer, Float> utilityMapTertiary = dataSetSynPop.getTripLengthDistribution().column("Tertiary");
-        for (int i = 1; i <= dataSetSynPop.getTravelTimeTazToTaz().getRowCount(); i ++){
-            for (int j = 1; j <= dataSetSynPop.getTravelTimeTazToTaz().getColumnCount(); j++){
-                int travelTime = (int) dataSetSynPop.getTravelTimeTazToTaz().getValueAt(i,j);
-
-                if (i==j && travelTime >= 1_000_000_000){
-                    travelTimeImpedanceTertiary.setValueAt(i, j, 5);
-                    travelTimeImpedancePrimarySecondary.setValueAt(i, j, 5);
-                }
-
-                //float utilityTertiary = 0.00000001f;
-
-                //if (travelTime < 200){
-                //    utilityTertiary = utilityMapTertiary.get(travelTime);
-                //}
-                //travelTimeImpedanceTertiary.setValueAt(i,j,utilityTertiary);
-                //travelTimeImpedancePrimarySecondary.setValueAt(i,j, travelTime);
-
+        for (int i = 1; i <= dataSetSynPop.getTripLengthTazToTaz().getRowCount(); i ++){
+            for (int j = 1; j <= dataSetSynPop.getTripLengthTazToTaz().getColumnCount(); j++){
+                int tripLength = (int) dataSetSynPop.getTripLengthTazToTaz().getValueAt(i,j);
+                tripLengthImpedanceTertiary.setValueAt(i, j, tripLength);
+                tripLengthImpedancePrimarySecondary.setValueAt(i, j, tripLength);
             }
         }
     }
@@ -105,9 +95,14 @@ public class AssignSchools {
         if (numberOfVacantPlacesByType.get(3) > 0) {
             Map<Integer, Float> probability = new HashMap<>();
             Iterator<Integer> iterator = schoolCapacityMap.get(3).keySet().iterator();
+
+            double alpha1 = 0.3000;   //0.2700, 0.3000
+            double gamma1 =-0.0300;  //-0.0200, -0.0070
+
             while (iterator.hasNext()) {
                 Integer zone = iterator.next();
-                float prob = travelTimeImpedanceTertiary.getValueAt(hometaz, zone) * schoolCapacityMap.get(3).get(zone);
+                float prob = (float) Math.exp( Math.exp(tripLengthImpedanceTertiary.getValueAt(hometaz, zone)*gamma1) * Math.pow(schoolCapacityMap.get(3).get(zone),alpha1)) ;
+                //float prob = (float) Math.exp( alpha1 * Math.exp(tripLengthImpedanceTertiary.getValueAt(hometaz, zone)*gamma1) * schoolCapacityMap.get(3).get(zone)) ;
                 probability.put(zone, prob);
             }
             schooltaz = SiloUtil.select(probability);
@@ -132,9 +127,9 @@ public class AssignSchools {
             Iterator<Integer> iterator = schoolCapacityMap.get(schoolType).keySet().iterator();
             while (iterator.hasNext()) {
                 Integer zone = iterator.next();
-                if (travelTimeImpedancePrimarySecondary.getValueAt(hometaz, zone) < minDistance) {
+                if (tripLengthImpedancePrimarySecondary.getValueAt(hometaz, zone) < minDistance) {
                     schooltaz = zone;
-                    minDistance = travelTimeImpedancePrimarySecondary.getValueAt(hometaz, zone);
+                    minDistance = tripLengthImpedancePrimarySecondary.getValueAt(hometaz, zone);
                 }
             }
             int remainingCapacity = schoolCapacityMap.get(schoolType).get(schooltaz) - 1;
@@ -194,59 +189,59 @@ public class AssignSchools {
         }
     }
 
-    public boolean obtainLicense(Gender gender, int age){
-        boolean license = false;
-        int row = 1;
-        int threshold = 0;
-        if (age > 17) {
-            if (age < 29) {
-                if (gender == Gender.MALE) {
-                    threshold = 86;
-                } else {
-                    threshold = 87;
-                }
-            } else if (age < 39) {
-                if (gender == Gender.MALE) {
-                    threshold = 95;
-                } else {
-                    threshold = 94;
-                }
-            } else if (age < 49) {
-                if (gender == Gender.MALE) {
-                    threshold = 97;
-                } else {
-                    threshold = 95;
-                }
-            } else if (age < 59) {
-                if (gender == Gender.MALE) {
-                    threshold = 96;
-                } else {
-                    threshold = 89;
-                }
-            } else if (age < 64) {
-                if (gender == Gender.MALE) {
-                    threshold = 95;
-                } else {
-                    threshold = 86;
-                }
-            } else if (age < 74) {
-                if (gender == Gender.MALE) {
-                    threshold = 95;
-                } else {
-                    threshold = 71;
-                }
-            } else {
-                if (gender == Gender.MALE) {
-                    threshold = 88;
-                } else {
-                    threshold = 44;
-                }
-            }
-            if (SiloUtil.getRandomNumberAsDouble() * 100 < threshold) {
-                license = true;
-            }
-        }
-        return license;
-    }
+//    public boolean obtainLicense(Gender gender, int age){
+//        boolean license = false;
+//        int row = 1;
+//        int threshold = 0;
+//        if (age > 17) {
+//            if (age < 29) {
+//                if (gender == Gender.MALE) {
+//                    threshold = 86;
+//                } else {
+//                    threshold = 87;
+//                }
+//            } else if (age < 39) {
+//                if (gender == Gender.MALE) {
+//                    threshold = 95;
+//                } else {
+//                    threshold = 94;
+//                }
+//            } else if (age < 49) {
+//                if (gender == Gender.MALE) {
+//                    threshold = 97;
+//                } else {
+//                    threshold = 95;
+//                }
+//            } else if (age < 59) {
+//                if (gender == Gender.MALE) {
+//                    threshold = 96;
+//                } else {
+//                    threshold = 89;
+//                }
+//            } else if (age < 64) {
+//                if (gender == Gender.MALE) {
+//                    threshold = 95;
+//                } else {
+//                    threshold = 86;
+//                }
+//            } else if (age < 74) {
+//                if (gender == Gender.MALE) {
+//                    threshold = 95;
+//                } else {
+//                    threshold = 71;
+//                }
+//            } else {
+//                if (gender == Gender.MALE) {
+//                    threshold = 88;
+//                } else {
+//                    threshold = 44;
+//                }
+//            }
+//            if (SiloUtil.getRandomNumberAsDouble() * 100 < threshold) {
+//                license = true;
+//            }
+//        }
+//        return license;
+//    }
 
 }
