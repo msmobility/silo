@@ -1,5 +1,6 @@
 
 ![CI status](https://github.com/msmobility/silo/workflows/Java%20CI/badge.svg)
+[![Cloudsmith Deployment](https://github.com/msmobility/silo/actions/workflows/deployment.yml/badge.svg?branch=master)](https://github.com/msmobility/silo/actions/workflows/deployment.yml)
 [![Hosted By: Cloudsmith](https://img.shields.io/badge/OSS%20hosting%20by-cloudsmith-blue?logo=cloudsmith&style=for-the-badge)](https://cloudsmith.com)
 
 Package repository hosting is graciously provided by  [Cloudsmith](https://cloudsmith.com).
