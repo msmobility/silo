@@ -11,8 +11,6 @@ public final class ScriptInputProvider {
             = ScriptInputProvider.class.getResourceAsStream("DivorceProbabilityCalc");
     private static InputStream driversLicenseProbabilityScriptInput
             = ScriptInputProvider.class.getResourceAsStream("DriversLicenseCalc");
-    private static InputStream constructionDemandScriptInput
-            = ScriptInputProvider.class.getResourceAsStream("ConstructionDemandCalc");
     private static InputStream demolitionScriptInput
             = ScriptInputProvider.class.getResourceAsStream("DemolitionCalc");
     private static InputStream pricingScriptInput
@@ -55,10 +53,6 @@ public final class ScriptInputProvider {
 
     public static InputStream getLeaveParentalHouseholdScriptInput() {
         return leaveParentalHouseholdScriptInput;
-    }
-
-    public static InputStream getConstructionDemandScriptInput() {
-        return constructionDemandScriptInput;
     }
 
     public static InputStream getDemolitionScriptInput() {
