@@ -4,14 +4,6 @@ import java.io.InputStream;
 
 public final class ScriptInputProvider {
 
-    private static InputStream regionUtilityScriptInput = ScriptInputProvider.class.getResourceAsStream("RegionUtilityCalc");
-    private static InputStream regionProbabilityScriptInput = ScriptInputProvider.class.getResourceAsStream("SelectRegionCalc");
-
-    public static InputStream getDwellingProbabilityScriptInput() {
-        return ScriptInputProvider.class.getResourceAsStream("SelectDwellingCalc");
-    }
-
-
     private ScriptInputProvider() {
     }
 
@@ -19,8 +11,6 @@ public final class ScriptInputProvider {
             = ScriptInputProvider.class.getResourceAsStream("DivorceProbabilityCalc");
     private static InputStream driversLicenseProbabilityScriptInput
             = ScriptInputProvider.class.getResourceAsStream("DriversLicenseCalc");
-    private static InputStream constructionLocationScriptInput
-            = ScriptInputProvider.class.getResourceAsStream("ConstructionLocationCalc");
     private static InputStream constructionDemandScriptInput
             = ScriptInputProvider.class.getResourceAsStream("ConstructionDemandCalc");
     private static InputStream demolitionScriptInput
@@ -30,41 +20,6 @@ public final class ScriptInputProvider {
     private static InputStream renovationScriptInput
             = ScriptInputProvider.class.getResourceAsStream("RenovationCalc");
     private static InputStream movesScriptInput  = ScriptInputProvider.class.getResourceAsStream("MovesOrNotCalc");
-          private static InputStream dwellingUtilityScriptInput
-                = ScriptInputProvider.class.getResourceAsStream(("DwellingUtilityCalc"));
-
-          public static InputStream getDwellingUtilityScriptInput() {
-              return dwellingUtilityScriptInput;
-          }
-
-
-    public static void setMovesScriptInput(InputStream movesScriptInput) {
-        ScriptInputProvider.movesScriptInput = movesScriptInput;
-    }
-
-    public static void setRenovationScriptInput(InputStream renovationScriptInput) {
-        ScriptInputProvider.renovationScriptInput = renovationScriptInput;
-    }
-
-    public static void setPricingScriptInput(InputStream pricingScriptInput) {
-        ScriptInputProvider.pricingScriptInput = pricingScriptInput;
-    }
-
-    public static void setDemolitionScriptInput(InputStream demolitionScriptInput) {
-        ScriptInputProvider.demolitionScriptInput = demolitionScriptInput;
-    }
-
-    public static void setConstructionDemandScriptInput(InputStream constructionDemandScriptInput) {
-        ScriptInputProvider.constructionDemandScriptInput = constructionDemandScriptInput;
-    }
-
-    public static void setConstructionLocationScriptInput(InputStream constructionLocationScriptInput) {
-        ScriptInputProvider.constructionLocationScriptInput = constructionLocationScriptInput;
-    }
-
-    public static void setLeaveParentalHouseholdScriptInput(InputStream leaveParentalHouseholdScriptInput) {
-        ScriptInputProvider.leaveParentalHouseholdScriptInput = leaveParentalHouseholdScriptInput;
-    }
 
     private static InputStream leaveParentalHouseholdScriptInput
             = ScriptInputProvider.class.getResourceAsStream("LeaveParentHhCalc");
@@ -72,22 +27,6 @@ public final class ScriptInputProvider {
     public static InputStream getDriversLicenseProbabilityScriptInput() {
         return driversLicenseProbabilityScriptInput;
     }
-
-    public static void setDriversLicenseProbabilityScriptInput(InputStream driversLicenseProbabilityScriptInput) {
-        ScriptInputProvider.driversLicenseProbabilityScriptInput = driversLicenseProbabilityScriptInput;
-    }
-
-    public static void setDivorceProbabilityScriptInput(InputStream divorceProbabilityScriptInput) {
-        ScriptInputProvider.divorceProbabilityScriptInput = divorceProbabilityScriptInput;
-    }
-
-    ;
-
-    /**
-     * TODO
-     */
-    private static InputStream birthProbabilityScriptInput
-            = ScriptInputProvider.class.getResourceAsStream("BirthProbabilityCalc");
 
     /**
      * TODO
@@ -101,47 +40,14 @@ public final class ScriptInputProvider {
     private static InputStream marriageProbabilityScriptInput
             = ScriptInputProvider.class.getResourceAsStream("MarriageProbabilityCalc");
 
-    public static InputStream getBirthProbabilityScriptInput() {
-        return birthProbabilityScriptInput;
-    }
-
-    public static void setBirthProbabilityScriptInput(InputStream birthProbabilityScriptInput) {
-        ScriptInputProvider.birthProbabilityScriptInput = birthProbabilityScriptInput;
-    }
-
     public static InputStream getDeathProbabilityScriptInput() {
         return deathProbabilityScriptInput;
-    }
-
-    public static void setDeathProbabilityScriptInput(InputStream deathProbabilityScriptInput) {
-        ScriptInputProvider.deathProbabilityScriptInput = deathProbabilityScriptInput;
-    }
-
-    /**
-     * TODO
-     *
-     * @return
-     */
-    public static InputStream getBirthScriptInputStream() {
-        return birthProbabilityScriptInput;
-    }
-
-    /**
-     * TODO
-     *
-     * @param stream
-     */
-    public static void setBirthScriptInputStream(InputStream stream) {
-        birthProbabilityScriptInput = stream;
     }
 
     public static InputStream getMarriageProbabilityScriptInput() {
         return marriageProbabilityScriptInput;
     }
 
-    public static void setMarriageProbabilityScriptInput(InputStream marriageProbabilityScriptInput) {
-        ScriptInputProvider.marriageProbabilityScriptInput = marriageProbabilityScriptInput;
-    }
 
     public static InputStream getDivorceProbabilityScriptInput() {
         return divorceProbabilityScriptInput;
@@ -149,10 +55,6 @@ public final class ScriptInputProvider {
 
     public static InputStream getLeaveParentalHouseholdScriptInput() {
         return leaveParentalHouseholdScriptInput;
-    }
-
-    public static InputStream getConstructionLocationScriptInput() {
-        return constructionLocationScriptInput;
     }
 
     public static InputStream getConstructionDemandScriptInput() {
@@ -175,11 +77,4 @@ public final class ScriptInputProvider {
         return movesScriptInput;
     }
 
-    public static InputStream getRegionUtilityScriptInput() {
-        return regionUtilityScriptInput;
-    }
-
-    public static InputStream getRegionProbabilityScriptInput() {
-        return regionProbabilityScriptInput;
-    }
 }

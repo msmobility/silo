@@ -56,23 +56,6 @@ public class BirthModelImpl extends AbstractModel implements BirthModel {
 
     @Override
     public void setup() {
-//        final Reader reader;
-//        switch (properties.main.implementation) {
-//            case MUNICH:
-//                reader = new InputStreamReader(this.getClass().getResourceAsStream("BirthProbabilityCalcMuc"));
-//                break;
-//            case MARYLAND:
-//                reader = new InputStreamReader(this.getClass().getResourceAsStream("BirthProbabilityCalcMstm"));
-//                break;
-//            case PERTH:
-//                reader = new InputStreamReader(this.getClass().getResourceAsStream("BirthProbabilityCalcMuc"));
-//                break;
-//            case KAGAWA:
-//                reader = new InputStreamReader(this.getClass().getResourceAsStream("BirthProbabilityCalcMuc"));
-//                break;
-//            default:
-//                throw new RuntimeException("BirthModel implementation not applicable for " + properties.main.implementation);
-//        }
     }
 
     @Override
