@@ -16,10 +16,6 @@ public final class ScriptInputProvider {
     private static InputStream leaveParentalHouseholdScriptInput
             = ScriptInputProvider.class.getResourceAsStream("LeaveParentHhCalc");
 
-    public static InputStream getDriversLicenseProbabilityScriptInput() {
-        return driversLicenseProbabilityScriptInput;
-    }
-
     /**
      * TODO
      */
