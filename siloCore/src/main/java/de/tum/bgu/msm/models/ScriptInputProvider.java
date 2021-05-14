@@ -7,8 +7,6 @@ public final class ScriptInputProvider {
     private ScriptInputProvider() {
     }
 
-    private static InputStream pricingScriptInput
-            = ScriptInputProvider.class.getResourceAsStream("PricingCalc");
     private static InputStream renovationScriptInput
             = ScriptInputProvider.class.getResourceAsStream("RenovationCalc");
     private static InputStream movesScriptInput  = ScriptInputProvider.class.getResourceAsStream("MovesOrNotCalc");
@@ -28,10 +26,6 @@ public final class ScriptInputProvider {
 
     public static InputStream getLeaveParentalHouseholdScriptInput() {
         return leaveParentalHouseholdScriptInput;
-    }
-
-    public static InputStream getPricingScriptInput() {
-        return pricingScriptInput;
     }
 
     public static InputStream getRenovationScriptInput() {
