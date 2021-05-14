@@ -125,7 +125,7 @@ public final class Simulator {
         }
 
         for (ResultsMonitor resultsMonitor : resultsMonitors){
-            resultsMonitor.endYear(year, eventCounter);
+            resultsMonitor.endYear(year, eventCounter, events);
         }
 
         events.clear();

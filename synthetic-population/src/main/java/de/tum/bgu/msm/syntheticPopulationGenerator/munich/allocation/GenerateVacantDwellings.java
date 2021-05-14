@@ -188,17 +188,17 @@ public class GenerateVacantDwellings {
 
     private DwellingType extractDwellingType (int buildingYear, float ddType1Prob, float ddType3Prob){
 
-        DwellingType type = DefaultDwellingTypeImpl.MF234;
+        DwellingType type = DefaultDwellingTypes.DefaultDwellingTypeImpl.MF234;
 
         if (buildingYear < 10){
             if (SiloUtil.getRandomNumberAsFloat() < ddType1Prob){
-                type = DefaultDwellingTypeImpl.SFD;
+                type = DefaultDwellingTypes.DefaultDwellingTypeImpl.SFD;
             } else {
-                type = DefaultDwellingTypeImpl.SFA;
+                type = DefaultDwellingTypes.DefaultDwellingTypeImpl.SFA;
             }
         } else {
             if (SiloUtil.getRandomNumberAsFloat() < ddType3Prob){
-                type = DefaultDwellingTypeImpl.MF5plus;
+                type = DefaultDwellingTypes.DefaultDwellingTypeImpl.MF5plus;
             }
         }
 

@@ -1,8 +1,8 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
 import com.google.common.math.LongMath;
-import com.pb.common.matrix.Matrix;
-import com.pb.common.matrix.RowVector;
+import de.tum.bgu.msm.common.matrix.Matrix;
+import de.tum.bgu.msm.common.matrix.RowVector;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.Household;

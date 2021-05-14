@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.data;
 
-import com.pb.common.datafile.TableDataSet;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.development.Development;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
@@ -31,7 +31,6 @@ import java.util.Map;
 public final class SummarizeData {
     private static final String DEVELOPMENT_FILE = "development"; ;
     private final static Logger logger = Logger.getLogger(SummarizeData.class);
-
 
     private static PrintWriter spatialResultWriter;
     private static PrintWriter spatialResultWriter_2;
@@ -71,8 +70,8 @@ public final class SummarizeData {
         switch (action) {
             case "open":
                 String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
-                spatialResultWriter_2 = SiloUtil.openFileForSequentialWriting(directory + "/" + RESULT_FILE_SPATIAL +
-                        "_2.csv", Properties.get().main.startYear != Properties.get().main.baseYear);
+                spatialResultWriter_2 = SiloUtil.openFileForSequentialWriting(directory + "/siloResults/" + RESULT_FILE_SPATIAL +
+                        ".csv", Properties.get().main.startYear != Properties.get().main.baseYear);
                 break;
             case "close":
                 spatialResultWriter_2.close();
@@ -86,7 +85,7 @@ public final class SummarizeData {
     public static void summarizeSpatially(int year, DataContainer dataContainer) {
         // write out results by zone
 
-        List<DwellingType> dwellingTypes = dataContainer.getRealEstateDataManager().getDwellingTypes();
+        List<DwellingType> dwellingTypes = dataContainer.getRealEstateDataManager().getDwellingTypes().getTypes();
         String hd = "Year" + year + ",autoAccessibility,transitAccessibility,population,households,hhInc_<" + Properties.get().main.incomeBrackets[0];
         for (int inc = 0; inc < Properties.get().main.incomeBrackets.length; inc++) {
             hd = hd.concat(",hhInc_>" + Properties.get().main.incomeBrackets[inc]);
@@ -126,7 +125,7 @@ public final class SummarizeData {
             hhs[zone]++;
         }
         for (Dwelling dd : dataContainer.getRealEstateDataManager().getDwellings()) {
-            dds[dataContainer.getRealEstateDataManager().getDwellingTypes().indexOf(dd.getType())][dd.getZoneId()]++;
+            dds[dwellingTypes.indexOf(dd.getType())][dd.getZoneId()]++;
             prices[dd.getZoneId()] += dd.getPrice();
         }
         for (Job jj : dataContainer.getJobDataManager().getJobs()) {
@@ -150,8 +149,9 @@ public final class SummarizeData {
 //            Formatter f = new Formatter();
 //            f.format("%d,%f,%f,%d,%d,%d,%f,%f,%d", taz, autoAcc, transitAcc, pop[taz], hhs[taz], dds[taz], availLand, avePrice, jobs[taz]);
             String txt = taz + "," + autoAcc + "," + transitAcc + "," + pop.getIndexed(taz) + "," + hhs[taz];
-            for (int inc = 0; inc <= Properties.get().main.incomeBrackets.length; inc++)
+            for (int inc = 0; inc <= Properties.get().main.incomeBrackets.length; inc++) {
                 txt = txt.concat("," + hhInc[inc][taz]);
+            }
             for (DwellingType dt : dwellingTypes){
                 txt = txt.concat("," + dds[dwellingTypes.indexOf(dt)][taz]);
             }
@@ -209,7 +209,9 @@ public final class SummarizeData {
 
         for (int zone : dataContainer.getGeoData().getZones().keySet()) {
             int hhs = 0;
-            if (hhByZone.containsKey(zone)) hhs = hhByZone.get(zone).length;
+            if (hhByZone.containsKey(zone)) {
+                hhs = hhByZone.get(zone).length;
+            }
             changeOfHh[zone] =
                     (int) scalingControlTotals.getIndexedValueAt(zone, ("HH" + year)) - hhs;
         }
@@ -329,10 +331,11 @@ public final class SummarizeData {
                     }
                 }
             } else {
-                if (scalingControlTotals.getIndexedValueAt(zone, ("HH" + year)) > 0)
+                if (scalingControlTotals.getIndexedValueAt(zone, ("HH" + year)) > 0) {
                     logger.warn("SILO has no households in zone " +
                             zone + " that could be duplicated to match control total of " +
                             scalingControlTotals.getIndexedValueAt(zone, ("HH" + year)) + ".");
+                }
             }
         }
         pwh.close();
@@ -385,7 +388,7 @@ public final class SummarizeData {
         PrintWriter pw = SiloUtil.openFileForSequentialWriting(capacityFileName, false);
         StringBuilder builder = new StringBuilder();
         builder.append("Zone,");
-        List<DwellingType> dwellingTypes = dataContainer.getRealEstateDataManager().getDwellingTypes();
+        List<DwellingType> dwellingTypes = dataContainer.getRealEstateDataManager().getDwellingTypes().getTypes();
         for (DwellingType dwellingType : dwellingTypes) {
             builder.append(dwellingType.toString()).append(",");
         }

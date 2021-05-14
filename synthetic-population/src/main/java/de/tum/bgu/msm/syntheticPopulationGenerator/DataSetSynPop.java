@@ -3,8 +3,8 @@ package de.tum.bgu.msm.syntheticPopulationGenerator;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import com.pb.common.datafile.TableDataSet;
-import com.pb.common.matrix.Matrix;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
+import de.tum.bgu.msm.common.matrix.Matrix;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import org.apache.log4j.Logger;
 import org.opengis.feature.simple.SimpleFeature;
@@ -46,6 +46,8 @@ public class DataSetSynPop {
     private Table<Integer, String, Float> tripLengthDistribution;
     private ArrayList<Integer> municipalitiesWithZeroPopulation;
 
+    private Matrix distanceTazToTaz;
+    private float[] areas;
     private Matrix travelTimeTazToTaz;
 
     private HashMap<Integer, ArrayList> boroughsByCounty;
@@ -63,7 +65,7 @@ public class DataSetSynPop {
     private HashMap<Integer, HashMap<Integer, Integer>> householdsForFrequencyMatrix;
     private HashMap<Integer, Integer> municipalityCounty;
 
-
+    private HashMap<Integer, HashMap<String, Float>> tazAttributes;
 
     public TableDataSet getWeights() {
         return weights;
@@ -328,6 +330,22 @@ public class DataSetSynPop {
 
     public void setMunicipalityCounty(HashMap<Integer, Integer> municipalityCounty) {
         this.municipalityCounty = municipalityCounty;
+    }
+
+    public float[] getAreas() {
+        return areas;
+    }
+
+    public void setAreas(float[] areas) {
+        this.areas = areas;
+    }
+
+    public HashMap<Integer, HashMap<String, Float>> getTazAttributes() {
+        return tazAttributes;
+    }
+
+    public void setTazAttributes(HashMap<Integer, HashMap<String, Float>> tazAttributes) {
+        this.tazAttributes = tazAttributes;
     }
 
     public Table<Integer, String, Integer> getZoneCoordinates() {

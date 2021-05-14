@@ -3,8 +3,7 @@ package de.tum.bgu.msm.data.person;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.schools.PersonWithSchool;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Optional;
 
 public class PersonMuc implements PersonWithSchool {
 
@@ -15,7 +14,6 @@ public class PersonMuc implements PersonWithSchool {
     private int schoolType = 0;
     private int schoolPlace = 0;
     private int schoolId = -1;
-    private Map<String, Object> additionalAttributes = new HashMap<>();
 
     public PersonMuc(int id, int age,
                      Gender gender, Occupation occupation,
@@ -150,12 +148,13 @@ public class PersonMuc implements PersonWithSchool {
                 +"\nSchool id    " + schoolId;
     }
 
-    public Map<String, Object> getAdditionalAttributes() {
-        return additionalAttributes;
+    @Override
+    public Optional<Object> getAttribute(String key) {
+        return delegate.getAttribute(key);
     }
 
-    public void setAdditionalAttributes(String key, Object value){
-        this.additionalAttributes.put(key, value);
+    @Override
+    public void setAttribute(String key, Object value) {
+        delegate.setAttribute(key, value);
     }
-
 }

@@ -9,6 +9,7 @@ import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -22,11 +23,6 @@ import org.matsim.api.core.v01.population.Plan;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.api.core.v01.population.PopulationFactory;
 import org.matsim.core.config.Config;
-import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
-import org.matsim.core.config.groups.VspExperimentalConfigGroup;
-import org.matsim.core.population.PopulationUtils;
-import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ScenarioUtils;
 
 import java.util.Collection;
@@ -34,27 +30,30 @@ import java.util.Collection;
 public class SimpleMatsimScenarioAssembler implements MatsimScenarioAssembler {
 
     private final static Logger logger = Logger.getLogger(SimpleMatsimScenarioAssembler.class);
+
     private final DataContainer dataContainer;
-    private final double scalingFactor;
+    private final Properties properties;
 
     public SimpleMatsimScenarioAssembler(DataContainer dataContainer, Properties properties) {
         this.dataContainer = dataContainer;
-        this.scalingFactor = properties.transportModel.matsimScaleFactor;
+        this.properties = properties;
     }
 
-    private Population generateDemand() {
-        logger.info("Starting creating a MATSim population.");
+    @Override
+    public Scenario assembleScenario(Config matsimConfig, int year, TravelTimes travelTimes) {
+        logger.info("Starting creating (simple home-work-home) MATSim scenario.");
+        double populationScalingFactor = properties.transportModel.matsimScaleFactor;
+        SiloMatsimUtils.checkSiloPropertiesAndMatsimConfigConsistency(matsimConfig, properties);
 
-        HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
-        Collection<Person> siloPersons = householdDataManager.getPersons();
-
-        Population matsimPopulation = PopulationUtils.createPopulation(ConfigUtils.createConfig());
+        Scenario scenario = ScenarioUtils.loadScenario(matsimConfig);
+        Population matsimPopulation = scenario.getPopulation();
         PopulationFactory matsimPopulationFactory = matsimPopulation.getFactory();
 
+        Collection<Person> siloPersons = dataContainer.getHouseholdDataManager().getPersons();
         JobDataManager jobDataManager = dataContainer.getJobDataManager();
 
         for (Person siloPerson : siloPersons) {
-            if (SiloUtil.getRandomNumberAsDouble() > scalingFactor) {
+            if (SiloUtil.getRandomNumberAsDouble() > populationScalingFactor) {
                 // e.g. if scalingFactor = 0.01, there will be a 1% chance that the loop is not
                 // continued in the next step, i.e. that the person is added to the population
                 continue;
@@ -88,6 +87,7 @@ public class SimpleMatsimScenarioAssembler implements MatsimScenarioAssembler {
             if (dwelling != null && dwelling.getCoordinate() != null) {
                 dwellingCoordinate = dwelling.getCoordinate();
             } else {
+                // TODO This step should not be done (again) if a random coordinate for the same dwelling has been chosen before, dz 10/20
                 dwellingCoordinate = dataContainer.getGeoData().getZones().get(dwelling.getZoneId()).getRandomCoordinate(SiloUtil.getRandomObject());
             }
             Coord dwellingCoord = new Coord(dwellingCoordinate.x, dwellingCoordinate.y);
@@ -97,67 +97,31 @@ public class SimpleMatsimScenarioAssembler implements MatsimScenarioAssembler {
             if (job != null && job.getCoordinate() != null) {
                 jobCoordinate = job.getCoordinate();
             } else {
+                // TODO This step should not be done (again) if a random coordinate for the same job has been chosen before, dz 10/20
                 jobCoordinate = dataContainer.getGeoData().getZones().get(job.getZoneId()).getRandomCoordinate(SiloUtil.getRandomObject());
             }
             Coord jobCoord = new Coord(jobCoordinate.x, jobCoordinate.y);
 
-
-            // Note: Do not confuse the SILO Person class with the MATSim Person class here
-            org.matsim.api.core.v01.population.Person matsimPerson =
-                    matsimPopulationFactory.createPerson(Id.create(siloPerson.getId(), org.matsim.api.core.v01.population.Person.class));
+            org.matsim.api.core.v01.population.Person matsimPerson = matsimPopulationFactory.createPerson(Id.createPersonId(siloPerson.getId()));
             matsimPopulation.addPerson(matsimPerson);
 
             Plan matsimPlan = matsimPopulationFactory.createPlan();
             matsimPerson.addPlan(matsimPlan);
 
-            // TODO Add some switch here like "autoGenerateSimplePlans" or similar...
-            Activity activity1 = matsimPopulationFactory.createActivityFromCoord("home", dwellingCoord);
-            activity1.setEndTime(6 * 3600 + 3 * SiloUtil.getRandomNumberAsDouble() * 3600); // TODO Potentially change later
-            matsimPlan.addActivity(activity1);
+            Activity homeActivityMorning = matsimPopulationFactory.createActivityFromCoord("home", dwellingCoord);
+            homeActivityMorning.setEndTime(6 * 3600 + 3 * SiloUtil.getRandomNumberAsDouble() * 3600); // TODO Potentially change later
+            matsimPlan.addActivity(homeActivityMorning);
             matsimPlan.addLeg(matsimPopulationFactory.createLeg(TransportMode.car)); // TODO Potentially change later
 
-            Activity activity2 = matsimPopulationFactory.createActivityFromCoord("work", jobCoord);
-            activity2.setEndTime(15 * 3600 + 3 * SiloUtil.getRandomNumberAsDouble() * 3600); // TODO Potentially change later
-            matsimPlan.addActivity(activity2);
+            Activity workActivity = matsimPopulationFactory.createActivityFromCoord("work", jobCoord);
+            workActivity.setEndTime(15 * 3600 + 3 * SiloUtil.getRandomNumberAsDouble() * 3600); // TODO Potentially change later
+            matsimPlan.addActivity(workActivity);
             matsimPlan.addLeg(matsimPopulationFactory.createLeg(TransportMode.car)); // TODO Potentially change later
 
-            Activity activity3 = matsimPopulationFactory.createActivityFromCoord("home", dwellingCoord);
-
-            matsimPlan.addActivity(activity3);
+            Activity homeActvitiyEvening = matsimPopulationFactory.createActivityFromCoord("home", dwellingCoord);
+            matsimPlan.addActivity(homeActvitiyEvening);
         }
-        logger.info("Finished creating a MATSim population.");
-        return matsimPopulation;
-    }
-
-    @Override
-    public Scenario assembleScenario(Config initialMatsimConfig, int year) {
-        Config config = createMatsimConfig(initialMatsimConfig);
-
-        MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(config);
-        Population population = generateDemand();
-        scenario.setPopulation(population);
-
+        logger.info("Finished creating MATSim scenario.");
         return scenario;
-    }
-
-    private Config createMatsimConfig(Config initialConfig) {
-        logger.info("Stating creating a MATSim config.");
-        Config config = ConfigUtils.loadConfig(initialConfig.getContext());
-        config.qsim().setFlowCapFactor(scalingFactor);
-        config.qsim().setStorageCapFactor(scalingFactor);
-
-        // TODO Add some switch here like "autoGenerateSimplePlans" or similar...
-        PlanCalcScoreConfigGroup.ActivityParams homeActivity = new PlanCalcScoreConfigGroup.ActivityParams("home");
-        homeActivity.setTypicalDuration(12*60*60);
-        config.planCalcScore().addActivityParams(homeActivity);
-
-        PlanCalcScoreConfigGroup.ActivityParams workActivity = new PlanCalcScoreConfigGroup.ActivityParams("work");
-        workActivity.setTypicalDuration(8*60*60);
-        config.planCalcScore().addActivityParams(workActivity);
-
-        config.vspExperimental().setVspDefaultsCheckingLevel(VspExperimentalConfigGroup.VspDefaultsCheckingLevel.warn);
-
-        logger.info("Finished creating a MATSim config.");
-        return config;
     }
 }

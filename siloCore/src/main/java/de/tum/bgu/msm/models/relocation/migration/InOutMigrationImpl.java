@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.models.relocation.migration;
 
-import com.pb.common.datafile.TableDataSet;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.Household;
@@ -56,14 +56,31 @@ public class InOutMigrationImpl extends AbstractModel implements InOutMigration 
     @Override
     public void setup() {
         populationControlMethod = properties.moves.populationControlTotal;
+        double scaleFactor = properties.main.scaleFactor;
         if (populationControlMethod.equals(MovesProperties.PopulationControlTotalMethod.POPULATION)) {
             String fileName = properties.main.baseDirectory + properties.moves.populationCOntrolTotalFile;
             tblPopulationTarget = SiloUtil.readCSVfile(fileName);
             tblPopulationTarget.buildIndex(tblPopulationTarget.getColumnPosition("Year"));
+            if (scaleFactor != 1.) {
+                int periodLength = properties.main.endYear - properties.main.startYear + 1;
+                for (int i = 0; i < periodLength; i++) {
+                    int scaledPopulation = (int) (tblPopulationTarget.getValueAt(i + 1, "Population") * scaleFactor);
+                    tblPopulationTarget.setValueAt(i + 1, "Population", scaledPopulation);
+                }
+            }
         } else if (populationControlMethod.equals(MovesProperties.PopulationControlTotalMethod.MIGRATION)) {
             String fileName = properties.main.baseDirectory + properties.moves.migrationFile;
             tblInOutMigration = SiloUtil.readCSVfile(fileName);
             tblInOutMigration.buildIndex(tblInOutMigration.getColumnPosition("Year"));
+            if (scaleFactor != 1.) {
+                int periodLength = properties.main.endYear - properties.main.startYear + 1;
+                for (int i = 0; i < periodLength; i++) {
+                    int scaledInmigration = (int) (tblInOutMigration.getValueAt(i + 1, "Inmigration") * scaleFactor);
+                    tblInOutMigration.setValueAt(i + 1, "Inmigration", scaledInmigration);
+                    int scaledOutmigration = (int) (tblInOutMigration.getValueAt(i + 1, "Outmigration") * scaleFactor);
+                    tblInOutMigration.setValueAt(i + 1, "Outmigration", scaledOutmigration);
+                }
+            }
         } else if (populationControlMethod.equals(MovesProperties.PopulationControlTotalMethod.RATE)) {
             tblPopulationTarget = new TableDataSet();
             int periodLength = properties.main.endYear - properties.main.startYear + 1;

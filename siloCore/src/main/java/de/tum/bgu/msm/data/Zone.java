@@ -4,6 +4,7 @@ import de.tum.bgu.msm.data.development.Development;
 import org.locationtech.jts.geom.Coordinate;
 import org.opengis.feature.simple.SimpleFeature;
 
+import java.util.Map;
 import java.util.Random;
 
 public interface Zone extends Location, Id {
@@ -24,4 +25,6 @@ public interface Zone extends Location, Id {
 	Development getDevelopment();
 
     void setDevelopment(Development development);
+
+    Map<String, Object> getAttributes();
 }

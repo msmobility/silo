@@ -28,6 +28,7 @@ import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.vehicles.Vehicle;
 import org.opengis.feature.simple.SimpleFeature;
 
+import java.util.Map;
 import java.util.Random;
 
 public class RegionalTravelTimesTest {
@@ -64,13 +65,13 @@ public class RegionalTravelTimesTest {
 
         final Config config = ConfigUtils.createConfig();
         Properties properties = Properties.initializeProperties("./test/silo.properties");
-        MatsimTravelTimes travelTimes = new MatsimTravelTimes(config);
+        MatsimTravelTimesAndCosts travelTimes = new MatsimTravelTimesAndCosts(config);
         DefaultDataContainer dataContainer = new DefaultDataContainer(geoData, null,
                 null, null, travelTimes, null, null, properties);
-        final MatsimData matsimData = new MatsimData(config, properties, ZoneConnectorManager.ZoneConnectorMethod.RANDOM, dataContainer);
         final Network network = getNetwork();
+        final MatsimData matsimData = new MatsimData(config, properties, ZoneConnectorManagerImpl.ZoneConnectorMethod.RANDOM, dataContainer, network, null);
 
-        matsimData.update(network, null, new TravelDisutility() {
+        matsimData.update(new TravelDisutility() {
             @Override
             public double getLinkTravelDisutility(Link link, double v, Person person, Vehicle vehicle) {
                 return link.getLength();
@@ -122,7 +123,7 @@ public class RegionalTravelTimesTest {
             final Link link = factory.createLink(Id.createLinkId(i),
                     network.getNodes().get(Id.createNodeId(i - 1)),
                     network.getNodes().get(Id.createNodeId(i)));
-            final Link linkR = factory.createLink(Id.createLinkId(i+"r"),
+            final Link linkR = factory.createLink(Id.createLinkId(i + "r"),
                     network.getNodes().get(Id.createNodeId(i)),
                     network.getNodes().get(Id.createNodeId(i - 1)));
             network.addLink(link);
@@ -180,6 +181,11 @@ public class RegionalTravelTimesTest {
         @Override
         public void setDevelopment(Development development) {
             delegate.setDevelopment(development);
+        }
+
+        @Override
+        public Map<String, Object> getAttributes() {
+            return null;
         }
 
         @Override

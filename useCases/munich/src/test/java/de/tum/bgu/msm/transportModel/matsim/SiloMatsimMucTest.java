@@ -11,7 +11,6 @@ import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.utils.SiloUtil;
 import junitx.framework.FileAssert;
 import org.apache.log4j.Logger;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.matsim.api.core.v01.Scenario;
@@ -20,12 +19,10 @@ import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.population.io.PopulationReader;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.core.utils.io.IOUtils;
 import org.matsim.testcases.MatsimTestUtils;
 import org.matsim.utils.eventsfilecomparison.EventsFileComparator;
 
 import java.io.File;
-import java.nio.file.Paths;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -83,9 +80,10 @@ public class SiloMatsimMucTest {
         checkPlans();
         checkEvents();
 
-		if (CLEANUP_AFTER_TEST) {
-			IOUtils.deleteDirectoryRecursively(Paths.get(dir.getAbsolutePath()));
-		}
+//		if (CLEANUP_AFTER_TEST) {
+//			IOUtils.deleteDirectoryRecursively(Paths.get(dir.getAbsolutePath()));
+//          Cannot delete a logfile that it is in use!
+//		}
 	}
 
     private void checkEvents() {

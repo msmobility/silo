@@ -18,6 +18,11 @@ package de.tum.bgu.msm.data.dwelling;
 
 import de.tum.bgu.msm.data.MicroLocation;
 import org.locationtech.jts.geom.Coordinate;
+import org.matsim.utils.objectattributes.attributable.Attributes;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author Greg Erhardt
@@ -25,19 +30,23 @@ import org.locationtech.jts.geom.Coordinate;
  */
 public final class DwellingImpl implements Dwelling, MicroLocation {
 
-    //Attributes that must be initialized when one dwelling is generated
+    private final Attributes attributes = new Attributes();
+
     private final int id;
+
     private final int zoneId;
+    private Coordinate coordinate;
+
     private final DwellingType type;
     private final int bedrooms;
     private final int yearBuilt;
     private int hhId;
     private int quality;
     private int price;
+
     //Attributes that could be additionally defined from the synthetic population. Remember to use "set"
     private int floorSpace = 0;
     private DwellingUsage usage = DwellingUsage.GROUP_QUARTER_OR_DEFAULT;
-    private Coordinate coordinate;
 
     DwellingImpl(int id, int zoneId, Coordinate coordinate,
                  int hhId, DwellingType type, int bedrooms,
@@ -125,6 +134,7 @@ public final class DwellingImpl implements Dwelling, MicroLocation {
         return floorSpace;
     }
 
+    @Override
     public void setCoordinate(Coordinate coordinate) {
         this.coordinate = coordinate;
     }
@@ -141,6 +151,15 @@ public final class DwellingImpl implements Dwelling, MicroLocation {
         return usage;
     }
 
+    @Override
+    public Optional<Object> getAttribute(String key) {
+        return Optional.ofNullable(attributes.getAttribute(key));
+    }
+
+    @Override
+    public void setAttribute(String key, Object value) {
+        attributes.putAttribute(key, value);
+    }
 
     @Override
     public String toString() {

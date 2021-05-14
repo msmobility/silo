@@ -1,8 +1,6 @@
 package de.tum.bgu.msm;
 
-import de.tum.bgu.msm.data.accessibility.Accessibility;
-import de.tum.bgu.msm.data.accessibility.AccessibilityImpl;
-import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
+import de.tum.bgu.msm.data.accessibility.*;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.geo.DefaultGeoData;
 import de.tum.bgu.msm.data.geo.GeoData;
@@ -13,9 +11,11 @@ import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.io.input.*;
-import de.tum.bgu.msm.matsim.MatsimTravelTimes;
+import de.tum.bgu.msm.matsim.MatsimTravelTimesAndCosts;
+import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.*;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.matsim.core.config.Config;
 
 public class DataBuilder {
@@ -41,7 +41,7 @@ public class DataBuilder {
                 accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, jobData);
                 break;
             case MATSIM:
-                travelTimes = new MatsimTravelTimes(config);
+                travelTimes = new MatsimTravelTimesAndCosts(config);
 //                accessibility = new MatsimAccessibility(geoData);
                 accessibility = new AccessibilityImpl(geoData, travelTimes, properties, dwellingData, jobData);
                 break;
@@ -49,7 +49,9 @@ public class DataBuilder {
                 throw new RuntimeException("Travel time not recognized! Please set property \"travel.time\" accordingly!");
         }
 
-        CommutingTimeProbability commutingTimeProbability = new CommutingTimeProbability(properties);
+        CommutingTimeProbability commutingTimeProbability =
+                new CommutingTimeProbabilityExponential(properties.accessibility.betaTimeCarExponentialCommutingTime,
+                        properties.accessibility.betaTimePtExponentialCommutingTime);
 
         //TODO: revise this!
         new JobType(properties.jobData.jobTypes);
@@ -60,10 +62,12 @@ public class DataBuilder {
 
 
         RealEstateDataManager realEstateDataManager = new RealEstateDataManagerImpl(
-                DefaultDwellingTypeImpl.values(), dwellingData, householdData, geoData, new DwellingFactoryImpl(), properties);
+                new DefaultDwellingTypes(), dwellingData, householdData, geoData, new DwellingFactoryImpl(), properties);
 
-        JobDataManager jobDataManager = new JobDataManagerImpl(
-                properties, jobFactory, jobData, geoData, travelTimes, commutingTimeProbability);
+        JobDataManager jobDataManager = new JobDataManagerWithCommuteModeChoice(
+                properties, jobFactory, jobData, geoData, travelTimes,
+                commutingTimeProbability, new SimpleCommuteModeChoice(commutingTimeProbability,
+                travelTimes, geoData, properties, SiloUtil.provideNewRandom()));
 
         final HouseholdFactoryMuc hhFactory = new HouseholdFactoryMuc();
         HouseholdDataManager householdDataManager = new HouseholdDataManagerImpl(
@@ -107,5 +111,8 @@ public class DataBuilder {
         SchoolReader ssReader = new SchoolReaderImpl(dataContainer.getSchoolData());
         String schoolsFile = properties.main.baseDirectory + properties.schoolData.schoolsFileName + "_" + year + ".csv";
         ssReader.readData(schoolsFile);
+
+        MicroDataScaler microDataScaler = new MicroDataScaler(dataContainer, properties);
+        microDataScaler.scale();
     }
 }

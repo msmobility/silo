@@ -1,11 +1,11 @@
 package de.tum.bgu.msm.io;
 
-import com.pb.common.datafile.TableDataSet;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.data.AreaTypes;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.geo.GeoData;
-import de.tum.bgu.msm.data.geo.MunichZone;
+import de.tum.bgu.msm.data.geo.ZoneMuc;
 import de.tum.bgu.msm.data.geo.RegionImpl;
 import de.tum.bgu.msm.io.input.GeoDataReader;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -50,7 +50,7 @@ public class GeoDataReaderMuc implements GeoDataReader {
                 region = new RegionImpl(regionId);
                 geoDataMuc.addRegion(region);
             }
-            MunichZone zone = new MunichZone(zoneIds[i], zoneAreas[i], type, ptDistances[i], region, TAZ[i]);
+            ZoneMuc zone = new ZoneMuc(zoneIds[i], zoneAreas[i], type, ptDistances[i], region, TAZ[i]);
             region.addZone(zone);
             geoDataMuc.addZone(zone);
         }

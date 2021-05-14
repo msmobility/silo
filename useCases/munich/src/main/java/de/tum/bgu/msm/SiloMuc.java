@@ -1,20 +1,17 @@
 package de.tum.bgu.msm;
 
 import de.tum.bgu.msm.container.ModelContainer;
-import de.tum.bgu.msm.io.ResultsMonitorMuc;
+import de.tum.bgu.msm.io.MultiFileResultsMonitorMuc;
 import de.tum.bgu.msm.io.output.HouseholdSatisfactionMonitor;
+import de.tum.bgu.msm.io.output.ModalSharesResultMonitor;
 import de.tum.bgu.msm.io.output.MultiFileResultsMonitor;
-import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
+import org.matsim.contrib.dvrp.run.Modal;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Implements SILO for the Munich Metropolitan Area
@@ -40,8 +37,8 @@ public class SiloMuc {
         ModelContainer modelContainer = ModelBuilderMuc.getModelContainerForMuc(dataContainer, properties, config);
 
         SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
-        model.addResultMonitor(new ResultsMonitorMuc(dataContainer, properties));
-        model.addResultMonitor(new MultiFileResultsMonitor(dataContainer, properties));
+        model.addResultMonitor(new MultiFileResultsMonitorMuc(dataContainer, properties));
+        model.addResultMonitor(new ModalSharesResultMonitor(dataContainer, properties));
         model.addResultMonitor(new HouseholdSatisfactionMonitor(dataContainer, properties, modelContainer));
         model.runModel();
         logger.info("Finished SILO.");

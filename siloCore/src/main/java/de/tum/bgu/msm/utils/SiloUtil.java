@@ -1,9 +1,9 @@
 package de.tum.bgu.msm.utils;
 
-import com.pb.common.datafile.CSVFileWriter;
-import com.pb.common.datafile.TableDataFileReader;
-import com.pb.common.datafile.TableDataSet;
-import com.pb.common.matrix.Matrix;
+import de.tum.bgu.msm.common.datafile.CSVFileWriter;
+import de.tum.bgu.msm.common.datafile.TableDataFileReader;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
+import de.tum.bgu.msm.common.matrix.Matrix;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.SummarizeData;
@@ -12,10 +12,10 @@ import de.tum.bgu.msm.properties.PropertiesUtil;
 import omx.OmxMatrix;
 import omx.hdf5.OmxHdf5Datatype;
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.log4j.Appender;
-import org.apache.log4j.FileAppender;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.log4j.*;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.FileAppender;
+import org.apache.logging.log4j.core.config.Configuration;
 import org.matsim.core.controler.Controler;
 
 import java.io.*;
@@ -71,17 +71,28 @@ public class SiloUtil {
      * @throws IOException
      */
     private static void initLogging(String outputDirectory) throws IOException {
-        Logger root = Logger.getRootLogger();
-        FileAppender appender = new FileAppender(Controler.DEFAULTLOG4JLAYOUT, outputDirectory + System.getProperty("file.separator")+ LOG_FILE_NAME, false);
-        appender.setName(LOG_FILE_NAME);
-        root.addAppender(appender);
-        FileAppender warnErrorAppender = new FileAppender(Controler.DEFAULTLOG4JLAYOUT, outputDirectory + System.getProperty("file.separator")+ LOG_WARN_FILE_NAME, false);
-        warnErrorAppender.setName(LOG_WARN_FILE_NAME);
-        warnErrorAppender.setThreshold(Level.WARN);
-        root.addAppender(warnErrorAppender);
+        final LoggerContext ctx = (LoggerContext) org.apache.logging.log4j.LogManager.getContext(false);
+        final Configuration config = ctx.getConfiguration();
+        final boolean appendToExistingFile = false;
+
+        FileAppender appender;
+        { // the "all" logfile
+            appender = FileAppender.newBuilder().setName(LOG_FILE_NAME).setLayout(Controler.DEFAULTLOG4JLAYOUT).withFileName(outputDirectory + System.getProperty("file.separator")+ LOG_FILE_NAME).withAppend(appendToExistingFile).build();
+            appender.start();
+            config.getRootLogger().addAppender(appender, org.apache.logging.log4j.Level.ALL, null);
+        }
+
+        FileAppender warnErrorAppender;
+        { // the "warnings and errors" logfile
+            warnErrorAppender = FileAppender.newBuilder().setName(LOG_WARN_FILE_NAME).setLayout(Controler.DEFAULTLOG4JLAYOUT).withFileName(outputDirectory + System.getProperty("file.separator")+ LOG_WARN_FILE_NAME).withAppend(appendToExistingFile).build();
+            warnErrorAppender.start();
+            config.getRootLogger().addAppender(warnErrorAppender, org.apache.logging.log4j.Level.WARN, null);
+        }
+
+        ctx.updateLoggers();
     }
 
-    static void loadHdf5Lib() {
+    public static void loadHdf5Lib() {
         ClassLoader classLoader = SiloUtil.class.getClassLoader();
         logger.info("Trying to set up native hdf5 lib");
         String path = null;
@@ -591,6 +602,12 @@ public class SiloUtil {
 
     public static int[] convertArrayListToIntArray (ArrayList<Integer> al) {
         int[] list = new int[al.size()];
+        for (int i = 0; i < al.size(); i++) list[i] = al.get(i);
+        return list;
+    }
+
+    public static float[] convertArrayListToFloatArray (ArrayList<Float> al) {
+        float[] list = new float[al.size()];
         for (int i = 0; i < al.size(); i++) list[i] = al.get(i);
         return list;
     }
@@ -1145,6 +1162,4 @@ public class SiloUtil {
         pw.write(timeTracker.toString());
         pw.close();
     }
-
-
 }

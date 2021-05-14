@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.io;
 
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
-import de.tum.bgu.msm.data.person.MarylandPerson;
+import de.tum.bgu.msm.data.person.PersonMstm;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.io.output.PersonWriter;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -49,7 +49,7 @@ public class PersonWriterMstm implements PersonWriter {
             pwp.print(",");
             pwp.print(pp.getAnnualIncome());
             pwp.print(",");
-            pwp.print(((MarylandPerson)pp).getRace().toString());
+            pwp.print(((PersonMstm)pp).getRace().toString());
             pwp.println();
             if (pp.getId() == SiloUtil.trackPp) {
                 SiloUtil.trackingFile("Writing pp " + pp.getId() + " to micro data file.");

@@ -6,7 +6,7 @@ import de.tum.bgu.msm.data.DataSet;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.matsim.MatsimScenarioAssembler;
-import de.tum.bgu.msm.matsim.MatsimTravelTimes;
+import de.tum.bgu.msm.matsim.MatsimTravelTimesAndCosts;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.trafficAssignment.ConfigureMatsim;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -44,7 +44,7 @@ public class MitoMatsimScenarioAssembler implements MatsimScenarioAssembler {
     }
 
     @Override
-    public Scenario assembleScenario(Config initialMatsimConfig, int year) {
+    public Scenario assembleScenario(Config initialMatsimConfig, int year, TravelTimes travelTimes) {
 
         logger.info("  Running travel demand model MITO for the year " + year);
 
@@ -74,7 +74,7 @@ public class MitoMatsimScenarioAssembler implements MatsimScenarioAssembler {
             //Transport model runs for the first time.
             if(travelTimes instanceof SkimTravelTimes) {
                 mitoInputTravelTime = (SkimTravelTimes) travelTimes;
-            } else if(travelTimes instanceof MatsimTravelTimes) {
+            } else if(travelTimes instanceof MatsimTravelTimesAndCosts) {
                 mitoInputTravelTime = new SkimTravelTimes();
                 //MATSim did not run yet
                 if(properties.transportModel.matsimInitialEventsFile == null) {

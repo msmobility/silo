@@ -9,6 +9,7 @@ import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdType;
+import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.events.impls.household.MoveEvent;
 import de.tum.bgu.msm.io.output.YearByYearCsvModelTracker;
 import de.tum.bgu.msm.models.AbstractModel;
@@ -20,6 +21,7 @@ import de.tum.bgu.msm.utils.Sampler;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.commons.math3.util.Precision;
 import org.apache.log4j.Logger;
+import org.locationtech.jts.geom.Coordinate;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -51,8 +53,8 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
     private final Map<HouseholdType, Double> averageHousingSatisfaction = new ConcurrentHashMap<>();
     private final Map<Integer, Double> satisfactionByHousehold = new ConcurrentHashMap<>();
-    private final HashMap<Integer, Integer> householdsByZone = new HashMap<>();
-    private final HashMap<Integer, Double > sumOfSatisfactionsByZone = new HashMap<>();
+    private final Map<Integer, Integer> householdsByZone = new HashMap<>();
+    private final Map<Integer, Double > sumOfSatisfactionsByZone = new HashMap<>();
     private YearByYearCsvModelTracker relocationTracker;
 
 
@@ -74,7 +76,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
     @Override
     public void setup() {
         housingStrategy.setup();
-        String header = new StringJoiner(",").add("hh").add("oldDdd").add("newDd").toString();
+        String header = new StringJoiner(",").add("hh").add("oldDdd").add("newDd").add("oldX").add("oldY").add("newX").add("newY").add("oldZone").add("newZone").add("autos").add("licenses").add("workers").toString();
         Path basePath = Paths.get(properties.main.baseDirectory).resolve("scenOutput").resolve(properties.main.scenarioName).resolve("siloResults/relocation");
         relocationTracker = new YearByYearCsvModelTracker(basePath, "relocation", header);
     }
@@ -137,6 +139,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
             return false;
         }
 
+        final int idOldDd = household.getDwellingId();
         // Step 2: Choose new dwelling
         int idNewDD = searchForNewDwelling(household);
 
@@ -144,15 +147,11 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
             // Step 3: Move household
             dataContainer.getHouseholdDataManager().saveHouseholdMemento(household);
-            relocationTracker.trackRecord(new StringJoiner(",")
-                    .add(String.valueOf(hhId))
-                    .add(String.valueOf(household.getDwellingId()))
-                    .add(String.valueOf(idNewDD))
-                    .toString());
-            moveHousehold(household, household.getDwellingId(), idNewDD);
+            printMove(household, idOldDd, idNewDD);
+            moveHousehold(household, idOldDd, idNewDD);
             if (hhId == SiloUtil.trackHh) {
-                SiloUtil.trackWriter.println("Household " + hhId + " has moved to dwelling " +
-                        household.getDwellingId());
+                SiloUtil.trackWriter.println("Household " + hhId + " has moved to newDwelling " +
+                        idOldDd);
             }
             return true;
         } else {
@@ -162,6 +161,36 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
             }
             return false;
         }
+    }
+
+    private void printMove(Household household, int idOldDd, int idNewDD) {
+        final Dwelling oldDwelling = dataContainer.getRealEstateDataManager().getDwelling(idOldDd);
+        int oldZoneId = oldDwelling.getZoneId();
+        final Dwelling newDwelling = dataContainer.getRealEstateDataManager().getDwelling(idNewDD);
+        int newZoneId = newDwelling.getZoneId();
+        Coordinate oldCoordinate = oldDwelling.getCoordinate();
+        Coordinate newCoordinate = newDwelling.getCoordinate();
+        if(oldCoordinate == null) {
+            oldCoordinate = new Coordinate(Double.NaN, Double.NaN);
+        }
+        if(newCoordinate == null) {
+            newCoordinate = new Coordinate(Double.NaN, Double.NaN);
+        }
+
+        relocationTracker.trackRecord(new StringJoiner(",")
+                .add(String.valueOf(household.getId()))
+                .add(String.valueOf(idOldDd))
+                .add(String.valueOf(idNewDD))
+                .add(String.valueOf(oldCoordinate.x))
+                .add(String.valueOf(oldCoordinate.y))
+                .add(String.valueOf(newCoordinate.x))
+                .add(String.valueOf(newCoordinate.y))
+                .add(String.valueOf(oldZoneId))
+                .add(String.valueOf(newZoneId))
+                .add(String.valueOf(household.getAutos()))
+                .add(String.valueOf(HouseholdUtil.getHHLicenseHolders(household)))
+                .add(String.valueOf(HouseholdUtil.getNumberOfWorkers(household)))
+                .toString());
     }
 
     @Override
@@ -176,7 +205,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
                 // if utility it normalized by regional attibutes other than number of vacant dwellings, it could happen
                 // that a region is chosen with 0 vacant dwellings. To avoid this case, set utility to 0 if no vacant
                 // dwellings are available in that region.
-                utility = 0;
+                utility = 0.;
             } else {
                 utility = housingStrategy.calculateRegionalUtility(household, region);
             }
@@ -280,9 +309,9 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
                 " with partitions of size " + partitionSize);
 
         for (final List<Household> partition : partitions) {
+            HousingStrategy strategy = housingStrategy.duplicate();
             executor.addTaskToQueue(() -> {
                 try {
-                    HousingStrategy strategy = housingStrategy.duplicate();
                     for (Household hh : partition) {
                         final HouseholdType householdType = hh.getHouseholdType();
                         hhByType.add(householdType);
@@ -312,7 +341,11 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         if (idOldDD > 0) {
             dataContainer.getRealEstateDataManager().vacateDwelling(idOldDD);
         }
-        dataContainer.getRealEstateDataManager().removeDwellingFromVacancyList(idNewDD);
+        try {
+            dataContainer.getRealEstateDataManager().removeDwellingFromVacancyList(idNewDD);
+        } catch (NullPointerException e){
+            logger.warn("eh");
+        }
         dataContainer.getRealEstateDataManager().getDwelling(idNewDD).setResidentID(hh.getId());
         hh.setDwelling(idNewDD);
         if (hh.getId() == SiloUtil.trackHh) {
@@ -386,7 +419,9 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
             run = true;
             barrier = new CyclicBarrier(threads +1);
             for (int i = 0; i < threads; i++) {
-                new UtilityUtils(strategy.duplicate()).start();
+                UtilityUtils thread = new UtilityUtils(strategy.duplicate());
+                thread.setDaemon(true);
+                thread.start();
             }
         }
 
@@ -425,11 +460,11 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         }
     }
 
-    public HashMap<Integer, Integer> getHouseholdsByZone() {
+    public Map<Integer, Integer> getHouseholdsByZone() {
         return householdsByZone;
     }
 
-    public HashMap<Integer, Double> getSumOfSatisfactionsByZone() {
+    public Map<Integer, Double> getSumOfSatisfactionsByZone() {
         return sumOfSatisfactionsByZone;
     }
 }

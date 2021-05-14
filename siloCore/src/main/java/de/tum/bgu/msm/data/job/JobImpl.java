@@ -2,6 +2,9 @@ package de.tum.bgu.msm.data.job;
 
 import de.tum.bgu.msm.data.MicroLocation;
 import org.locationtech.jts.geom.Coordinate;
+import org.matsim.utils.objectattributes.attributable.Attributes;
+
+import java.util.Optional;
 
 public class JobImpl implements Job, MicroLocation {
 
@@ -10,6 +13,8 @@ public class JobImpl implements Job, MicroLocation {
     private final String type;
     private Coordinate coordinate;
     private int zoneId;
+
+    private final Attributes attributes = new Attributes();
 
     JobImpl (int id, int zoneId, Coordinate coordinate, int workerId, String type) {
         this.id = id;
@@ -41,6 +46,26 @@ public class JobImpl implements Job, MicroLocation {
     @Override
     public void setWorkerID(int personID) {
         this.workerId = personID;
+    }
+
+    @Override
+    public Optional<Integer> getStartTimeInSeconds() {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<Integer> getWorkingTimeInSeconds() {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<Object> getAttribute(String key) {
+        return Optional.ofNullable(attributes.getAttribute(key));
+    }
+
+    @Override
+    public void setAttribute(String key, Object value) {
+        attributes.putAttribute(key, value);
     }
 
     @Override

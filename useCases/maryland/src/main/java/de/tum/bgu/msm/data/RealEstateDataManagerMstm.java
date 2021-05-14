@@ -20,7 +20,7 @@ public class RealEstateDataManagerMstm implements RealEstateDataManager {
 
     public RealEstateDataManagerMstm (
             DwellingFactory dwellingFactory, DwellingData dwellingData,
-            DwellingType[] dwellingTypes, HouseholdData householdData,
+            DwellingTypes dwellingTypes, HouseholdData householdData,
             GeoData geoData, Properties properties) {
         delegate = new RealEstateDataManagerImpl(
                 dwellingTypes, dwellingData,
@@ -66,6 +66,11 @@ public class RealEstateDataManagerMstm implements RealEstateDataManager {
     }
 
     @Override
+    public DwellingData getDwellingData() {
+        return delegate.getDwellingData();
+    }
+
+    @Override
     public Map<Integer, Float> getRentPaymentsForIncomeGroup(IncomeCategory incomeCategory) {
         return delegate.getRentPaymentsForIncomeGroup(incomeCategory);
     }
@@ -97,7 +102,7 @@ public class RealEstateDataManagerMstm implements RealEstateDataManager {
     }
 
     @Override
-    public List<DwellingType> getDwellingTypes() {
+    public DwellingTypes getDwellingTypes() {
         return delegate.getDwellingTypes();
     }
 

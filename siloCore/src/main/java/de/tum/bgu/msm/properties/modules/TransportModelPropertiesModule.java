@@ -44,6 +44,10 @@ public class TransportModelPropertiesModule {
      */
     public final double matsimScaleFactor;
 
+    public final boolean onlySimulateCarTrips;
+
+    public final boolean includeAccessEgress;
+
     public enum TransportModelIdentifier {
         MITO_MATSIM, MATSIM, NONE;
     }
@@ -76,7 +80,16 @@ public class TransportModelPropertiesModule {
 
         PropertiesUtil.newPropertySubmodule("Transport - silo-matsim");
         matsimInitialEventsFile = PropertiesUtil.getStringProperty(bundle, "matsim.initial.events", null);
-        matsimScaleFactor = PropertiesUtil.getDoubleProperty(bundle, "matsim.scale.factor", 0.01);
+
+        // 1.0 is also the default for flow and storage cap scaling in MATSim; setting the default to 1.0 here is more consistent. dz, dec'19
+        PropertiesUtil.newPropertySubmodule("MATSim -- Scale factor for simulated MATSim populations");
+        matsimScaleFactor = PropertiesUtil.getDoubleProperty(bundle, "matsim.scale.factor", 1.);
+
+        PropertiesUtil.newPropertySubmodule("MATSim - Only simulate car trips");
+        onlySimulateCarTrips = PropertiesUtil.getBooleanProperty(bundle, "matsim.simulate.car.trips.only", true);
+
+        PropertiesUtil.newPropertySubmodule("MATSim - Include access and egress walks for all modes");
+        includeAccessEgress = PropertiesUtil.getBooleanProperty(bundle, "matsim.include.access.egress", false);
     }
 
 }

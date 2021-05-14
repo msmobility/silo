@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation;
 
 
-import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
+import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypes;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.dwelling.DwellingUsage;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -500,16 +500,16 @@ public class MicroDataManager {
 
 
     public DwellingType translateDwellingType (int buildingSize, float ddType1Prob, float ddType3Prob){
-        DefaultDwellingTypeImpl type = DefaultDwellingTypeImpl.MF234;
+        DefaultDwellingTypes.DefaultDwellingTypeImpl type = DefaultDwellingTypes.DefaultDwellingTypeImpl.MF234;
         if (buildingSize < 3){
             if (SiloUtil.getRandomNumberAsFloat() < ddType1Prob){
-                type = DefaultDwellingTypeImpl.SFD;
+                type = DefaultDwellingTypes.DefaultDwellingTypeImpl.SFD;
             } else {
-                type = DefaultDwellingTypeImpl.SFA;
+                type = DefaultDwellingTypes.DefaultDwellingTypeImpl.SFA;
             }
         } else {
             if (SiloUtil.getRandomNumberAsFloat() < ddType3Prob){
-                type = DefaultDwellingTypeImpl.MF5plus;
+                type = DefaultDwellingTypes.DefaultDwellingTypeImpl.MF5plus;
             }
         }
         return type;

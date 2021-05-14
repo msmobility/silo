@@ -19,16 +19,27 @@ package de.tum.bgu.msm.data.job;
 import de.tum.bgu.msm.data.Id;
 import de.tum.bgu.msm.data.MicroLocation;
 
+import java.util.Optional;
+
 /**
  * Job interface
+ *
  * @author Nkuehnel
  **/
- public interface Job extends MicroLocation, Id {
+public interface Job extends MicroLocation, Id {
 
-     int getWorkerId();
+    int getWorkerId();
 
-     String getType();
+    String getType();
 
-     void setWorkerID(int personID);
+    void setWorkerID(int personID);
+
+    Optional<Integer> getStartTimeInSeconds();
+
+    Optional<Integer> getWorkingTimeInSeconds();
+
+    Optional<Object> getAttribute(String key);
+
+    void setAttribute(String key, Object value);
 
 }

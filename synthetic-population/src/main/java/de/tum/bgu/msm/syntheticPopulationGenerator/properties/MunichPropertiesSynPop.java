@@ -13,9 +13,13 @@ public class MunichPropertiesSynPop extends AbstractPropertiesSynPop {
 
         PropertiesUtil.newPropertySubmodule("SP: main properties");
 
+        runIPU = PropertiesUtil.getBooleanProperty(bundle, "run.ipu.synthetic.pop", false);
         runMicrolocation = PropertiesUtil.getBooleanProperty(bundle, "run.sp.microlocation", false);
 
         //todo I would read these attributes from a file, probable, the same as read in the next property
+
+
+        attributesMunicipality = PropertiesUtil.getStringPropertyArray(bundle, "attributes.municipality");
 
         // todo this table is not a property but a data container, "ID_city" might be a property? (if this is applciable to other implementations)
         marginalsMunicipality = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"marginals.municipality","input/syntheticPopulation/marginalsMunicipality.csv"));
