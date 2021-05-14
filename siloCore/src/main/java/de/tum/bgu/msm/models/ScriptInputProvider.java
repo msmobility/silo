@@ -29,18 +29,8 @@ public final class ScriptInputProvider {
     /**
      * TODO
      */
-    private static InputStream deathProbabilityScriptInput
-            = ScriptInputProvider.class.getResourceAsStream("DeathProbabilityCalc");
-
-    /**
-     * TODO
-     */
     private static InputStream marriageProbabilityScriptInput
             = ScriptInputProvider.class.getResourceAsStream("MarriageProbabilityCalc");
-
-    public static InputStream getDeathProbabilityScriptInput() {
-        return deathProbabilityScriptInput;
-    }
 
     public static InputStream getMarriageProbabilityScriptInput() {
         return marriageProbabilityScriptInput;
