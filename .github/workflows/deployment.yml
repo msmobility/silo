@@ -36,7 +36,7 @@ jobs:
           server-password: CLOUDSMITH_TOKEN # env variable for token in deploy       
 
       - name: Publish to Cloudsmith
-        run: mvn deploy
+        run: mvn deploy --fail-at-end --batch-mode -Dmatsim.preferLocalDtds=true
         env:
           CLOUDSMITH_USERNAME: nico-kuhnel
           CLOUDSMITH_TOKEN: ${{ secrets.cloudsmithToken }}
