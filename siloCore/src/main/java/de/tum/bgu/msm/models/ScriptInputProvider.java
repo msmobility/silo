@@ -11,9 +11,6 @@ public final class ScriptInputProvider {
             = ScriptInputProvider.class.getResourceAsStream("RenovationCalc");
     private static InputStream movesScriptInput  = ScriptInputProvider.class.getResourceAsStream("MovesOrNotCalc");
 
-    private static InputStream leaveParentalHouseholdScriptInput
-            = ScriptInputProvider.class.getResourceAsStream("LeaveParentHhCalc");
-
     /**
      * TODO
      */
@@ -22,10 +19,6 @@ public final class ScriptInputProvider {
 
     public static InputStream getMarriageProbabilityScriptInput() {
         return marriageProbabilityScriptInput;
-    }
-
-    public static InputStream getLeaveParentalHouseholdScriptInput() {
-        return leaveParentalHouseholdScriptInput;
     }
 
     public static InputStream getRenovationScriptInput() {
