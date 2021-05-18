@@ -2,8 +2,8 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.germany.preparation;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import com.pb.common.datafile.TableDataSet;
-import com.pb.common.matrix.Matrix;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
+import de.tum.bgu.msm.common.matrix.Matrix;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -102,6 +102,7 @@ public class ReadZonalData {
 
     private void readZones(){
         //TAZ attributes
+        logger.info("   Started to read TAZ 100 by 100 m");
         HashMap<Integer, int[]> cityTAZ = new HashMap<>();
         Map<Integer, Map<Integer, Float>> probabilityZone = new HashMap<>();
         Table<Integer, Integer, Integer> schoolCapacity = HashBasedTable.create();
@@ -143,6 +144,9 @@ public class ReadZonalData {
             schoolCapacity.put(taz, 3, capacityTertiary);
             zoneCoordinates.put(taz,"coordX",coordX);
             zoneCoordinates.put(taz,"coordY",coordY);
+            if (isPowerOfFour(i)) {
+                logger.info("   Read " + i + " TAZ 100 by 100 m");
+            }
         }
         dataSetSynPop.setProbabilityZone(probabilityZone);
         dataSetSynPop.setTazByMunicipality(cityTAZ);
@@ -150,6 +154,7 @@ public class ReadZonalData {
         dataSetSynPop.setTazs(tazs);
         dataSetSynPop.setTazIDs(tazs.stream().mapToInt(i -> i).toArray());
         dataSetSynPop.setZoneCoordinates(zoneCoordinates);
+        logger.info("   Finished to read TAZ 100 by 100 m");
     }
 
     private void readTripLengthMatrix(){
@@ -167,7 +172,7 @@ public class ReadZonalData {
                 tripLengthMatrix.setValueAt(i,j, tripLengthMatrix.getValueAt(i,j)/1000);
             }
         }
-        dataSetSynPop.setTripLengthTazToTaz(tripLengthMatrix);
+        dataSetSynPop.setDistanceTazToTaz(tripLengthMatrix);
         logger.info("Read OMX matrix");
     }
 
@@ -208,6 +213,16 @@ public class ReadZonalData {
             logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
         }
         dataSetSynPop.setTripLengthDistribution(frequencies);
+
+    }
+
+    private static boolean isPowerOfFour(int number){
+        double pow = Math.pow(number, 0.25);
+        if (pow - Math.floor(pow) == 0){
+            return  true;
+        } else {
+            return false;
+        }
 
     }
 }

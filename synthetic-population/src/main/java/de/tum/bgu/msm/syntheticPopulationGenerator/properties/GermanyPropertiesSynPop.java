@@ -1,6 +1,5 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.properties;
 
-import com.pb.common.datafile.TableDataSet;
 import de.tum.bgu.msm.properties.PropertiesUtil;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.commons.math.distribution.GammaDistributionImpl;
@@ -14,6 +13,8 @@ public class GermanyPropertiesSynPop extends AbstractPropertiesSynPop {
         PropertiesUtil.newPropertySubmodule("SP: main properties");
 
         state = PropertiesUtil.getStringProperty(bundle, "state.synPop", "01");
+        numberOfSubpopulations = PropertiesUtil.getIntProperty(bundle, "micro.data.subpopulations", 1);
+        populationSplitting = PropertiesUtil.getBooleanProperty(bundle, "micro.data.splitting", false);
         runSyntheticPopulation = PropertiesUtil.getBooleanProperty(bundle, "run.synth.pop.generator", false);
         runIPU = PropertiesUtil.getBooleanProperty(bundle, "run.ipu.synthetic.pop", false);
         runAllocation = PropertiesUtil.getBooleanProperty(bundle, "run.population.allocation", false);
@@ -45,7 +46,7 @@ public class GermanyPropertiesSynPop extends AbstractPropertiesSynPop {
         zoneSystemFileName = PropertiesUtil.getStringProperty(bundle,"taz.definition ","input/syntheticPopulation/" + state + "/zoneAttributeswithTAZ.csv");
 
         //todo this cannot be the final name of the matrix
-        omxFileName = PropertiesUtil.getStringProperty(bundle, "distanceODmatrix", "input/syntheticPopulation/tdTest_travelTime.omx");
+        omxFileName = PropertiesUtil.getStringProperty(bundle, "distanceODmatrix", "input/syntheticPopulation/tdTest_distance.omx");
 
         attributesMunicipality = PropertiesUtil.getStringPropertyArray(bundle, "attributes.municipality", new String[]{"Agr", "Ind", "Srv"});
         attributesCounty = PropertiesUtil.getStringPropertyArray(bundle, "attributes.county", new String[]{"Agr", "Ind", "Srv"});

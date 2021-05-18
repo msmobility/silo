@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.germany.allocation;
 
-import com.pb.common.datafile.TableDataSet;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.job.JobUtils;

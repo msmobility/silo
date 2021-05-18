@@ -58,7 +58,7 @@ public class DwellingReaderMucMito implements DwellingReader {
                     }
                 }
                 Dwelling dd = DwellingUtils.getFactory().createDwelling(id, zoneId, coordinate, hhId,
-                        DefaultDwellingTypeImpl.MF234, 50, 4, 600, 2000);   // this automatically puts it in id->dwelling map in Dwelling class
+                        DefaultDwellingTypes.DefaultDwellingTypeImpl.MF234, 50, 4, 600, 2000);   // this automatically puts it in id->dwelling map in Dwelling class
                 dwellingData.addDwelling(dd);
                 if (id == SiloUtil.trackDd) {
                     SiloUtil.trackWriter.println("Read dwelling with following attributes from " + path);

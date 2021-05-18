@@ -1,11 +1,9 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.germany.allocation;
 
 import com.google.common.math.LongMath;
-import com.google.inject.internal.cglib.core.$LocalVariablesSorter;
-import com.pb.common.datafile.TableDataSet;
-import com.pb.common.matrix.Matrix;
-import com.pb.common.matrix.RowVector;
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
+import de.tum.bgu.msm.common.matrix.Matrix;
+import de.tum.bgu.msm.common.matrix.RowVector;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.Household;
@@ -52,7 +50,7 @@ public class AssignJobs {
 
 
     public void run() {
-        logger.info("   Running module: job de.tum.bgu.msm.syntheticPopulationGenerator.germany.disability");
+        logger.info("   Running module: job de.tum.bgu.msm.syntheticPopulationGenerator.germany.allocation.AssignJobs");
         calculateTripLengthImpedance();
         identifyVacantJobsByZoneType();
         shuffleWorkers();
@@ -62,10 +60,10 @@ public class AssignJobs {
         //TableDataSet cellsMatrix = PropertiesSynPop.get().main.cellsMatrix;
 
         for (Person pp : workerArrayList){
-            String selectedJobTypeAsString = (String) ((PersonMuc) pp).getAdditionalAttributes().get("jobType");
+            String selectedJobTypeAsString = (String) pp.getAttribute("jobType").get();
             ///todo found some empty job types
             if (selectedJobTypeAsString.equals("")){
-                ((PersonMuc) pp).getAdditionalAttributes().put("jobType", "Serv");
+               pp.setAttribute("jobType", "Serv");
                 selectedJobTypeAsString="Serv";
             }
 
@@ -73,17 +71,7 @@ public class AssignJobs {
 
             Household hh = pp.getHousehold();
 
-            //int ddZone = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
-
-            //int origin=0;
             int origin = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
-
-            //for(int cells : cellsMatrix.getColumnAsInt("ID_cell")) {
-            //    if ( cells == ddZone) {
-            //        origin = (int) cellsMatrix.getIndexedValueAt(cells, "TAZ");
-            //        break;
-            //    }
-            //}
 
             int[] workplace = selectWorkplace(origin, selectedJobType);
 
@@ -108,10 +96,12 @@ public class AssignJobs {
    private void calculateTripLengthImpedance(){
 
 
-        tripLengthImpedance = new Matrix(dataSetSynPop.getTripLengthTazToTaz().getRowCount(), dataSetSynPop.getTripLengthTazToTaz().getColumnCount());
-        for (int i = 1; i <= dataSetSynPop.getTripLengthTazToTaz().getRowCount(); i ++){
-            for (int j = 1; j <= dataSetSynPop.getTripLengthTazToTaz().getColumnCount(); j++){
-                int tripLength = (int) dataSetSynPop.getTripLengthTazToTaz().getValueAt(i,j);
+       int rowCount = dataSetSynPop.getDistanceTazToTaz().getRowCount();
+       int columnCount = dataSetSynPop.getDistanceTazToTaz().getColumnCount();
+       tripLengthImpedance = new Matrix(rowCount, columnCount);
+        for (int i = 1; i <= rowCount; i ++){
+            for (int j = 1; j <= columnCount; j++){
+                int tripLength = (int) dataSetSynPop.getDistanceTazToTaz().getValueAt(i,j);
                 tripLengthImpedance.setValueAt(i, j, tripLength);
 
             }

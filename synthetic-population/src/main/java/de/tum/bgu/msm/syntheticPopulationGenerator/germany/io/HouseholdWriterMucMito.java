@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.germany.io;
 
+import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdMuc;
@@ -12,10 +13,12 @@ import java.io.PrintWriter;
 public class HouseholdWriterMucMito implements HouseholdWriter {
 
     private final HouseholdDataManager householdData;
+    private final RealEstateDataManager realEstateData;
     private final static Logger logger = Logger.getLogger(HouseholdWriterMucMito.class);
 
-    public HouseholdWriterMucMito(HouseholdDataManager householdData) {
+    public HouseholdWriterMucMito(HouseholdDataManager householdData, RealEstateDataManager realEstateData) {
         this.householdData = householdData;
+        this.realEstateData = realEstateData;
     }
     @Override
     public void writeHouseholds(String path) {
@@ -31,7 +34,7 @@ public class HouseholdWriterMucMito implements HouseholdWriter {
             pwh.print(",");
             pwh.print(hh.getDwellingId());
             pwh.print(",");
-            pwh.print(((HouseholdMuc) hh).getAdditionalAttributes().get("zone"));
+            pwh.print(realEstateData.getDwelling(hh.getDwellingId()).getZoneId());
             pwh.print(",");
             pwh.print(hh.getHhSize());
             pwh.print(",");

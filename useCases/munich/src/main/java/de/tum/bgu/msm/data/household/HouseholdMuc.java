@@ -13,7 +13,6 @@ public class HouseholdMuc implements Household {
     private final HouseholdImpl delegate;
     private Nationality nationality;
     private int autonomous = 0;
-    private final Map<String, Object> additionalAttributes = new HashMap<>();
 
     public HouseholdMuc(int id, int dwellingId, int autos) {
         delegate = new HouseholdImpl(id, dwellingId, autos);
@@ -111,11 +110,4 @@ public class HouseholdMuc implements Household {
         nationality = Nationality.OTHER;
     }
 
-    public Map<String, Object> getAdditionalAttributes() {
-        return additionalAttributes;
-    }
-
-    public void setAdditionalAttributes(String key, Object value){
-        this.additionalAttributes.put(key, value);
-    }
 }

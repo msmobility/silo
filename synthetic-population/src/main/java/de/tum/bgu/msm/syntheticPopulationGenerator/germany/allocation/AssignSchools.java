@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.germany.allocation;
 
 import com.google.common.collect.Table;
-import com.pb.common.matrix.Matrix;
+import de.tum.bgu.msm.common.matrix.Matrix;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.Household;
@@ -35,8 +35,17 @@ public class AssignSchools {
     }
 
     public void run() {
-        logger.info("   Running module: school de.tum.bgu.msm.syntheticPopulationGenerator.germany.disability");
-        calculateTripLengthImpedance();
+        logger.info("   Running module: school de.tum.bgu.msm.syntheticPopulationGenerator.germany.allocation.AssignSchools");
+        //all students are assigned to their home location
+        RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
+        for (Person pp : dataContainer.getHouseholdDataManager().getPersons()){
+            if ((int) pp.getAttribute("schoolType").get() > 0){
+                int homeTaz = realEstate.getDwelling(pp.getHousehold().getDwellingId()).getZoneId();
+                ((PersonMuc) pp).setSchoolPlace(homeTaz);
+            }
+        }
+
+        /*calculateTripLengthImpedance();
         initializeSchoolCapacity();
         shuffleStudents();
 
@@ -50,14 +59,13 @@ public class AssignSchools {
         RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
         for (Person p : studentArrayList){
             PersonMuc pp = ((PersonMuc)p);
-            int schooltaz;
+            int schooltaz = 0;
             Household household = pp.getHousehold();
-            int hometaz = realEstate.getDwelling(household.getDwellingId()).getZoneId();
-            if ((int) pp.getAdditionalAttributes().get("schoolType") == 3){
+            int hometaz = (int) household.getAttribute("zone").get();
+            if ((int) pp.getAttribute("schoolType").get() == 3){
                 //pp.getAdditionalAttributes().get("schoolType");;pp.getSchoolType()
-                schooltaz = selectTertiarySchool(hometaz);
+                //schooltaz = selectTertiarySchool(hometaz);
             } else {
-                schooltaz = 0;
                 //schooltaz = selectPrimarySecondarySchool(hometaz, pp.getSchoolType());
             }
             if (schooltaz > 0) {
@@ -69,19 +77,19 @@ public class AssignSchools {
                 it++;
                 logging = Math.pow(2, it);
             }
-        }
+        }*/
 
     }
 
 
     private void calculateTripLengthImpedance(){
 
-        tripLengthImpedanceTertiary = new Matrix(dataSetSynPop.getTripLengthTazToTaz().getRowCount(), dataSetSynPop.getTripLengthTazToTaz().getColumnCount());
-        tripLengthImpedancePrimarySecondary = new Matrix(dataSetSynPop.getTripLengthTazToTaz().getRowCount(), dataSetSynPop.getTripLengthTazToTaz().getColumnCount());
+        tripLengthImpedanceTertiary = new Matrix(dataSetSynPop.getDistanceTazToTaz().getRowCount(), dataSetSynPop.getDistanceTazToTaz().getColumnCount());
+        tripLengthImpedancePrimarySecondary = new Matrix(dataSetSynPop.getDistanceTazToTaz().getRowCount(), dataSetSynPop.getDistanceTazToTaz().getColumnCount());
         Map<Integer, Float> utilityMapTertiary = dataSetSynPop.getTripLengthDistribution().column("Tertiary");
-        for (int i = 1; i <= dataSetSynPop.getTripLengthTazToTaz().getRowCount(); i ++){
-            for (int j = 1; j <= dataSetSynPop.getTripLengthTazToTaz().getColumnCount(); j++){
-                int tripLength = (int) dataSetSynPop.getTripLengthTazToTaz().getValueAt(i,j);
+        for (int i = 1; i <= dataSetSynPop.getDistanceTazToTaz().getRowCount(); i ++){
+            for (int j = 1; j <= dataSetSynPop.getDistanceTazToTaz().getColumnCount(); j++){
+                int tripLength = (int) dataSetSynPop.getDistanceTazToTaz().getValueAt(i,j);
                 tripLengthImpedanceTertiary.setValueAt(i, j, tripLength);
                 tripLengthImpedancePrimarySecondary.setValueAt(i, j, tripLength);
             }

@@ -271,7 +271,7 @@ public class SyntheticPopJP implements SyntheticPopI {
                 }
             }
         }
-        dataSetSynPop.setTravelTimeTazToTaz(distanceMatrix);
+        dataSetSynPop.setDistanceTazToTaz(distanceMatrix);
         logger.info("   Read OMX matrix");
 
 

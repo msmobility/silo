@@ -77,4 +77,7 @@ public abstract class AbstractPropertiesSynPop {
     public TableDataSet incomeCoefficients;
     public double jobScaler;
 
+    public int numberOfSubpopulations;
+    public boolean populationSplitting;
+
 }

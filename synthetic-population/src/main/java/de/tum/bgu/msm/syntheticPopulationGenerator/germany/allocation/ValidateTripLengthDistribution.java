@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.germany.allocation;
 
-import com.pb.common.datafile.TableDataSet;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.Household;
@@ -40,7 +40,7 @@ public class ValidateTripLengthDistribution {
         logger.info("   Running module: read population");
         initializeODmatrices();
         summarizeCommutersTripLength();
-        summarizeStudentsTripLength();
+        //summarizeStudentsTripLength();
         System.out.println("total trip length: "+ (totalTripLength) );
         System.out.println("number of workers: "+ (numWorkers) );
 
@@ -87,7 +87,7 @@ public class ValidateTripLengthDistribution {
                 Household hh = pp.getHousehold();
                 int origin = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
                 int destination = jobDataManager.getJobFromId(pp.getJobId()).getZoneId();
-                int value = (int) dataSetSynPop.getTripLengthTazToTaz().getValueAt(origin, destination);
+                int value = (int) dataSetSynPop.getDistanceTazToTaz().getValueAt(origin, destination);
                 commuteDistance.addValue(value);
                 totalTripLength = value + totalTripLength;
             }
@@ -105,7 +105,7 @@ public class ValidateTripLengthDistribution {
                 Household hh = pp.getHousehold();
                 int origin = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
                 int destination = ((PersonMuc) pp).getSchoolPlace();
-                int value = (int) dataSetSynPop.getTripLengthTazToTaz().getValueAt(origin, destination);
+                int value = (int) dataSetSynPop.getDistanceTazToTaz().getValueAt(origin, destination);
                 studentCommuteTime.addValue(value);
             //}
         }
@@ -144,7 +144,7 @@ public class ValidateTripLengthDistribution {
     private ArrayList<Person> obtainStudents (int school){
         ArrayList<Person> studentArrayList = new ArrayList<>();
         for (Person pp : dataContainer.getHouseholdDataManager().getPersons()) {
-            if (pp.getOccupation() == Occupation.STUDENT & (int) ((PersonMuc)pp).getAdditionalAttributes().get("schoolType") == school) {
+            if (pp.getOccupation() == Occupation.STUDENT & (int) ((PersonMuc)pp).getAttribute("schoolType").get() == school) {
                 //((PersonMuc)pp).getSchoolType()
                 studentArrayList.add(pp);
             }

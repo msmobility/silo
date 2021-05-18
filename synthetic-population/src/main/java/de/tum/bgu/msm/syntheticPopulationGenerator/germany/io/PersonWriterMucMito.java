@@ -54,13 +54,13 @@ public class PersonWriterMucMito implements PersonWriter {
             pwp.print(",");
             pwp.print(pp.getAnnualIncome());
             pwp.print(",");
-            pwp.print(((PersonMuc)pp).getAdditionalAttributes().get("jobType"));
+            pwp.print(pp.getAttribute("jobType").get().toString());
             pwp.print(",");
-            pwp.print(((PersonMuc)pp).getAdditionalAttributes().get("disability").toString());
+            pwp.print(pp.getAttribute("disability").get().toString());
             pwp.print(",");
-            pwp.print(((PersonMuc)pp).getSchoolId());
+            pwp.print(0);
             pwp.print(",");
-            pwp.print(((PersonMuc)pp).getAdditionalAttributes().get("schoolType"));
+            pwp.print(pp.getAttribute("schoolType").get().toString());
             pwp.print(",");
             pwp.print(((PersonMuc)pp).getSchoolPlace());
             pwp.println();

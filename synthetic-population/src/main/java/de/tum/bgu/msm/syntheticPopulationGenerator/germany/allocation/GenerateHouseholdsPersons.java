@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.germany.allocation;
 
 import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
@@ -12,6 +13,7 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.munich.disability.DisabilityB
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
+import org.locationtech.jts.geom.Coordinate;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -55,13 +57,14 @@ public class GenerateHouseholdsPersons {
         previousPersons = 0;
         householdData = dataContainer.getHouseholdDataManager();
         for (int municipality : dataSetSynPop.getMunicipalities()){
-            initializeMunicipalityData(municipality);
+            int municipalityTAZid = initializeMunicipalityData(municipality);
             List<Integer> hhSelection = selectMultipleHouseholds(totalHouseholds);
             List<Integer> tazSelection = selectMultipleTAZ(totalHouseholds);
             for (int draw = 0; draw < totalHouseholds; draw++) {
                 int hhSelected = hhSelection.get(draw);
                 int tazSelected = tazSelection.get(draw);
-                Household household = generateHousehold(tazSelected);
+                Household household = generateHousehold(tazSelected, municipalityTAZid);
+                generateDwelling(household.getId(), tazSelected, municipalityTAZid);
                 generatePersons(hhSelected, household, tazSelected);
             }
             logger.info("   Municipality " + municipality + ". Generated " + householdCounter  + " households.");
@@ -69,24 +72,37 @@ public class GenerateHouseholdsPersons {
     }
 
 
-    private Household generateHousehold(int taz){
+    private Household generateHousehold(int cell100by100, int municipalityTAZid){
 
         HouseholdFactory factory = householdData.getHouseholdFactory();
         int id = householdData.getNextHouseholdId();
         Household household = factory.createHousehold(id,id,0);
                 householdData.addHousehold(household);
         householdCounter++;
-        int coordX = dataSetSynPop.getZoneCoordinates().get(taz,"coordX");
-        int coordY = dataSetSynPop.getZoneCoordinates().get(taz,"coordY");
+        int coordX = dataSetSynPop.getZoneCoordinates().get(cell100by100,"coordX");
+        int coordY = dataSetSynPop.getZoneCoordinates().get(cell100by100,"coordY");
         //check whats in Zone features
-        ((HouseholdMuc)household).setAdditionalAttributes("zone", taz);
-        ((HouseholdMuc)household).setAdditionalAttributes("coordX", coordX);
-        ((HouseholdMuc)household).setAdditionalAttributes("coordY", coordY);
+        household.setAttribute("zone", municipalityTAZid);
+        household.setAttribute("coordX", coordX);
+        household.setAttribute("coordY", coordY);
         return household;
     }
 
+    private void generateDwelling(int idHousehold, int cell100by100, int municipalityTAZid){
 
-    private void generatePersons(int hhSelected, Household hh, int taz){
+        RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
+        int newDdId = realEstate.getNextDwellingId();
+
+        int coordX = dataSetSynPop.getZoneCoordinates().get(cell100by100,"coordX");
+        int coordY = dataSetSynPop.getZoneCoordinates().get(cell100by100,"coordY");
+
+        Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, municipalityTAZid, new Coordinate(coordX, coordY), idHousehold,
+                DefaultDwellingTypes.DefaultDwellingTypeImpl.MF234, 0, 4, 0, 0);
+        realEstate.addDwelling(dwell);
+    }
+
+
+    private void generatePersons(int hhSelected, Household hh, int cell100by100){
 
         int hhSize = dataSetSynPop.getHouseholdTable().get(hhSelected, "hhSize");
         PersonFactory factory = householdData.getPersonFactory();
@@ -95,8 +111,7 @@ public class GenerateHouseholdsPersons {
             int personSelected = dataSetSynPop.getHouseholdTable().get(hhSelected, "personCount") + person;
             int age = dataSetSynPop.getPersonTable().get(personSelected, "age");
 
-            float BBSR = PropertiesSynPop.get().main.cellsMatrix.getValueAt(taz,"BBSR_Type");
-
+            float BBSR = PropertiesSynPop.get().main.cellsMatrix.getIndexedValueAt(cell100by100,"BBSR_Type");
 
             Gender gender = Gender.valueOf(dataSetSynPop.getPersonTable().get(personSelected, "gender"));
             Occupation occupation = Occupation.valueOf(dataSetSynPop.getPersonTable().get(personSelected, "occupation"));
@@ -105,13 +120,13 @@ public class GenerateHouseholdsPersons {
             boolean license = MicroDataManager.obtainLicense(gender, age, BBSR);
 
 
-            String jobtype = microDataManager.translateJobType(dataSetSynPop.getPersonTable().get(personSelected, "sectorComplete"));
+            String jobtype = microDataManager.translateJobType10sectors(dataSetSynPop.getPersonTable().get(personSelected, "sectorComplete"));
             int school = dataSetSynPop.getPersonTable().get(personSelected, "school");
             PersonMuc pers = (PersonMuc) factory.createPerson(id, age, gender, occupation,PersonRole.SINGLE, 0, income); //(int id, int age, int gender, Race race, int occupation, int workplace, int income)
             pers.setDriverLicense(license);
-            pers.setAdditionalAttributes("jobType", jobtype);
-            pers.setAdditionalAttributes("schoolType", school);
-            pers.setAdditionalAttributes("disability",Disability.WITHOUT);
+            pers.setAttribute("jobType", jobtype);
+            pers.setAttribute("schoolType", school);
+            pers.setAttribute("disability",Disability.WITHOUT);
             householdData.addPerson(pers);
             householdData.addPersonToHousehold(pers, hh);
             personCounter++;
@@ -138,7 +153,7 @@ public class GenerateHouseholdsPersons {
     }
 
 
-    private void initializeMunicipalityData(int municipality){
+    private int initializeMunicipalityData(int municipality){
 
         logger.info("   Municipality " + municipality + ". Starting to generate households and persons");
         if (!PropertiesSynPop.get().main.boroughIPU) {
@@ -169,6 +184,7 @@ public class GenerateHouseholdsPersons {
         sumTAZs = dataSetSynPop.getProbabilityZone().get(municipality).values().stream().mapToDouble(Number::doubleValue).sum();
         personCounter = 0;
         householdCounter = 0;
+        return (int) PropertiesSynPop.get().main.cellsMatrix.getIndexedValueAt(idTAZs[0],"TAZ");
     }
 
 

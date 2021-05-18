@@ -68,13 +68,13 @@ public class PersonReaderMucMito implements PersonReader {
                 }
                 pp.setDriverLicense(license);
                 String jobType =  lineElements[posjobType];
-                pp.setAdditionalAttributes("jobType",jobType);
+                pp.setAttribute("jobType",jobType);
                 String disability = lineElements[posdisability];
-                pp.setAdditionalAttributes("disability",disability);
+                pp.setAttribute("disability",disability);
                 int schoolId = Integer.parseInt(lineElements[posschoolId]);
                 pp.setSchoolId(schoolId);
                 int schoolType = Integer.parseInt(lineElements[posschoolType]);
-                pp.setAdditionalAttributes("schoolType",schoolType);
+                pp.setAttribute("schoolType",schoolType);
 
                 if (id == SiloUtil.trackPp) {
                     SiloUtil.trackWriter.println("Read person with following attributes from " + path);

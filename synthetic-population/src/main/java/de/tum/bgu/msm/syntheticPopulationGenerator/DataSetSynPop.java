@@ -99,12 +99,12 @@ public class DataSetSynPop {
         this.tazByMunicipality = tazByMunicipality;
     }
 
-    public Matrix getTravelTimeTazToTaz() {
-        return travelTimeTazToTaz;
+    public Matrix getDistanceTazToTaz() {
+        return distanceTazToTaz;
     }
 
-    public void setTravelTimeTazToTaz(Matrix travelTimeTazToTaz) {
-        this.travelTimeTazToTaz = travelTimeTazToTaz;
+    public void setDistanceTazToTaz(Matrix distanceTazToTaz) {
+        this.distanceTazToTaz = distanceTazToTaz;
     }
 
     public int[] getCityIDs() {

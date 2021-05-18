@@ -59,7 +59,7 @@ public class CreateCarOwnershipModelMuc implements CreateCarOwnershipModel {
         int income = HouseholdUtil.getAnnualHhIncome(hh)/12;  // convert yearly into monthly income
         ZoneMuc zone = (ZoneMuc) geoData.getZones().get(dataContainer.getRealEstateDataManager().
                 getDwelling(hh.getDwellingId()).getZoneId());
-        int zoneId = (int) ((HouseholdMuc)hh).getAdditionalAttributes().get("zone");
+        //int zoneId = (int) ((HouseholdMuc)hh).getAttribute("zone").get();
 
 
         double logDistanceToTransit = Math.log(zone.getPTDistance_m() + 1); // add 1 to avoid taking log of 0

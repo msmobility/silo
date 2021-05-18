@@ -3,7 +3,7 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.germany.preparation;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import com.pb.common.datafile.TableDataSet;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;

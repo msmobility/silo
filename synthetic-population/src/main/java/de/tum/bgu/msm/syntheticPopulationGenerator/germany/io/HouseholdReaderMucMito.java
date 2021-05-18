@@ -49,7 +49,7 @@ public class HouseholdReaderMucMito implements HouseholdReader {
                 int zone       = Integer.parseInt(lineElements[posTaz]);
                 Household household = factory.createHousehold(id, dwellingID, autos);  // this automatically puts it in id->household map in Household class
                 hhData.addHousehold(household);
-                ((HouseholdMuc) household).setAdditionalAttributes("zone", zone);
+                household.setAttribute("zone", zone);
                 if (id == SiloUtil.trackHh) {
                     SiloUtil.trackWriter.println("Read household with following attributes from " + fileName);
                 }
