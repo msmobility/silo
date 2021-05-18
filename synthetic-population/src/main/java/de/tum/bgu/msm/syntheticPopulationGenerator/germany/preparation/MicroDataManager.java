@@ -1,7 +1,6 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.germany.preparation;
 
 
-import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.dwelling.DwellingUsage;
 import de.tum.bgu.msm.data.person.Gender;
@@ -132,6 +131,8 @@ public class MicroDataManager {
         switch (valueMicroData){
             case 90: // kein Einkommen
                 valueCode = 0;
+                low = 0;
+                high = 0.000000001;
                 break;
             case 50: //Selbständige/r Landwirt/in in der Haupttätigkeit
                 low = 0; //give them a random income following the distribution
@@ -548,6 +549,42 @@ public class MicroDataManager {
         } else if (sector < 850){
             sectorString = "Puli";
         } else if (sector < 900){
+            sectorString = "Admn";
+        } else if (sector < 1000){
+            sectorString = "Serv";
+        }
+
+
+        return sectorString;
+    }
+
+    public String translateJobType10sectors(int sector) {
+
+        //According to the classification WZ08
+        String sectorString = "";
+        if (sector < 0){
+            sectorString = "";
+        } else if (sector < 100){
+            sectorString = "Agri";
+        } else if (sector < 350){
+            sectorString = "Mnft";
+        } else if (sector < 400){
+            sectorString = "Util";
+        } else if (sector < 450){
+            sectorString = "Cons";
+        } else if (sector < 490){
+            sectorString = "Retl";
+        } else if (sector < 550){
+            sectorString = "Trns";
+        } else if (sector < 580){
+            sectorString = "Retl";
+        } else if (sector < 640){
+            sectorString = "Trns";
+        } else if (sector < 663){
+            sectorString = "Finc";
+        } else if (sector < 830){
+            sectorString = "Rlst";
+        } else if (sector < 850){
             sectorString = "Admn";
         } else if (sector < 1000){
             sectorString = "Serv";
