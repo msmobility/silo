@@ -35,20 +35,20 @@ public class MatsimSkimCreator {
         this.matsimData = provider;
     }
 
-    public IndexedDoubleMatrix2D createCarSkim(Collection<Zone> zones) {
-        final int partitionSize = (int) ((double) zones.size() / (Properties.get().main.numberOfThreads)) + 1;
-        Iterable<List<Zone>> partitions = Iterables.partition(zones, partitionSize);
+    public IndexedDoubleMatrix2D createCarSkim(Collection<? extends de.tum.bgu.msm.data.Id> zones, int numberOfThreads, double peakHour_s) {
+        final int partitionSize = (int) ((double) zones.size() / numberOfThreads) + 1;
+        Iterable<? extends List<? extends de.tum.bgu.msm.data.Id>> partitions = Iterables.partition(zones, partitionSize);
 
         IndexedDoubleMatrix2D skim = new IndexedDoubleMatrix2D(zones, zones);
         Network carNetwork = matsimData.getCarNetwork();
-        ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Properties.get().main.numberOfThreads);
-        for (final List<Zone> partition : partitions) {
+        ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(numberOfThreads);
+        for (final List<? extends de.tum.bgu.msm.data.Id> partition : partitions) {
             executor.addTaskToQueue(() -> {
                 try {
                     MultiNodePathCalculator calculator = matsimData.createMultiNodePathCalculator();
                     Set<InitialNode> toNodes = new HashSet<>();
-                    for (Zone zone : zones) {
-                        for (Coord coord : matsimData.getZoneConnectorManager().getCoordsForZone(zone)) {
+                    for (de.tum.bgu.msm.data.Id zone : zones) {
+                        for (Coord coord : matsimData.getZoneConnectorManager().getCoordsForZone(zone.getId())) {
                             Node originNode = NetworkUtils.getNearestNode(carNetwork, coord);
                             toNodes.add(new InitialNode(originNode, 0., 0.));
                         }
@@ -56,17 +56,17 @@ public class MatsimSkimCreator {
 
                     ImaginaryNode aggregatedToNodes = MultiNodeDijkstra.createImaginaryNode(toNodes);
 
-                    for (Zone origin : partition) {
-                        Node originNode = NetworkUtils.getNearestNode(carNetwork, matsimData.getZoneConnectorManager().getCoordsForZone(origin).get(0));
-                        calculator.calcLeastCostPath(originNode, aggregatedToNodes, Properties.get().transportModel.peakHour_s, null, null);
-                        for (Zone destination : zones) {
-                            Node destinationNode = NetworkUtils.getNearestNode(carNetwork, matsimData.getZoneConnectorManager().getCoordsForZone(destination).get(0));
-                            double travelTime = calculator.constructPath(originNode, destinationNode, Properties.get().transportModel.peakHour_s).travelTime;
+                    for (de.tum.bgu.msm.data.Id origin : partition) {
+                        Node originNode = NetworkUtils.getNearestNode(carNetwork, matsimData.getZoneConnectorManager().getCoordsForZone(origin.getId()).get(0));
+                        calculator.calcLeastCostPath(originNode, aggregatedToNodes, peakHour_s, null, null);
+                        for (de.tum.bgu.msm.data.Id destination : zones) {
+                            Node destinationNode = NetworkUtils.getNearestNode(carNetwork, matsimData.getZoneConnectorManager().getCoordsForZone(destination.getId()).get(0));
+                            double travelTime = calculator.constructPath(originNode, destinationNode, peakHour_s).travelTime;
 
                             //convert to minutes
                             travelTime /= 60.;
 
-                            skim.setIndexed(origin.getZoneId(), destination.getZoneId(), travelTime);
+                            skim.setIndexed(origin.getId(), destination.getId(), travelTime);
                         }
                     }
                 } catch (Exception e) {
@@ -80,9 +80,10 @@ public class MatsimSkimCreator {
         return skim;
     }
 
-    public IndexedDoubleMatrix2D createPtSkim(Collection<Zone> zones) {
-        final int partitionSize = (int) ((double) zones.size() / (Properties.get().main.numberOfThreads)) + 1;
-        Iterable<List<Zone>> partitions = Iterables.partition(zones, partitionSize);
+    public IndexedDoubleMatrix2D createPtSkim(Collection<? extends de.tum.bgu.msm.data.Id> zones, int numberOfThreads,
+                                              double peakHour_s) {
+        final int partitionSize = (int) ((double) zones.size() / numberOfThreads) + 1;
+        Iterable<? extends List<? extends de.tum.bgu.msm.data.Id>> partitions = Iterables.partition(zones, partitionSize);
 
         IndexedDoubleMatrix2D skim = new IndexedDoubleMatrix2D(zones, zones);
 
@@ -90,11 +91,11 @@ public class MatsimSkimCreator {
         SwissRailRaptorData raptorData = matsimData.getRaptorData(RaptorStaticConfig.RaptorOptimization.OneToAllRouting);
         RaptorParameters parameters = matsimData.getRaptorParameters();
         double walkSpeed = parameters.getBeelineWalkSpeed();
-        Map<Zone, Collection<TransitStopFacility>> stopsPerZone = new LinkedHashMap<>();
+        Map<de.tum.bgu.msm.data.Id, Collection<TransitStopFacility>> stopsPerZone = new LinkedHashMap<>();
         ActivityFacilitiesFactoryImpl activityFacilitiesFactory = new ActivityFacilitiesFactoryImpl();
 
-        for (Zone zone : zones) {
-            final Coord coord = matsimData.getZoneConnectorManager().getCoordsForZone(zone).get(0);
+        for (de.tum.bgu.msm.data.Id zone : zones) {
+            final Coord coord = matsimData.getZoneConnectorManager().getCoordsForZone(zone.getId()).get(0);
             Collection<TransitStopFacility> stops = raptorData.findNearbyStops(coord.getX(), coord.getY(), parameters.getSearchRadius());
             if (stops.isEmpty()) {
                 TransitStopFacility nearest = raptorData.findNearestStop(coord.getX(), coord.getY());
@@ -104,27 +105,27 @@ public class MatsimSkimCreator {
             stopsPerZone.put(zone, stops);
         }
 
-        ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Properties.get().main.numberOfThreads);
-        for (final List<Zone> partition : partitions) {
+        ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(numberOfThreads);
+        for (final List<? extends de.tum.bgu.msm.data.Id> partition : partitions) {
             executor.addTaskToQueue(() -> {
                 try {
                     SwissRailRaptor raptor = matsimData.createSwissRailRaptor(RaptorStaticConfig.RaptorOptimization.OneToAllRouting);
-                    for (Zone origin : partition) {
-                        final Coord fromCoord = matsimData.getZoneConnectorManager().getCoordsForZone(origin).get(0);
+                    for (de.tum.bgu.msm.data.Id origin : partition) {
+                        final Coord fromCoord = matsimData.getZoneConnectorManager().getCoordsForZone(origin.getId()).get(0);
                         Facility fromFacility = ((ActivityFacilitiesFactory) activityFacilitiesFactory).createActivityFacility(Id.create(1, ActivityFacility.class), fromCoord);
 
                         //calc tree from origin zone connector. note that it will search for multiple
                         //start stops accessible from the connector
                         final Map<Id<TransitStopFacility>, SwissRailRaptorCore.TravelInfo> idTravelInfoMap
-                                = raptor.calcTree(fromFacility, Properties.get().transportModel.peakHour_s, null);
-                        for (Zone destination : zones) {
+                                = raptor.calcTree(fromFacility, peakHour_s, null);
+                        for (de.tum.bgu.msm.data.Id destination : zones) {
                             if (origin.equals(destination)) {
                                 //Intrazonals will be assigned afterwards
                                 continue;
                             }
 
                             //compute direct walk time
-                            final Coord toCoord = matsimData.getZoneConnectorManager().getCoordsForZone(destination).get(0);
+                            final Coord toCoord = matsimData.getZoneConnectorManager().getCoordsForZone(destination.getId()).get(0);
                             double directDistance = CoordUtils.calcEuclideanDistance(fromCoord, toCoord);
                             double directWalkTime = directDistance / walkSpeed;
 
@@ -147,7 +148,7 @@ public class MatsimSkimCreator {
 
                             //convert to minutes
                             travelTime /= 60.;
-                            skim.setIndexed(origin.getZoneId(), destination.getZoneId(), travelTime);
+                            skim.setIndexed(origin.getId(), destination.getId(), travelTime);
                         }
                     }
                 } catch (Exception e) {
@@ -161,27 +162,27 @@ public class MatsimSkimCreator {
         return skim;
     }
 
-    public IndexedDoubleMatrix2D createTeleportedSkim(Collection<Zone> zones, String mode) {
+    public IndexedDoubleMatrix2D createTeleportedSkim(Collection<? extends de.tum.bgu.msm.data.Id> zones, String mode,
+                                                      int numberOfThreads, double peakHour_s) {
 
-        final int partitionSize = (int) ((double) zones.size() / (Properties.get().main.numberOfThreads)) + 1;
-        Iterable<List<Zone>> partitions = Iterables.partition(zones, partitionSize);
+        final int partitionSize = (int) ((double) zones.size() / numberOfThreads) + 1;
+        Iterable<? extends List<? extends de.tum.bgu.msm.data.Id>> partitions = Iterables.partition(zones, partitionSize);
 
         IndexedDoubleMatrix2D skim = new IndexedDoubleMatrix2D(zones, zones);
 
-        ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Properties.get().main.numberOfThreads);
-        for (final List<Zone> partition : partitions) {
+        ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(numberOfThreads);
+        for (final List<? extends de.tum.bgu.msm.data.Id> partition : partitions) {
             executor.addTaskToQueue(() -> {
                 try {
                     final RoutingModule teleportationRouter = matsimData.getTeleportationRouter(mode);
-                    for (Zone origin : partition) {
-                        for (Zone destination : zones) {
-                            Coord originCoord = matsimData.getZoneConnectorManager().getCoordsForZone(origin).get(0);
-                            Coord destinationCoord = matsimData.getZoneConnectorManager().getCoordsForZone(destination).get(0);
+                    for (de.tum.bgu.msm.data.Id origin : partition) {
+                        for (de.tum.bgu.msm.data.Id destination : zones) {
+                            Coord originCoord = matsimData.getZoneConnectorManager().getCoordsForZone(origin.getId()).get(0);
+                            Coord destinationCoord = matsimData.getZoneConnectorManager().getCoordsForZone(destination.getId()).get(0);
 
                             ActivityFacilitiesFactoryImpl activityFacilitiesFactory = new ActivityFacilitiesFactoryImpl();
                             Facility fromFacility = ((ActivityFacilitiesFactory) activityFacilitiesFactory).createActivityFacility(Id.create(1, ActivityFacility.class), originCoord);
                             Facility toFacility = ((ActivityFacilitiesFactory) activityFacilitiesFactory).createActivityFacility(Id.create(2, ActivityFacility.class), destinationCoord);
-                            final double peakHour_s = Properties.get().transportModel.peakHour_s;
                             List<? extends PlanElement> planElements = teleportationRouter.calcRoute(fromFacility, toFacility, peakHour_s, null);
                             double arrivalTime = peakHour_s;
 
@@ -194,7 +195,7 @@ public class MatsimSkimCreator {
 
                             //convert to minutes
                             time /= 60.;
-                            skim.setIndexed(origin.getZoneId(), destination.getZoneId(), time);
+                            skim.setIndexed(origin.getId(), destination.getId(), time);
                         }
                     }
                 } catch (Exception e) {
@@ -208,20 +209,21 @@ public class MatsimSkimCreator {
         return skim;
     }
 
-    public IndexedDoubleMatrix2D createFreeSpeedFactorSkim(Collection<Zone> zones, double factor) {
-        final int partitionSize = (int) ((double) zones.size() / (Properties.get().main.numberOfThreads)) + 1;
-        Iterable<List<Zone>> partitions = Iterables.partition(zones, partitionSize);
+    public IndexedDoubleMatrix2D createFreeSpeedFactorSkim(Collection<? extends de.tum.bgu.msm.data.Id> zones,
+                                                           double factor, int numberOfThreads, double peakHour_s) {
+        final int partitionSize = (int) ((double) zones.size() / numberOfThreads) + 1;
+        Iterable<? extends List<? extends de.tum.bgu.msm.data.Id>> partitions = Iterables.partition(zones, partitionSize);
 
         IndexedDoubleMatrix2D skim = new IndexedDoubleMatrix2D(zones, zones);
         Network carNetwork = matsimData.getCarNetwork();
-        ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Properties.get().main.numberOfThreads);
-        for (final List<Zone> partition : partitions) {
+        ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(numberOfThreads);
+        for (final List<? extends de.tum.bgu.msm.data.Id> partition : partitions) {
             executor.addTaskToQueue(() -> {
                 try {
                     MultiNodePathCalculator calculator = matsimData.createFreeSpeedMultiNodePathCalculator();
                     Set<InitialNode> toNodes = new HashSet<>();
-                    for (Zone zone : zones) {
-                        for (Coord coord : matsimData.getZoneConnectorManager().getCoordsForZone(zone)) {
+                    for (de.tum.bgu.msm.data.Id zone : zones) {
+                        for (Coord coord : matsimData.getZoneConnectorManager().getCoordsForZone(zone.getId())) {
                             Node originNode = NetworkUtils.getNearestNode(carNetwork, coord);
                             toNodes.add(new InitialNode(originNode, 0., 0.));
                         }
@@ -229,12 +231,12 @@ public class MatsimSkimCreator {
 
                     ImaginaryNode aggregatedToNodes = MultiNodeDijkstra.createImaginaryNode(toNodes);
 
-                    for (Zone origin : partition) {
-                        Node originNode = NetworkUtils.getNearestNode(carNetwork, matsimData.getZoneConnectorManager().getCoordsForZone(origin).get(0));
-                        calculator.calcLeastCostPath(originNode, aggregatedToNodes, Properties.get().transportModel.peakHour_s, null, null);
-                        for (Zone destination : zones) {
-                            Node destinationNode = NetworkUtils.getNearestNode(carNetwork, matsimData.getZoneConnectorManager().getCoordsForZone(destination).get(0));
-                            double travelTime = calculator.constructPath(originNode, destinationNode, Properties.get().transportModel.peakHour_s).travelTime;
+                    for (de.tum.bgu.msm.data.Id origin : partition) {
+                        Node originNode = NetworkUtils.getNearestNode(carNetwork, matsimData.getZoneConnectorManager().getCoordsForZone(origin.getId()).get(0));
+                        calculator.calcLeastCostPath(originNode, aggregatedToNodes, peakHour_s, null, null);
+                        for (de.tum.bgu.msm.data.Id destination : zones) {
+                            Node destinationNode = NetworkUtils.getNearestNode(carNetwork, matsimData.getZoneConnectorManager().getCoordsForZone(destination.getId()).get(0));
+                            double travelTime = calculator.constructPath(originNode, destinationNode, peakHour_s).travelTime;
 
                             //adjust by factor
                             travelTime *= factor;
@@ -242,7 +244,7 @@ public class MatsimSkimCreator {
                             //convert to minutes
                             travelTime /= 60.;
 
-                            skim.setIndexed(origin.getZoneId(), destination.getZoneId(), travelTime);
+                            skim.setIndexed(origin.getId(), destination.getId(), travelTime);
                         }
                     }
                 } catch (Exception e) {

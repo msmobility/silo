@@ -142,7 +142,13 @@ public class AccessibilityImpl implements Accessibility {
                 accessibilitySum += autoAccessibilities.getIndexed(zone.getZoneId()) * weight;
                 weightSum += weight;
             }
-            matrix.setIndexed(r.getId(), accessibilitySum / weightSum);
+            if (weightSum == 0){
+                //this region has no population, so the accessibility to population should be zero
+                matrix.setIndexed(r.getId(), 0);
+            } else {
+                matrix.setIndexed(r.getId(), accessibilitySum / weightSum);
+            }
+
         });
         return matrix;
     }

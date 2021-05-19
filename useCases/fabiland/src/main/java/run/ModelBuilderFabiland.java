@@ -75,9 +75,14 @@ public class ModelBuilderFabiland {
                 dataContainer, properties,
                 new DefaultMovesStrategy(),
                 new SimpleCommuteModeChoiceHousingStrategyImpl(dataContainer,
-                                        properties,
-                                        dataContainer.getTravelTimes(), new DwellingUtilityStrategyImpl(),
-                        new DefaultDwellingProbabilityStrategy(), new RegionUtilityStrategyImpl(), new RegionProbabilityStrategyImpl()), SiloUtil.provideNewRandom());
+                        properties,
+                        dataContainer.getTravelTimes(),
+                        new DwellingUtilityStrategyImpl(),
+                        new DefaultDwellingProbabilityStrategy(),
+                        new RegionUtilityStrategyImpl(),
+                        new RegionProbabilityStrategyImpl() ,
+                        new SimpleMatsimCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom())
+                ), SiloUtil.provideNewRandom());
 
         CreateCarOwnershipModel carOwnershipModel = new FabilandCarOwnership();
 
@@ -114,19 +119,18 @@ public class ModelBuilderFabiland {
         MarriageModel marriageModel = new MarriageModelImpl(dataContainer, movesModel, inOutMigration,
                 carOwnershipModel, hhFactory, properties, new DefaultMarriageStrategy(), SiloUtil.provideNewRandom());
 
-
         TransportModel transportModel;
         MatsimScenarioAssembler scenarioAssembler;
-
 
         MatsimData matsimData = null;
         if (config != null) {
             final Scenario scenario = ScenarioUtils.loadScenario(config);
-            matsimData = new MatsimData(config, properties, ZoneConnectorManager.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
+            matsimData = new MatsimData(config, properties, ZoneConnectorManagerImpl.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
         }
         switch (properties.transportModel.transportModelIdentifier) {
             case MATSIM:
-                SimpleCommuteModeChoice commuteModeChoice = new SimpleCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom());
+//                SimpleCommuteModeChoice commuteModeChoice = new SimpleCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom());
+                SimpleMatsimCommuteModeChoice commuteModeChoice = new SimpleMatsimCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom());
                 scenarioAssembler = new SimpleCommuteModeChoiceMatsimScenarioAssembler(dataContainer, properties, commuteModeChoice);
                 transportModel = new MatsimTransportModel(dataContainer, config, properties, scenarioAssembler, matsimData);
                 break;
@@ -143,7 +147,6 @@ public class ModelBuilderFabiland {
                 leaveParentsModel, jobMarketUpdateModel,
                 construction, demolition, pricing, renovation,
                 constructionOverwrite, inOutMigration, movesModel, transportModel);
-
         return modelContainer;
     }
 

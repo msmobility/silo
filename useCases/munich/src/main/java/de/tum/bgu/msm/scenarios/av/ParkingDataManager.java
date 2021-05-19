@@ -6,15 +6,19 @@ import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
-import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
+import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypes;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
-import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.models.ModelUpdateListener;
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -28,10 +32,12 @@ public class ParkingDataManager implements ModelUpdateListener {
 
     Multiset<DwellingType> parkingSpacesByDwellingType = HashMultiset.create();
     Multiset<DwellingType> dwellinggsByType = HashMultiset.create();
+    private final Properties properties;
 
-    public ParkingDataManager(DataContainer dataContainer, Random random) {
+    public ParkingDataManager(DataContainer dataContainer, Random random, Properties properties) {
         this.dataContainer = dataContainer;
         this.random = random;
+        this.properties = properties;
     }
 
     @Override
@@ -46,7 +52,7 @@ public class ParkingDataManager implements ModelUpdateListener {
         int counter  = 0;
         for (Dwelling dwelling : dataContainer.getRealEstateDataManager().getDwellings()) {
             if (!dwelling.getAttribute("PARKING_SPACES").isPresent()) {
-                int spaces = getNumberOfParkingSpaces((DefaultDwellingTypeImpl)dwelling.getType());
+                int spaces = getNumberOfParkingSpaces((DefaultDwellingTypes.DefaultDwellingTypeImpl)dwelling.getType());
                 dwellinggsByType.add(dwelling.getType());
                 parkingSpacesByDwellingType.add(dwelling.getType(), spaces);
                 dwelling.setAttribute("PARKING_SPACES",spaces);
@@ -57,6 +63,42 @@ public class ParkingDataManager implements ModelUpdateListener {
         logger.info("Updated the parking spaces of " + counter + " in the base year ");
 
 
+        readParkingDataByZone(dataContainer, properties);
+
+
+
+    }
+
+    private void readParkingDataByZone(DataContainer dataContainer, Properties properties) {
+
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(properties.main.baseDirectory + properties.geo.parkingZonalDataFile));
+
+            String[] header = br.readLine().split(",");
+            int zoneIndex = SiloUtil.findPositionInArray("zone", header);
+            int parkingQualityIndex = SiloUtil.findPositionInArray("index", header);
+
+            String line;
+            int zonesNotFound  = 0;
+            while ((line = br.readLine()) != null){
+                String[] splitLine = line.split(",");
+                Zone zone = dataContainer.getGeoData().getZones().get(Integer.parseInt(splitLine[zoneIndex]));
+                if (zone != null){
+                    int parkingQuality = Integer.parseInt(splitLine[parkingQualityIndex]);
+                    zone.getAttributes().put("PARKING", new LocationParkingData(parkingQuality));
+                } else {
+                    zonesNotFound++;
+                }
+            }
+
+            logger.warn("Zones with parking data not present in the simulation: "  + zonesNotFound);
+
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -64,22 +106,22 @@ public class ParkingDataManager implements ModelUpdateListener {
     public void prepareYear(int year) {
 
 
-        //generate a synthetic parking quality by zone based on accessibility
-        for (Zone zone : dataContainer.getGeoData().getZones().values()){
-            double accessibility = dataContainer.getAccessibility().getAutoAccessibilityForZone(zone);
-            int parkingQuality;
-            if (accessibility > 46){
-                parkingQuality = 0;
-            } else if (accessibility > 20) {
-                parkingQuality = 1;
-            } else if (accessibility > 7) {
-                parkingQuality = 2;
-            } else {
-                parkingQuality = 3;
-            }
-            LocationParkingData zonalParkingData = new LocationParkingData(parkingQuality);
-            zone.getAttributes().put("PARKING", zonalParkingData);
-        }
+//        //generate a synthetic parking quality by zone based on accessibility
+//        for (Zone zone : dataContainer.getGeoData().getZones().values()){
+//            double accessibility = dataContainer.getAccessibility().getAutoAccessibilityForZone(zone);
+//            int parkingQuality;
+//            if (accessibility > 46){
+//                parkingQuality = 0;
+//            } else if (accessibility > 20) {
+//                parkingQuality = 1;
+//            } else if (accessibility > 7) {
+//                parkingQuality = 2;
+//            } else {
+//                parkingQuality = 3;
+//            }
+//            LocationParkingData zonalParkingData = new LocationParkingData(parkingQuality);
+//            zone.getAttributes().put("PARKING", zonalParkingData);
+//        }
 
 
 
@@ -118,7 +160,7 @@ public class ParkingDataManager implements ModelUpdateListener {
     @Override
     public void endYear(int year) {
 
-        for (DefaultDwellingTypeImpl type : DefaultDwellingTypeImpl.values()){
+        for (DefaultDwellingTypes.DefaultDwellingTypeImpl type : DefaultDwellingTypes.DefaultDwellingTypeImpl.values()){
             double parkings = parkingSpacesByDwellingType.count(type)/Math.max(dwellinggsByType.count(type),1.);
             logger.info("Parking spaces at dwelling type " + type.toString() + " is " + parkings);
         }
@@ -132,7 +174,7 @@ public class ParkingDataManager implements ModelUpdateListener {
     }
 
 
-    public static int getNumberOfParkingSpaces(DefaultDwellingTypeImpl type) {
+    public static int getNumberOfParkingSpaces(DefaultDwellingTypes.DefaultDwellingTypeImpl type) {
         float[] probabilities;
         switch (type) {
             case SFD:

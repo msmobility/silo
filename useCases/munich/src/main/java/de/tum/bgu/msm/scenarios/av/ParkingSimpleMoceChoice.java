@@ -1,7 +1,6 @@
 package de.tum.bgu.msm.scenarios.av;
 
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.DataSet;
 import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
@@ -16,8 +15,6 @@ import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoice;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoiceMapping;
-import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
-import de.tum.bgu.msm.modules.modeChoice.ModeChoice;
 import de.tum.bgu.msm.properties.Properties;
 import org.matsim.api.core.v01.TransportMode;
 
@@ -32,6 +29,9 @@ public class ParkingSimpleMoceChoice implements CommuteModeChoice {
     private final JobDataManager jobDataManager;
     private final GeoData geoData;
     private Random random;
+    public final float B_TIME;
+    public final float B_PT;
+    public final float B_EXP_HOUSING_UTILITY;
 
     public ParkingSimpleMoceChoice(DataContainer dataContainer,
                                    Properties properties, Random random) {
@@ -40,6 +40,21 @@ public class ParkingSimpleMoceChoice implements CommuteModeChoice {
         this.jobDataManager = dataContainer.getJobDataManager();
         this.random = random;
         geoData = dataContainer.getGeoData();
+        B_TIME = properties.moves.B_TIME;
+        B_PT = properties.moves.B_PT;
+        B_EXP_HOUSING_UTILITY = properties.moves.B_EXP_HOUSING_UTILITY;
+    }
+
+    public ParkingSimpleMoceChoice(CommutingTimeProbability commutingTimeProbability, TravelTimes travelTimes,
+                                   GeoData geoData, Properties properties, Random random) {
+        this.properties = properties;
+        this.commutingTimeProbability = commutingTimeProbability;
+        this.jobDataManager = null;
+        this.random = random;
+        this.geoData = geoData;
+        B_TIME = properties.moves.B_TIME;
+        B_PT = properties.moves.B_PT;
+        B_EXP_HOUSING_UTILITY = properties.moves.B_EXP_HOUSING_UTILITY;
     }
 
 
@@ -56,23 +71,37 @@ public class ParkingSimpleMoceChoice implements CommuteModeChoice {
 
                 Job job = jobDataManager.getJobFromId(pp.getJobId());
 
-                int ptMinutes = (int) travelTimes.getTravelTime(from, job, job.getStartTimeInSeconds().orElse((int) properties.transportModel.peakHour_s), TransportMode.pt);
-                double ptUtility = commutingTimeProbability.getCommutingTimeProbability(ptMinutes, TransportMode.pt);
+                int ptMinutes = (int) travelTimes.getTravelTime(from, job,
+                        job.getStartTimeInSeconds().orElse((int) properties.transportModel.peakHour_s), TransportMode.pt);
+                double commutingTimeProbabilityPt = commutingTimeProbability.getCommutingTimeProbability(ptMinutes, TransportMode.pt);
+                double ptUtility = B_PT + B_TIME * commutingTimeProbabilityPt;
+
 
                 if (!pp.hasDriverLicense() || household.getAutos() == 0) {
-                    CommuteModeChoiceMapping.CommuteMode ptCommuteMode = new CommuteModeChoiceMapping.CommuteMode(TransportMode.pt, ptUtility);
+                    CommuteModeChoiceMapping.CommuteMode ptCommuteMode =
+                            new CommuteModeChoiceMapping.CommuteMode(TransportMode.pt, Math.pow(commutingTimeProbabilityPt, B_EXP_HOUSING_UTILITY));
                     commuteModeChoiceMapping.assignMode(ptCommuteMode, pp);
                 } else {
-                    int carMinutes = (int) travelTimes.getTravelTime(from, job, job.getStartTimeInSeconds().orElse((int) properties.transportModel.peakHour_s), TransportMode.car);
+
+                    int carMinutes = (int) travelTimes.getTravelTime(from, job,
+                            job.getStartTimeInSeconds().orElse((int) properties.transportModel.peakHour_s), TransportMode.car);
+                    double commutingTimeProbabilityCar = this.commutingTimeProbability.getCommutingTimeProbability(carMinutes, TransportMode.car);
+                    double carUtility = B_TIME * commutingTimeProbabilityCar;
+
+
                     LocationParkingData locationParkingData = (LocationParkingData) geoData.getZones().get(job.getZoneId()).getAttributes().get("PARKING");
                     double penaltyDueToParking = 0.1 + 0.3 * locationParkingData.getParkingQuality();
-                    double carUtility = commutingTimeProbability.getCommutingTimeProbability(carMinutes, TransportMode.car) * penaltyDueToParking;
+                    carUtility = carUtility * penaltyDueToParking;
+
+                    ptUtility = Math.exp(ptUtility);
+                    carUtility = Math.exp(carUtility);
+
                     Map<String, Double> utilityByMode = new HashMap<>();
-                    utilityByMode.put(TransportMode.car, carUtility);
-                    utilityByMode.put(TransportMode.pt, ptUtility);
+                    utilityByMode.put(TransportMode.car, Math.pow(commutingTimeProbabilityCar, B_EXP_HOUSING_UTILITY));
+                    utilityByMode.put(TransportMode.pt, Math.pow(commutingTimeProbabilityPt, B_EXP_HOUSING_UTILITY));
                     commuteModesByPerson.put(pp.getId(), utilityByMode);
                     double probabilityAsKey;
-                    if(carUtility == 0 && ptUtility == 0) {
+                    if (carUtility == 0 && ptUtility == 0) {
                         probabilityAsKey = 0.5;
                     } else {
                         probabilityAsKey = carUtility / (carUtility + ptUtility);
@@ -91,7 +120,7 @@ public class ParkingSimpleMoceChoice implements CommuteModeChoice {
         for (Map.Entry<Double, Person> personForProbability : personByProbability.descendingMap().entrySet()) {
             Person person = personForProbability.getValue();
             CommuteModeChoiceMapping.CommuteMode commuteMode;
-            if(counter == 0) {
+            if (counter == 0) {
                 commuteMode = new CommuteModeChoiceMapping.CommuteMode(TransportMode.pt, commuteModesByPerson.get(person.getId()).get(TransportMode.pt));
             } else {
                 if (random.nextDouble() < personForProbability.getKey()) {
@@ -122,24 +151,31 @@ public class ParkingSimpleMoceChoice implements CommuteModeChoice {
                 Job job = jobDataManager.getJobFromId(pp.getJobId());
                 Zone jobZone = geoData.getZones().get(job.getZoneId());
 
-
-                int ptMinutes = (int) travelTimes.getTravelTimeFromRegion(region, jobZone, job.getStartTimeInSeconds().orElse((int) properties.transportModel.peakHour_s), TransportMode.pt);
-                double ptUtility = commutingTimeProbability.getCommutingTimeProbability(ptMinutes, TransportMode.pt);
+                int ptMinutes = (int) travelTimes.getTravelTimeFromRegion(region, jobZone,
+                        job.getStartTimeInSeconds().orElse((int) properties.transportModel.peakHour_s), TransportMode.pt);
+                double commutingTimeProbabilityPt = commutingTimeProbability.getCommutingTimeProbability(ptMinutes, TransportMode.pt);
+                double ptUtility = B_PT + B_TIME * commutingTimeProbabilityPt;
 
                 if (!pp.hasDriverLicense() || household.getAutos() == 0) {
-                    CommuteModeChoiceMapping.CommuteMode ptCommuteMode = new CommuteModeChoiceMapping.CommuteMode(TransportMode.pt, ptUtility);
+                    CommuteModeChoiceMapping.CommuteMode ptCommuteMode = new CommuteModeChoiceMapping.CommuteMode(TransportMode.pt, Math.pow(commutingTimeProbabilityPt, B_EXP_HOUSING_UTILITY));
                     commuteModeChoiceMapping.assignMode(ptCommuteMode, pp);
                 } else {
-                    int carMinutes = (int) travelTimes.getTravelTimeFromRegion(region, jobZone, job.getStartTimeInSeconds().orElse((int) properties.transportModel.peakHour_s), TransportMode.car);
+                    int carMinutes = (int) travelTimes.getTravelTimeFromRegion(region, jobZone,
+                            job.getStartTimeInSeconds().orElse((int) properties.transportModel.peakHour_s), TransportMode.car);
+                    double commutingTimeProbabilityCar = this.commutingTimeProbability.getCommutingTimeProbability(carMinutes, TransportMode.car);
+                    double carUtility = B_TIME * commutingTimeProbabilityCar;
+
                     LocationParkingData locationParkingData = (LocationParkingData) region.getAttributes().get("PARKING");
-                    double penaltyDueToParking =  0.1 + 0.3  * locationParkingData.getParkingQuality();
-                    double carUtility = commutingTimeProbability.getCommutingTimeProbability(carMinutes, TransportMode.car) * penaltyDueToParking;
+                    double penaltyDueToParking = 0.1 + 0.3 * locationParkingData.getParkingQuality();
+                    carUtility = carUtility * penaltyDueToParking;
                     Map<String, Double> utilityByMode = new HashMap<>();
-                    utilityByMode.put(TransportMode.car, carUtility );
-                    utilityByMode.put(TransportMode.pt, ptUtility);
+                    utilityByMode.put(TransportMode.car, Math.pow(commutingTimeProbabilityCar, B_EXP_HOUSING_UTILITY));
+                    utilityByMode.put(TransportMode.pt, Math.pow(commutingTimeProbabilityPt, B_EXP_HOUSING_UTILITY));
                     commuteModesByPerson.put(pp.getId(), utilityByMode);
                     double probabilityAsKey;
-                    if(carUtility == 0 && ptUtility == 0) {
+                    ptUtility = Math.exp(ptUtility);
+                    carUtility = Math.exp(carUtility);
+                    if (carUtility == 0 && ptUtility == 0) {
                         probabilityAsKey = 0.5;
                     } else {
                         probabilityAsKey = carUtility / (carUtility + ptUtility);
@@ -158,7 +194,7 @@ public class ParkingSimpleMoceChoice implements CommuteModeChoice {
         for (Map.Entry<Double, Person> personForProbability : personByProbability.descendingMap().entrySet()) {
             Person person = personForProbability.getValue();
             CommuteModeChoiceMapping.CommuteMode commuteMode;
-            if(counter == 0) {
+            if (counter == 0) {
                 commuteMode = new CommuteModeChoiceMapping.CommuteMode(TransportMode.pt, commuteModesByPerson.get(person.getId()).get(TransportMode.pt));
             } else {
                 if (random.nextDouble() < personForProbability.getKey()) {
@@ -169,6 +205,45 @@ public class ParkingSimpleMoceChoice implements CommuteModeChoice {
                 }
             }
             commuteModeChoiceMapping.assignMode(commuteMode, person);
+        }
+
+        return commuteModeChoiceMapping;
+    }
+
+    @Override
+    public CommuteModeChoiceMapping assignRegionalCommuteModeChoiceToFindNewJobs(Region jobRegion, Zone homeZone, TravelTimes travelTimes, Person person) {
+        CommuteModeChoiceMapping commuteModeChoiceMapping = new CommuteModeChoiceMapping(1);
+
+        int ptMinutes = (int) travelTimes.getTravelTimeFromRegion(jobRegion, homeZone,
+                (int) properties.transportModel.peakHour_s, TransportMode.pt);
+        float commutingTimeProbabilityPt = commutingTimeProbability.getCommutingTimeProbability(ptMinutes, TransportMode.pt);
+        double ptUtility = B_PT + B_TIME * commutingTimeProbabilityPt;
+
+        int carMinutes = (int) travelTimes.getTravelTimeFromRegion(jobRegion, homeZone,
+                (int) properties.transportModel.peakHour_s, TransportMode.car);
+        float commutingTimeProbabilityCar = this.commutingTimeProbability.getCommutingTimeProbability(carMinutes, TransportMode.car);
+        double carUtility = B_TIME * commutingTimeProbabilityCar;
+
+        LocationParkingData locationParkingData = (LocationParkingData) jobRegion.getAttributes().get("PARKING");
+        double penaltyDueToParking = 0.1 + 0.3 * locationParkingData.getParkingQuality();
+        carUtility = carUtility * penaltyDueToParking;
+
+        ptUtility = Math.exp(ptUtility);
+        carUtility = Math.exp(carUtility);
+
+        double probabilityCar = 0;
+        if (carUtility == 0 && ptUtility == 0) {
+            probabilityCar = 0.5;
+        } else {
+            probabilityCar = carUtility / (carUtility + ptUtility);
+        }
+
+
+        if (random.nextDouble() < probabilityCar) {
+            commuteModeChoiceMapping.assignMode(new CommuteModeChoiceMapping.CommuteMode(TransportMode.car, Math.pow(commutingTimeProbabilityCar, B_EXP_HOUSING_UTILITY)), person);
+        } else {
+            commuteModeChoiceMapping.assignMode(new CommuteModeChoiceMapping.CommuteMode(TransportMode.pt, Math.pow(commutingTimeProbabilityPt, B_EXP_HOUSING_UTILITY)), person);
+
         }
 
         return commuteModeChoiceMapping;

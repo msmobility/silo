@@ -9,8 +9,10 @@ import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.jobTypes.munich.MunichJobType;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -45,7 +47,7 @@ public class MitoDataConverterImpl implements MitoDataConverter {
     private void convertZones(DataSet dataSet, DataContainer dataContainer) {
         for (Zone siloZone : dataContainer.getGeoData().getZones().values()) {
             MitoZone zone = new MitoZone(siloZone.getZoneId(), AreaTypes.SGType.CORE_CITY);
-            zone.setShapeFeature(siloZone.getZoneFeature());
+            zone.setGeometry((Geometry) siloZone.getZoneFeature().getDefaultGeometry());
             dataSet.addZone(zone);
         }
     }
@@ -76,7 +78,7 @@ public class MitoDataConverterImpl implements MitoDataConverter {
                 coordinate = dwelling.getCoordinate();
             } else {
                 randomCoordCounter++;
-                coordinate = zone.getRandomCoord();
+                coordinate = zone.getRandomCoord(SiloUtil.getRandomObject());
             }
 
             //todo if there are housholds without adults they cannot be processed
@@ -114,7 +116,7 @@ public class MitoDataConverterImpl implements MitoDataConverter {
                     if (job instanceof MicroLocation) {
                         coordinate = job.getCoordinate();
                     } else {
-                        coordinate = zone.getRandomCoord();
+                        coordinate = zone.getRandomCoord(SiloUtil.getRandomObject());
                     }
                     mitoOccupation = new MitoJob(zone, coordinate, job.getId());
                 }

@@ -79,12 +79,12 @@ public class SBBTest {
 //        bd.setRoutingModule(TransportMode.pt, teleportationRoutingModule);
 
 
-        TeleportationRoutingModule teleportationRoutingModule =
-                new TeleportationRoutingModule(
-                        TransportMode.transit_walk,
-                        scenario,
-                        1.4,
-                        1.3);
+//        TeleportationRoutingModule teleportationRoutingModule =
+//                new TeleportationRoutingModule(
+//                        TransportMode.transit_walk,
+//                        PopulationUtils.getFactory(),
+//                        1.4,
+//                        1.3);
 
         RaptorStaticConfig raptorConfig = RaptorUtils.createStaticConfig(config);
         raptorConfig.setOptimization(RaptorStaticConfig.RaptorOptimization.OneToAllRouting);
@@ -94,13 +94,13 @@ public class SBBTest {
                         new DefaultRaptorIntermodalAccessEgress(),
                         null));
 
-        RoutingModule routingModule =
-                new SwissRailRaptorRoutingModule(
-                        raptor,
-                        scenario.getTransitSchedule(),
-                        scenario.getNetwork(),
-                        teleportationRoutingModule);
-        bd.setRoutingModule(TransportMode.pt, routingModule);
+//        RoutingModule routingModule =
+//                new SwissRailRaptorRoutingModule(
+//                        raptor,
+//                        scenario.getTransitSchedule(),
+//                        scenario.getNetwork(),
+//                        teleportationRoutingModule);
+//        bd.setRoutingModule(TransportMode.pt, routingModule);
 
 
         final Coord originCoord = new Coord(4436689.657372447, 5368527.815536651);

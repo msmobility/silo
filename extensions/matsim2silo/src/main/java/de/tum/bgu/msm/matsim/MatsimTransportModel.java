@@ -19,14 +19,18 @@
 package de.tum.bgu.msm.matsim;
 
 import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.population.PopulationFactory;
 import org.matsim.contrib.dvrp.trafficmonitoring.TravelTimeUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
@@ -37,9 +41,15 @@ import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.vehicles.Vehicle;
+import org.matsim.vehicles.VehicleType;
+import org.matsim.vehicles.VehicleUtils;
+import org.matsim.vehicles.Vehicles;
 
 import java.io.File;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -110,15 +120,41 @@ public final class MatsimTransportModel implements TransportModel {
 
     private void runTransportModel(int year) {
         logger.warn("Running MATSim transport model for year " + year + ".");
-        Scenario assembledScenario;
+        Scenario assembledScenario = ScenarioUtils.createScenario(initialMatsimConfig);
         TravelTimes travelTimes = dataContainer.getTravelTimes();
+
         if (year == properties.main.baseYear &&
                 properties.transportModel.transportModelIdentifier == TransportModelPropertiesModule.TransportModelIdentifier.MATSIM){
-            //if using the SimpleCommuteModeChoiceScenarioAssembler, we need some intial travel times (this will use an unlodaded network)
+            //if using the SimpleCommuteModeChoiceScenarioAssembler, we need some initial travel times (this will use an unlodaded network)
             TravelTime myTravelTime = SiloMatsimUtils.getAnEmptyNetworkTravelTime();
             TravelDisutility myTravelDisutility = SiloMatsimUtils.getAnEmptyNetworkTravelDisutility();
             updateTravelTimes(myTravelTime, myTravelDisutility);
         }
+
+        for (Household household: dataContainer.getHouseholdDataManager().getHouseholds()) {
+            for (Person pp : household.getPersons().values()) {
+                PopulationFactory populationFactory = assembledScenario.getPopulation().getFactory();
+
+                org.matsim.api.core.v01.population.Person matsimAlterEgo = SiloMatsimUtils.createMatsimAlterEgo(populationFactory, pp, household.getAutos());
+                assembledScenario.getPopulation().addPerson(matsimAlterEgo);
+            }
+        }
+
+        matsimData.updateMatsimPopulation(assembledScenario.getPopulation());
+
+        // create a dummy vehicle type
+        VehicleType dummyVehType = assembledScenario.getVehicles().getFactory().createVehicleType(Id.create("defaultVehicleType", VehicleType.class));
+        assembledScenario.getVehicles().addVehicleType(dummyVehType);
+
+        for (org.matsim.api.core.v01.population.Person person : assembledScenario.getPopulation().getPersons().values()) {
+            Id<Vehicle> vehicleId = Id.createVehicleId(person.getId());
+            assembledScenario.getVehicles().addVehicle(assembledScenario.getVehicles().getFactory().createVehicle(vehicleId, dummyVehType));
+            Map<String, Id<Vehicle>> modeToVehMap = new HashMap<>();
+            modeToVehMap.put(TransportMode.car, vehicleId);
+            VehicleUtils.insertVehicleIdsIntoAttributes(person, modeToVehMap);
+        }
+
+        // TODO remove config argument as it is duplicate (cf. above)
         assembledScenario = scenarioAssembler.assembleScenario(initialMatsimConfig, year, travelTimes);
 
         finalizeConfig(assembledScenario.getConfig(), year);
@@ -143,10 +179,7 @@ public final class MatsimTransportModel implements TransportModel {
         config.controler().setWritePlansInterval(Math.max(config.controler().getLastIteration(), 1));
         config.controler().setWriteEventsInterval(Math.max(config.controler().getLastIteration(), 1));
         config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
-        if (properties.transportModel.includeAccessEgress) {
-            config.plansCalcRoute().setAccessEgressType(PlansCalcRouteConfigGroup.AccessEgressType.walkConstantTimeToLink);
-        }
-        config.transit().setUsingTransitInMobsim(false);
+        config.plansCalcRoute().setRoutingRandomness(0.);
     }
 
     /**

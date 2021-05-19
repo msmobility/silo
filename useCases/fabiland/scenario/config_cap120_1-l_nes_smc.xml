@@ -19,7 +19,6 @@
 		<param name="trafficDynamics" value="withHoles" />
 		<!-- Note that this setting is independent from the "global" threads setting -->
 		<param name="numberOfThreads" value="1" />
-		<param name="usingThreadpool" value="false" />
 	</module>
 	<module name="parallelEventHandling" >
 		<param name="numberOfThreads" value="1" />
@@ -52,6 +51,9 @@
 	<module name="subtourModeChoice" >
 		<param name="considerCarAvailability" value="true" />
 		<param name="modes" value="car,pt" />
+	</module>
+	<module name="transit" >
+		<param name="usingTransitInMobsim" value="false" />
 	</module>
 	<module name="transitRouter" >
 		<param name="extensionRadius" value="500.0" />

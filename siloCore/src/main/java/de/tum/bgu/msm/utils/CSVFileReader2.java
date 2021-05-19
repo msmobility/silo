@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.utils;
-import com.pb.common.datafile.DataTypes;
-import com.pb.common.datafile.TableDataSet;
+import de.tum.bgu.msm.common.datafile.DataTypes;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
 import org.apache.log4j.Logger;
 
 import java.io.*;

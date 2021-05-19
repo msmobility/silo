@@ -1,12 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.properties;
 
-import com.pb.common.datafile.TableDataSet;
-import com.pb.common.util.ResourceUtil;
-import de.tum.bgu.msm.properties.PropertiesUtil;
-import de.tum.bgu.msm.utils.SiloUtil;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
 import org.apache.commons.math.distribution.GammaDistributionImpl;
-
-import java.util.ResourceBundle;
 
 public abstract class AbstractPropertiesSynPop {
     public boolean runSyntheticPopulation;
@@ -66,5 +61,11 @@ public abstract class AbstractPropertiesSynPop {
     public TableDataSet schoolLocationlist;
     public boolean runMicrolocation;
     public TableDataSet zonalDataIPU;
+    public String zoneFilename;
+    public String zoneShapeFile;
+    public String microDataHouseholds;
+    public String microDataPersons;
+    public TableDataSet incomeCoefficients;
+    public double jobScaler;
 
 }

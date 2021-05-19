@@ -1,8 +1,8 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.capeTown;
 
-import com.pb.common.datafile.TableDataSet;
-import com.pb.common.matrix.Matrix;
-import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
+import de.tum.bgu.msm.common.matrix.Matrix;
+import de.tum.bgu.msm.common.util.ResourceUtil;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
@@ -1979,7 +1979,7 @@ public class SyntheticPopCTrace implements SyntheticPopI {
                 int bedRooms = (int) dataHousehold.getIndexedValueAt(hhIdMD, "H03_TOTROOMS");
                 int quality = microDataManager.guessQuality(dataHousehold.getIndexedStringValueAt(hhIdMD,"H07_WATERPIPED"),
                         dataHousehold.getIndexedStringValueAt(hhIdMD,"H10_TOILET"), numberofQualityLevels);
-                DwellingTypeCapeTown type = microDataManager.translateDwellingType(dataHousehold.getIndexedStringValueAt(hhIdMD,"H02_MAINDWELLING"));
+                CapeTownDwellingTypes.DwellingTypeCapeTown type = microDataManager.translateDwellingType(dataHousehold.getIndexedStringValueAt(hhIdMD,"H02_MAINDWELLING"));
                 int price = microDataManager.guessDwellingPrice(hhIncome);
                 int newDdId = realEstate.getNextDwellingId();
                 Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, taz, null, id, type , bedRooms, quality, price, 0); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year

@@ -2,8 +2,8 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.austin;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
-import com.pb.common.datafile.TableDataSet;
-import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
+import de.tum.bgu.msm.common.util.ResourceUtil;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.AccessibilityImpl;
@@ -369,7 +369,7 @@ public class SyntheticPopUs implements SyntheticPopI {
                     logger.debug("Household " + serial + " lives in Boat/RV/Van or NA. Skipping.");
                     continue;
                 }
-                DefaultDwellingTypeImpl ddType = translateDwellingType(pumsDdType);
+                DefaultDwellingTypes.DefaultDwellingTypeImpl ddType = translateDwellingType(pumsDdType);
                 int bedRooms;
                 try {
                 	float bedroom = Float.parseFloat(rec[bedRoomsIndex]);
@@ -711,7 +711,7 @@ public class SyntheticPopUs implements SyntheticPopI {
     }
 
 
-    private DefaultDwellingTypeImpl translateDwellingType (int pumsDdType) {
+    private DefaultDwellingTypes.DefaultDwellingTypeImpl translateDwellingType (int pumsDdType) {
         // translate 10 PUMA into 6 MetCouncil Dwelling Types
 
         // todo: consider keeping more dwelling types for MSTM implementation. Available in PUMS:
@@ -726,12 +726,12 @@ public class SyntheticPopUs implements SyntheticPopI {
 //        V 09 . A building with 50 or more apartments
 //        V 10 . Boat, RV, van, etc.
 
-        DefaultDwellingTypeImpl type;
-        if (pumsDdType == 1) type = DefaultDwellingTypeImpl.MH;
-        else if (pumsDdType == 2) type = DefaultDwellingTypeImpl.SFD;
-        else if (pumsDdType == 3) type = DefaultDwellingTypeImpl.SFA;
-        else if (pumsDdType == 4 || pumsDdType == 5) type = DefaultDwellingTypeImpl.MF234;
-        else if (pumsDdType >= 6 && pumsDdType <= 9) type = DefaultDwellingTypeImpl.MF5plus;
+        DefaultDwellingTypes.DefaultDwellingTypeImpl type;
+        if (pumsDdType == 1) type = DefaultDwellingTypes.DefaultDwellingTypeImpl.MH;
+        else if (pumsDdType == 2) type = DefaultDwellingTypes.DefaultDwellingTypeImpl.SFD;
+        else if (pumsDdType == 3) type = DefaultDwellingTypes.DefaultDwellingTypeImpl.SFA;
+        else if (pumsDdType == 4 || pumsDdType == 5) type = DefaultDwellingTypes.DefaultDwellingTypeImpl.MF234;
+        else if (pumsDdType >= 6 && pumsDdType <= 9) type = DefaultDwellingTypes.DefaultDwellingTypeImpl.MF5plus;
         else {
             logger.error("Unknown dwelling type " + pumsDdType + " found in PUMS data.");
             type = null;
@@ -962,11 +962,11 @@ public class SyntheticPopUs implements SyntheticPopI {
 
         logger.info("  Adding empty dwellings to match vacancy rate");
 
-        List<DwellingType> dwellingTypes = realEstateData.getDwellingTypes();
+        List<DwellingType> dwellingTypes = realEstateData.getDwellingTypes().getTypes();
         HashMap<String, ArrayList<Integer>> ddPointer = new HashMap<>();
         // summarize vacancy
         final int highestZoneId = geoData.getZones().keySet().stream().max(Comparator.naturalOrder()).get();
-        int[][][] ddCount = new int [highestZoneId + 1][DefaultDwellingTypeImpl.values().length][2];
+        int[][][] ddCount = new int [highestZoneId + 1][DefaultDwellingTypes.DefaultDwellingTypeImpl.values().length][2];
         for (Dwelling dd: realEstateData.getDwellings()) {
             int taz = dd.getZoneId();
             int occ = dd.getResidentId();
@@ -998,13 +998,13 @@ public class SyntheticPopUs implements SyntheticPopI {
                 vacRateCountyTarget = countyLevelVacancies.getIndexedValueAt(99999, "VacancyRate");  // use average value
             }
             int ddInThisTaz = 0;
-            for (DwellingType dt: DefaultDwellingTypeImpl.values()) {
+            for (DwellingType dt: DefaultDwellingTypes.DefaultDwellingTypeImpl.values()) {
                 String code = taz + "_" + dt;
                 if (!ddPointer.containsKey(code)) continue;
                 ddInThisTaz += ddPointer.get(code).size();
             }
             int targetVacantDdThisZone = (int) (ddInThisTaz * vacRateCountyTarget + 0.5);
-            for (DefaultDwellingTypeImpl dt: DefaultDwellingTypeImpl.values()) {
+            for (DefaultDwellingTypes.DefaultDwellingTypeImpl dt: DefaultDwellingTypes.DefaultDwellingTypeImpl.values()) {
                 String code = taz + "_" + dt;
                 if (!ddPointer.containsKey(code)) continue;
                 ArrayList<Integer> dList = ddPointer.get(code);
@@ -1088,17 +1088,17 @@ public class SyntheticPopUs implements SyntheticPopI {
     private void calculateVacancyRate () {
         //calculate and log vacancy rate
 
-        List<DwellingType> dwellingTypes = realEstateData.getDwellingTypes();
+        List<DwellingType> dwellingTypes = realEstateData.getDwellingTypes().getTypes();
 
         int[] ddCount = new int[dwellingTypes.size()];
-        int[] occCount = new int[DefaultDwellingTypeImpl.values().length];
+        int[] occCount = new int[DefaultDwellingTypes.DefaultDwellingTypeImpl.values().length];
         for (Dwelling dd: realEstateData.getDwellings()) {
             int id = dd.getResidentId();
             DwellingType tp = dd.getType();
             ddCount[dwellingTypes.indexOf(tp)]++;
             if (id > 0) occCount[dwellingTypes.indexOf(tp)]++;
         }
-        for (DefaultDwellingTypeImpl tp: DefaultDwellingTypeImpl.values()) {
+        for (DefaultDwellingTypes.DefaultDwellingTypeImpl tp: DefaultDwellingTypes.DefaultDwellingTypeImpl.values()) {
             float rate = SiloUtil.rounder(((float) ddCount[tp.ordinal()] - occCount[tp.ordinal()]) * 100 /
                     ((float) ddCount[tp.ordinal()]), 2);
             logger.info("  Vacancy rate for " + tp + ": " + rate + "%");

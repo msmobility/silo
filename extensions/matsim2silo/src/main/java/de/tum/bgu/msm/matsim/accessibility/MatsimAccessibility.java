@@ -36,10 +36,15 @@ public class MatsimAccessibility implements Accessibility, FacilityDataExchangeI
     }
 	
 	// FacilityDataExchangeInterface methods
-	/*@Override
-	public void setFacilityAccessibilities(ActivityFacility measurePoint, Double timeOfDay, Map<String, Double> accessibilities){
+	@Override
+	public void setFacilityAccessibilities(ActivityFacility measurePoint, Double timeOfDay, String mode, double accessibility){
 		if (timeOfDay == 8 * 60. * 60.) { // TODO Find better way for this check
-			accessibilitiesMap.put(new Tuple<ActivityFacility, Double>(measurePoint, timeOfDay), accessibilities);
+			Tuple<ActivityFacility, Double> key = new Tuple<>(measurePoint, timeOfDay);
+			if (!accessibilitiesMap.containsKey(key)) {
+				Map<String,Double> accessibilitiesByMode = new HashMap<>();
+				accessibilitiesMap.put(key, accessibilitiesByMode);
+			}
+			accessibilitiesMap.get(key).put(mode, accessibility);
 		}
 	}*/
 

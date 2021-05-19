@@ -3,10 +3,7 @@ package de.tum.bgu.msm.scenarios.av;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
-import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
-import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
-import de.tum.bgu.msm.data.dwelling.RealEstateDataManagerImpl;
+import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdMuc;
@@ -29,6 +26,7 @@ import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import org.apache.log4j.Logger;
 
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.LongAdder;
@@ -125,7 +123,7 @@ public class ParkingBasedHousingStrategyMuc implements HousingStrategy {
         double workDistanceUtility = 1;
 
         CommuteModeChoiceMapping commuteModeChoiceMapping = commuteModeChoice.assignCommuteModeChoice(dd, travelTimes, hh);
-        hh.setAttribute("COMUTE_MODE_CHOICE_MAPPING", commuteModeChoiceMapping);
+        hh.setAttribute("COMMUTE_MODE_CHOICE_MAPPING", commuteModeChoiceMapping);
 
 
         for (Person pp : hh.getPersons().values()) {
@@ -179,7 +177,7 @@ public class ParkingBasedHousingStrategyMuc implements HousingStrategy {
                 transitAccessibilityUtility, workDistanceUtility);
 
         if (!dd.getAttribute("PARKING_SPACES").isPresent()){
-            dd.setAttribute("PARKING_SPACES", ParkingDataManager.getNumberOfParkingSpaces((DefaultDwellingTypeImpl) dd.getType()));
+            dd.setAttribute("PARKING_SPACES", ParkingDataManager.getNumberOfParkingSpaces((DefaultDwellingTypes.DefaultDwellingTypeImpl) dd.getType()));
         }
 
 
@@ -191,6 +189,7 @@ public class ParkingBasedHousingStrategyMuc implements HousingStrategy {
             } else {
                 penaltyForParkingAtHome = 1 - 0.25 * lackOfParkingAtHome;
             }
+
         }
 
         utility = utility * penaltyForParkingAtHome;
@@ -222,7 +221,7 @@ public class ParkingBasedHousingStrategyMuc implements HousingStrategy {
                     final int averageRegionalRent;
                     final float regAcc;
                     float priceUtil;
-                    if (rentsByRegion.containsKey(region)) {
+                    if (rentsByRegion.containsKey(region.getId())) {
                         averageRegionalRent = rentsByRegion.get(region.getId()).intValue();
                         priceUtil = (float) convertPriceToUtility(averageRegionalRent, incomeCategory);
                         regAcc = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region));
