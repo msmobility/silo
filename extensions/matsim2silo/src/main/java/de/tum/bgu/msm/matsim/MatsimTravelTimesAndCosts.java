@@ -127,7 +127,7 @@ public final class MatsimTravelTimesAndCosts implements TravelTimes {
 
     @Override
     public double getTravelTime(Location origin, Location destination, double timeOfDay_s, String mode) {
-        List<? extends PlanElement> planElements = getRoute(origin, destination, timeOfDay_s, mode);
+        List<? extends PlanElement> planElements = getRoute(origin, destination, timeOfDay_s, mode, null);
         double arrivalTime = timeOfDay_s;
 
         if (!planElements.isEmpty()) {

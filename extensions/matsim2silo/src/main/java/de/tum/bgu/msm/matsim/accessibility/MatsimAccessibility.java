@@ -46,11 +46,6 @@ public class MatsimAccessibility implements Accessibility, FacilityDataExchangeI
 			}
 			accessibilitiesMap.get(key).put(mode, accessibility);
 		}
-	}*/
-
-	@Override
-	public void setFacilityAccessibilities(ActivityFacility activityFacility, Double aDouble, String s, double v) {
-
 	}
 
 	@Override
