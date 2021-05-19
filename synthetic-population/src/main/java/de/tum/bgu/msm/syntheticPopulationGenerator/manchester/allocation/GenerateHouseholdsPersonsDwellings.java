@@ -7,6 +7,7 @@ import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.person.*;
+import de.tum.bgu.msm.run.ManchesterDwellingTypes;
 import de.tum.bgu.msm.run.data.dwelling.BangkokDwellingTypes;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.MicroDataManager;
@@ -34,8 +35,11 @@ public class GenerateHouseholdsPersonsDwellings {
     private int totalHouseholds;
     private Map<Integer, Float> probMicroData;
     private double[] probabilityId;
+    private double[] probabilityTAZ;
     private double sumProbabilities;
     private int[] ids;
+    private double sumTAZs;
+    private int[] idTAZs;
     private int personCounter;
     private int householdCounter;
     private int firstHouseholdMunicipality;
@@ -70,20 +74,21 @@ public class GenerateHouseholdsPersonsDwellings {
             double logging = 2;
             int it = 12;
             int[] hhSelection = selectMultipleHouseholds(totalHouseholds);
+            int[] tazSelection = selectMultipleTAZ(totalHouseholds);
             for (int draw = 0; draw < totalHouseholds; draw++) {
                 int hhSelected = hhSelection[draw];
-                int tazSelected = municipality;
+                int tazSelected = tazSelection[draw];
                 Household household = generateHousehold();
                 generatePersons(hhSelected, household);
                 generateDwelling(hhSelected, household.getId(), tazSelected, municipality);
-                //incomeByMunicipality = incomeByMunicipality + HouseholdUtil.getAnnualHhIncome(household);
+                incomeByMunicipality = incomeByMunicipality + HouseholdUtil.getAnnualHhIncome(household);
                 if (draw == logging & draw > 2) {
                     logger.info("   Municipality " + municipality + ". Generated household " + draw);
                     it++;
                     logging = Math.pow(2, it);
                 }
             }
-            //recalculateIncomeAndDwellingPrice(municipality);
+            recalculateIncomeAndDwellingPrice(municipality);
             allocationErrorsByZone(municipality);
         }
         outputSummaryByZone();
@@ -111,13 +116,16 @@ public class GenerateHouseholdsPersonsDwellings {
             int age =(int) dataSetSynPop.getPersonDataSet().getValueAt(personSelected, "age");
             Gender gender = Gender.valueOf((int) dataSetSynPop.getPersonDataSet().getValueAt(personSelected, "gender"));
             Occupation occupation = Occupation.valueOf((int) dataSetSynPop.getPersonDataSet().getValueAt(personSelected, "employmentCode"));
+            //int income = microDataManager.translatePersonRole((int)dataSetSynPop.getPersonDataSet().getValueAt(personSelected, "income"));
+
             int income = 0;
             boolean license = MicroDataManager.obtainLicense(gender, age);
             int educationDegree = 1;
-            PersonRole personRole = microDataManager.translatePersonRole((int)dataSetSynPop.getPersonDataSet().getValueAt(personSelected, "personRole"));
+            //PersonRole personRole = microDataManager.translatePersonRole((int)dataSetSynPop.getPersonDataSet().getValueAt(personSelected, "personRole"));
+            //TODO: person role,schoolType,income,educationDegree
+            PersonRole personRole = PersonRole.SINGLE;
             int school = 1;
             Person pers = factory.createPerson(id, age, gender, occupation,personRole, 0, income); //(int id, int age, int gender, Race race, int occupation, int workplace, int income)
-            //pers.setNationality(nationality1);
             pers.setDriverLicense(license);
            // pers.setSchoolType(school);
             householdData.addPerson(pers);
@@ -128,9 +136,9 @@ public class GenerateHouseholdsPersonsDwellings {
     }
 
     private int guessIncome(){
-
         return 0;
     }
+
     private void generateDwelling(int hhSelected, int idHousehold, int tazSelected, int municipality){
 
         RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
@@ -138,32 +146,48 @@ public class GenerateHouseholdsPersonsDwellings {
         int newDdId = realEstate.getNextDwellingId();
         int year = 0;
         int floorSpace = 0;
-        int useInteger = (int) dataSetSynPop.getHouseholdDataSet().getValueAt(hhSelected, "tenureCode");
+        //int useInteger = (int) dataSetSynPop.getHouseholdDataSet().getValueAt(hhSelected, "tenureCode");
+        int useInteger = 2;
         DwellingUsage usage = DwellingUsage.valueOf(useInteger);
         int ddType = (int) dataSetSynPop.getHouseholdDataSet().getValueAt(hhSelected, "ddTypeCode");
-        DwellingType type = guessDwellingType (ddType);
-        int bedRooms = (int) dataSetSynPop.getHouseholdDataSet().getValueAt(hhSelected, "bedrooms");
+        DwellingType type = ManchesterDwellingTypes.DwellingTypeManchester.valueOf(ddType);
+        //TODO: bedrooms,tenure,price,
+        //int bedRooms = (int) dataSetSynPop.getHouseholdDataSet().getValueAt(hhSelected, "bedrooms");
+        int bedRooms = 1;
         Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, tazSelected, null, idHousehold, type , bedRooms, 1, 0, year);
         realEstate.addDwelling(dwell);
         dwell.setFloorSpace(floorSpace);
         dwell.setUsage(usage);
+
         guessPriceAndQuality(hhIncome, dwell);
     }
 
-
-    private DwellingType guessDwellingType (int ddTypeCode){
-        if (SiloUtil.getRandomNumberAsFloat() > 0.5){
-            ddTypeCode = ddTypeCode + 1;
+    public int guessDwellingQuality(int heatingType, int heatingEnergy, int additionalHeating, int yearBuilt){
+        //guess quality of dwelling based on construction year and heating characteristics.
+        //kitchen and bathroom quality are not coded on the micro data
+        int quality = PropertiesSynPop.get().main.numberofQualityLevels;
+        if (heatingType > 2) quality--; //reduce quality if not central or district heating
+        if (heatingEnergy > 4) quality--; //reduce quality if energy is not gas, electricity or heating oil (i.e. coal, wood, biomass, solar energy)
+        if (additionalHeating == 0) quality++; //increase quality if there is additional heating in the house (regardless the used energy)
+        if (yearBuilt > 0){
+            //Ages - 1: before 1919, 2: 1919-1948, 3: 1949-1978, 4: 1979 - 1986; 5: 1987 - 1990; 6: 1991 - 2000; 7: 2001 - 2004; 8: 2005 - 2008, 9: 2009 or later,
+            float[] deteriorationProbability = {0.9f, 0.8f, 0.6f, 0.3f, 0.12f, 0.08f, 0.05f, 0.04f, 0.04f};
+            float prob = deteriorationProbability[yearBuilt - 1];
+            //attempt to drop quality by age two times (to get some spreading of quality levels)
+            quality = quality - SiloUtil.select(new double[]{1 - prob ,prob});
+            quality = quality - SiloUtil.select(new double[]{1 - prob, prob});
         }
-        DwellingType type = BangkokDwellingTypes.DwellingTypeBangkok.valueOf(ddTypeCode);
-        return type;
+        quality = Math.max(quality, 1);      // ensure that quality never drops below 1
+        quality = Math.min(quality, PropertiesSynPop.get().main.numberofQualityLevels);      // ensure that quality never excess the number of quality levels
+        return quality;
     }
+
 
 
     private void guessPriceAndQuality(int hhIncome, Dwelling dd) {
         int targetPrice =  (int)Math.round(hhIncome * 0.15 / 12);
         DwellingType ddType = dd.getType();
-        int sizeDwelling = ((BangkokDwellingTypes.DwellingTypeBangkok)ddType).getsizeOfDwelling();
+        int sizeDwelling = ((ManchesterDwellingTypes.DwellingTypeManchester)ddType).getsizeOfDwelling();
         int priceLowQuality = 80 * sizeDwelling;
         int priceMediumQuality = 160 * sizeDwelling;
         int priceHighQuality = 240 * sizeDwelling;
@@ -218,8 +242,20 @@ public class GenerateHouseholdsPersonsDwellings {
             ids[i] = (int) dataSetSynPop.getWeights().getValueAt(i+1, "ID");
         }
 
+        probabilityTAZ = new double[dataSetSynPop.getProbabilityZone().get(municipality).keySet().size()];
+        sumTAZs = 0;
+        probabilityTAZ = dataSetSynPop.getProbabilityZone().get(municipality).values().stream().mapToDouble(Number::doubleValue).toArray();
+        for (int i = 1; i < probabilityTAZ.length; i++){
+            probabilityTAZ[i] = probabilityTAZ[i] + probabilityTAZ[i-1];
+        }
+        idTAZs = dataSetSynPop.getProbabilityZone().get(municipality).keySet().stream().mapToInt(Number::intValue).toArray();
+        sumTAZs = dataSetSynPop.getProbabilityZone().get(municipality).values().stream().mapToDouble(Number::doubleValue).sum();
+
+
         personCounter = 0;
         householdCounter = 0;
+        firstHouseholdMunicipality = Math.max(householdData.getHighestHouseholdIdInUse(), 1); //the
+
     }
 
 
@@ -244,7 +280,7 @@ public class GenerateHouseholdsPersonsDwellings {
                     p++;
                     cumulative += probabilityId[p];
                 }
-                if (probabilityId[p] > 0) {
+                if (probabilityId[p] > 0.00001) {
                     selected[completed] = ids[p];
                     completed++;
                 }
@@ -256,122 +292,92 @@ public class GenerateHouseholdsPersonsDwellings {
 
 
     private void summarizeByZone(int municipality, Map<Integer, Household> householdMap, Map<Integer, Person> personMap, Map<Integer, Dwelling> dwellingMap) {
-        zonalSummary.get(municipality).put("hhTotal", (double) householdMap.values().stream().mapToInt(x -> x.getId()).count());
-        zonalSummary.get(municipality).put("hhSize1", (double) householdMap.values().stream().filter(x ->x.getHhSize() == 1).count());
-        zonalSummary.get(municipality).put("hhSize2", (double) householdMap.values().stream().filter(x ->x.getHhSize() == 2).count());
-        zonalSummary.get(municipality).put("hhSize3", (double) householdMap.values().stream().filter(x ->x.getHhSize() == 3).count());
-        zonalSummary.get(municipality).put("hhSize4", (double) householdMap.values().stream().filter(x ->x.getHhSize() == 4).count());
-        zonalSummary.get(municipality).put("hhSize5+", (double) householdMap.values().stream().filter(x ->x.getHhSize() > 4).count());
-        zonalSummary.get(municipality).put("detached_120", (double) dwellingMap.values().stream().filter(x ->x.getType().equals(BangkokDwellingTypes.DwellingTypeBangkok.DETATCHED_HOUSE_120)).count());
-        zonalSummary.get(municipality).put("detached_200", (double) dwellingMap.values().stream().filter(x ->x.getType().equals(BangkokDwellingTypes.DwellingTypeBangkok.DETATCHED_HOUSE_200)).count());
-        zonalSummary.get(municipality).put("high_rise50", (double) dwellingMap.values().stream().filter(x ->x.getType().equals(BangkokDwellingTypes.DwellingTypeBangkok.HIGH_RISE_CONDOMINIUM_50)).count());
-        zonalSummary.get(municipality).put("high_rise30", (double) dwellingMap.values().stream().filter(x ->x.getType().equals(BangkokDwellingTypes.DwellingTypeBangkok.HIGH_RISE_CONDOMINIUM_30)).count());
-        zonalSummary.get(municipality).put("low_rise50", (double) dwellingMap.values().stream().filter(x ->x.getType().equals(BangkokDwellingTypes.DwellingTypeBangkok.LOW_RISE_CONDOMINIUM_50)).count());
-        zonalSummary.get(municipality).put("low_rise30", (double) dwellingMap.values().stream().filter(x ->x.getType().equals(BangkokDwellingTypes.DwellingTypeBangkok.LOW_RISE_CONDOMINIUM_30)).count());
-        zonalSummary.get(municipality).put("quality1", (double) dwellingMap.values().stream().filter(x ->x.getQuality() == 1).count());
-        zonalSummary.get(municipality).put("quality2", (double) dwellingMap.values().stream().filter(x ->x.getQuality() == 2).count());
-        zonalSummary.get(municipality).put("quality3", (double) dwellingMap.values().stream().filter(x ->x.getQuality() == 3).count());
-        zonalSummary.get(municipality).put("quality4", (double) dwellingMap.values().stream().filter(x ->x.getQuality() == 4).count());
-        if(dwellingMap.keySet().size() > 1) {
-            zonalSummary.get(municipality).put("rent", dwellingMap.values().stream().mapToInt(x -> x.getPrice()).average().getAsDouble());
-            zonalSummary.get(municipality).put("income", personMap.values().stream().mapToInt(x ->x.getAnnualIncome()).average().getAsDouble());
-        } else {
-            zonalSummary.get(municipality).put("rent", 0.0);
-            zonalSummary.get(municipality).put("income", 0.0);
-        }
-        zonalSummary.get(municipality).put("population", (double) personMap.values().stream().mapToInt(x -> x.getId()).count());
-        zonalSummary.get(municipality).put("males", (double) personMap.values().stream().filter(x ->x.getGender().equals(Gender.MALE)).count());
-        zonalSummary.get(municipality).put("females", (double) personMap.values().stream().filter(x ->x.getGender().equals(Gender.FEMALE)).count());
-        zonalSummary.get(municipality).put("workers", (double) personMap.values().stream().filter(x ->x.getOccupation().equals(Occupation.EMPLOYED)).count());
+        zonalSummary.get(municipality).put("hh", (double) householdMap.values().stream().mapToInt(x -> x.getId()).count());
+        zonalSummary.get(municipality).put("hh1", (double) householdMap.values().stream().filter(x ->x.getHhSize() == 1).count());
+        zonalSummary.get(municipality).put("hh2", (double) householdMap.values().stream().filter(x ->x.getHhSize() == 2).count());
+        zonalSummary.get(municipality).put("hh3", (double) householdMap.values().stream().filter(x ->x.getHhSize() == 3).count());
+        zonalSummary.get(municipality).put("hh4+", (double) householdMap.values().stream().filter(x ->x.getHhSize() >= 4).count());
+        zonalSummary.get(municipality).put("dd1", (double) dwellingMap.values().stream().filter(x ->x.getType().equals(ManchesterDwellingTypes.DwellingTypeManchester.SFD)).count());
+        zonalSummary.get(municipality).put("dd2", (double) dwellingMap.values().stream().filter(x ->x.getType().equals(ManchesterDwellingTypes.DwellingTypeManchester.SFA)).count());
+        zonalSummary.get(municipality).put("dd3", (double) dwellingMap.values().stream().filter(x ->x.getType().equals(ManchesterDwellingTypes.DwellingTypeManchester.MF234)).count());
+        zonalSummary.get(municipality).put("dd4", (double) dwellingMap.values().stream().filter(x ->x.getType().equals(ManchesterDwellingTypes.DwellingTypeManchester.MF5plus)).count());
+        zonalSummary.get(municipality).put("pp", (double) personMap.values().stream().mapToInt(x -> x.getId()).count());
+        zonalSummary.get(municipality).put("MaleEmp", (double) personMap.values().stream().filter(x ->x.getGender().equals(Gender.MALE)&x.getOccupation().equals(Occupation.EMPLOYED)).count());
+        zonalSummary.get(municipality).put("FemEmp", (double) personMap.values().stream().filter(x ->x.getGender().equals(Gender.FEMALE)&x.getOccupation().equals(Occupation.EMPLOYED)).count());
 
-        int[] ageBracketsGender = new int[]{9,19,29,39,49,59,69,79,89,109};
+        int[] ageBracketsGender = new int[]{4,10,16,20,29,39,49,59};
         double countAgeMale = 0;
         double countAgeFemale = 0;
         for (int age : ageBracketsGender){
             double maleYoungerThan = (double) personMap.values().stream().filter(x->x.getGender().equals(Gender.MALE)).filter(x->x.getAge() <= age).count();
-            zonalSummary.get(municipality).put("males"+age, maleYoungerThan - countAgeMale);
+            zonalSummary.get(municipality).put(age+"Male", maleYoungerThan - countAgeMale);
             countAgeMale = maleYoungerThan;
             double femaleYoungerThan = (double) personMap.values().stream().filter(x->x.getGender().equals(Gender.FEMALE)).filter(x->x.getAge() <= age).count();
-            zonalSummary.get(municipality).put("females"+age, femaleYoungerThan - countAgeFemale);
+            zonalSummary.get(municipality).put(age+"Fem", femaleYoungerThan - countAgeFemale);
             countAgeFemale = femaleYoungerThan;
         }
-        int[] ageBrackets = new int[]{18,35,65,109};
-        double countAge = 0;
-        for (int age : ageBrackets){
-            double youngerThan = (double) personMap.values().stream().filter(x->x.getGender().equals(Gender.MALE)).filter(x->x.getAge() <= age).count();
-            zonalSummary.get(municipality).put("person"+age, youngerThan - countAge);
-            countAge = youngerThan;
-        }
+
+        zonalSummary.get(municipality).put("60Male", (double) personMap.values().stream().filter(x->x.getGender().equals(Gender.MALE)).filter(x->x.getAge() >= 60).count());
+        zonalSummary.get(municipality).put("60Fem", (double) personMap.values().stream().filter(x->x.getGender().equals(Gender.FEMALE)).filter(x->x.getAge() >= 60).count());
+
     }
 
     private void allocationErrorsByZone(int municipality) {
-
         Map<String, String> attributes = new LinkedHashMap<>();
-        attributes.put("fem109", "females109");
-        attributes.put("male109", "males109");
-        attributes.put("fem89", "females89");
-        attributes.put("male89", "males89");
-        attributes.put("fem79", "females79");
-        attributes.put("male79", "males79");
-        attributes.put("fem9", "females9");
-        attributes.put("male9", "males9");
-        attributes.put("fem69", "females69");
-        attributes.put("male69", "males69");
-        attributes.put("fem19", "females19");
-        attributes.put("male19", "males19");
-        attributes.put("fem29", "females29");
-        attributes.put("male29", "males29");
-        attributes.put("fem59", "females59");
-        attributes.put("male59", "males59");
-        attributes.put("fem39", "females39");
-        attributes.put("male39", "males39");
-        attributes.put("fem49", "females49");
-        attributes.put("male49", "males49");
-        attributes.put("females", "females");
-        attributes.put("males", "males");
-        attributes.put("population", "population");
-        attributes.put("households", "hhTotal");
+        attributes.put("dd4", "dd4");
+        attributes.put("dd3", "dd3");
+        attributes.put("dd2", "dd2");
+        attributes.put("dd1", "dd1");
+        attributes.put("MaleEmp", "MaleEmp");
+        attributes.put("FemEmp", "FemEmp");
+        attributes.put("4Male", "4Male");
+        attributes.put("4Fem", "4Fem");
+        attributes.put("10Male", "10Male");
+        attributes.put("10Fem", "10Fem");
+        attributes.put("16Male", "16Male");
+        attributes.put("16Fem", "16Fem");
+        attributes.put("20Male", "20Male");
+        attributes.put("20Fem", "20Fem");
+        attributes.put("29Male", "29Male");
+        attributes.put("29Fem", "29Fem");
+        attributes.put("39Male", "39Male");
+        attributes.put("39Fem", "39Fem");
+        attributes.put("49Male", "49Male");
+        attributes.put("49Fem", "49Fem");
+        attributes.put("59Male", "59Male");
+        attributes.put("59Fem", "59Fem");
+        attributes.put("60Male", "60Male");
+        attributes.put("60Fem", "60Fem");
+        attributes.put("hh4+", "hh4+");
+        attributes.put("hh3", "hh3");
+        attributes.put("hh2", "hh2");
+        attributes.put("hh1", "hh1");
+        attributes.put("hh", "hh");
+        attributes.put("pp", "pp");
         allocationErrors.putIfAbsent(municipality, new LinkedHashMap<>());
         for (String attributeMarginals : attributes.keySet()) {
             allocationErrors.get(municipality).put(attributes.get(attributeMarginals), Math.abs((zonalSummary.get(municipality).get(attributes.get(attributeMarginals)) -
                     PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, attributeMarginals)) /
                     PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, attributeMarginals)));
         }
-        allocationErrors.get(municipality).put("condo", Math.abs((zonalSummary.get(municipality).get("high_rise50") +zonalSummary.get(municipality).get("high_rise30")-
-                PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, "condo") )/
-                PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, "condo")));
-        allocationErrors.get(municipality).put("apartment", Math.abs((zonalSummary.get(municipality).get("low_rise50") +zonalSummary.get(municipality).get("low_rise30")-
-                PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, "apartment")) /
-                PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, "apartment")));
-        allocationErrors.get(municipality).put("house", Math.abs((zonalSummary.get(municipality).get("detached_120") +zonalSummary.get(municipality).get("detached_200")-
-                PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, "house")) /
-                PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, "house")));
     }
 
 
     private void recalculateIncomeAndDwellingPrice(int municipality) {
-        double averageIncomeByZoneCensus = PropertiesSynPop.get().main.cellsMatrix.getIndexedValueAt(municipality, "income");
-        double averageIncomeZone = incomeByMunicipality / personCounterByMunicipality;
-        double incomeMultiplier = averageIncomeByZoneCensus / averageIncomeZone;
         Map<Integer, Household> householdMap = new HashMap<>();
         Map<Integer, Dwelling> dwellingMap = new HashMap<>();
         Map<Integer, Person> personMap = new HashMap<>();
-        int ppHumber = 0;
+        int ppNumber = 0;
         for (int hhNumber = 0; hhNumber < totalHouseholds; hhNumber++){
             Household hh = householdData.getHouseholdFromId(hhNumber + firstHouseholdMunicipality);
             householdMap.put(hhNumber, hh);
             dwellingMap.put(hhNumber, realEstate.getDwelling(hh.getId()));
             for (Person pp : hh.getPersons().values()){
-                int newIncome =  (int)( pp.getAnnualIncome() * incomeMultiplier);
-                pp.setIncome(newIncome);
-                personMap.put(ppHumber, pp);
-                ppHumber++;
+                personMap.put(ppNumber, pp);
+                ppNumber++;
             }
-            int hhIncome = HouseholdUtil.getAnnualHhIncome(hh);
-            guessAndSetPriceAndQuality(hhIncome, realEstate.getDwelling(hh.getDwellingId()));
         }
         zonalSummary.putIfAbsent(municipality, new LinkedHashMap<>());
-        zonalSummary.get(municipality).put("incomeScaler", incomeMultiplier);
         summarizeByZone(municipality, householdMap, personMap, dwellingMap);
     }
 
@@ -460,6 +466,37 @@ public class GenerateHouseholdsPersonsDwellings {
             return "detached_house";
         }
 
+    }
+
+    private int[] selectMultipleTAZ(int selections){
+
+        int[] selected;
+        selected = new int[selections];
+        int completed = 0;
+        for (int iteration = 0; iteration < 100; iteration++){
+            int m = selections - completed;
+            //double[] randomChoice = new double[(int)(numberOfTrips*1.1) ];
+            double[] randomChoices = new double[m];
+            for (int k = 0; k < randomChoices.length; k++) {
+                randomChoices[k] = SiloUtil.getRandomNumberAsDouble();
+            }
+            Arrays.sort(randomChoices);
+
+            //look up for the n travellers
+            int p = 0;
+            double cumulative = probabilityTAZ[p];
+            for (double randomNumber : randomChoices){
+                while (randomNumber > cumulative && p < probabilityTAZ.length - 1) {
+                    p++;
+                    cumulative += probabilityTAZ[p];
+                }
+                if (probabilityTAZ[p] > 0) {
+                    selected[completed] = idTAZs[p];
+                    completed++;
+                }
+            }
+        }
+        return selected;
     }
 
 

@@ -24,7 +24,6 @@ public class PrepareFrequencyMatrix {
         initializeAttributesMunicipality();
 
         for (int i = 1; i <= frequencyMatrix.getRowCount(); i++){
-            //checkContainsAndUpdate(attributesMunicipality[i],);
             frequencyMatrix.setValueAt(i,"hh",1);
             int hhSize = (int) dataSetSynPop.getHouseholdDataSet().getValueAt(i,"hhSize");
 
@@ -52,8 +51,10 @@ public class PrepareFrequencyMatrix {
             frequencyMatrix.setValueAt(i, "dd1", 1);
         } else if (ddType == 2){
             frequencyMatrix.setValueAt(i, "dd2", 1);
-        } else {
+        } else if (ddType == 3){
             frequencyMatrix.setValueAt(i, "dd3", 1);
+        } else {
+            frequencyMatrix.setValueAt(i, "dd4", 1);
         }
     }
 

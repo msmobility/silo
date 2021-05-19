@@ -8,6 +8,7 @@ import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.job.Job;
+import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
@@ -59,6 +60,7 @@ public class AssignJobs {
 
             Household hh = pp.getHousehold();
             int origin = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
+            //int selectedJobType = guessjobType(pp.getGender(),educationalLevel.get(pp));
             int selectedJobType = guessjobType(origin);
             int[] workplace = selectWorkplace(origin, selectedJobType);
             if (workplace[0] > 0) {
@@ -152,7 +154,7 @@ public class AssignJobs {
         for (int i = 0; i < PropertiesSynPop.get().main.jobStringType.length; i++) {
             jobIntTypes.put(PropertiesSynPop.get().main.jobStringType[i], i);
         }
-        int[] cellsID = PropertiesSynPop.get().main.cellsMatrix.getColumnAsInt("ID_cell");
+        int[] cellsID = PropertiesSynPop.get().main.cellsMatrix.getColumnAsInt("zoneID");
 
         //create the counter hashmaps
         for (int i = 0; i < PropertiesSynPop.get().main.jobStringType.length; i++){
@@ -238,6 +240,61 @@ public class AssignJobs {
         }
     }
 
+    public int guessjobType(Gender gender, int educationLevel){
+        int jobType = 0;
+        float[] cumProbability;
+        switch (gender){
+            case MALE:
+                switch (educationLevel) {
+                    case 0:
+                        cumProbability = new float[]{0.01853f,0.265805f,0.279451f,0.382040f,0.591423f,0.703214f,0.718372f,0.792528f,0.8353f,1.0f};
+                        break;
+                    case 1:
+                        cumProbability = new float[]{0.01853f,0.265805f,0.279451f,0.382040f,0.591423f,0.703214f,0.718372f,0.792528f,0.8353f,1.0f};
+                        break;
+                    case 2:
+                        cumProbability = new float[]{0.025005f,0.331942f,0.355182f,0.486795f,0.647928f,0.0748512f,0.779124f,0.838452f,0.900569f,1f};
+                        break;
+                    case 3:
+                        cumProbability = new float[]{0.008533f,0.257497f,0.278324f,0.323668f,0.39151f,0.503092f,0.55153f,0.588502f,0.795734f,1f};
+                        break;
+                    case 4:
+                        cumProbability = new float[]{0.004153f,0.154197f,0.16906f,0.19304f,0.246807f,0.347424f,0.387465f,0.418509f,0.4888415f,1f};
+                        break;
+                    default: cumProbability = new float[]{0.025005f,0.331942f,0.355182f,0.486795f,0.647928f,0.0748512f,0.779124f,0.838452f,0.900569f,1f};
+                }
+                break;
+            case FEMALE:
+                switch (educationLevel) {
+                    case 0:
+                        cumProbability = new float[]{0.012755f,0.153795f,0.159108f,0.174501f,0.448059f,0.49758f,0.517082f,0.616346f,0.655318f,1f};
+                        break;
+                    case 1:
+                        cumProbability = new float[]{0.012755f,0.153795f,0.159108f,0.174501f,0.448059f,0.49758f,0.517082f,0.616346f,0.655318f,1f};
+                        break;
+                    case 2:
+                        cumProbability = new float[]{0.013754f,0.137855f,0.145129f,0.166915f,0.389282f,0.436095f,0.479727f,0.537868f,0.603158f,1f};
+                        break;
+                    case 3:
+                        cumProbability = new float[]{0.005341f,0.098198f,0.109149f,0.125893f,0.203838f,0.261698f,0.314764f,0.366875f,0.611298f,1f};
+                        break;
+                    case 4:
+                        cumProbability = new float[]{0.002848f,0.061701f,0.069044f,0.076051f,0.142332f,0.197382f,0.223946f,0.253676f,0.327454f,1f};
+                        break;
+                    default: cumProbability = new float[]{0.013754f,0.137855f,0.145129f,0.166915f,0.389282f,0.436095f,0.479727f,0.537868f,0.603158f,1f};
+                }
+                break;
+            default: cumProbability = new float[]{0.025005f,0.331942f,0.355182f,0.486795f,0.647928f,0.0748512f,0.779124f,0.838452f,0.900569f,1f};
+        }
+        float threshold = SiloUtil.getRandomNumberAsFloat();
+        for (int i = 0; i < cumProbability.length; i++) {
+            if (cumProbability[i] > threshold) {
+                return i;
+            }
+        }
+        return cumProbability.length - 1;
+
+    }
 
     public int guessjobType(int zone){
 

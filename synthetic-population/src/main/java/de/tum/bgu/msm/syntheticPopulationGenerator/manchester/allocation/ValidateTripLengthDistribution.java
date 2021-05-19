@@ -37,7 +37,7 @@ public class ValidateTripLengthDistribution {
         logger.info("   Running module: read population");
         initializeODmatrices();
         summarizeCommutersTripLength();
-        summarizeStudentsTripLength();
+        //summarizeStudentsTripLength();
     }
 
 
@@ -129,7 +129,7 @@ public class ValidateTripLengthDistribution {
 
     private void initializeODmatrices(){
         cellsMatrix = PropertiesSynPop.get().main.cellsMatrix;
-        cellsMatrix.buildIndex(cellsMatrix.getColumnPosition("ID_cell"));
+        cellsMatrix.buildIndex(cellsMatrix.getColumnPosition("zoneID"));
         municipalityODMatrix = new TableDataSet();
         municipalityODMatrix.appendColumn(dataSetSynPop.getCityIDs(),"id");
         for (int municipality : dataSetSynPop.getMunicipalities()){

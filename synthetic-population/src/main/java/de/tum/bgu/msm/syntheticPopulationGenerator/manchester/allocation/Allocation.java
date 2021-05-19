@@ -32,17 +32,18 @@ public class Allocation extends ModuleSynPop{
             summarizeData(dataContainer, "afterGenerateHHppDD");
             //generateVacantDwellings();
             //summarizeData(dataContainer, "afterGenerateVacant");
-            //generateJobs();
+            generateJobs();
             //summarizeData(dataContainer, "afterGenerateJobs");
             //generateAutos();
         } else {
             readPopulation();
         }
+
         if (PropertiesSynPop.get().main.runJobAllocation) {
             assignJobs();
             summarizeData(dataContainer, "afterAssignJobs");
-            assignSchools();
-            summarizeData(dataContainer, "afterAssignSchools");
+            //assignSchools();
+            //summarizeData(dataContainer, "afterAssignSchools");
             validateTripLengths();
         }
         logger.info("   Completed allocation model.");
