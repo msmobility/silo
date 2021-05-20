@@ -7,10 +7,12 @@ import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Nationality;
 import de.tum.bgu.msm.data.person.PersonRole;
 import de.tum.bgu.msm.data.person.Race;
+import de.tum.bgu.msm.properties.PropertiesUtil;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.commons.math.MathException;
+import org.apache.commons.math.distribution.GammaDistributionImpl;
 import org.apache.log4j.Logger;
 
 import java.util.HashMap;
@@ -122,6 +124,85 @@ public class MicroDataManager {
         return exceptionsMicroData;
     }
 
+
+/*
+    public int translateIncomeNoIncome(int age){
+        int valueCode = 0;
+        double low = 0;
+        double high = 1;
+        double income = 0;
+
+        float[] category;
+        if (age < 6){
+            category = new float[]{0.8891f,0.936f,0.986f,0.996f,0.9973f,0.9976f,0.9978f,0.9979f,0.9987f,1.0f};
+        } else if (age < 11) {
+            category = new float[]{0.880f,0.922f,0.981f,0.996f,0.9983f,0.9984f,0.9986f,0.999f,1.0f,1.0f};
+        } else if (age < 16){
+            category = new float[]{0.859f,0.914f,0.971f,0.994f,0.9978f,0.9985f,0.9986f,0.999f,1.0f,1.0f};
+        } else {
+            category = new float[]{0.595f,0.672f,0.765f,0.899f,0.971f,0.9887f,0.995f,0.9969f,0.9986f,1.0f};
+        }
+       int valueMicroData = 0;
+        float threshold = SiloUtil.getRandomNumberAsFloat();
+        for (int i = 0; i < category.length; i++) {
+            if (category[i] > threshold) {
+                valueMicroData = i;
+            }
+        }
+        switch (valueMicroData){
+            case 0:
+                low = 0;
+                high = 0.00000001;
+                break;
+            case 1: //income class
+                low = 0;
+                high = 0.07998391;
+                break;
+            case 2: //income class
+                low = 0.07998391;
+                high = 0.15981282;
+                break;
+            case 3: //income class
+                low = 0.15981282;
+                high = 0.25837521;
+                break;
+            case 4: //income class
+                low = 0.25837521;
+                high = 0.34694010;
+                break;
+            case 5: //income class
+                low = 0.34694010;
+                high = 0.42580696;
+                break;
+            case 6: //income class
+                low = 0.42580696;
+                high = 0.49569720;
+                break;
+            case 7: //income class
+                low = 0.49569720;
+                high = 0.55744375;
+                break;
+            case 8: //income class
+                low = 0.55744375;
+                high = 0.61188119;
+                break;
+            case 9: //income class
+                low = 0.61188119;
+                high = 0.65980123;
+                break;
+        }
+        double cummulativeProb = SiloUtil.getRandomNumberAsDouble()*(high - low) + low;
+        GammaDistributionImpl incomeGammaDistribution = new GammaDistributionImpl(1.0737036186, 1 / 0.0006869439);
+        try {
+            income = incomeGammaDistribution.inverseCumulativeProbability(cummulativeProb);
+            valueCode = (int) income;
+        } catch (MathException e) {
+            e.printStackTrace();
+        }
+        return valueCode;
+    }
+
+*/
 
     public int translateIncome(int valueMicroData){
         int valueCode = 0;
