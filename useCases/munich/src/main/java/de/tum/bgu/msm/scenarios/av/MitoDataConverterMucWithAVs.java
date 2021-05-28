@@ -83,7 +83,7 @@ public class MitoDataConverterMucWithAVs implements MitoDataConverter {
             MitoHousehold household = new MitoHousehold(
                     siloHousehold.getId(),
                     HouseholdUtil.getAnnualHhIncome(siloHousehold) / 12,
-                    siloHousehold.getAutos());
+                    siloHousehold.getAutos(),true);
             household.setHomeZone(zone);
 
 
@@ -105,7 +105,7 @@ public class MitoDataConverterMucWithAVs implements MitoDataConverter {
                 zone.addHousehold();
                 dataSet.addHousehold(household);
                 for (Person person : siloHousehold.getPersons().values()) {
-                    MitoPerson mitoPerson = convertToMitoPp((PersonMuc) person, dataSet, dataContainer);
+                    MitoPerson mitoPerson = convertToMitoPp((PersonMuc) person, household, dataSet, dataContainer);
                     household.addPerson(mitoPerson);
                     dataSet.addPerson(mitoPerson);
                 }
@@ -120,7 +120,7 @@ public class MitoDataConverterMucWithAVs implements MitoDataConverter {
     }
 
 
-    private MitoPerson convertToMitoPp(PersonMuc person, DataSet dataSet, DataContainer dataContainer) {
+    private MitoPerson convertToMitoPp(PersonMuc person, MitoHousehold household, DataSet dataSet, DataContainer dataContainer) {
         final MitoGender mitoGender = MitoGender.valueOf(person.getGender().name());
         final MitoOccupationStatus mitoOccupationStatus = MitoOccupationStatus.valueOf(person.getOccupation().getCode());
 
@@ -152,11 +152,13 @@ public class MitoDataConverterMucWithAVs implements MitoDataConverter {
 
         return new MitoPerson(
                 person.getId(),
+                household,
                 mitoOccupationStatus,
                 mitoOccupation,
                 person.getAge(),
                 mitoGender,
-                person.hasDriverLicense());
+                person.hasDriverLicense(),
+                true);
     }
 
     private void fillMitoZoneEmployees(DataSet dataSet, DataContainer dataContainer) {

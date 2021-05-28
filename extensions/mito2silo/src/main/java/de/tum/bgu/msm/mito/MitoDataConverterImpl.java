@@ -1,6 +1,8 @@
 package de.tum.bgu.msm.mito;
 
 import de.tum.bgu.msm.container.DataContainer;
+
+import de.tum.bgu.msm.data.DataSet;
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
@@ -70,7 +72,7 @@ public class MitoDataConverterImpl implements MitoDataConverter {
             MitoHousehold household = new MitoHousehold(
                     siloHousehold.getId(),
                     HouseholdUtil.getAnnualHhIncome(siloHousehold) / 12,
-                    siloHousehold.getAutos());
+                    siloHousehold.getAutos(),true);
             household.setHomeZone(zone);
 
             Coordinate coordinate;
@@ -87,7 +89,7 @@ public class MitoDataConverterImpl implements MitoDataConverter {
                 zone.addHousehold();
                 dataSet.addHousehold(household);
                 for (Person person : siloHousehold.getPersons().values()) {
-                    MitoPerson mitoPerson = convertToMitoPp(person, dataSet, dataContainer);
+                    MitoPerson mitoPerson = convertToMitoPp(person, household, dataSet, dataContainer);
                     household.addPerson(mitoPerson);
                     dataSet.addPerson(mitoPerson);
                 }
@@ -102,7 +104,7 @@ public class MitoDataConverterImpl implements MitoDataConverter {
     }
 
 
-    private MitoPerson convertToMitoPp(Person person, DataSet dataSet, DataContainer dataContainer) {
+    private MitoPerson convertToMitoPp(Person person, MitoHousehold household, DataSet dataSet, DataContainer dataContainer) {
         final MitoGender mitoGender = MitoGender.valueOf(person.getGender().name());
         final MitoOccupationStatus mitoOccupationStatus = MitoOccupationStatus.valueOf(person.getOccupation().getCode());
 
@@ -129,11 +131,13 @@ public class MitoDataConverterImpl implements MitoDataConverter {
 
         return new MitoPerson(
                 person.getId(),
+                household,
                 mitoOccupationStatus,
                 mitoOccupation,
                 person.getAge(),
                 mitoGender,
-                person.hasDriverLicense());
+                person.hasDriverLicense(),
+                false);
     }
 
     private void fillMitoZoneEmployees(DataSet dataSet, DataContainer dataContainer) {

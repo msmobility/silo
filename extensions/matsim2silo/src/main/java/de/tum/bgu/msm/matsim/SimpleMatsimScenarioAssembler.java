@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.matsim;
 
 import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.Day;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
@@ -26,6 +27,7 @@ import org.matsim.core.config.Config;
 import org.matsim.core.scenario.ScenarioUtils;
 
 import java.util.Collection;
+import java.util.Map;
 
 public class SimpleMatsimScenarioAssembler implements MatsimScenarioAssembler {
 
@@ -123,5 +125,10 @@ public class SimpleMatsimScenarioAssembler implements MatsimScenarioAssembler {
         }
         logger.info("Finished creating MATSim scenario.");
         return scenario;
+    }
+
+    @Override
+    public Map<Day, Scenario> assembleMultiScenarios(Config initialMatsimConfig, int year, TravelTimes travelTimes) {
+        return null;
     }
 }

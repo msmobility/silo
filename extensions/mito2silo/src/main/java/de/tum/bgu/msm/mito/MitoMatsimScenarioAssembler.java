@@ -1,8 +1,10 @@
 package de.tum.bgu.msm.mito;
 
 import de.tum.bgu.msm.MitoModel;
+import de.tum.bgu.msm.MitoModel2017withMoped;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.DataSet;
+import de.tum.bgu.msm.data.Day;
 import de.tum.bgu.msm.data.MitoTrip;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
@@ -25,6 +27,7 @@ import org.matsim.core.scenario.ScenarioUtils;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class MitoMatsimScenarioAssembler implements MatsimScenarioAssembler {
 
@@ -61,7 +64,7 @@ public class MitoMatsimScenarioAssembler implements MatsimScenarioAssembler {
         mito.run();
 
         logger.info("  Receiving demand from MITO");
-        Population population = mito.getData().getPopulation();
+        Population population = mito.getData().getPopulation(Day.weekday);
         mitoTrips = mito.getData().getTrips();
         Config config = ConfigUtils.loadConfig(initialMatsimConfig.getContext());
         setDemandSpecificConfigSettings(config);
@@ -69,6 +72,35 @@ public class MitoMatsimScenarioAssembler implements MatsimScenarioAssembler {
         scenario.setPopulation(population);
         return scenario;
     }
+
+    @Override
+    public Map<Day, Scenario> assembleMultiScenarios(Config initialMatsimConfig, int year, TravelTimes travelTimes) {
+
+        logger.info("  Running travel demand model MITO for the year " + year);
+
+        DataSet dataSet = convertData(year);
+
+        logger.info("  SILO data being sent to MITO");
+        MitoModel2017withMoped mito = MitoModel2017withMoped.initializeModelFromSilo(propertiesPath, dataSet, properties.main.scenarioName);
+        mito.setRandomNumberGenerator(SiloUtil.getRandomObject());
+        mito.run();
+
+        logger.info("  Receiving demand from MITO");
+        Map<Day, Scenario> scenarios = new HashMap<>();
+
+        for (Day day : Day.values()){
+            Population population = mito.getData().getPopulation(day);
+            mitoTrips = mito.getData().getTrips().entrySet().stream().filter(tt-> tt.getValue().getDepartureDay().equals(day)).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            Config config = ConfigUtils.loadConfig(initialMatsimConfig.getContext());
+            setDemandSpecificConfigSettings(config);
+            MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(config);
+            scenario.setPopulation(population);
+            scenarios.put(day, scenario);
+        }
+
+        return scenarios;
+    }
+
 
     public void setDemandSpecificConfigSettings(Config config) {
         config.qsim().setFlowCapFactor(properties.main.scaleFactor * Double.parseDouble(Resources.instance.getString(de.tum.bgu.msm.resources.Properties.TRIP_SCALING_FACTOR)));

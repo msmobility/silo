@@ -19,6 +19,7 @@
 package de.tum.bgu.msm.matsim;
 
 import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.Day;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
@@ -29,14 +30,11 @@ import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
-import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Population;
-import org.matsim.api.core.v01.population.PopulationWriter;
 import org.matsim.contrib.dvrp.trafficmonitoring.TravelTimeUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.config.groups.StrategyConfigGroup;
@@ -44,23 +42,20 @@ import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.ControlerDefaults;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
-import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.population.PopulationUtils;
-import org.matsim.core.router.MainModeIdentifier;
 import org.matsim.core.router.MainModeIdentifierImpl;
 import org.matsim.core.router.TripStructureUtils;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.core.trafficmonitoring.FreeSpeedTravelTime;
-import org.matsim.vehicles.Vehicle;
 import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleUtils;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import static org.matsim.core.config.groups.PlanCalcScoreConfigGroup.*;
@@ -68,9 +63,9 @@ import static org.matsim.core.config.groups.PlanCalcScoreConfigGroup.*;
 /**
  * @author qinzhang
  */
-public final class MatsimTransportModelForAccidentModel implements TransportModel {
+public final class MatsimTransportModelForHealthModel implements TransportModel {
 
-    private static final Logger logger = Logger.getLogger(MatsimTransportModelForAccidentModel.class);
+    private static final Logger logger = Logger.getLogger(MatsimTransportModelForHealthModel.class);
 
     private final Properties properties;
     private final Config initialMatsimConfig;
@@ -82,9 +77,9 @@ public final class MatsimTransportModelForAccidentModel implements TransportMode
 
     private MatsimScenarioAssembler scenarioAssembler;
 
-    public MatsimTransportModelForAccidentModel(DataContainer dataContainer, Config matsimConfig,
-                                                Properties properties, MatsimScenarioAssembler scenarioAssembler,
-                                                MatsimData matsimData) {
+    public MatsimTransportModelForHealthModel(DataContainer dataContainer, Config matsimConfig,
+                                              Properties properties, MatsimScenarioAssembler scenarioAssembler,
+                                              MatsimData matsimData) {
         this.dataContainer = Objects.requireNonNull(dataContainer);
         this.initialMatsimConfig = Objects.requireNonNull(matsimConfig,
                 "No initial matsim config provided to SiloModel class!");
@@ -133,7 +128,7 @@ public final class MatsimTransportModelForAccidentModel implements TransportMode
 
     private void runTransportModel(int year) {
         logger.warn("Running MATSim transport model for year " + year + ".");
-        Scenario assembledScenario;
+        Map<Day, Scenario> assembledMultiScenario;
         TravelTimes travelTimes = dataContainer.getTravelTimes();
         if (year == properties.main.baseYear &&
                 properties.transportModel.transportModelIdentifier == TransportModelPropertiesModule.TransportModelIdentifier.MATSIM){
@@ -143,75 +138,79 @@ public final class MatsimTransportModelForAccidentModel implements TransportMode
             updateTravelTimes(myTravelTime, myTravelDisutility);
         }
 
-        assembledScenario = scenarioAssembler.assembleScenario(initialMatsimConfig, year, travelTimes);
-        MainModeIdentifierImpl mainModeIdentifier = new MainModeIdentifierImpl();
+        assembledMultiScenario = scenarioAssembler.assembleMultiScenarios(initialMatsimConfig, year, travelTimes);
 
-        Population populationCar = PopulationUtils.createPopulation(ConfigUtils.createConfig());
-        Population populationBikePed = PopulationUtils.createPopulation(ConfigUtils.createConfig());
-        for (Person pp : assembledScenario.getPopulation().getPersons().values()) {
-            String mode = mainModeIdentifier.identifyMainMode(TripStructureUtils.getLegs(pp.getSelectedPlan()));
-            switch (mode){
-                case "car":
-                    populationCar.addPerson(pp);
-                    break;
-                case "bike":
-                case "walk":
-                    populationBikePed.addPerson(pp);
-                    break;
-                default:
-                    continue;
+        for (Day day : assembledMultiScenario.keySet()) {
+            Scenario assembledScenario = assembledMultiScenario.get(day);
+            MainModeIdentifierImpl mainModeIdentifier = new MainModeIdentifierImpl();
+
+            Population populationCar = PopulationUtils.createPopulation(ConfigUtils.createConfig());
+            Population populationBikePed = PopulationUtils.createPopulation(ConfigUtils.createConfig());
+            for (Person pp : assembledScenario.getPopulation().getPersons().values()) {
+                String mode = mainModeIdentifier.identifyMainMode(TripStructureUtils.getLegs(pp.getSelectedPlan()));
+                switch (mode) {
+                    case "car":
+                        populationCar.addPerson(pp);
+                        break;
+                    case "bike":
+                    case "walk":
+                        populationBikePed.addPerson(pp);
+                        break;
+                    default:
+                        continue;
+                }
             }
+
+            logger.warn("Running MATSim transport model for car scenario " + year + ".");
+            Config carConfig = ConfigUtils.loadConfig(initialMatsimConfig.getContext());
+            MutableScenario scenarioCar = (MutableScenario) ScenarioUtils.loadScenario(carConfig);
+            scenarioCar.setPopulation(populationCar);
+            finalizeCarConfig(scenarioCar.getConfig(), year, day);
+            final Controler controlerCar = new Controler(scenarioCar);
+            controlerCar.run();
+            logger.warn("Running MATSim transport model for car scenario " + year + " finished.");
+
+            // Get travel Times from MATSim - weekday
+            if(day.equals(Day.weekday)){
+                logger.warn("Using MATSim to compute travel times from zone to zone.");
+                TravelTime travelTime = controlerCar.getLinkTravelTimes();
+                TravelDisutility travelDisutility = controlerCar.getTravelDisutilityFactory().createTravelDisutility(travelTime);
+                updateTravelTimes(travelTime, travelDisutility);
+            }
+
+            logger.warn("Running MATSim transport model for Bike&Ped scenario " + year + ".");
+            Config bikePedConfig = ConfigUtils.loadConfig(initialMatsimConfig.getContext());
+            bikePedConfig.network().setInputFile("input/mito/trafficAssignment/studyNetworkDenseBikeWalk.xml");
+            MutableScenario scenarioBikePed = (MutableScenario) ScenarioUtils.loadScenario(bikePedConfig);
+            scenarioBikePed.setPopulation(populationBikePed);
+
+            VehicleType walk = VehicleUtils.getFactory().createVehicleType(Id.create(TransportMode.walk, VehicleType.class));
+            walk.setMaximumVelocity(5 / 3.6);
+            scenarioBikePed.getVehicles().addVehicleType(walk);
+
+            VehicleType bicycle = VehicleUtils.getFactory().createVehicleType(Id.create(TransportMode.bike, VehicleType.class));
+            bicycle.setMaximumVelocity(15 / 3.6);
+            scenarioBikePed.getVehicles().addVehicleType(bicycle);
+
+            scenarioBikePed.getConfig().qsim().setVehiclesSource(QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData);
+
+            finalizeConfigForBikePedScenario(scenarioBikePed.getConfig(), year, day);
+            final Controler controlerBikePed = new Controler(scenarioBikePed);
+
+            controlerBikePed.addOverridingModule(new AbstractModule() {
+                @Override
+                public void install() {
+                    this.addTravelTimeBinding(TransportMode.bike).toInstance((l, t, p, v) -> l.getLength() / (12.5 / 3.6));
+                    this.addTravelTimeBinding(TransportMode.walk).toInstance((link, time, person, vehicle) -> link.getLength() / (5. / 3.6));
+                }
+            });
+
+            controlerBikePed.run();
+            logger.warn("Running MATSim transport model for Bike&Ped scenario " + year + " finished.");
         }
-
-        logger.warn("Running MATSim transport model for car scenario " + year + ".");
-        Config carConfig = ConfigUtils.loadConfig(initialMatsimConfig.getContext());
-        MutableScenario scenarioCar = (MutableScenario) ScenarioUtils.loadScenario(carConfig);
-        scenarioCar.setPopulation(populationCar);
-        finalizeCarConfig(scenarioCar.getConfig(), year);
-        final Controler controlerCar = new Controler(scenarioCar);
-        controlerCar.run();
-        logger.warn("Running MATSim transport model for car scenario " + year + " finished.");
-
-        // Get travel Times from MATSim
-        logger.warn("Using MATSim to compute travel times from zone to zone.");
-        TravelTime travelTime = controlerCar.getLinkTravelTimes();
-        TravelDisutility travelDisutility = controlerCar.getTravelDisutilityFactory().createTravelDisutility(travelTime);
-        updateTravelTimes(travelTime, travelDisutility);
-
-        logger.warn("Running MATSim transport model for Bike&Ped scenario " + year + ".");
-        Config bikePedConfig = ConfigUtils.loadConfig(initialMatsimConfig.getContext());
-        bikePedConfig.network().setInputFile("input/mito/trafficAssignment/studyNetworkDenseBikeWalk.xml");
-        MutableScenario scenarioBikePed = (MutableScenario) ScenarioUtils.loadScenario(bikePedConfig);
-        scenarioBikePed.setPopulation(populationBikePed);
-
-        VehicleType walk = VehicleUtils.getFactory().createVehicleType(Id.create(TransportMode.walk, VehicleType.class));
-        walk.setMaximumVelocity(5/3.6);
-        scenarioBikePed.getVehicles().addVehicleType(walk);
-
-        VehicleType bicycle = VehicleUtils.getFactory().createVehicleType(Id.create(TransportMode.bike, VehicleType.class));
-        bicycle.setMaximumVelocity(15/3.6);
-        scenarioBikePed.getVehicles().addVehicleType(bicycle);
-
-        scenarioBikePed.getConfig().qsim().setVehiclesSource(QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData);
-
-        finalizeConfigForBikePedScenario(scenarioBikePed.getConfig(), year);
-        final Controler controlerBikePed = new Controler(scenarioBikePed);
-
-        controlerBikePed.addOverridingModule( new AbstractModule(){
-            @Override
-            public void install(){
-                this.addTravelTimeBinding( TransportMode.bike ).toInstance((l,t,p,v) -> l.getLength() / (12.5/3.6));
-                this.addTravelTimeBinding( TransportMode.walk ).toInstance((link, time, person, vehicle) -> link.getLength()/(5./3.6));
-            }
-        } ) ;
-
-        controlerBikePed.run();
-        logger.warn("Running MATSim transport model for Bike&Ped scenario " + year + " finished.");
-
-
     }
 
-    private void finalizeConfigForBikePedScenario(Config bikePedConfig, int year) {
+    private void finalizeConfigForBikePedScenario(Config bikePedConfig, int year, Day day) {
 
         bikePedConfig.controler().setLastIteration(1);
         bikePedConfig.qsim().setFlowCapFactor(1.);
@@ -237,7 +236,7 @@ public final class MatsimTransportModelForAccidentModel implements TransportMode
         bikePedConfig.planCalcScore().addActivityParams(airportActivity);
 
         final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
-        String outputDirectory = outputDirectoryRoot + "/matsim/" + year + "/bikePed/";
+        String outputDirectory = outputDirectoryRoot + "/matsim/" + year + "/" + day + "/bikePed/";
         bikePedConfig.controler().setOutputDirectory(outputDirectory);
         bikePedConfig.controler().setRunId(String.valueOf(year));
         bikePedConfig.controler().setWritePlansInterval(Math.max(bikePedConfig.controler().getLastIteration(), 1));
@@ -288,7 +287,7 @@ public final class MatsimTransportModelForAccidentModel implements TransportMode
         bikePedConfig.planCalcScore().addModeParams(walkParams);
     }
 
-    private void finalizeCarConfig(Config config, int year) {
+    private void finalizeCarConfig(Config config, int year, Day day) {
         config.qsim().setFlowCapFactor(properties.main.scaleFactor * Double.parseDouble(Resources.instance.getString(de.tum.bgu.msm.resources.Properties.TRIP_SCALING_FACTOR)));
         config.qsim().setStorageCapFactor(properties.main.scaleFactor * Double.parseDouble(Resources.instance.getString(de.tum.bgu.msm.resources.Properties.TRIP_SCALING_FACTOR)));
 
@@ -314,7 +313,7 @@ public final class MatsimTransportModelForAccidentModel implements TransportMode
         config.planCalcScore().addActivityParams(airportActivity);
 
         final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
-        String outputDirectory = outputDirectoryRoot + "/matsim/" + year + "/car/";
+        String outputDirectory = outputDirectoryRoot + "/matsim/" + year + "/" + day + "/car/";
         config.controler().setRunId(String.valueOf(year));
         config.controler().setOutputDirectory(outputDirectory);
         config.controler().setWritePlansInterval(Math.max(config.controler().getLastIteration(), 1));

@@ -1,8 +1,13 @@
 package de.tum.bgu.msm.data.person;
 
+import de.tum.bgu.msm.data.Mode;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.schools.PersonWithSchool;
+import org.matsim.contrib.accidents.AccidentSeverity;
+import org.matsim.contrib.emissions.Pollutant;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 public class PersonMuc implements PersonWithSchool {
@@ -15,9 +20,13 @@ public class PersonMuc implements PersonWithSchool {
     private int schoolPlace = 0;
     private int schoolId = -1;
 
-    //accident model
-    private double lightInjuryRisk;
-    private double severeInjuryRisk;
+    //for health model
+    private Map<Mode, Double> weeklyTravelTimeInMinutesByMode;
+    private double weeklyLightInjuryRisk;
+    private double weeklySevereInjuryRisk;
+    private Map<Pollutant, Double> weeklyExposureByPollutant = new HashMap<>();
+
+
 
 
     public PersonMuc(int id, int age,
@@ -163,19 +172,35 @@ public class PersonMuc implements PersonWithSchool {
         delegate.setAttribute(key, value);
     }
 
-    public double getLightInjuryRisk() {
-        return lightInjuryRisk;
+    public Map<Mode, Double> getWeeklyTravelTimeInMinutesByMode() {
+        return weeklyTravelTimeInMinutesByMode;
     }
 
-    public void setLightInjuryRisk(double lightInjuryRisk) {
-        this.lightInjuryRisk = lightInjuryRisk;
+    public void setWeeklyTravelTimeInMinutesByMode(Map<Mode, Double> weeklyTravelTimeInMinutesByMode) {
+        this.weeklyTravelTimeInMinutesByMode = weeklyTravelTimeInMinutesByMode;
     }
 
-    public double getSevereInjuryRisk() {
-        return severeInjuryRisk;
+    public double getWeeklyLightInjuryRisk() {
+        return weeklyLightInjuryRisk;
     }
 
-    public void setSevereInjuryRisk(double severeInjuryRisk) {
-        this.severeInjuryRisk = severeInjuryRisk;
+    public void setWeeklyLightInjuryRisk(double weeklyLightInjuryRisk) {
+        this.weeklyLightInjuryRisk = weeklyLightInjuryRisk;
+    }
+
+    public double getWeeklySevereInjuryRisk() {
+        return weeklySevereInjuryRisk;
+    }
+
+    public void setWeeklySevereInjuryRisk(double weeklySevereInjuryRisk) {
+        this.weeklySevereInjuryRisk = weeklySevereInjuryRisk;
+    }
+
+    public Map<Pollutant, Double> getWeeklyExposureByPollutant() {
+        return weeklyExposureByPollutant;
+    }
+
+    public void setWeeklyExposureByPollutant(Map<Pollutant, Double> weeklyExposureByPollutant) {
+        this.weeklyExposureByPollutant = weeklyExposureByPollutant;
     }
 }
