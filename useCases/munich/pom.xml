@@ -76,6 +76,12 @@
             <version>4.13.2</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>de.tum.bgu.msm</groupId>
+            <artifactId>siloCore</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
         <!--        <dependency>-->
 <!--            <groupId>de.tum.bgu.msm</groupId>-->
 <!--            <artifactId>matsim2silo</artifactId>-->
