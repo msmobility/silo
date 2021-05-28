@@ -4,17 +4,13 @@ import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
-import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManagerImpl;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdType;
-import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.household.IncomeCategory;
-import de.tum.bgu.msm.data.job.Job;
-import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
@@ -25,8 +21,8 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.TransportMode;
 
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -86,7 +82,28 @@ public class SimpleCommuteModeChoiceHousingStrategyImpl implements HousingStrate
         this.properties = properties;
         this.travelTimes = travelTimes;
         accessibility = dataContainer.getAccessibility();
-        commuteModeChoice = new SimpleCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom());
+        this.commuteModeChoice = new SimpleCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom());
+        this.dwellingUtilityStrategy = dwellingUtilityStrategy;
+        this.dwellingProbabilityStrategy = dwellingProbabilityStrategy;
+        this.regionUtilityStrategy = regionUtilityStrategy;
+        this.realEstateDataManager = dataContainer.getRealEstateDataManager();
+        this.regionProbabilityStrategy = regionProbabilityStrategy;
+    }
+
+    // TODO When consolidated, try to get rid of this second constructor
+    public SimpleCommuteModeChoiceHousingStrategyImpl(DataContainer dataContainer,
+                                                      Properties properties,
+                                                      TravelTimes travelTimes,
+                                                      DwellingUtilityStrategy dwellingUtilityStrategy,
+                                                      DwellingProbabilityStrategy dwellingProbabilityStrategy,
+                                                      RegionUtilityStrategy regionUtilityStrategy, RegionProbabilityStrategy regionProbabilityStrategy,
+                                                      CommuteModeChoice commuteModeChoice) {
+        this.dataContainer = dataContainer;
+        geoData = dataContainer.getGeoData();
+        this.properties = properties;
+        this.travelTimes = travelTimes;
+        accessibility = dataContainer.getAccessibility();
+        this.commuteModeChoice = commuteModeChoice;
         this.dwellingUtilityStrategy = dwellingUtilityStrategy;
         this.dwellingProbabilityStrategy = dwellingProbabilityStrategy;
         this.regionUtilityStrategy = regionUtilityStrategy;
@@ -122,6 +139,7 @@ public class SimpleCommuteModeChoiceHousingStrategyImpl implements HousingStrate
         double workDistanceUtility = 1;
 
         CommuteModeChoiceMapping commuteModeChoiceMapping = commuteModeChoice.assignCommuteModeChoice(dwelling, travelTimes, hh);
+        hh.setAttribute("COMMUTE_MODE_CHOICE_MAPPING", commuteModeChoiceMapping);
 
         for (Person pp : hh.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
@@ -170,7 +188,7 @@ public class SimpleCommuteModeChoiceHousingStrategyImpl implements HousingStrate
     public HousingStrategy duplicate() {
         TravelTimes ttCopy = travelTimes.duplicate();
         SimpleCommuteModeChoiceHousingStrategyImpl strategy = new SimpleCommuteModeChoiceHousingStrategyImpl(dataContainer, properties, ttCopy,
-                dwellingUtilityStrategy, dwellingProbabilityStrategy, regionUtilityStrategy, regionProbabilityStrategy);
+                dwellingUtilityStrategy, dwellingProbabilityStrategy, regionUtilityStrategy, regionProbabilityStrategy, commuteModeChoice);
         strategy.hhByRegion = hhByRegion;
         strategy.utilityByIncomeByRegion = utilityByIncomeByRegion;
         return strategy;

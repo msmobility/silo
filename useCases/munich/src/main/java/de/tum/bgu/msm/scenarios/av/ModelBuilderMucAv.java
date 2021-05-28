@@ -66,7 +66,7 @@ import org.matsim.core.scenario.ScenarioUtils;
 
 public class ModelBuilderMucAv {
 
-    public static ModelContainer getModelContainerAvForMuc(DataContainerWithSchools dataContainer, Properties properties, Config config, boolean useAv) {
+    public static ModelContainer getModelContainerAvForMuc(DataContainerWithSchools dataContainer, Properties properties, Config config, boolean useAv, String penetrationRateCalculator) {
 
         PersonFactory ppFactory = dataContainer.getHouseholdDataManager().getPersonFactory();
         HouseholdFactory hhFactory = dataContainer.getHouseholdDataManager().getHouseholdFactory();
@@ -129,7 +129,7 @@ public class ModelBuilderMucAv {
         MatsimData matsimData = null;
         if (config != null) {
             final Scenario scenario = ScenarioUtils.loadScenario(config);
-            matsimData = new MatsimData(config, properties, ZoneConnectorManager.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
+            matsimData = new MatsimData(config, properties, ZoneConnectorManagerImpl.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
         }
         switch (properties.transportModel.transportModelIdentifier) {
             case MITO_MATSIM:
@@ -160,9 +160,9 @@ public class ModelBuilderMucAv {
         if (useAv) {
             modelContainer.registerModelUpdateListener(new SwitchToAutonomousVehicleModelMuc(dataContainer,
                     properties,
-                    SwitchToAutonomousVehicleModelMuc.class.getResourceAsStream("SwitchToAutonomousVehicleCalc"), SiloUtil.provideNewRandom()));
+                    SwitchToAutonomousVehicleModelMuc.class.getResourceAsStream(penetrationRateCalculator), SiloUtil.provideNewRandom()));
         }
-        modelContainer.registerModelUpdateListener(new ParkingDataManager(dataContainer, SiloUtil.provideNewRandom()));
+        modelContainer.registerModelUpdateListener(new ParkingDataManager(dataContainer, SiloUtil.provideNewRandom(), properties));
         return modelContainer;
     }
 }

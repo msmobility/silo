@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.List;
 import java.util.Map;
 
 
@@ -59,7 +60,7 @@ public class HouseholdSatisfactionMonitor implements ResultsMonitor {
     }
 
     @Override
-    public void endYear(int year, Multiset<Class<? extends MicroEvent>> eventCounter) {
+    public void endYear(int year, Multiset<Class<? extends MicroEvent>> eventCounter, List<MicroEvent> events) {
         if (enabled){
             Map<Integer, Integer> householdsByZone = movesModel.getHouseholdsByZone();
             Map<Integer, Double> sumOfSatisfactionsByZone = movesModel.getSumOfSatisfactionsByZone();

@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.data;
 
-import com.pb.common.datafile.TableDataSet;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.development.Development;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
@@ -70,8 +70,8 @@ public final class SummarizeData {
         switch (action) {
             case "open":
                 String directory = Properties.get().main.baseDirectory + "scenOutput/" + Properties.get().main.scenarioName;
-                spatialResultWriter_2 = SiloUtil.openFileForSequentialWriting(directory + "/" + RESULT_FILE_SPATIAL +
-                        "_2.csv", Properties.get().main.startYear != Properties.get().main.baseYear);
+                spatialResultWriter_2 = SiloUtil.openFileForSequentialWriting(directory + "/siloResults/" + RESULT_FILE_SPATIAL +
+                        ".csv", Properties.get().main.startYear != Properties.get().main.baseYear);
                 break;
             case "close":
                 spatialResultWriter_2.close();

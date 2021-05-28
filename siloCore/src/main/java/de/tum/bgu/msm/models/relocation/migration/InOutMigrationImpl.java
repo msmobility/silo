@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.models.relocation.migration;
 
-import com.pb.common.datafile.TableDataSet;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.Household;
@@ -90,12 +90,6 @@ public class InOutMigrationImpl extends AbstractModel implements InOutMigration 
             for (int i = 0; i < periodLength; i++) {
                 years[i] = properties.main.startYear + i;
                 populationByYear[i] = (int) Math.round(populationBaseYear * Math.pow(1 + properties.moves.populationGrowthRateInPercentage / 100, i));
-                populationByYear[i] = (int) (populationByYear[i] * properties.main.scaleFactor);
-            }
-            if (scaleFactor != 1.) {
-                for (int i = 0; i < periodLength; i++) {
-                    populationByYear[i] = (int) (populationByYear[i] * scaleFactor);
-                }
             }
             tblPopulationTarget.appendColumn(years, "Year");
             tblPopulationTarget.appendColumn(populationByYear, "Population");

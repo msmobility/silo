@@ -7,6 +7,7 @@ import de.tum.bgu.msm.models.ModelUpdateListener;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public interface JobDataManager extends ModelUpdateListener {
     Job getJobFromId(int jobId);
@@ -32,4 +33,6 @@ public interface JobDataManager extends ModelUpdateListener {
     void addJob(Job jj);
 
     JobFactory getFactory();
+
+    Map<Integer, List<Job>> getVacantJobsByRegion();
 }

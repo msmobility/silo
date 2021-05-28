@@ -3,8 +3,8 @@ package de.tum.bgu.msm.syntheticPopulationGenerator;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import com.pb.common.datafile.TableDataSet;
-import com.pb.common.matrix.Matrix;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
+import de.tum.bgu.msm.common.matrix.Matrix;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import org.apache.log4j.Logger;
 import org.opengis.feature.simple.SimpleFeature;

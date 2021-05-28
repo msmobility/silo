@@ -58,8 +58,6 @@ public class RenovationModelImpl extends AbstractModel implements RenovationMode
 
     @Override
     public void setup() {
-//        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("RenovationCalc"));
-
         renovationProbability = new double[properties.main.qualityLevels][5];
         for (int oldQual = 0; oldQual < properties.main.qualityLevels; oldQual++) {
             for (int alternative = 0; alternative < 5; alternative++) {

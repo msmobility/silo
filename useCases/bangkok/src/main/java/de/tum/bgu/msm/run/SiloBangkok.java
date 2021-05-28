@@ -4,9 +4,9 @@ import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.container.DefaultDataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.io.output.HouseholdSatisfactionMonitor;
+import de.tum.bgu.msm.io.output.ModalSharesResultMonitor;
 import de.tum.bgu.msm.io.output.MultiFileResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.schools.DataContainerWithSchoolsImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
@@ -30,7 +30,7 @@ public class SiloBangkok {
         if (args.length > 1 && args[1] != null) {
             config = ConfigUtils.loadConfig(args[1]);
         }
-        logger.info("Started SILO land use model for the Munich Metropolitan Area");
+        logger.info("Started SILO land use model for the Bangkok Metropolitan Area");
         DefaultDataContainer dataContainer = DataBuilderBangkok.getModelDataForBangkok(properties, config);
         DataBuilderBangkok.read(properties, dataContainer);
         ModelContainer modelContainer = ModelBuilderBangkok.getModelContainerForBangkok(dataContainer, properties, config);
@@ -39,6 +39,7 @@ public class SiloBangkok {
         //model.addResultMonitor(new ResultsMonitorMuc(dataContainer, properties));
         model.addResultMonitor(new MultiFileResultsMonitor(dataContainer, properties));
         model.addResultMonitor(new HouseholdSatisfactionMonitor(dataContainer, properties, modelContainer));
+        model.addResultMonitor(new ModalSharesResultMonitor(dataContainer, properties));
         model.runModel();
         logger.info("Finished SILO.");
     }

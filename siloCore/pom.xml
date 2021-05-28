@@ -2,238 +2,29 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
+    <parent>
+        <artifactId>silo-parent</artifactId>
+        <groupId>de.tum.bgu.msm</groupId>
+        <version>0.1.0-SNAPSHOT</version>
+    </parent>
+
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.github.msmobility</groupId>
     <artifactId>siloCore</artifactId>
     <name>SILO</name>
     <version>0.1.0-SNAPSHOT</version>
     <description>Simple Integrated Land-Use Orchestrator</description>
     <url>silo.zone</url>
     <inceptionYear>2015</inceptionYear>
-    <licenses>
-        <license>
-            <name>GNU General Public License</name>
-            <url>${basedir}/LICENSE</url>
-        </license>
-    </licenses>
-    <scm>
-        <url>https://github.com/moeckel/silo</url>
-        <connection>scm:git:git://github.com/msmobility/silo.git</connection>
-        <developerConnection>scm:git:git@github.com:msmobility/silo.git</developerConnection>
-    </scm>
-    <distributionManagement>
-        <snapshotRepository>
-            <id>oss-jfrog-artifactory</id>
-            <name>artifactory-snapshots</name>
-            <url>http://oss.jfrog.org/oss-snapshot-local</url>
-        </snapshotRepository>
-    </distributionManagement>
+
     <build>
-        <defaultGoal>compiler:compile</defaultGoal>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
-                <excludes>
-                    <exclude>revision.txt</exclude>
-                </excludes>
-            </resource>
-            <resource>
-                <directory>src/main/resources</directory>
-                <includes>
-                    <include>revision.txt</include>
-                </includes>
-                <filtering>true</filtering>
             </resource>
         </resources>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>buildnumber-maven-plugin</artifactId>
-                <version>1.0</version>
-                <executions>
-                    <execution>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>create</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <doCheck>false</doCheck>
-                    <doUpdate>false</doUpdate>
-                    <revisionOnScmFailure>unknown</revisionOnScmFailure>
-                    <timestampFormat>{0,date,yyyy-MM-dd HH:mm:ss}</timestampFormat>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.0</version>
-                <configuration>
-                    <release>8</release>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M3</version>
-                <configuration>
-                    <excludes>
-                        <exclude>**/*$*</exclude> <!-- exclude all inner classes -->
-                    </excludes>
-
-                    <!--execute each test in separate JVM (slow, but otherwise it does not-->
-                    <!--work, and no problem as long as there are only integration tests):-->
-                    <forkMode>always</forkMode>
-
-                    <!-- avoid out of memory errors: -->
-                    <argLine>-Xmx2000m -Djava.awt.headless=true
-
-                        -Dmatsim.preferLocalDtds=true -Dncsa.hdf.hdf5lib.H5.hdf5lib=${hdf5lib-absolute-path}
-                    </argLine>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.3.1</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>test-jar</goal>
-                        </goals>
-                        <configuration>
-                            <skip>${skipTestJar}</skip>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <!-- 	<plugin>
-                    <groupId>com.igormaznitsa</groupId>
-                    <artifactId>jute</artifactId>
-                    <version>1.1.1</version>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>jute</goal>
-                            </goals>
-                            <configuration>
-                                <verbose>true</verbose>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-             -->
-            <plugin>
-                <!-- Usage (change version numbers, of course) mvn release:prepare -Darguments="-DskipTests
-            -Pbintray" -DreleaseVersion=0.7.1 -DdevelopmentVersion=0.7.2-SNAPSHOT -B
-            mvn release:perform -Darguments="-DskipTests -Pbintray" -DreleaseVersion=0.7.1
-            -DdevelopmentVersion=0.7.2-SNAPSHOT -B -->
-                <artifactId>maven-release-plugin</artifactId>
-                <version>2.5.1</version>
-            </plugin>
-            <plugin>  <!-- plugin to generate sources, which are used when deploying via jitpack.  kai, nov'16 -->
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>2.10.1</version>
-                    <configuration>
-                        <quiet>true</quiet>
-                        <header>SILO API</header>
-                        <groups>
-                            <group>
-                                <title>all</title>
-                                <packages>de.tum.bgu.msm:de.tum.bgu.msm.*</packages>
-                            </group>
-                        </groups>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
     </build>
 
-    <reporting>
-        <!-- this plugin generates a html test report -->
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>2.8</version>
-            </plugin>
-        </plugins>
-    </reporting>
-
-    <repositories>
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
-        <repository>
-            <id>oss-jfrog-artifactory</id>
-            <name>artifactory-snapshots</name>
-            <url>https://oss.jfrog.org/oss-snapshot-local</url>
-        </repository>
-        <repository>
-            <!-- Geotools is not on Maven central -->
-            <id>osgeo</id>
-            <name>Geotools repository</name>
-            <url>https://repo.osgeo.org/repository/release/</url>
-        </repository>
-        <repository>
-            <id>matsim</id>
-            <url>http://dl.bintray.com/matsim/matsim</url>
-        </repository>
-        <repository>
-            <id>ojo-snapshots</id>
-            <url>http://oss.jfrog.org/libs-snapshot</url>
-        </repository>
-        <repository>
-            <id>bintray-msmobility-maven</id>
-            <name>bintray</name>
-            <url>http://dl.bintray.com/msmobility/maven</url>
-        </repository>
-    </repositories>
-
     <dependencies>
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.15</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>javax.mail</groupId>
-                    <artifactId>mail</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>javax.jms</groupId>
-                    <artifactId>jms</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.sun.jdmk</groupId>
-                    <artifactId>jmxtools</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.sun.jmx</groupId>
-                    <artifactId>jmxri</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -242,28 +33,39 @@
         </dependency>
         <dependency>
             <groupId>org.geotools</groupId>
+            <artifactId>gt-main</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-referencing</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-shapefile</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-epsg-hsql</artifactId>
+            <version>${geotools.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
             <artifactId>gt-opengis</artifactId>
             <version>${geotools.version}</version>
         </dependency>
-        <!--<dependency>-->
-        <!--<groupId>com.vividsolutions</groupId>-->
-        <!--<artifactId>jts</artifactId>-->
-        <!--<version>1.16</version>-->
-        <!--</dependency>-->
         <dependency>
-            <groupId>org.jfree</groupId>
-            <artifactId>jcommon</artifactId>
-            <version>1.0.23</version>
+            <groupId>org.locationtech.jts</groupId>
+            <artifactId>jts-core</artifactId>
+            <version>1.17.1</version>
         </dependency>
         <dependency>
-            <groupId>common-base</groupId>
-            <artifactId>common-base</artifactId>
-            <version>0.0.3</version>
-        </dependency>
-        <dependency>
-            <groupId>sawdust</groupId>
-            <artifactId>sawdust</artifactId>
-            <version>1</version>
+            <groupId>de.tum.bgu.msm</groupId>
+            <artifactId>msm-commons</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>omx</groupId>
@@ -320,38 +122,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!--<dependency>-->
-        <!--<groupId>org.matsim.contrib</groupId>-->
-        <!--<artifactId>matsim4urbansim</artifactId>-->
-        <!--<version>${matsimVersion}</version>-->
-        <!--<scope>compile</scope>-->
-        <!--<exclusions>-->
-        <!--<exclusion>-->
-        <!--<groupId>javax.media</groupId>-->
-        <!--<artifactId>jai_core</artifactId>-->
-        <!--</exclusion>-->
-        <!--<exclusion>-->
-        <!--<groupId>jgridshift</groupId>-->
-        <!--<artifactId>jgridshift</artifactId>-->
-        <!--</exclusion>-->
-        <!--</exclusions>-->
-        <!--</dependency>-->
-        <dependency>
-            <groupId>org.matsim.contrib</groupId>
-            <artifactId>matrixbasedptrouter</artifactId>
-            <version>${matsimVersion}</version>
-            <scope>compile</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>javax.media</groupId>
-                    <artifactId>jai_core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>jgridshift</groupId>
-                    <artifactId>jgridshift</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
         <dependency>
             <groupId>junit-addons</groupId>
             <artifactId>junit-addons</artifactId>
@@ -363,19 +133,10 @@
             <version>2.8.5</version>
             <scope>compile</scope>
         </dependency>
-        <!-- need the jxl dependency for the pb.common calculator, as it is requested at runtime -->
         <dependency>
-            <groupId>jexcelapi</groupId>
-            <artifactId>jxl</artifactId>
-            <version>2.6</version>
-        </dependency>
-        <!--  		This is the "jitpack" deployment:
-         -->
-
-        <dependency>
-            <groupId>com.github.msmobility</groupId>
+            <groupId>de.tum.bgu.msm</groupId>
             <artifactId>mito</artifactId>
-            <version>v28102020</version>
+            <version>2.0-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>javax.media</groupId>
@@ -385,20 +146,21 @@
                     <groupId>jgridshift</groupId>
                     <artifactId>jgridshift</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jfree</groupId>
+                    <artifactId>jfreechart</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.github.SchweizerischeBundesbahnen</groupId>
-            <artifactId>matsim-sbb-extensions</artifactId>
-            <version>11.2</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
-        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.6</version>
+            <version>2.7</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-math3 -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-math3</artifactId>
@@ -409,16 +171,10 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.9</version>
         </dependency>
-
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <version>2.12.0</version>
+        </dependency>
     </dependencies>
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <svnRevision>${buildNumber}</svnRevision>
-        <geotools.version>20.2</geotools.version>
-        <skipTestJar>false</skipTestJar> <!--Overridden in the bintray profile-->
-        <matsimVersion>11.0</matsimVersion>
-        <java.version>1.8</java.version>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-    </properties>
 </project>

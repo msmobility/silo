@@ -1,14 +1,13 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.bangkok.allocation;
 
 import com.google.common.math.LongMath;
-import com.pb.common.matrix.Matrix;
-import com.pb.common.matrix.RowVector;
+import de.tum.bgu.msm.common.matrix.Matrix;
+import de.tum.bgu.msm.common.matrix.RowVector;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.job.Job;
-import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
