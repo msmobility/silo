@@ -24,7 +24,7 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
       - name: Build with Maven
-        run: mvn test --fail-at-end --batch-mode -Dmatsim.preferLocalDtds=true
+        run: mvn test -DforkMode=always --fail-at-end --batch-mode -Dmatsim.preferLocalDtds=true
       
       - name: Set up Cloudsmith
         uses: actions/setup-java@v2
@@ -36,7 +36,7 @@ jobs:
           server-password: CLOUDSMITH_TOKEN # env variable for token in deploy       
 
       - name: Publish to Cloudsmith
-        run: mvn deploy --fail-at-end --batch-mode -Dmatsim.preferLocalDtds=true
+        run: mvn deploy -DskipTests=true --fail-at-end --batch-mode -Dmatsim.preferLocalDtds=true
         env:
           CLOUDSMITH_USERNAME: nico-kuhnel
           CLOUDSMITH_TOKEN: ${{ secrets.cloudsmithToken }}
