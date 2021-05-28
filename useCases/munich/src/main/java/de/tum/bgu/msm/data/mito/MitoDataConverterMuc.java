@@ -17,6 +17,7 @@ import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.schools.DataContainerWithSchoolsImpl;
 import de.tum.bgu.msm.schools.School;
 import de.tum.bgu.msm.schools.SchoolImpl;
+import de.tum.bgu.msm.util.MitoUtil;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
@@ -81,7 +82,7 @@ public class MitoDataConverterMuc implements MitoDataConverter {
             MitoHousehold household = new MitoHousehold(
                     siloHousehold.getId(),
                     HouseholdUtil.getAnnualHhIncome(siloHousehold) / 12,
-                    siloHousehold.getAutos());
+                    siloHousehold.getAutos(),true);
             household.setHomeZone(zone);
 
             Coordinate coordinate;
@@ -98,7 +99,7 @@ public class MitoDataConverterMuc implements MitoDataConverter {
                 zone.addHousehold();
                 dataSet.addHousehold(household);
                 for (Person person : siloHousehold.getPersons().values()) {
-                    MitoPerson mitoPerson = convertToMitoPp((PersonMuc) person, dataSet, dataContainer);
+                    MitoPerson mitoPerson = convertToMitoPp((PersonMuc) person, household, dataSet, dataContainer);
                     household.addPerson(mitoPerson);
                     dataSet.addPerson(mitoPerson);
                 }
@@ -113,7 +114,7 @@ public class MitoDataConverterMuc implements MitoDataConverter {
     }
 
 
-    private MitoPerson convertToMitoPp(PersonMuc person, DataSet dataSet, DataContainer dataContainer) {
+    private MitoPerson convertToMitoPp(PersonMuc person, MitoHousehold household, DataSet dataSet, DataContainer dataContainer) {
         final MitoGender mitoGender = MitoGender.valueOf(person.getGender().name());
         final MitoOccupationStatus mitoOccupationStatus = MitoOccupationStatus.valueOf(person.getOccupation().getCode());
 
@@ -143,13 +144,18 @@ public class MitoDataConverterMuc implements MitoDataConverter {
                 break;
         }
 
+        // Bicycle ownership (random for now) todo: make not random!
+        boolean ownBicycle = MitoUtil.getRandomObject().nextDouble() < 0.7;
+
         return new MitoPerson(
                 person.getId(),
+                household,
                 mitoOccupationStatus,
                 mitoOccupation,
                 person.getAge(),
                 mitoGender,
-                person.hasDriverLicense());
+                person.hasDriverLicense(),
+                ownBicycle);
     }
 
     private void fillMitoZoneEmployees(DataSet dataSet, DataContainer dataContainer) {
