@@ -46,6 +46,7 @@ public class DataSetSynPop {
     private ArrayList<Integer> municipalitiesWithZeroPopulation;
 
     private Matrix distanceTazToTaz;
+    private Matrix commuteFlowTazToTaz;
     private float[] areas;
 
     private HashMap<Integer, ArrayList> boroughsByCounty;
@@ -344,5 +345,13 @@ public class DataSetSynPop {
 
     public void setTazAttributes(HashMap<Integer, HashMap<String, Float>> tazAttributes) {
         this.tazAttributes = tazAttributes;
+    }
+
+    public Matrix getCommuteFlowTazToTaz() {
+        return commuteFlowTazToTaz;
+    }
+
+    public void setCommuteFlowTazToTaz(Matrix commuteFlowTazToTaz) {
+        this.commuteFlowTazToTaz = commuteFlowTazToTaz;
     }
 }

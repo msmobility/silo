@@ -2,9 +2,13 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.manchester;
 
 import de.tum.bgu.msm.DataBuilder;
 import de.tum.bgu.msm.io.input.GeoDataReader;
+import de.tum.bgu.msm.io.output.*;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.run.GeoDataReaderManchester;
+import de.tum.bgu.msm.run.io.JobWriterBangkok;
+import de.tum.bgu.msm.run.io.PersonWriterBangkok;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
+import de.tum.bgu.msm.schools.SchoolsWriter;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import de.tum.bgu.msm.syntheticPopulationGenerator.manchester.allocation.Allocation;
@@ -59,7 +63,7 @@ public class SyntheticPopMCR implements SyntheticPopI {
         //new Microlocation(dataSetSynPop,dataContainer).run();
 
         logger.info("Summary of the synthetic population");
-        //summarizeData(dataContainer);
+        summarizeData(dataContainer);
 
         long estimatedTime = System.nanoTime() - startTime;
         logger.info("   Finished creating the synthetic population. Elapsed time: " + estimatedTime);
@@ -70,7 +74,7 @@ public class SyntheticPopMCR implements SyntheticPopI {
         SiloUtil.createDirectoryIfNotExistingYet("microData/interimFiles");
     }
 
-    /*private void summarizeData(DataContainerWithSchools dataContainer){
+    private void summarizeData(DataContainerWithSchools dataContainer){
 
         String filehh = properties.main.baseDirectory
                 + properties.householdData.householdFileName
@@ -114,5 +118,4 @@ public class SyntheticPopMCR implements SyntheticPopI {
         eewriter.writeSchools(fileee);
 
     }
-*/
 }

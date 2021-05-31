@@ -33,7 +33,7 @@ public class Allocation extends ModuleSynPop{
             //generateVacantDwellings();
             //summarizeData(dataContainer, "afterGenerateVacant");
             generateJobs();
-            //summarizeData(dataContainer, "afterGenerateJobs");
+            summarizeData(dataContainer, "afterGenerateJobs");
             //generateAutos();
         } else {
             readPopulation();

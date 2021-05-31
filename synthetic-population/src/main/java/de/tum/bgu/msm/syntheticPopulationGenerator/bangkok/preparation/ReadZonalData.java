@@ -113,6 +113,7 @@ public class ReadZonalData {
         dataSetSynPop.setTazs(tazs);
         dataSetSynPop.setTazIDs(tazs.stream().mapToInt(i -> i).toArray());
         dataSetSynPop.setTazAttributes(attributesZone);
+        dataSetSynPop.setTazAttributes(attributesZone);
 
     }
 

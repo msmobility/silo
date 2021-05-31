@@ -1,8 +1,9 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.manchester.allocation;
 
 import com.google.common.math.LongMath;
-import com.pb.common.matrix.Matrix;
-import com.pb.common.matrix.RowVector;
+
+import de.tum.bgu.msm.common.matrix.Matrix;
+import de.tum.bgu.msm.common.matrix.RowVector;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.Household;
@@ -61,8 +62,10 @@ public class AssignJobs {
             Household hh = pp.getHousehold();
             int origin = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
             //int selectedJobType = guessjobType(pp.getGender(),educationalLevel.get(pp));
-            int selectedJobType = guessjobType(origin);
-            int[] workplace = selectWorkplace(origin, selectedJobType);
+            //int selectedJobType = guessjobType(origin);
+            int selectedJobType = 4;
+            int[] workplace = selectWorkplaceByCommuteFlow(origin, selectedJobType);
+            //int[] workplace = selectWorkplace(origin, selectedJobType);
             if (workplace[0] > 0) {
                 int jobID = idVacantJobsByZoneType.get(workplace[0])[numberVacantJobsByZoneByType.get(workplace[0]) - 1];
                 setWorkerAndJob(pp, jobID);
@@ -117,6 +120,18 @@ public class AssignJobs {
         return workplace;
     }
 
+    private int[] selectWorkplaceByCommuteFlow(int homeTaz, int selectedJobType){
+
+        int[] workplace = new int[2];
+
+            double[] probs = new double[numberZonesByType.get(selectedJobType)];
+            int[] ids = idZonesVacantJobsByType.get(selectedJobType);
+            RowVector commuteFlow = dataSetSynPop.getCommuteFlowTazToTaz().getRow(homeTaz);
+            IntStream.range(0, probs.length).parallel().forEach(id -> probs[id] = commuteFlow.getValueAt(ids[id] * 1000/ 100));
+            workplace = select(probs, ids);
+
+        return workplace;
+    }
 
     private void shuffleWorkers(){
 

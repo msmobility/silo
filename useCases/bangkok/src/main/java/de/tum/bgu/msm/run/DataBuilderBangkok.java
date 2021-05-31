@@ -13,8 +13,6 @@ import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.io.input.*;
 import de.tum.bgu.msm.matsim.MatsimTravelTimesAndCosts;
-import de.tum.bgu.msm.models.modeChoice.CommuteModeChoice;
-import de.tum.bgu.msm.models.modeChoice.CommuteModeChoiceWithoutCarOwnership;
 import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.run.data.dwelling.BangkokDwellingTypes;

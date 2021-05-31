@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.manchester.preparation;
 
 
-import com.pb.common.datafile.TableDataSet;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;

@@ -33,20 +33,8 @@
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>com.github.msmobility</groupId>
+            <groupId>de.tum.bgu.msm</groupId>
             <artifactId>matsim2silo</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.msmobility</groupId>
-            <artifactId>schools</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.msmobility</groupId>
-            <artifactId>mito2silo</artifactId>
             <version>0.1.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>

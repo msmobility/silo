@@ -2,9 +2,8 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.manchester.preparation;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import com.pb.common.datafile.TableDataSet;
-import com.pb.common.matrix.Matrix;
-import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypes;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
+import de.tum.bgu.msm.common.matrix.Matrix;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
@@ -33,6 +32,7 @@ public class ReadZonalData {
         readCities();
         readZones();//LSOA = TAZs
         readDistanceMatrix();
+        readCommuteFlow();
         readTripLengthFrequencyDistribution();
     }
 
@@ -137,9 +137,11 @@ public class ReadZonalData {
             Attributes.put("percentageVacantDwelings", percentageVacantDwellings);
             //Attributes.put("income", averageIncome);
             Attributes.put("households", households);
+            float totalJob = primaryJobs + secondaryJobs + tertiaryJobs;
             Attributes.put("pri", primaryJobs);
             Attributes.put("sec", secondaryJobs);
             Attributes.put("ter", tertiaryJobs);
+            Attributes.put("tot",totalJob);
             attributesZone.put(taz, Attributes);
         }
         dataSetSynPop.setAreas(SiloUtil.convertArrayListToFloatArray(areas));
@@ -150,6 +152,25 @@ public class ReadZonalData {
         dataSetSynPop.setTazIDs(tazs.stream().mapToInt(i -> i).toArray());
         dataSetSynPop.setTazAttributes(attributesZone);
 
+    }
+
+    private void readCommuteFlow(){
+        //Read the skim matrix
+        logger.info("   Starting to read CSV matrix");
+        TableDataSet commuteFlow = SiloUtil.readCSVfile(PropertiesSynPop.get().main.commuteFlowFile);
+        int[] externalNumbers = dataSetSynPop.getTazIDs();
+        Matrix commuteFlowMatrix = new Matrix("mat1", "mat1", externalNumbers.length, externalNumbers.length);
+
+        for (int row = 1; row <= commuteFlow.getRowCount(); row++){
+            int origin = (int) commuteFlow.getValueAt(row, "homeId");
+            int destination = (int) commuteFlow.getValueAt(row, "workId");
+            float value = commuteFlow.getValueAt(row, "freq");
+            commuteFlowMatrix.setValueAt(origin, destination, value);
+        }
+
+        commuteFlowMatrix.setExternalNumbersZeroBased(externalNumbers);
+        dataSetSynPop.setCommuteFlowTazToTaz(commuteFlowMatrix);
+        logger.info("   Read CSV matrix done");
     }
 
     private void readDistanceMatrix(){

@@ -68,4 +68,5 @@ public abstract class AbstractPropertiesSynPop {
     public TableDataSet incomeCoefficients;
     public double jobScaler;
 
+    public String commuteFlowFile;
 }

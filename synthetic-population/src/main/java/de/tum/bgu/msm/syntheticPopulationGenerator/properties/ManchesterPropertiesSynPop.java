@@ -102,6 +102,7 @@ public class ManchesterPropertiesSynPop extends AbstractPropertiesSynPop {
         microPersonsFileName = PropertiesUtil.getStringProperty(bundle, "micro.persons", "microData/interimFiles/microPersons.csv");
         microHouseholdsFileName = PropertiesUtil.getStringProperty(bundle, "micro.households", "microData/interimFiles/microHouseholds.csv");
 
+        commuteFlowFile = PropertiesUtil.getStringProperty(bundle, "commute.flow", "input/syntheticPopulation/commuteflow_inside.csv");
     }
 
 }
