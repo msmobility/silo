@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.properties;
 
+import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.properties.PropertiesUtil;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.commons.math.distribution.GammaDistributionImpl;
@@ -13,6 +14,7 @@ public class GermanyPropertiesSynPop extends AbstractPropertiesSynPop {
         PropertiesUtil.newPropertySubmodule("SP: main properties");
 
         state = PropertiesUtil.getStringProperty(bundle, "state.synPop", "01");
+        states = PropertiesUtil.getStringPropertyArray(bundle, "states.synPop.splitting", new String[]{"01","10"});
         numberOfSubpopulations = PropertiesUtil.getIntProperty(bundle, "micro.data.subpopulations", 1);
         populationSplitting = PropertiesUtil.getBooleanProperty(bundle, "micro.data.splitting", false);
         runSyntheticPopulation = PropertiesUtil.getBooleanProperty(bundle, "run.synth.pop.generator", false);
@@ -98,10 +100,13 @@ public class GermanyPropertiesSynPop extends AbstractPropertiesSynPop {
         dwellingsFileName = PropertiesUtil.getStringProperty(bundle, "dwelling.file.ascii", "microData/dd");
         jobsFileName = PropertiesUtil.getStringProperty(bundle, "job.file.ascii", "microData/jj");
 
+        pathSyntheticPopulationFiles = PropertiesUtil.getStringProperty(bundle, "path.synthetic.ascii", "microData/");
         householdsStateFileName = PropertiesUtil.getStringProperty(bundle, "household.file.ascii.sp", "microData/" + state +  "/hh");
         personsStateFileName = PropertiesUtil.getStringProperty(bundle, "person.file.ascii.sp", "microData/" + state +  "/pp");
         dwellingsStateFileName = PropertiesUtil.getStringProperty(bundle, "dwelling.file.ascii.sp", "microData/" + state +  "/dd");
         jobsStateFileName = PropertiesUtil.getStringProperty(bundle, "job.file.ascii.sp", "microData/" + state +  "/jj");
+        counters = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"counters.synthetic.population","microData/subPopulations/countersByState.csv"));
+        counters.buildStringIndex(counters.getColumnPosition("state"));
 
         if (boroughIPU) {
             attributesBorough = PropertiesUtil.getStringPropertyArray(bundle, "attributes.borough", new String[]{"Agr", "Ind", "Srv"});

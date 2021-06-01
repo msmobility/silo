@@ -61,4 +61,48 @@ public class HouseholdReaderMucMito implements HouseholdReader {
         logger.info("Finished reading " + recCount + " households.");
 
     }
+
+    public int readDataWithState(String fileName, String state, int finalIdPreviousState, boolean generate) {
+        logger.info("Reading household micro data from ascii file");
+        String recString = "";
+        int recCount = 0;
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(fileName));
+            recString = in.readLine();
+
+            // read header
+            String[] header = recString.split(",");
+            int posId    = SiloUtil.findPositionInArray("id", header);
+            int posDwell = SiloUtil.findPositionInArray("dwelling",header);
+            int posTaz   = SiloUtil.findPositionInArray("zone",header);
+            int posAutos = SiloUtil.findPositionInArray("autos",header);
+
+            // read line
+            while ((recString = in.readLine()) != null) {
+                recCount++;
+                if (generate) {
+                    String[] lineElements = recString.split(",");
+                    int id = Integer.parseInt(lineElements[posId]);
+                    int dwellingID = Integer.parseInt(lineElements[posDwell]);
+                    int autos = Integer.parseInt(lineElements[posAutos]);
+                    int zone = Integer.parseInt(lineElements[posTaz]);
+                    int correlativeId = id + finalIdPreviousState;
+                    Household household = factory.createHousehold(correlativeId, dwellingID, autos);  // this automatically puts it in id->household map in Household class
+                    hhData.addHousehold(household);
+                    household.setAttribute("zone", zone);
+                    household.setAttribute("state", state);
+                    household.setAttribute("originalId", id);
+                    if (id == SiloUtil.trackHh) {
+                        SiloUtil.trackWriter.println("Read household with following attributes from " + fileName);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            logger.fatal("IO Exception caught reading synpop household file: " + fileName);
+            logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
+        }
+        logger.info("Finished reading " + recCount + " households.");
+        return recCount;
+    }
+
 }

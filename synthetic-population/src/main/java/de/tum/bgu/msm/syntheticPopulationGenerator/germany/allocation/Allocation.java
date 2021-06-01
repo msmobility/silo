@@ -5,6 +5,7 @@ import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.ModuleSynPop;
+import de.tum.bgu.msm.syntheticPopulationGenerator.germany.io.ReadSubPopulations;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation.*;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import org.apache.log4j.Logger;
@@ -28,7 +29,11 @@ public class Allocation extends ModuleSynPop{
         if (PropertiesSynPop.get().main.runAllocation) {
             generateHouseholdsPersons();
         } else {
-            readPopulation();
+            if (PropertiesSynPop.get().main.populationSplitting) {
+                new ReadSubPopulations(dataContainer).run();
+            } else {
+                readPopulation();
+            }
         }
         if (PropertiesSynPop.get().main.runJobAllocation) {
             generateJobs();

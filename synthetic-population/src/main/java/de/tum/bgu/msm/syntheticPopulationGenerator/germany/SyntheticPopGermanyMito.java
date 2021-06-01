@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.germany;
 
 import de.tum.bgu.msm.DataBuilder;
+import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
@@ -16,9 +17,8 @@ import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import de.tum.bgu.msm.syntheticPopulationGenerator.germany.allocation.Allocation;
-import de.tum.bgu.msm.syntheticPopulationGenerator.germany.io.DwellingWriterMucMito;
-import de.tum.bgu.msm.syntheticPopulationGenerator.germany.io.HouseholdWriterMucMito;
-import de.tum.bgu.msm.syntheticPopulationGenerator.germany.io.PersonWriterMucMito;
+import de.tum.bgu.msm.syntheticPopulationGenerator.germany.allocation.ReadPopulation;
+import de.tum.bgu.msm.syntheticPopulationGenerator.germany.io.*;
 import de.tum.bgu.msm.syntheticPopulationGenerator.germany.preparation.Preparation;
 import de.tum.bgu.msm.syntheticPopulationGenerator.optimizationIPU.optimization.Optimization;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
@@ -26,8 +26,7 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -91,6 +90,27 @@ public class SyntheticPopGermanyMito implements SyntheticPopI {
         SiloUtil.createDirectoryIfNotExistingYet("microData/" +  PropertiesSynPop.get().main.state + "/interimFiles");
     }
 
+    public void readAndSplit(String state){
+        //method to create the synthetic population at the base year
+
+        logger.info("   Starting to create the synthetic population.");
+        createDirectoryForOutput();
+
+        DataContainerWithSchools dataContainer = DataBuilder.getModelDataForMuc(properties, null);
+        GeoDataReader reader = new GeoDataReaderMuc(dataContainer.getGeoData());
+        String fileName = "input/syntheticPopulation/zoneSystem.csv";
+        reader.readZoneCsv(fileName);
+
+        long startTime = System.nanoTime();
+
+        new ReadPopulationByState(dataContainer, state).run();
+        new WriteSubpopulationsByState(dataContainer, state).run();
+
+
+        long estimatedTime = System.nanoTime() - startTime;
+        logger.info("   Finished creating the synthetic population for state " + "state" + ". Elapsed time: " + estimatedTime);
+
+    }
 
     private void summarizeMitoData(DataContainerWithSchools dataContainer){
 
@@ -136,26 +156,40 @@ public class SyntheticPopGermanyMito implements SyntheticPopI {
 
         Map<Integer, PrintWriter> householdWriter = new HashMap<>();
         Map<Integer, PrintWriter> personWriter = new HashMap<>();
+        Map<Integer, PrintWriter> dwellingWriter = new HashMap<>();
 
-        String outputFolder = properties.main.baseDirectory;
+        String outputFolder = properties.main.baseDirectory  + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
+                + "/subPopulations/" + PropertiesSynPop.get().main.state + "/";
+        SiloUtil.createDirectoryIfNotExistingYet(outputFolder);
 
-        for (int part = 0; part <= PropertiesSynPop.get().main.numberOfSubpopulations; part++) {
-            String filehh = properties.main.baseDirectory
-                    + PropertiesSynPop.get().main.householdsStateFileName
-                    + "_subPop_" + part + "_"
+        ArrayList<Household> householdArrayList = new ArrayList<>();
+        for (Household hh : dataContainer.getHouseholdDataManager().getHouseholds()){
+            householdArrayList.add(hh);
+        }
+        Collections.shuffle(householdArrayList);
+
+        for (int part = 0; part < PropertiesSynPop.get().main.numberOfSubpopulations; part++) {
+            String filehh = outputFolder
+                    + PropertiesSynPop.get().main.householdsFileName + part + "_"
                     + properties.main.baseYear
                     + ".csv";
-            String filepp = properties.main.baseDirectory
-                    + PropertiesSynPop.get().main.personsStateFileName
-                    + "_subPop_" + part + "_"
+            String filepp = outputFolder
+                    + PropertiesSynPop.get().main.personsFileName + part + "_"
+                    + properties.main.baseYear
+                    + ".csv";
+            String filedd = outputFolder
+                    + PropertiesSynPop.get().main.dwellingsFileName + part + "_"
                     + properties.main.baseYear
                     + ".csv";
             PrintWriter pwHousehold0 = SiloUtil.openFileForSequentialWriting(filehh, false);
-            pwHousehold0.println("id,dwelling,zone,hhSize,autos");
+            pwHousehold0.println("id,dwelling,zone,hhSize,autos,state,originalId");
             PrintWriter pwp = SiloUtil.openFileForSequentialWriting(filepp, false);
-            pwp.print("id,hhid,age,gender,occupation,driversLicense,workplace,income");
+            pwp.print("id,hhid,age,gender,occupation,driversLicense,workplace,income,state,originalId");
+            PrintWriter pwDwelling0 = SiloUtil.openFileForSequentialWriting(filedd, false);
+            pwDwelling0.println("id,hhId,zone,coordX,coordY,state,originalId");
             householdWriter.put(part, pwHousehold0);
             personWriter.put(part, pwp);
+            dwellingWriter.put(part, pwDwelling0);
         }
 
         int hhCount = 1;
@@ -164,25 +198,32 @@ public class SyntheticPopGermanyMito implements SyntheticPopI {
         HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
         RealEstateDataManager realEstateDataManager = dataContainer.getRealEstateDataManager();
 
-        int numberOfHhSubpopulation = (int) (householdDataManager.getHouseholds().size() / PropertiesSynPop.get().main.numberOfSubpopulations);
-        for (Household hh : householdDataManager.getHouseholds()) {
-            if (hhCount < numberOfHhSubpopulation) {
+        int numberOfHhSubpopulation = (int) (householdArrayList.size() / PropertiesSynPop.get().main.numberOfSubpopulations);
+        int startingHouseholdId = 0;
+        int startingPersonId = 0;
+        for (Household hh : householdArrayList) {
+            Dwelling dd = realEstateDataManager.getDwelling(hh.getDwellingId());
+            if (hhCount <= numberOfHhSubpopulation) {
                 PrintWriter pwh = householdWriter.get(partCount);
-                pwh.print(hh.getId());
+                pwh.print(hh.getId() + startingHouseholdId);
                 pwh.print(",");
-                pwh.print(hh.getDwellingId());
+                pwh.print(hh.getDwellingId() + startingHouseholdId);
                 pwh.print(",");
-                pwh.print(realEstateDataManager.getDwelling(hh.getDwellingId()).getZoneId());
+                pwh.print(dd.getZoneId());
                 pwh.print(",");
                 pwh.print(hh.getHhSize());
                 pwh.print(",");
-                pwh.println(hh.getAutos());
+                pwh.print(hh.getAutos());
+                pwh.print(",");
+                pwh.print(hh.getAttribute("state").get().toString());
+                pwh.print(",");
+                pwh.println(hh.getAttribute("originalId").get().toString());
                 householdWriter.put(partCount, pwh);
                 for (Person pp : hh.getPersons().values()){
                     PrintWriter pwp = personWriter.get(partCount);
-                    pwp.print(pp.getId());
+                    pwp.print(pp.getId() + startingPersonId);
                     pwp.print(",");
-                    pwp.print(pp.getHousehold().getId());
+                    pwp.print(pp.getHousehold().getId() + startingHouseholdId);
                     pwp.print(",");
                     pwp.print(pp.getAge());
                     pwp.print(",");
@@ -205,18 +246,42 @@ public class SyntheticPopGermanyMito implements SyntheticPopI {
                     pwp.print(pp.getAttribute("schoolType").get().toString());
                     pwp.print(",");
                     pwp.print(((PersonMuc)pp).getSchoolPlace());
+                    pwp.print(",");
+                    pwp.print(hh.getAttribute("state").get().toString());
+                    pwp.print(",");
+                    pwp.print(pp.getAttribute("originalId").get().toString());
                     pwp.println();
                     personWriter.put(partCount, pwp);
                 }
+                PrintWriter pwd = dwellingWriter.get(partCount);
+                pwd.print(dd.getId() + startingHouseholdId);
+                pwd.print(",");
+                pwd.print(dd.getResidentId() + startingPersonId);
+                pwd.print(",");
+                pwd.print(dd.getZoneId());
+                pwd.print(",");
+                pwd.print(dd.getCoordinate().x);
+                pwd.print(",");
+                pwd.print(dd.getCoordinate().y);
+                pwd.print(",");
+                pwd.print(hh.getAttribute("state").get().toString());
+                pwd.print(",");
+                pwd.println(dd.getAttribute("originalId").get().toString());
+                householdDataManager.removeHousehold(hh.getId());
+                realEstateDataManager.removeDwelling(dd.getId());
             } else {
                 hhCount = 1;
                 partCount++;
+                if (partCount > PropertiesSynPop.get().main.numberOfSubpopulations - 1){
+                    partCount = PropertiesSynPop.get().main.numberOfSubpopulations - 1;
+                }
             }
             hhCount++;
         }
-        for (int part = 0; part <= PropertiesSynPop.get().main.numberOfSubpopulations; part++) {
+        for (int part = 0; part < PropertiesSynPop.get().main.numberOfSubpopulations; part++) {
             householdWriter.get(part).close();
             personWriter.get(part).close();
+            dwellingWriter.get(part).close();
         }
 
     }

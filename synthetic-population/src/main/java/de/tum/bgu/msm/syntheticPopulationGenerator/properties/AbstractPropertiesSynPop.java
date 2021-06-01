@@ -65,6 +65,7 @@ public abstract class AbstractPropertiesSynPop {
     public boolean runMicrolocation;
     public TableDataSet zonalDataIPU;
     public String state;
+    public String pathSyntheticPopulationFiles;
     public String householdsStateFileName;
     public String personsStateFileName;
     public String dwellingsStateFileName;
@@ -79,5 +80,7 @@ public abstract class AbstractPropertiesSynPop {
 
     public int numberOfSubpopulations;
     public boolean populationSplitting;
+    public String[] states;
+    public TableDataSet counters;
 
 }

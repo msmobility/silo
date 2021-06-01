@@ -86,4 +86,144 @@ public class PersonReaderMucMito implements PersonReader {
         }
         logger.info("Finished reading " + recCount + " persons.");
     }
+
+    public int readDataWithState(String path, int finalPpIdPreviousState, int finalHhIdPreviousState, boolean generate) {
+        logger.info("Reading person micro data from ascii file");
+
+        PersonFactoryMuc ppFactory = new PersonFactoryMuc();
+        String recString = "";
+        int recCount = 0;
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(path));
+            recString = in.readLine();
+
+            // read header
+            String[] header = recString.split(",");
+            int posId = SiloUtil.findPositionInArray("id", header);
+            int posHhId = SiloUtil.findPositionInArray("hhid",header);
+            int posAge = SiloUtil.findPositionInArray("age",header);
+            int posGender = SiloUtil.findPositionInArray("gender",header);
+            int posOccupation = SiloUtil.findPositionInArray("occupation",header);
+            int posLicense = SiloUtil.findPositionInArray("driversLicense",header);
+            int posWorkplace = SiloUtil.findPositionInArray("workplace",header);
+            int posIncome = SiloUtil.findPositionInArray("income",header);
+
+            int posjobType = SiloUtil.findPositionInArray("jobType",header);
+            int posdisability = SiloUtil.findPositionInArray("disability",header);
+            int posschoolId = SiloUtil.findPositionInArray("schoolId",header);
+            int posschoolType = SiloUtil.findPositionInArray("schoolType",header);
+
+            // read line
+            while ((recString = in.readLine()) != null) {
+                recCount++;
+                if (generate) {
+                    String[] lineElements = recString.split(",");
+                    int id = Integer.parseInt(lineElements[posId]);
+                    int hhid = Integer.parseInt(lineElements[posHhId]);
+                    int age = Integer.parseInt(lineElements[posAge]);
+                    Gender gender = Gender.valueOf(Integer.parseInt(lineElements[posGender]));
+                    Occupation occupation = Occupation.valueOf(Integer.parseInt(lineElements[posOccupation]));
+                    int workplace = Integer.parseInt(lineElements[posWorkplace]);
+                    int income = Integer.parseInt(lineElements[posIncome]);
+                    int correlativeId = id + finalPpIdPreviousState;
+                    PersonMuc pp = (PersonMuc) ppFactory.createPerson(correlativeId, age, gender, occupation, PersonRole.SINGLE, workplace, income); //this automatically puts it in id->person map in Person class
+                    householdDataManager.addPerson(pp);
+                    int householdId = hhid + finalHhIdPreviousState;
+                    householdDataManager.addPersonToHousehold(pp, householdDataManager.getHouseholdFromId(householdId));
+                    String licenseStr = lineElements[posLicense];
+                    boolean license = false;
+                    if (licenseStr.equals("true")) {
+                        license = true;
+                    }
+                    pp.setDriverLicense(license);
+                    String jobType = lineElements[posjobType];
+                    pp.setAttribute("jobType", jobType);
+                    String disability = lineElements[posdisability];
+                    pp.setAttribute("disability", disability);
+                    int schoolId = Integer.parseInt(lineElements[posschoolId]);
+                    pp.setSchoolId(schoolId);
+                    int schoolType = Integer.parseInt(lineElements[posschoolType]);
+                    pp.setAttribute("schoolType", schoolType);
+                    pp.setAttribute("originalId", id);
+                    if (id == SiloUtil.trackPp) {
+                        SiloUtil.trackWriter.println("Read person with following attributes from " + path);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            logger.fatal("IO Exception caught reading synpop household file: " + path);
+            logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
+        }
+        logger.info("Finished reading " + recCount + " persons.");
+        return recCount;
+    }
+
+    public int readDataWithStateSave(String path, int finalPpIdPreviousState, int finalHhIdPreviousState, boolean save) {
+        logger.info("Reading person micro data from ascii file");
+
+        PersonFactoryMuc ppFactory = new PersonFactoryMuc();
+        String recString = "";
+        int recCount = 0;
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(path));
+            recString = in.readLine();
+
+            // read header
+            String[] header = recString.split(",");
+            int posId = SiloUtil.findPositionInArray("id", header);
+            int posHhId = SiloUtil.findPositionInArray("hhid",header);
+            int posAge = SiloUtil.findPositionInArray("age",header);
+            int posGender = SiloUtil.findPositionInArray("gender",header);
+            int posOccupation = SiloUtil.findPositionInArray("occupation",header);
+            int posLicense = SiloUtil.findPositionInArray("driversLicense",header);
+            int posWorkplace = SiloUtil.findPositionInArray("workplace",header);
+            int posIncome = SiloUtil.findPositionInArray("income",header);
+
+            int posjobType = SiloUtil.findPositionInArray("jobType",header);
+            int posdisability = SiloUtil.findPositionInArray("disability",header);
+            int posschoolId = SiloUtil.findPositionInArray("schoolId",header);
+            int posschoolType = SiloUtil.findPositionInArray("schoolType",header);
+
+            // read line
+            while ((recString = in.readLine()) != null) {
+                recCount++;
+                String[] lineElements = recString.split(",");
+                int id         = Integer.parseInt(lineElements[posId]);
+                int hhid       = Integer.parseInt(lineElements[posHhId]);
+                int age        = Integer.parseInt(lineElements[posAge]);
+                Gender gender     = Gender.valueOf(Integer.parseInt(lineElements[posGender]));
+                Occupation occupation = Occupation.valueOf(Integer.parseInt(lineElements[posOccupation]));
+                int workplace  = Integer.parseInt(lineElements[posWorkplace]);
+                int income     = Integer.parseInt(lineElements[posIncome]);
+                int correlativeId = id + finalPpIdPreviousState;
+                PersonMuc pp = (PersonMuc) ppFactory.createPerson(correlativeId, age, gender, occupation, PersonRole.SINGLE, workplace, income); //this automatically puts it in id->person map in Person class
+                householdDataManager.addPerson(pp);
+                int householdId = hhid + finalHhIdPreviousState;
+                householdDataManager.addPersonToHousehold(pp, householdDataManager.getHouseholdFromId(householdId));
+                String licenseStr = lineElements[posLicense];
+                boolean license = false;
+                if (licenseStr.equals("true")){
+                    license = true;
+                }
+                pp.setDriverLicense(license);
+                String jobType =  lineElements[posjobType];
+                pp.setAttribute("jobType",jobType);
+                String disability = lineElements[posdisability];
+                pp.setAttribute("disability",disability);
+                int schoolId = Integer.parseInt(lineElements[posschoolId]);
+                pp.setSchoolId(schoolId);
+                int schoolType = Integer.parseInt(lineElements[posschoolType]);
+                pp.setAttribute("schoolType",schoolType);
+                pp.setAttribute("originalId", id);
+                if (id == SiloUtil.trackPp) {
+                    SiloUtil.trackWriter.println("Read person with following attributes from " + path);
+                }
+            }
+        } catch (IOException e) {
+            logger.fatal("IO Exception caught reading synpop household file: " + path);
+            logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
+        }
+        logger.info("Finished reading " + recCount + " persons.");
+        return recCount;
+    }
 }

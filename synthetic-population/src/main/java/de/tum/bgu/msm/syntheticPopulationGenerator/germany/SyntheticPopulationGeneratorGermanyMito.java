@@ -5,6 +5,7 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.PropertiesUtil;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
+import de.tum.bgu.msm.syntheticPopulationGenerator.germany.io.ReadSubPopulations;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.SyntheticPopDe;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.GermanyPropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.MunichPropertiesSynPop;
@@ -32,7 +33,14 @@ public class SyntheticPopulationGeneratorGermanyMito {
         }
         SyntheticPopI syntheticPop;
         syntheticPop = new SyntheticPopGermanyMito(dataSetSynPop, properties);
-        syntheticPop.runSP();
+        if (!PropertiesSynPop.get().main.populationSplitting){
+            syntheticPop.runSP();
+        } else {
+            for (String state : PropertiesSynPop.get().main.states) {
+                ((SyntheticPopGermanyMito) syntheticPop).readAndSplit(state);
+            }
+        }
+
     }
 
 }
