@@ -5,6 +5,7 @@ import de.tum.bgu.msm.data.Day;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.resources.Resources;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
@@ -63,7 +64,7 @@ public class AccidentModel extends AbstractModel implements ModelUpdateListener 
             config.controler().setRunId(String.valueOf(latestMatsimYear));
             final MutableScenario scenario = ScenarioUtils.createMutableScenario(config);
             scenario.getConfig().travelTimeCalculator().setTraveltimeBinSize(3600);
-            double scalingFactor = properties.main.scaleFactor;
+            double scalingFactor = properties.main.scaleFactor * Double.parseDouble(Resources.instance.getString(de.tum.bgu.msm.resources.Properties.TRIP_SCALING_FACTOR));
 
             AccidentRateModel model = new AccidentRateModel(scenario, scalingFactor);
             model.runModelOnline();

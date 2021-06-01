@@ -131,7 +131,6 @@ public class ModelBuilderMucHealth {
                 case MITO_MATSIM:
                     MatsimScenarioAssembler delegate = new MitoMatsimScenarioAssembler(dataContainer, properties, new MitoDataConverterMuc());
                     dataContainer.setMitoTrips(((MitoMatsimScenarioAssembler)delegate).getMitoTrips());
-                    //config.plansCalcRoute().setRoutingRandomness(0.0);
                     transportModel = new MatsimTransportModelForHealthModel(dataContainer, config, properties, delegate, matsimData);
                     break;
                 case MATSIM:
@@ -156,11 +155,13 @@ public class ModelBuilderMucHealth {
                     construction, demolition, null, renovation,
                     null, inOutMigration, movesModel, transportModel);
 
+
+
+            modelContainer.registerModelUpdateListener(new UpdateCarOwnershipModelMuc(dataContainer, properties, SiloUtil.provideNewRandom()));
+
             modelContainer.registerModelUpdateListener(accidentModel);
             modelContainer.registerModelUpdateListener(airPollutantModel);
             modelContainer.registerModelUpdateListener(healthModel);
-
-            modelContainer.registerModelUpdateListener(new UpdateCarOwnershipModelMuc(dataContainer, properties, SiloUtil.provideNewRandom()));
 
             return modelContainer;
         }

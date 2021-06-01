@@ -20,6 +20,7 @@ package de.tum.bgu.msm.matsim;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Day;
+import de.tum.bgu.msm.data.Mode;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
@@ -66,6 +67,10 @@ import static org.matsim.core.config.groups.PlanCalcScoreConfigGroup.*;
 public final class MatsimTransportModelForHealthModel implements TransportModel {
 
     private static final Logger logger = Logger.getLogger(MatsimTransportModelForHealthModel.class);
+    private static final double MAX_WALKSPEED = 5.0;
+    private static final double MAX_CYCLESPEED = 15.0;
+    private static final double AVG_WALKSPEED = 5.0;
+    private static final double AVG_CYCLESPEED = 12.5;
 
     private final Properties properties;
     private final Config initialMatsimConfig;
@@ -161,7 +166,7 @@ public final class MatsimTransportModelForHealthModel implements TransportModel 
                 }
             }
 
-            logger.warn("Running MATSim transport model for car scenario " + year + ".");
+            logger.warn("Running MATSim transport model for " + day + " car scenario " + year + ".");
             Config carConfig = ConfigUtils.loadConfig(initialMatsimConfig.getContext());
             MutableScenario scenarioCar = (MutableScenario) ScenarioUtils.loadScenario(carConfig);
             scenarioCar.setPopulation(populationCar);
@@ -178,18 +183,18 @@ public final class MatsimTransportModelForHealthModel implements TransportModel 
                 updateTravelTimes(travelTime, travelDisutility);
             }
 
-            logger.warn("Running MATSim transport model for Bike&Ped scenario " + year + ".");
+            logger.warn("Running MATSim transport model for " + day + " Bike&Ped scenario " + year + ".");
             Config bikePedConfig = ConfigUtils.loadConfig(initialMatsimConfig.getContext());
-            bikePedConfig.network().setInputFile("input/mito/trafficAssignment/studyNetworkDenseBikeWalk.xml");
+            bikePedConfig.network().setInputFile("input/mito/trafficAssignment/studyNetworkDenseBikeWalkHealth.xml");
             MutableScenario scenarioBikePed = (MutableScenario) ScenarioUtils.loadScenario(bikePedConfig);
             scenarioBikePed.setPopulation(populationBikePed);
 
             VehicleType walk = VehicleUtils.getFactory().createVehicleType(Id.create(TransportMode.walk, VehicleType.class));
-            walk.setMaximumVelocity(5 / 3.6);
+            walk.setMaximumVelocity(MAX_WALKSPEED / 3.6);
             scenarioBikePed.getVehicles().addVehicleType(walk);
 
             VehicleType bicycle = VehicleUtils.getFactory().createVehicleType(Id.create(TransportMode.bike, VehicleType.class));
-            bicycle.setMaximumVelocity(15 / 3.6);
+            bicycle.setMaximumVelocity(MAX_CYCLESPEED / 3.6);
             scenarioBikePed.getVehicles().addVehicleType(bicycle);
 
             scenarioBikePed.getConfig().qsim().setVehiclesSource(QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData);
@@ -200,8 +205,8 @@ public final class MatsimTransportModelForHealthModel implements TransportModel 
             controlerBikePed.addOverridingModule(new AbstractModule() {
                 @Override
                 public void install() {
-                    this.addTravelTimeBinding(TransportMode.bike).toInstance((l, t, p, v) -> l.getLength() / (12.5 / 3.6));
-                    this.addTravelTimeBinding(TransportMode.walk).toInstance((link, time, person, vehicle) -> link.getLength() / (5. / 3.6));
+                    this.addTravelTimeBinding(TransportMode.bike).toInstance((l, t, p, v) -> l.getLength() / (AVG_CYCLESPEED / 3.6));
+                    this.addTravelTimeBinding(TransportMode.walk).toInstance((link, time, person, vehicle) -> link.getLength() / (AVG_WALKSPEED / 3.6));
                 }
             });
 
@@ -246,7 +251,6 @@ public final class MatsimTransportModelForHealthModel implements TransportModel 
             //config.plansCalcRoute().setAccessEgressType(PlansCalcRouteConfigGroup.AccessEgressType.walkConstantTimeToLink);
         }
         bikePedConfig.transit().setUsingTransitInMobsim(false);
-
 
         bikePedConfig.strategy().setMaxAgentPlanMemorySize(5);
         {

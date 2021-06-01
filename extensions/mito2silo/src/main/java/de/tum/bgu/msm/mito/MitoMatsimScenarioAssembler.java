@@ -88,9 +88,10 @@ public class MitoMatsimScenarioAssembler implements MatsimScenarioAssembler {
         logger.info("  Receiving demand from MITO");
         Map<Day, Scenario> scenarios = new HashMap<>();
 
+        mitoTrips = mito.getData().getTrips();
+
         for (Day day : Day.values()){
             Population population = mito.getData().getPopulation(day);
-            mitoTrips = mito.getData().getTrips().entrySet().stream().filter(tt-> tt.getValue().getDepartureDay().equals(day)).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
             Config config = ConfigUtils.loadConfig(initialMatsimConfig.getContext());
             setDemandSpecificConfigSettings(config);
             MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(config);
