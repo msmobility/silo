@@ -86,9 +86,6 @@ public class HealthDataContainerImpl implements DataContainerWithSchools {
     @Override
     public void prepareYear(int year) {
         delegate.prepareYear(year);
-        if (properties.transportModel.transportModelYears.contains(year) || properties.main.startYear == year) {
-            writeInjuryRiskData(year);
-        }
     }
 
     @Override
@@ -99,14 +96,14 @@ public class HealthDataContainerImpl implements DataContainerWithSchools {
     @Override
     public void endSimulation() {
         delegate.endSimulation();
-        writeInjuryRiskData(properties.main.endYear);
+        writePersonHealthData(properties.main.endYear);
     }
 
-    private void writeInjuryRiskData(int year) {
+    private void writePersonHealthData(int year) {
         final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName +"/";
         String filepp = outputDirectory
                 + properties.householdData.personFinalFileName
-                + "accident_"
+                + "_health_"
                 + year
                 + ".csv";
         new HealthPersonWriter(getHouseholdDataManager()).writePersons(filepp);

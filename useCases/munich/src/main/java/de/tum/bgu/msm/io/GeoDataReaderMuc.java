@@ -63,9 +63,13 @@ public class GeoDataReaderMuc implements GeoDataReader {
         int counter = 0;
         for (SimpleFeature feature : ShapeFileReader.getAllFeatures(path)) {
             int zoneId = Integer.parseInt(feature.getAttribute(SHAPE_IDENTIFIER).toString());
-            Zone zone = geoDataMuc.getZones().get(zoneId);
+            ZoneMuc zone = (ZoneMuc) geoDataMuc.getZones().get(zoneId);
             if (zone != null) {
                 zone.setZoneFeature(feature);
+                final Object ags = feature.getAttribute("AGS");
+                if(ags != null) {
+                    zone.setAgs(Integer.parseInt(ags.toString()));
+                }
             } else {
                 counter++;
             }

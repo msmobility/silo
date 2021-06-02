@@ -16,36 +16,36 @@ import java.util.List;
 
 public class CreateVehicles {
 
-        private static final Logger logger = Logger.getLogger(CreateVehicles.class);
+    private static final Logger logger = Logger.getLogger(CreateVehicles.class);
+    //Create scenario
+    private final Scenario sc;
 
-        //Create scenario
-        Config config = ConfigUtils.createConfig();
-        Scenario sc = ScenarioUtils.createScenario(config);
+    //Create vehicle container
+    private Vehicles vehicles = VehicleUtils.createVehiclesContainer();
+    private VehicleType type;
+    //Generating vehicle type category
+    private VehicleType.DoorOperationMode mode = VehicleType.DoorOperationMode.serial;
 
-        //Create vehicle containers
-        Vehicles vehicles = VehicleUtils.createVehiclesContainer();
-        VehicleType type;
-        //Generating vehicle type category
-        VehicleType.DoorOperationMode mode = VehicleType.DoorOperationMode.serial;
+    public CreateVehicles(Scenario sc) {
+        this.sc = sc;
+    }
 
-
-
-
-        public void run(String eventFileWithoutEmissions, String individualVehicleFile){
+    public void run(String eventFileWithoutEmissions, String individualVehicleFile){
             runVehicleType();
             runVehicle(eventFileWithoutEmissions, individualVehicleFile);
-        }
 
-        private void runVehicleType() {
+    }
+
+    private void runVehicleType() {
             createVehicleType("HGV",mode,7.2,1.0,1.0,1.0,"BEGIN_EMISSIONSHEAVY_GOODS_VEHICLE;average;average;averageEND_EMISSIONS");
 
             //LCV is not in vehicle types average
             //createVehicleType("LCV",mode,6.2,1.0,1.0,1.0,"BEGIN_EMISSIONSPASSENGER_CAR;petrol (4S);&gt;=2L;PC-P-Euro-1END_EMISSIONS");
             createVehicleType("pass. car",mode,5.2,1.0,1.0,1.0, "BEGIN_EMISSIONSPASSENGER_CAR;average;average;averageEND_EMISSIONS");
             createVehicleType("ZERO_EMISSION_VEHICLE", mode, 2, 1, 1, 1, "BEGIN_EMISSIONSZERO_EMISSION_VEHICLE;average;average;averageEND_EMISSIONS");
-        }
+    }
 
-        private void createVehicleType(String name, VehicleType.DoorOperationMode mode, double length, double width, double accessTime, double egressTime, String description) {
+    private void createVehicleType(String name, VehicleType.DoorOperationMode mode, double length, double width, double accessTime, double egressTime, String description) {
 
             Id<VehicleType> typ1 = Id.create(name, VehicleType.class);
             type = VehicleUtils.getFactory().createVehicleType(typ1);
@@ -56,9 +56,10 @@ public class CreateVehicles {
             //type.setEgressTime(egressTime);
             type.setDescription(description);
             vehicles.addVehicleType(type);
-        }
+            sc.getVehicles().addVehicleType(type);
+    }
 
-        private void runVehicle(String eventFile, String vehicleFile) {
+    private void runVehicle(String eventFile, String vehicleFile) {
             //Read in events file and find out every agent by its id
             List<Id<Vehicle>> listOfIds = new ArrayList<>();
 
@@ -93,5 +94,5 @@ public class CreateVehicles {
             }
 
             new VehicleWriterV1(vehicles).writeFile(vehicleFile);
-        }
+    }
 }

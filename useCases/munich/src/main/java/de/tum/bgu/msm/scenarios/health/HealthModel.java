@@ -4,7 +4,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.math.LongMath;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.matsim.ZoneConnectorManager;
 import de.tum.bgu.msm.matsim.ZoneConnectorManagerImpl;
@@ -19,7 +18,6 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
-import org.matsim.contrib.accidents.AccidentLinkInfo;
 import org.matsim.contrib.accidents.AccidentType;
 import org.matsim.contrib.dvrp.trafficmonitoring.TravelTimeUtils;
 import org.matsim.contrib.emissions.Pollutant;
@@ -66,13 +64,8 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
         logger.warn("Health model setup: ");
         MutableScenario scenario = ScenarioUtils.createMutableScenario(initialMatsimConfig);
 
-        String networkFile;
-        if (scenario.getConfig().controler().getRunId() == null || scenario.getConfig().controler().getRunId().equals("")) {
-            networkFile = scenario.getConfig().controler().getOutputDirectory() + "/" + Day.weekday + "car/" + "output_network.xml.gz";
-        } else {
-            networkFile = scenario.getConfig().controler().getOutputDirectory() + "/" + Day.weekday + "car/" + scenario.getConfig().controler().getRunId() + ".output_network.xml.gz";
-        }
-
+        //String networkFile = scenario.getConfig().controler().getOutputDirectory() + "/" + Day.weekday + "/car/" + latestMatsimYear + ".output_network.xml.gz";
+        String networkFile = scenario.getConfig().network().getInputFile();
         new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
 
         for(Day day : Day.values()){
@@ -114,21 +107,20 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
         String eventsFile;
         String networkFile;
         List<MitoTrip> trips;
+        scenario = ScenarioUtils.createMutableScenario(initialMatsimConfig);
+        final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/"
+                + properties.main.scenarioName + "/matsim/" + latestMatsimYear;
+        scenario.getConfig().controler().setOutputDirectory(outputDirectoryRoot);
 
         for(Day day : Day.values()){
+
             for(Mode mode : Mode.values()){
                 switch (mode){
                     case autoDriver:
                     case autoPassenger:
-                        scenario = ScenarioUtils.createMutableScenario(initialMatsimConfig);
+                        eventsFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + latestMatsimYear + ".output_events.xml.gz";
+                        networkFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + latestMatsimYear + ".output_network.xml.gz";
 
-                        if (scenario.getConfig().controler().getRunId() == null || scenario.getConfig().controler().getRunId().equals("")) {
-                            eventsFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "car/" + "output_events.xml.gz";
-                            networkFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "car/" + "output_network.xml.gz";
-                        } else {
-                            eventsFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "car/" + scenario.getConfig().controler().getRunId() + ".output_events.xml.gz";
-                            networkFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "car/" + scenario.getConfig().controler().getRunId() + ".output_network.xml.gz";
-                        }
 
                         trips = mitoTrips.values().stream().filter(tt -> tt.getDepartureDay().equals(day) & tt.getTripMode().equals(mode)).collect(Collectors.toList());
 
@@ -136,15 +128,9 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
                         break;
                     case bicycle:
                     case walk:
-                        scenario = ScenarioUtils.createMutableScenario(initialMatsimConfig);
+                        eventsFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/bikePed/" + latestMatsimYear + ".output_events.xml.gz";
+                        networkFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/bikePed/" + latestMatsimYear + ".output_network.xml.gz";
 
-                        if (scenario.getConfig().controler().getRunId() == null || scenario.getConfig().controler().getRunId().equals("")) {
-                            eventsFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "bikePed/" + "output_events.xml.gz";
-                            networkFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "bikePed/" + "output_network.xml.gz";
-                        } else {
-                            eventsFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "bikePed/" + scenario.getConfig().controler().getRunId() + ".output_events.xml.gz";
-                            networkFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "bikePed/" + scenario.getConfig().controler().getRunId() + ".output_network.xml.gz";
-                        }
 
                         trips  = mitoTrips.values().stream().filter(tt -> tt.getDepartureDay().equals(day) & tt.getTripMode().equals(mode)).collect(Collectors.toList());
 
@@ -232,7 +218,8 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
                                 severeInjuryRisk += getLinkSevereInjuryRisk(mode, (int) (enterTimeInSecond / 3600.), linkInfo);
 
                                 for (Pollutant pollutant : ((HealthDataContainerImpl) dataContainer).getPollutantSet()){
-                                    double exposure =linkInfo.getExposure2Pollutant2TimeBin().get(pollutant).get((int) (enterTimeInSecond / 3600.));
+                                    int timeBin = (int) (AirPollutantModel.EMISSION_TIME_BIN_SIZE*(Math.floor(Math.abs(enterTimeInSecond/AirPollutantModel.EMISSION_TIME_BIN_SIZE))));
+                                    double exposure =linkInfo.getExposure2Pollutant2TimeBin().get(pollutant).get(timeBin);
                                     if(exposureMap.get(pollutant)==null){
                                         exposureMap.put(pollutant.name(), exposure);
                                     }else{

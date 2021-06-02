@@ -7,6 +7,7 @@ public class ZoneMuc extends ZoneImpl {
 
     private final AreaTypes.SGType areaType;
     private final double ptDistance_m;
+    private int ags = -1;
 
     public ZoneMuc(int id, float area, AreaTypes.SGType areaType, double initialPTDistance_m, Region region) {
         super(id, area, region);
@@ -20,5 +21,13 @@ public class ZoneMuc extends ZoneImpl {
 
     public AreaTypes.SGType getAreaTypeSG() {
         return areaType;
+    }
+
+    public int getAgs() {
+        return ags;
+    }
+
+    public void setAgs(int ags) {
+        this.ags = ags;
     }
 }

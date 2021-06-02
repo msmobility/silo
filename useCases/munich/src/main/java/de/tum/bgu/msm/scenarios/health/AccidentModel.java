@@ -27,7 +27,6 @@ public class AccidentModel extends AbstractModel implements ModelUpdateListener 
 
     @Override
     public void setup() {
-        logger.warn("Accident model setup: ");
     }
 
     @Override
@@ -55,7 +54,7 @@ public class AccidentModel extends AbstractModel implements ModelUpdateListener 
 
     private void runAccidentRateModel(int year) {
         for(Day day : Day.values()) {
-            logger.info("Updating injury risk for year " + year + ".");
+            logger.info("Updating injury risk for year: " + year + "| day of week: " + day + ".");
 
             final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/"
                     + properties.main.scenarioName + "/matsim/" + latestMatsimYear + "/" + day + "/";
@@ -65,7 +64,7 @@ public class AccidentModel extends AbstractModel implements ModelUpdateListener 
             final MutableScenario scenario = ScenarioUtils.createMutableScenario(config);
             scenario.getConfig().travelTimeCalculator().setTraveltimeBinSize(3600);
             double scalingFactor = properties.main.scaleFactor * Double.parseDouble(Resources.instance.getString(de.tum.bgu.msm.resources.Properties.TRIP_SCALING_FACTOR));
-
+            scenario.addScenarioElement("accidentModelFile",properties.main.baseDirectory+"input/accident/");
             AccidentRateModel model = new AccidentRateModel(scenario, scalingFactor);
             model.runModelOnline();
 

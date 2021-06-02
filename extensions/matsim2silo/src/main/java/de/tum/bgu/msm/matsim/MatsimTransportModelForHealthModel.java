@@ -173,7 +173,7 @@ public final class MatsimTransportModelForHealthModel implements TransportModel 
             finalizeCarConfig(scenarioCar.getConfig(), year, day);
             final Controler controlerCar = new Controler(scenarioCar);
             controlerCar.run();
-            logger.warn("Running MATSim transport model for car scenario " + year + " finished.");
+            logger.warn("Running MATSim transport model for " + day + " car scenario " + year + " finished.");
 
             // Get travel Times from MATSim - weekday
             if(day.equals(Day.weekday)){
@@ -185,7 +185,7 @@ public final class MatsimTransportModelForHealthModel implements TransportModel 
 
             logger.warn("Running MATSim transport model for " + day + " Bike&Ped scenario " + year + ".");
             Config bikePedConfig = ConfigUtils.loadConfig(initialMatsimConfig.getContext());
-            bikePedConfig.network().setInputFile("input/mito/trafficAssignment/studyNetworkDenseBikeWalkHealth.xml");
+            bikePedConfig.network().setInputFile("input/mito/trafficAssignment/studyNetworkDenseBikeWalkHealth.xml.gz");
             MutableScenario scenarioBikePed = (MutableScenario) ScenarioUtils.loadScenario(bikePedConfig);
             scenarioBikePed.setPopulation(populationBikePed);
 
@@ -211,7 +211,7 @@ public final class MatsimTransportModelForHealthModel implements TransportModel 
             });
 
             controlerBikePed.run();
-            logger.warn("Running MATSim transport model for Bike&Ped scenario " + year + " finished.");
+            logger.warn("Running MATSim transport model for " + day + " Bike&Ped scenario " + year + " finished.");
         }
     }
 
@@ -233,6 +233,9 @@ public final class MatsimTransportModelForHealthModel implements TransportModel 
 
         ActivityParams shoppingActivity = new ActivityParams("shopping").setTypicalDuration(1 * 60 * 60);
         bikePedConfig.planCalcScore().addActivityParams(shoppingActivity);
+
+        ActivityParams recreationActivity = new ActivityParams("recreation").setTypicalDuration(1 * 60 * 60);
+        bikePedConfig.planCalcScore().addActivityParams(recreationActivity);
 
         ActivityParams otherActivity = new ActivityParams("other").setTypicalDuration(1 * 60 * 60);
         bikePedConfig.planCalcScore().addActivityParams(otherActivity);
@@ -309,6 +312,9 @@ public final class MatsimTransportModelForHealthModel implements TransportModel 
 
         ActivityParams shoppingActivity = new ActivityParams("shopping").setTypicalDuration(1 * 60 * 60);
         config.planCalcScore().addActivityParams(shoppingActivity);
+
+        ActivityParams recreationActivity = new ActivityParams("recreation").setTypicalDuration(1 * 60 * 60);
+        config.planCalcScore().addActivityParams(recreationActivity);
 
         ActivityParams otherActivity = new ActivityParams("other").setTypicalDuration(1 * 60 * 60);
         config.planCalcScore().addActivityParams(otherActivity);
