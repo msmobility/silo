@@ -32,8 +32,8 @@ public class ReadZonalData {
     public void run() {
         readCities();
         readZones();
-        readTripLengthMatrix();
         readTripLengthFrequencyDistribution();
+        readTripLengthMatrix();
     }
 
     private void readCities() {
@@ -166,13 +166,22 @@ public class ReadZonalData {
         OmxLookup omxLookUp = tripLengthOmx.getLookup("lookup1");
         int[] externalNumbers = (int[]) omxLookUp.getLookup();
         tripLengthMatrix.setExternalNumbersZeroBased(externalNumbers);
+        Matrix tripLengthProbabilityMatrix = new Matrix(externalNumbers.length, externalNumbers.length);
+        tripLengthProbabilityMatrix.setExternalNumbersZeroBased(externalNumbers);
         for (int i = 1; i <= tripLengthMatrix.getRowCount(); i++){
             for (int j = 1; j <= tripLengthMatrix.getColumnCount(); j++){
                 //UNIT:kilometers
-                tripLengthMatrix.setValueAt(i,j, tripLengthMatrix.getValueAt(i,j)/1000);
+                double distanceInKm = tripLengthMatrix.getValueAt(i,j)/1000;
+                tripLengthMatrix.setValueAt(i,j, (float) distanceInKm);
+                float utility = 0;
+                if (distanceInKm < 200){
+                    utility = dataSetSynPop.getTripLengthDistribution().get((int) distanceInKm, "HBW");
+                }
+                tripLengthProbabilityMatrix.setValueAt(i,j,utility);
             }
         }
         dataSetSynPop.setDistanceTazToTaz(tripLengthMatrix);
+        dataSetSynPop.setDistanceUtility(tripLengthProbabilityMatrix);
         logger.info("Read OMX matrix");
     }
 

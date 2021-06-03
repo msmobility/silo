@@ -48,7 +48,7 @@ public class DataSetSynPop {
 
     private Matrix distanceTazToTaz;
     private float[] areas;
-    private Matrix travelTimeTazToTaz;
+    private Matrix distanceUtilityHBW;
 
     private HashMap<Integer, ArrayList> boroughsByCounty;
 
@@ -66,6 +66,9 @@ public class DataSetSynPop {
     private HashMap<Integer, Integer> municipalityCounty;
 
     private HashMap<Integer, HashMap<String, Float>> tazAttributes;
+
+    private Map<String, Map<Integer, Integer>> vacantJobsByTypeAndZone;
+    Map<String, Map<Integer, Map<Integer, Double>>> probabilityByTypeAndZone;
 
     public TableDataSet getWeights() {
         return weights;
@@ -354,5 +357,29 @@ public class DataSetSynPop {
 
     public void setZoneCoordinates(Table<Integer, String, Integer> zoneCoordinates) {
         this.zoneCoordinates = zoneCoordinates;
+    }
+
+    public Map<String, Map<Integer, Integer>> getVacantJobsByTypeAndZone() {
+        return vacantJobsByTypeAndZone;
+    }
+
+    public void setVacantJobsByTypeAndZone(Map<String, Map<Integer, Integer>> vacantJobsByTypeAndZone) {
+        this.vacantJobsByTypeAndZone = vacantJobsByTypeAndZone;
+    }
+
+    public Map<String, Map<Integer, Map<Integer, Double>>> getProbabilityByTypeAndZone() {
+        return probabilityByTypeAndZone;
+    }
+
+    public void setProbabilityByTypeAndZone(Map<String, Map<Integer, Map<Integer, Double>>> probabilityByTypeAndZone) {
+        this.probabilityByTypeAndZone = probabilityByTypeAndZone;
+    }
+
+    public Matrix getDistanceUtility() {
+        return distanceUtilityHBW;
+    }
+
+    public void setDistanceUtility(Matrix tripLengthProbabilityMatrix) {
+        this.distanceUtilityHBW = tripLengthProbabilityMatrix;
     }
 }

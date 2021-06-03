@@ -71,4 +71,72 @@ public class PersonWriterMucMito implements PersonWriter {
         }
         pwp.close();
     }
+
+
+    public void writePersonsWithJob(String path) {
+
+        logger.info("  Writing person file to " + path);
+        PrintWriter pwp = SiloUtil.openFileForSequentialWriting(path, false);
+        pwp.print("id,hhid,age,gender,occupation,driversLicense,workplace,income");
+        pwp.print(",");
+        pwp.print("jobType");
+        pwp.print(",");
+        pwp.print("disability");
+        pwp.print(",");
+        pwp.print("schoolId");
+        pwp.print(",");
+        pwp.print("schoolType");
+        pwp.print(",");
+        pwp.print("schoolPlace");
+        pwp.print(",");
+        pwp.print("state");
+        pwp.print(",");
+        pwp.print("originalId");
+        pwp.print(",");
+        pwp.print("workZone");
+        pwp.print(",");
+        pwp.print("commuteDistanceKm");
+        pwp.println();
+        for (Person pp : householdData.getPersons()) {
+            pwp.print(pp.getId());
+            pwp.print(",");
+            pwp.print(pp.getHousehold().getId());
+            pwp.print(",");
+            pwp.print(pp.getAge());
+            pwp.print(",");
+            pwp.print(pp.getGender().getCode());
+            pwp.print(",");
+            pwp.print(pp.getOccupation().getCode());
+            pwp.print(",");
+            pwp.print(pp.hasDriverLicense());
+            pwp.print(",");
+            pwp.print(pp.getJobId());
+            pwp.print(",");
+            pwp.print(pp.getAnnualIncome());
+            pwp.print(",");
+            pwp.print(pp.getAttribute("jobType").get().toString());
+            pwp.print(",");
+            pwp.print(pp.getAttribute("disability").get().toString());
+            pwp.print(",");
+            pwp.print(0);
+            pwp.print(",");
+            pwp.print(pp.getAttribute("schoolType").get().toString());
+            pwp.print(",");
+            pwp.print(((PersonMuc)pp).getSchoolPlace());
+            pwp.print(",");
+            pwp.print(pp.getAttribute("state").get().toString());
+            pwp.print(",");
+            pwp.print(pp.getAttribute("originalId").get().toString());
+            pwp.print(",");
+            pwp.print(pp.getAttribute("workZone").get().toString());
+            pwp.print(",");
+            pwp.print(pp.getAttribute("commuteDistance").get().toString());
+            pwp.println();
+            if (pp.getId() == SiloUtil.trackPp) {
+                SiloUtil.trackingFile("Writing pp " + pp.getId() + " to micro data file.");
+                SiloUtil.trackWriter.println(pp.toString());
+            }
+        }
+        pwp.close();
+    }
 }

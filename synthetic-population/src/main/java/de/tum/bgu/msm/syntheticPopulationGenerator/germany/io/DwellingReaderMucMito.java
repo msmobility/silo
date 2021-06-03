@@ -128,6 +128,76 @@ public class DwellingReaderMucMito implements DwellingReader {
         logger.info("Finished reading " + recCount + " dwellings.");
         return recCount;
     }
+
+    public int readDataWithState(String path, boolean hasState) {
+        DwellingFactory factory = DwellingUtils.getFactory();
+        logger.info("Reading dwelling micro data from ascii file");
+        String recString = "";
+        int recCount = 0;
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(path));
+            recString = in.readLine();
+
+            // read header
+            String[] header = recString.split(",");
+            int posId      = SiloUtil.findPositionInArray("id", header);
+            int posZone    = SiloUtil.findPositionInArray("zone",header);
+            int posHh      = SiloUtil.findPositionInArray("hhId",header);
+            int posCoordX = -1;
+            int posCoordY = -1;
+            try {
+                posCoordX = SiloUtil.findPositionInArray("coordX", header);
+                posCoordY = SiloUtil.findPositionInArray("coordY", header);
+            } catch (Exception e) {
+                logger.warn("No coords given in dwelling input file. Models using microlocations will not work.");
+            }
+            int posState = 0;
+            int posOriginalId = 0;
+            if (hasState){
+                posState = SiloUtil.findPositionInArray("state", header);
+                posOriginalId = SiloUtil.findPositionInArray("originalId", header);
+            }
+            // read line
+            while ((recString = in.readLine()) != null) {
+                recCount++;
+                    String[] lineElements = recString.split(",");
+                    int id = Integer.parseInt(lineElements[posId]);
+                    int zoneId = Integer.parseInt(lineElements[posZone]);
+                    int hhId = Integer.parseInt(lineElements[posHh]);
+                    Coordinate coordinate = null;
+                    if (posCoordX >= 0 && posCoordY >= 0) {
+                        try {
+                            coordinate = new Coordinate(Double.parseDouble(lineElements[posCoordX]), Double.parseDouble(lineElements[posCoordY]));
+                        } catch (Exception e) {
+                        }
+                    }
+
+                    Dwelling dd = DwellingUtils.getFactory().createDwelling(id, zoneId, coordinate, hhId,
+                            DefaultDwellingTypes.DefaultDwellingTypeImpl.MF234, 50, 4, 600, 2000);   // this automatically puts it in id->dwelling map in Dwelling class
+                    dwellingData.addDwelling(dd);
+                if (hasState) {
+                    int originalId = Integer.parseInt(lineElements[posOriginalId]);
+                    String state = (lineElements[posState]);
+                    dd.setAttribute("state", state);
+                    dd.setAttribute("originalId", originalId);
+                } else {
+                    dd.setAttribute("state", "");
+                    dd.setAttribute("originalId", id);
+                }
+                    if (id == SiloUtil.trackDd) {
+                        SiloUtil.trackWriter.println("Read dwelling with following attributes from " + path);
+                    }
+
+            }
+        } catch (IOException e) {
+            logger.fatal("IO Exception caught reading synpop dwelling file: " + path);
+            logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
+        }
+        logger.info("Finished reading " + recCount + " dwellings.");
+        return recCount;
+    }
+
+
     public int readDataWithStateSave(String path, int finalDdIdPreviousState, int finalHhIdPreviousState, boolean save) {
         DwellingFactory factory = DwellingUtils.getFactory();
         logger.info("Reading dwelling micro data from ascii file");

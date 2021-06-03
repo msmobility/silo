@@ -81,6 +81,7 @@ public class HouseholdReaderMucMito implements HouseholdReader {
             while ((recString = in.readLine()) != null) {
                 recCount++;
                 if (generate) {
+                    
                     String[] lineElements = recString.split(",");
                     int id = Integer.parseInt(lineElements[posId]);
                     int dwellingID = Integer.parseInt(lineElements[posDwell]);
@@ -96,6 +97,59 @@ public class HouseholdReaderMucMito implements HouseholdReader {
                         SiloUtil.trackWriter.println("Read household with following attributes from " + fileName);
                     }
                 }
+            }
+        } catch (IOException e) {
+            logger.fatal("IO Exception caught reading synpop household file: " + fileName);
+            logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
+        }
+        logger.info("Finished reading " + recCount + " households.");
+        return recCount;
+    }
+
+    public int readDataWithState(String fileName, boolean hasState) {
+        logger.info("Reading household micro data from ascii file");
+        String recString = "";
+        int recCount = 0;
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(fileName));
+            recString = in.readLine();
+
+            // read header
+            String[] header = recString.split(",");
+            int posId    = SiloUtil.findPositionInArray("id", header);
+            int posDwell = SiloUtil.findPositionInArray("dwelling",header);
+            int posTaz   = SiloUtil.findPositionInArray("zone",header);
+            int posAutos = SiloUtil.findPositionInArray("autos",header);
+            int posState = 0;
+            int posOriginalId = 0;
+            if (hasState){
+                posState = SiloUtil.findPositionInArray("state", header);
+                posOriginalId = SiloUtil.findPositionInArray("originalId", header);
+            }
+            // read line
+            while ((recString = in.readLine()) != null) {
+                recCount++;
+                    String[] lineElements = recString.split(",");
+                    int id = Integer.parseInt(lineElements[posId]);
+                    int dwellingID = Integer.parseInt(lineElements[posDwell]);
+                    int autos = Integer.parseInt(lineElements[posAutos]);
+                    int zone = Integer.parseInt(lineElements[posTaz]);
+                    Household household = factory.createHousehold(id, dwellingID, autos);  // this automatically puts it in id->household map in Household class
+                    hhData.addHousehold(household);
+                    household.setAttribute("zone", zone);
+                    if (hasState) {
+                        int originalId = Integer.parseInt(lineElements[posOriginalId]);
+                        String state = (lineElements[posState]);
+                        household.setAttribute("state", state);
+                        household.setAttribute("originalId", originalId);
+                    } else {
+                        household.setAttribute("state", "");
+                        household.setAttribute("originalId", id);
+                    }
+                    if (id == SiloUtil.trackHh) {
+                        SiloUtil.trackWriter.println("Read household with following attributes from " + fileName);
+                    }
+
             }
         } catch (IOException e) {
             logger.fatal("IO Exception caught reading synpop household file: " + fileName);

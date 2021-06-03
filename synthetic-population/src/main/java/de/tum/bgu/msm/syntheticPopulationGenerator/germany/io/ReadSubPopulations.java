@@ -16,7 +16,6 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.commons.math.stat.Frequency;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
@@ -29,120 +28,206 @@ public class ReadSubPopulations {
     private final DataContainer dataContainer;
     private Map<String, Map<String, Integer>> countsPreviousState;
     private Map<String, Map<String, Integer>> countsState;
+    private boolean generateSyntheticObjects;
+    private int subPopulation;
 
-    public ReadSubPopulations(DataContainer dataContainer){
+    public ReadSubPopulations(DataContainer dataContainer, boolean generateSyntheticObjects, int subPopulation){
         this.dataContainer = dataContainer;
+        this.generateSyntheticObjects = generateSyntheticObjects;
+        this.subPopulation = subPopulation;
     }
 
     public void run(){
         logger.info("   Running module: read subpopulation");
         startCounters();
-        fillCounters();
-        printCounters();
+        readPopulationAndFillCounters();
+        if (!PropertiesSynPop.get().main.runBySubpopulation) {
+            printCounters();
+        }
     }
 
-    private void fillCounters(){
-        for (String state : PropertiesSynPop.get().main.states) {
-            int finalHhIdPreviousState = countsPreviousState.get("all").get("hh");
-            int finalPpIdPreviousState = countsPreviousState.get("all").get("pp");
-            int finalDdIdPreviousState = countsPreviousState.get("all").get("dd");
-            boolean generate = false;
-            int householdsInState = readHouseholdData(Properties.get().main.startYear, state, finalHhIdPreviousState, generate);
-            int dwellingsInState = readDwellingData(Properties.get().main.startYear, state, finalDdIdPreviousState, finalHhIdPreviousState, generate);
-            int personsInState = readPersonData(Properties.get().main.startYear, state, finalPpIdPreviousState, finalHhIdPreviousState, generate);
-            countsPreviousState.get(state).put("hh", finalHhIdPreviousState);
-            countsPreviousState.get(state).put("pp", finalPpIdPreviousState);
-            countsPreviousState.get(state).put("dd", finalDdIdPreviousState);
-            countsPreviousState.get("all").put("hh", finalHhIdPreviousState + householdsInState);
-            countsPreviousState.get("all").put("pp", finalPpIdPreviousState + personsInState);
-            countsPreviousState.get("all").put("dd", finalDdIdPreviousState + dwellingsInState);
-            countsState.get(state).put("hh", householdsInState);
-            countsState.get(state).put("pp", personsInState);
-            countsState.get(state).put("dd",dwellingsInState);
+    private void readPopulationAndFillCounters(){
+        if (PropertiesSynPop.get().main.readMergeAndSplit) {
+            for (String state : PropertiesSynPop.get().main.states) {
+                int finalHhIdPreviousState = countsPreviousState.get("all").get("hh");
+                int finalPpIdPreviousState = countsPreviousState.get("all").get("pp");
+                int finalDdIdPreviousState = countsPreviousState.get("all").get("dd");
+                int householdsInState = readHouseholdDataAndReassignIds(Properties.get().main.startYear, state, finalHhIdPreviousState, generateSyntheticObjects);
+                int dwellingsInState = readDwellingDataAndReassignIds(Properties.get().main.startYear, state, finalDdIdPreviousState, finalHhIdPreviousState, generateSyntheticObjects);
+                int personsInState = readPersonDataAndReassignIds(Properties.get().main.startYear, state, finalPpIdPreviousState, finalHhIdPreviousState, generateSyntheticObjects);
+                countsPreviousState.get(state).put("hh", finalHhIdPreviousState);
+                countsPreviousState.get(state).put("pp", finalPpIdPreviousState);
+                countsPreviousState.get(state).put("dd", finalDdIdPreviousState);
+                countsPreviousState.get("all").put("hh", finalHhIdPreviousState + householdsInState);
+                countsPreviousState.get("all").put("pp", finalPpIdPreviousState + personsInState);
+                countsPreviousState.get("all").put("dd", finalDdIdPreviousState + dwellingsInState);
+                countsState.get(state).put("hh", householdsInState);
+                countsState.get(state).put("pp", personsInState);
+                countsState.get(state).put("dd", dwellingsInState);
 
+            }
+        } else {
+            readHouseholdData(Properties.get().main.startYear, true);
+            readDwellingData(Properties.get().main.startYear, true);
+            readPersonData(Properties.get().main.startYear, true,false);
         }
     }
 
 
     private void printCounters (){
-        try {
-            String fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
-                    + "/subPopulations/"
-                    + "countersByState.csv";
-            PrintWriter pw = new PrintWriter(new FileWriter(fileName, true));
-            pw.println("state,hhInState,ppInState,ddInState,hhPrevious,ppPrevious,ddPrevious");
-            for (String state: PropertiesSynPop.get().main.states) {
-                pw.print(state);
+            try {
+                String fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
+                        + "/subPopulations/"
+                        + "countersByState.csv";
+                PrintWriter pw = new PrintWriter(new FileWriter(fileName, true));
+                pw.println("state,hhInState,ppInState,ddInState,hhPrevious,ppPrevious,ddPrevious");
+                for (String state : PropertiesSynPop.get().main.states) {
+                    pw.print(state);
+                    pw.print(",");
+                    pw.print(countsState.get(state).get("hh"));
+                    pw.print(",");
+                    pw.print(countsState.get(state).get("pp"));
+                    pw.print(",");
+                    pw.print(countsState.get(state).get("dd"));
+                    pw.print(",");
+                    pw.print(countsPreviousState.get(state).get("hh"));
+                    pw.print(",");
+                    pw.print(countsPreviousState.get(state).get("pp"));
+                    pw.print(",");
+                    pw.println(countsPreviousState.get(state).get("dd"));
+                }
+                pw.print("all");
                 pw.print(",");
-                pw.print(countsState.get(state).get("hh"));
+                pw.print(0);
                 pw.print(",");
-                pw.print(countsState.get(state).get("pp"));
+                pw.print(0);
                 pw.print(",");
-                pw.print(countsState.get(state).get("dd"));
+                pw.print(0);
                 pw.print(",");
-                pw.print(countsPreviousState.get(state).get("hh"));
+                pw.print(countsPreviousState.get("all").get("hh"));
                 pw.print(",");
-                pw.print(countsPreviousState.get(state).get("pp"));
+                pw.print(countsPreviousState.get("all").get("pp"));
                 pw.print(",");
-                pw.println(countsPreviousState.get(state).get("dd"));
+                pw.println(countsPreviousState.get("all").get("dd"));
+                pw.flush();
+                pw.close();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            pw.print("all");
-            pw.print(",");
-            pw.print(0);
-            pw.print(",");
-            pw.print(0);
-            pw.print(",");
-            pw.print(0);
-            pw.print(",");
-            pw.print(countsPreviousState.get("all").get("hh"));
-            pw.print(",");
-            pw.print(countsPreviousState.get("all").get("pp"));
-            pw.print(",");
-            pw.println(countsPreviousState.get("all").get("dd"));
-            pw.flush();
-            pw.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
     }
 
 
-    private int readHouseholdData(int year, String state, int finalHhIdPreviousState, boolean generate) {
+    private int readHouseholdDataAndReassignIds(int year, String state, int finalHhIdPreviousState, boolean generate) {
         logger.info("Reading household micro data from ascii file from state " + state);
 
         HouseholdDataManager householdData = dataContainer.getHouseholdDataManager();
         HouseholdFactory householdFactory = householdData.getHouseholdFactory();
-        String fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
-                + "/" + state + "/"
-                + PropertiesSynPop.get().main.householdsFileName + "_" + year + ".csv";
+        String fileName = "";
+        if (PropertiesSynPop.get().main.runBySubpopulation){
+            fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
+                    + "/" + "subPopulations" + "/"
+                    + PropertiesSynPop.get().main.householdsFileName
+                    + subPopulation
+                    + "_" + year + ".csv";
+        } else {
+            fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
+                    + "/" + state + "/"
+                    + PropertiesSynPop.get().main.householdsFileName + "_" + year + ".csv";
+        }
         HouseholdReaderMucMito hhReader = new HouseholdReaderMucMito(householdData, (HouseholdFactoryMuc) householdFactory);
         int totalHouseholds = hhReader.readDataWithState(fileName, state, finalHhIdPreviousState, generate);
         return totalHouseholds;
     }
 
 
-    private int readPersonData(int year, String state, int finalPpIdPreviousState, int finalHhIdPreviousState, boolean generate) {
+    private int readPersonDataAndReassignIds(int year, String state, int finalPpIdPreviousState, int finalHhIdPreviousState, boolean generate) {
         logger.info("Reading person micro data from ascii file from state " + state);
 
         HouseholdDataManager householdData = dataContainer.getHouseholdDataManager();
-        String fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
-                + "/" + state + "/"
-                +  PropertiesSynPop.get().main.personsFileName + "_" + year + ".csv";
+        String fileName = "";
+        if (PropertiesSynPop.get().main.runBySubpopulation){
+            fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
+                    + "/" + "subPopulations" + "/"
+                    + PropertiesSynPop.get().main.personsFileName
+                    + subPopulation
+                    + "_" + year + ".csv";
+        } else {
+            fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
+                    + "/" + state + "/"
+                    + PropertiesSynPop.get().main.personsFileName + "_" + year + ".csv";
+        }
         PersonReaderMucMito ppReader = new PersonReaderMucMito(householdData);
         int totalPersons = ppReader.readDataWithState(fileName, finalPpIdPreviousState, finalHhIdPreviousState, generate);
         return totalPersons;
     }
 
 
-    private int readDwellingData(int year, String state, int finalDdIdPreviousState, int finalHhIdPreviousState, boolean generate) {
+    private int readDwellingDataAndReassignIds(int year, String state, int finalDdIdPreviousState, int finalHhIdPreviousState, boolean generate) {
         logger.info("Reading dwelling micro data from ascii file from state " + state);
 
         RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
-        String fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
-                + "/" + state + "/"
-                + PropertiesSynPop.get().main.dwellingsFileName + "_" + year + ".csv";
+        String fileName = "";
+        if (PropertiesSynPop.get().main.runBySubpopulation){
+            fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
+                    + "/" + "subPopulations" + "/"
+                    + PropertiesSynPop.get().main.dwellingsFileName
+                    + subPopulation
+                    + "_" + year + ".csv";
+        } else {
+            fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
+                    + "/" + state + "/"
+                    + PropertiesSynPop.get().main.dwellingsFileName + "_" + year + ".csv";
+        }
         DwellingReaderMucMito ddReader = new DwellingReaderMucMito(realEstate);
         int dwellingsInState = ddReader.readDataWithState(fileName, finalDdIdPreviousState, finalHhIdPreviousState, generate);
+        return dwellingsInState;
+    }
+
+
+    private int readHouseholdData(int year, boolean haveState) {
+        logger.info("Reading household micro data from ascii file from state " );
+
+        HouseholdDataManager householdData = dataContainer.getHouseholdDataManager();
+        HouseholdFactory householdFactory = householdData.getHouseholdFactory();
+        String fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
+                + "/" + "subPopulations" + "/"
+                + PropertiesSynPop.get().main.householdsFileName
+                + subPopulation
+                + "_" + year + ".csv";
+        HouseholdReaderMucMito hhReader = new HouseholdReaderMucMito(householdData, (HouseholdFactoryMuc) householdFactory);
+        int totalHouseholds = hhReader.readDataWithState(fileName, haveState);
+        return totalHouseholds;
+    }
+
+
+    private int readPersonData(int year, boolean haveState, boolean haveWorkZone) {
+        logger.info("Reading person micro data from ascii file from state " );
+
+        HouseholdDataManager householdData = dataContainer.getHouseholdDataManager();
+        String fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
+                    + "/" + "subPopulations" + "/"
+                    + PropertiesSynPop.get().main.personsFileName
+                    + subPopulation
+                    + "_" + year + ".csv";
+
+        PersonReaderMucMito ppReader = new PersonReaderMucMito(householdData);
+        int totalPersons = ppReader.readDataWithState(fileName, haveState, haveWorkZone);
+        return totalPersons;
+    }
+
+    private int readDwellingData(int year, boolean hasState) {
+        logger.info("Reading dwelling micro data from ascii file from state " );
+
+        RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
+        String fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
+                    + "/" + "subPopulations" + "/"
+                    + PropertiesSynPop.get().main.dwellingsFileName
+                    + subPopulation
+                    + "_" + year + ".csv";
+
+        DwellingReaderMucMito ddReader = new DwellingReaderMucMito(realEstate);
+        int dwellingsInState = ddReader.readDataWithState(fileName, hasState);
         return dwellingsInState;
     }
 

@@ -17,6 +17,8 @@ public class GermanyPropertiesSynPop extends AbstractPropertiesSynPop {
         states = PropertiesUtil.getStringPropertyArray(bundle, "states.synPop.splitting", new String[]{"01","10"});
         numberOfSubpopulations = PropertiesUtil.getIntProperty(bundle, "micro.data.subpopulations", 1);
         populationSplitting = PropertiesUtil.getBooleanProperty(bundle, "micro.data.splitting", false);
+        runBySubpopulation = PropertiesUtil.getBooleanProperty(bundle,"run.by.subpopulation",false);
+        readMergeAndSplit = PropertiesUtil.getBooleanProperty(bundle, "micro.data.read.splitting", false);
         runSyntheticPopulation = PropertiesUtil.getBooleanProperty(bundle, "run.synth.pop.generator", false);
         runIPU = PropertiesUtil.getBooleanProperty(bundle, "run.ipu.synthetic.pop", false);
         runAllocation = PropertiesUtil.getBooleanProperty(bundle, "run.population.allocation", false);
@@ -32,7 +34,7 @@ public class GermanyPropertiesSynPop extends AbstractPropertiesSynPop {
         marginalsMunicipality = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"marginals.municipality","input/syntheticPopulation/" + state + "/marginalsMunicipality.csv"));
         marginalsMunicipality.buildIndex(marginalsMunicipality.getColumnPosition("ID_city"));
 
-        jobsByTaz = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"jobs.by.taz","input/syntheticPopulation/" + "/jobsByTaz.csv"));
+        jobsByTaz = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"jobs.by.taz","input/syntheticPopulation" + "/jobsByTaz.csv"));
         jobsByTaz.buildIndex(jobsByTaz.getColumnPosition("taz"));
 
         //todo same as municipalities
@@ -107,6 +109,7 @@ public class GermanyPropertiesSynPop extends AbstractPropertiesSynPop {
         jobsStateFileName = PropertiesUtil.getStringProperty(bundle, "job.file.ascii.sp", "microData/" + state +  "/jj");
         counters = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"counters.synthetic.population","microData/subPopulations/countersByState.csv"));
         counters.buildStringIndex(counters.getColumnPosition("state"));
+        vacantJobPercentage = PropertiesUtil.getIntProperty(bundle,"jobs.vacant.percentage", 25);
 
         if (boroughIPU) {
             attributesBorough = PropertiesUtil.getStringPropertyArray(bundle, "attributes.borough", new String[]{"Agr", "Ind", "Srv"});

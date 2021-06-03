@@ -29,11 +29,7 @@ public class Allocation extends ModuleSynPop{
         if (PropertiesSynPop.get().main.runAllocation) {
             generateHouseholdsPersons();
         } else {
-            if (PropertiesSynPop.get().main.populationSplitting) {
-                new ReadSubPopulations(dataContainer).run();
-            } else {
-                readPopulation();
-            }
+            readPopulation();
         }
         if (PropertiesSynPop.get().main.runJobAllocation) {
             generateJobs();
