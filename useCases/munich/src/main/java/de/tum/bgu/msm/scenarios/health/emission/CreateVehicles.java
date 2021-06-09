@@ -36,7 +36,7 @@ public class CreateVehicles {
 
     }
 
-    private void runVehicleType() {
+    public void runVehicleType() {
             createVehicleType("HGV",mode,7.2,1.0,1.0,1.0,"BEGIN_EMISSIONSHEAVY_GOODS_VEHICLE;average;average;averageEND_EMISSIONS");
 
             //LCV is not in vehicle types average
@@ -59,7 +59,7 @@ public class CreateVehicles {
             sc.getVehicles().addVehicleType(type);
     }
 
-    private void runVehicle(String eventFile, String vehicleFile) {
+    public void runVehicle(String eventFile, String vehicleFile) {
             //Read in events file and find out every agent by its id
             List<Id<Vehicle>> listOfIds = new ArrayList<>();
 

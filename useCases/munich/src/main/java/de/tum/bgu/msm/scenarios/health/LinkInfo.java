@@ -16,7 +16,7 @@ public class LinkInfo {
 
     private  Map<AccidentType, Map<Integer, Double>> severeFatalCasualityExposureByAccidentTypeByTime = new HashMap<>();
 
-    private Map<Pollutant, Map<Integer, Double>> exposure2Pollutant2TimeBin = new HashMap<>();
+    private Map<Pollutant, Map<Double, Double>> exposure2Pollutant2TimeBin = new HashMap<>();
 
     public LinkInfo(Id<Link> linkId) {
         this.linkId = linkId;
@@ -42,11 +42,11 @@ public class LinkInfo {
         this.severeFatalCasualityExposureByAccidentTypeByTime = severeFatalCasualityExposureByAccidentTypeByTime;
     }
 
-    public Map<Pollutant, Map<Integer, Double>> getExposure2Pollutant2TimeBin() {
+    public Map<Pollutant, Map<Double, Double>> getExposure2Pollutant2TimeBin() {
         return exposure2Pollutant2TimeBin;
     }
 
-    public void setExposure2Pollutant2TimeBin(Map<Pollutant, Map<Integer, Double>> exposure2Pollutant2TimeBin) {
+    public void setExposure2Pollutant2TimeBin(Map<Pollutant, Map<Double, Double>> exposure2Pollutant2TimeBin) {
         this.exposure2Pollutant2TimeBin = exposure2Pollutant2TimeBin;
     }
 }

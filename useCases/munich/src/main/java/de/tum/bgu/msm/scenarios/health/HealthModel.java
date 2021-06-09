@@ -87,12 +87,12 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
         if(properties.main.startYear == year) {
             latestMatsimYear = year;
             healthDataAssembler(year);
-            calculateIndividualHealthIndicator();
+            calculatePersonHealthIndicator();
             calculateRelativeRisk();
         } else if(properties.transportModel.transportModelYears.contains(year + 1)) {//why year +1
             latestMatsimYear = year + 1;
             healthDataAssembler(year + 1);
-            calculateIndividualHealthIndicator();
+            calculatePersonHealthIndicator();
             calculateRelativeRisk();
         }
     }
@@ -124,7 +124,7 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
 
                         trips = mitoTrips.values().stream().filter(tt -> tt.getDepartureDay().equals(day) & tt.getTripMode().equals(mode)).collect(Collectors.toList());
 
-                        calculateHealthIndicator(scenario, networkFile, eventsFile, trips, day, mode);
+                        calculateTripHealthIndicator(scenario, networkFile, eventsFile, trips, day, mode);
                         break;
                     case bicycle:
                     case walk:
@@ -134,7 +134,7 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
 
                         trips  = mitoTrips.values().stream().filter(tt -> tt.getDepartureDay().equals(day) & tt.getTripMode().equals(mode)).collect(Collectors.toList());
 
-                        calculateHealthIndicator(scenario, networkFile, eventsFile, trips, day, mode);
+                        calculateTripHealthIndicator(scenario, networkFile, eventsFile, trips, day, mode);
                         break;
                     default:
                         logger.warn("No health model for mode: " + mode);
@@ -154,7 +154,7 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
     }
 
 
-    public void calculateHealthIndicator (Scenario scenario, String networkFile, String eventsFile, List<MitoTrip> trips, Day day, Mode mode) {
+    public void calculateTripHealthIndicator(Scenario scenario, String networkFile, String eventsFile, List<MitoTrip> trips, Day day, Mode mode) {
 
         final int partitionSize = (int) ((double) trips.size() / Runtime.getRuntime().availableProcessors()) + 1;
         Iterable<List<MitoTrip>> partitions = Iterables.partition(trips, partitionSize);
@@ -163,7 +163,7 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
         TravelTime travelTime = TravelTimeUtils.createTravelTimesFromEvents(scenario, eventsFile);
         TravelDisutility travelDisutility = ControlerDefaults.createDefaultTravelDisutilityFactory(scenario).createTravelDisutility(travelTime);
 
-        new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
+        //new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
 
         ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Runtime.getRuntime().availableProcessors());
 
@@ -298,7 +298,7 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
     }
 
     //TODO: Qin
-    private void calculateIndividualHealthIndicator() {
+    private void calculatePersonHealthIndicator() {
         for(MitoTrip mitoTrip :  mitoTrips.values()){
             PersonMuc siloPerson = (PersonMuc) dataContainer.getHouseholdDataManager().getPersonFromId(mitoTrip.getPerson().getId());
             siloPerson.setWeeklyLightInjuryRisk(siloPerson.getWeeklyLightInjuryRisk()+mitoTrip.getLightInjuryRisk());

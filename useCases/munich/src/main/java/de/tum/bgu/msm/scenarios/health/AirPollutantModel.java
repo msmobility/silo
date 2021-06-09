@@ -5,6 +5,7 @@ import de.tum.bgu.msm.data.Day;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.resources.Resources;
 import de.tum.bgu.msm.scenarios.health.emission.CreateVehicles;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
@@ -15,6 +16,7 @@ import org.matsim.contrib.analysis.time.TimeBinMap;
 import org.matsim.contrib.emissions.EmissionModule;
 import org.matsim.contrib.emissions.Pollutant;
 import org.matsim.contrib.emissions.analysis.EmissionGridAnalyzer;
+import org.matsim.contrib.emissions.analysis.EmissionGridAnalyzerMSM;
 import org.matsim.contrib.emissions.utils.EmissionsConfigGroup;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.config.Config;
@@ -26,6 +28,7 @@ import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.events.algorithms.EventWriterXML;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.core.utils.collections.Tuple;
 import org.matsim.vehicles.VehicleType;
 
 import java.util.*;
@@ -45,7 +48,8 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
         this.initialMatsimConfig = config;
         scenario = ScenarioUtils.createMutableScenario(initialMatsimConfig);
 
-        Pollutant[] pollutants = new Pollutant[]{Pollutant.NO2,Pollutant.PM2_5,Pollutant.PM2_5_non_exhaust};
+        //Pollutant[] pollutants = new Pollutant[]{Pollutant.NO2,Pollutant.PM2_5};
+        Pollutant[] pollutants = new Pollutant[]{Pollutant.PM};
         for(Pollutant pollutant : pollutants){
             this.pollutantSet.add(pollutant);
         }
@@ -70,19 +74,21 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
             final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/"
                     + properties.main.scenarioName + "/matsim/" + latestMatsimYear;
             scenario.getConfig().controler().setOutputDirectory(outputDirectoryRoot);
+            prepareConfig();
+            CreateVehicles createVehicles = new CreateVehicles(scenario);
+            createVehicles.runVehicleType();
 
             for(Day day : Day.values()){
                 String eventFileWithoutEmissions = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_events.xml.gz";
                 String eventFileWithEmissions = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_events_emission.xml.gz";
                 String individualVehicleFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".vehicles_emission.xml.gz";
 
-                Config config = prepareConfig(day, individualVehicleFile);
+                updateConfig(day, individualVehicleFile);
 
-                CreateVehicles createVehicles = new CreateVehicles(scenario);
-                createVehicles.run(eventFileWithoutEmissions, individualVehicleFile);
-                scenario = ScenarioUtils.loadScenario(config);
+                createVehicles.runVehicle(eventFileWithoutEmissions, individualVehicleFile);
+                scenario = ScenarioUtils.loadScenario(scenario.getConfig());
                 createEmissionEventsOffline(eventFileWithoutEmissions,eventFileWithEmissions);
-                assembleLinkExposure(year, day, runEmissionGridAnalyzer(year,eventFileWithEmissions));
+                runEmissionGridAnalyzer(year,day, eventFileWithEmissions);
             }
 
         } else if(properties.transportModel.transportModelYears.contains(year + 1)) {//why year +1
@@ -90,18 +96,21 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
             final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/"
                     + properties.main.scenarioName + "/matsim/" + latestMatsimYear;
             scenario.getConfig().controler().setOutputDirectory(outputDirectoryRoot);
+            prepareConfig();
+            CreateVehicles createVehicles = new CreateVehicles(scenario);
+            createVehicles.runVehicleType();
 
             for(Day day : Day.values()){
                 String eventFileWithoutEmissions = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_events.xml.gz";
                 String eventFileWithEmissions = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_events_emission.xml.gz";
                 String individualVehicleFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".vehicles_emission.xml.gz";
-                Config config = prepareConfig(day, individualVehicleFile);
+                updateConfig(day, individualVehicleFile);
 
-                CreateVehicles createVehicles = new CreateVehicles(scenario);
-                createVehicles.run(eventFileWithoutEmissions, individualVehicleFile);
-                scenario = ScenarioUtils.loadScenario(config);
+                createVehicles.runVehicle(eventFileWithoutEmissions, individualVehicleFile);
+
+                scenario = ScenarioUtils.loadScenario(scenario.getConfig());
                 createEmissionEventsOffline(eventFileWithoutEmissions,eventFileWithEmissions);
-                assembleLinkExposure(year, day, runEmissionGridAnalyzer(year,eventFileWithEmissions));
+                runEmissionGridAnalyzer(year,day, eventFileWithEmissions);
             }
         }
     }
@@ -144,9 +153,8 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
         logger.warn("Created Emission events file.");
     }
 
-    public Config prepareConfig(Day day, String vehicleFile) {
+    public Config prepareConfig() {
         scenario.getConfig().travelTimeCalculator().setTraveltimeBinSize(3600);
-
         EmissionsConfigGroup emissionsConfig= new EmissionsConfigGroup();
         emissionsConfig.setDetailedVsAverageLookupBehavior(EmissionsConfigGroup.DetailedVsAverageLookupBehavior.directlyTryAverageTable);
         emissionsConfig.setAverageColdEmissionFactorsFile(Properties.get().main.baseDirectory+"input/mito/trafficAssignment/EFA_ColdStart_Vehcat_EFA_COLD_VehCat_2.txt");
@@ -155,9 +163,11 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
         emissionsConfig.setHbefaRoadTypeSource(EmissionsConfigGroup.HbefaRoadTypeSource.fromLinkAttributes);
         emissionsConfig.setHbefaVehicleDescriptionSource(EmissionsConfigGroup.HbefaVehicleDescriptionSource.fromVehicleTypeDescription);
         scenario.getConfig().addModule(emissionsConfig);
-        logger.warn(((EmissionsConfigGroup)scenario.getConfig().getModules().get(EmissionsConfigGroup.GROUP_NAME)).getAverageColdEmissionFactorsFile());
-        logger.warn(((EmissionsConfigGroup)scenario.getConfig().getModules().get(EmissionsConfigGroup.GROUP_NAME)).getAverageWarmEmissionFactorsFile());
 
+        return scenario.getConfig();
+    }
+
+    public Config updateConfig(Day day, String vehicleFile) {
         String networkFile = Properties.get().main.baseDirectory+"input/mito/trafficAssignment/studyNetworkDenseCarHealth_Hbefa.xml.gz";
         String populationFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + latestMatsimYear + ".output_plans.xml.gz";
 
@@ -170,30 +180,85 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
     }
 
 
-    private TimeBinMap<Grid<Map<Pollutant, Double>>> runEmissionGridAnalyzer(int year, String eventsFileWithEmission) {
+    private void runEmissionGridAnalyzer(int year, Day day, String eventsFileWithEmission) {
         logger.info("Creating grid cell air pollutant exposure for year " + year + ".");
 
         //new MatsimNetworkReader(scenario.getNetwork()).readFile(scenario.getConfig().network().getInputFile());
+        double scalingFactor = properties.main.scaleFactor * Double.parseDouble(Resources.instance.getString(de.tum.bgu.msm.resources.Properties.TRIP_SCALING_FACTOR));
 
-        EmissionGridAnalyzer gridAnalyzer =	new	EmissionGridAnalyzer.Builder()
+        EmissionGridAnalyzerMSM gridAnalyzer =	new	EmissionGridAnalyzerMSM.Builder()
                 .withNetwork(scenario.getNetwork())
                 .withTimeBinSize(EMISSION_TIME_BIN_SIZE)
                 .withGridSize(EMISSION_GRID_SIZE)
                 .withSmoothingRadius(EMISSION_SMOOTH_RADIUS)
-                .withGridType(EmissionGridAnalyzer.GridType.Square)
+                .withCountScaleFactor(1./scalingFactor)
+                .withGridType(EmissionGridAnalyzerMSM.GridType.Square)
                 .build();
 
-        return gridAnalyzer.process(eventsFileWithEmission);
+        gridAnalyzer.processTimeBinsWithEmissions(eventsFileWithEmission);
+
+        while(gridAnalyzer.hasNextTimeBin()){
+            assembleLinkExposure(year, day, gridAnalyzer.processNextTimeBin());
+        }
     }
+
+    private void assembleLinkExposure(int year, Day day, Tuple<Double, Grid<Map<Pollutant, Double>>>  gridEmissionMap) {
+        logger.warn("Updating link air pollutant exposure for year: " + year + "| day of week: " + day + "| time of day: " + gridEmissionMap.getFirst() + ".");
+
+        double startTime = gridEmissionMap.getFirst();
+        Grid<Map<Pollutant,	Double>> grid =	gridEmissionMap.getSecond();
+        logger.warn("Total number of grid: " + grid.getCells().size());
+        for(Link link : scenario.getNetwork().getLinks().values()){
+            Map<Pollutant, Map<Double, Double>> exposure2Pollutant2TimeBin =  new HashMap<>();
+
+            Grid.Cell<Map<Pollutant,Double>> toNodeCell = grid.getCell(new Coordinate(link.getToNode().getCoord().getX(),link.getToNode().getCoord().getY()));
+            Grid.Cell<Map<Pollutant,Double>> fromNodeCell = grid.getCell(new Coordinate(link.getFromNode().getCoord().getX(),link.getFromNode().getCoord().getY()));
+
+
+            for(Pollutant pollutant : pollutantSet){
+                //TODO: use avg as link exposure?
+                double toNodeCellExposure = 0;
+                double fromNodeCellExposure = 0;
+                if(toNodeCell!=null){
+                    if(toNodeCell.getValue().containsKey(pollutant)) {
+                        toNodeCellExposure = toNodeCell.getValue().get(pollutant);
+                    }
+                }
+
+                if(fromNodeCell!=null){
+                    if(fromNodeCell.getValue().containsKey(pollutant)){
+                        fromNodeCellExposure = fromNodeCell.getValue().get(pollutant);
+                    }
+                }
+
+                double avg = (toNodeCellExposure + fromNodeCellExposure)/2;
+                if(exposure2Pollutant2TimeBin.get(pollutant)==null){
+                    Map<Double, Double> exposureByTimeBin = new HashMap<>();
+                    exposureByTimeBin.put(startTime, avg);
+                    exposure2Pollutant2TimeBin.put(pollutant, exposureByTimeBin);
+                }else {
+                    exposure2Pollutant2TimeBin.get(pollutant).put(startTime, avg);
+                }
+            }
+
+            ((HealthDataContainerImpl)dataContainer).getLinkInfoByDay().get(day).get(link.getId()).setExposure2Pollutant2TimeBin(exposure2Pollutant2TimeBin);
+        }
+
+        logger.warn("Updating link air pollutant exposure for year: " + year + "| day of week: " + day + " finished.");
+
+
+
+    }
+
 
     private void assembleLinkExposure(int year, Day day, TimeBinMap<Grid<Map<Pollutant, Double>>> gridTimeBinMap) {
         logger.warn("Updating link air pollutant exposure for year: " + year + "| day of week: " + day + ".");
 
         for	(TimeBinMap.TimeBin<Grid<Map<Pollutant,	Double>>> timebin :	gridTimeBinMap.getTimeBins()){
-            int	startTime = (int) timebin.getStartTime();
+            double	startTime = timebin.getStartTime();
             Grid<Map<Pollutant,	Double>> grid =	timebin.getValue();
             for(Link link : scenario.getNetwork().getLinks().values()){
-                Map<Pollutant, Map<Integer, Double>> exposure2Pollutant2TimeBin =  new HashMap<>();
+                Map<Pollutant, Map<Double, Double>> exposure2Pollutant2TimeBin =  new HashMap<>();
 
                 Grid.Cell<Map<Pollutant,Double>> toNodeCell = grid.getCell(new Coordinate(link.getToNode().getCoord().getX(),link.getToNode().getCoord().getY()));
                 Grid.Cell<Map<Pollutant,Double>> fromNodeCell = grid.getCell(new Coordinate(link.getFromNode().getCoord().getX(),link.getToNode().getCoord().getY()));
@@ -202,7 +267,7 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
                     //TODO: use avg as link exposure?
                     double avg = (toNodeCell.getValue().get(pollutant) + fromNodeCell.getValue().get(pollutant))/2;
                     if(exposure2Pollutant2TimeBin.get(pollutant)==null){
-                        Map<Integer, Double> exposureByTimeBin = new HashMap<>();
+                        Map<Double, Double> exposureByTimeBin = new HashMap<>();
                         exposureByTimeBin.put(startTime, avg);
                         exposure2Pollutant2TimeBin.put(pollutant, exposureByTimeBin);
                     }else {
