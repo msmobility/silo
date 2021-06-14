@@ -2,14 +2,10 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.germany.allocation;
 
 import com.google.common.math.LongMath;
 import de.tum.bgu.msm.common.datafile.TableDataSet;
-import de.tum.bgu.msm.common.matrix.Matrix;
-import de.tum.bgu.msm.common.matrix.RowVector;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
-import de.tum.bgu.msm.data.job.Job;
-import de.tum.bgu.msm.data.job.JobType;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
@@ -18,7 +14,6 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.util.*;
-import java.util.stream.IntStream;
 
 public class AssignJobsByState {
 
@@ -41,8 +36,10 @@ public class AssignJobsByState {
 
         RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
         HouseholdDataManager households = dataContainer.getHouseholdDataManager();
-        //TableDataSet cellsMatrix = PropertiesSynPop.get().main.cellsMatrix;
+        double alpha_ld = 20;
+        double beta_ld = -0.005;
         int workersOutOfStudyArea = 0;
+        int allLongerThan200 = 0;
         for (Person pp : dataContainer.getHouseholdDataManager().getPersons()){
             if (pp.getOccupation() == Occupation.EMPLOYED) {
 
@@ -52,26 +49,40 @@ public class AssignJobsByState {
                     pp.setAttribute("jobType", "Serv");
                     selectedJobTypeAsString = "Serv";
                 }
+                String allJobTypesCombined = "all"; // comment this line if not all job types are unified
                 Household hh = pp.getHousehold();
                 int origin = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
                 int destination = -2;
-                if (!dataSetSynPop.getVacantJobsByTypeAndZone().get(selectedJobTypeAsString).isEmpty()) {
-                    Map<Integer, Double> probabilities = calculateDistanceProbabilityByJobType(selectedJobTypeAsString,origin);
-                    destination = SiloUtil.select(probabilities);
-                    int remainingJobs = dataSetSynPop.getVacantJobsByTypeAndZone().get(selectedJobTypeAsString).get(destination) - 1;
-                    if (remainingJobs > 0) {
-                        dataSetSynPop.getVacantJobsByTypeAndZone().get(selectedJobTypeAsString).put(destination, remainingJobs);
-                    } else {
-                        dataSetSynPop.getVacantJobsByTypeAndZone().get(selectedJobTypeAsString).remove(destination);
-                        if (dataSetSynPop.getVacantJobsByTypeAndZone().get(selectedJobTypeAsString).isEmpty()){
-                            dataSetSynPop.getVacantJobsByTypeAndZone().remove(selectedJobTypeAsString);
+                if (!dataSetSynPop.getVacantJobsByTypeAndZone().get(allJobTypesCombined).isEmpty()) {
+                    Map<Integer, Double> probabilities = calculateDistanceProbabilityByJobType(allJobTypesCombined, origin, alpha_ld, beta_ld);
+                    if (!probabilities.isEmpty()) {
+                        if (probabilities.keySet().size() == 1 & probabilities.containsKey(origin)) {
+                            allLongerThan200++;
+                            destination = origin;
+                            logger.info(" Worker in zone " + origin + " has no probability within 200 km. Person id " + pp.getId());
+                        } else {
+                            destination = SiloUtil.select(probabilities);
+                            int remainingJobs = dataSetSynPop.getVacantJobsByTypeAndZone().get(allJobTypesCombined).get(destination) - 1;
+                            if (remainingJobs > 0) {
+                                dataSetSynPop.getVacantJobsByTypeAndZone().get(allJobTypesCombined).put(destination, remainingJobs);
+                            } else {
+                                dataSetSynPop.getVacantJobsByTypeAndZone().get(allJobTypesCombined).remove(destination);
+                                if (dataSetSynPop.getVacantJobsByTypeAndZone().get(allJobTypesCombined).isEmpty()) {
+                                    dataSetSynPop.getVacantJobsByTypeAndZone().remove(allJobTypesCombined);
+                                }
+                            }
+                            workersOutOfStudyArea++;
                         }
                     }
                 } else {
                     workersOutOfStudyArea++;
                 }
                 pp.setAttribute("workZone", destination);
-                pp.setAttribute("commuteDistance", dataSetSynPop.getDistanceTazToTaz().getValueAt(origin, destination));
+                if (destination != -2) {
+                    pp.setAttribute("commuteDistance", dataSetSynPop.getDistanceTazToTaz().getValueAt(origin, destination));
+                } else {
+                    pp.setAttribute("commuteDistance", 0);
+                }
 
                 if (LongMath.isPowerOfTwo(assignedJobs)) {
                     logger.info("   Assigned " + assignedJobs + " jobs.");
@@ -84,11 +95,11 @@ public class AssignJobsByState {
 
         }
         logger.info("   Finished job de.tum.bgu.msm.syntheticPopulationGenerator.germany.AssignJobsByState. Assigned " + assignedJobs + " jobs. "
-                + workersOutOfStudyArea + " workers did not find job within 200 km.");
+                + workersOutOfStudyArea + " workers did not find job within 200 km." + allLongerThan200 + " persons in their zone because all longer than 200 km.");
 
     }
 
-    private Map<Integer, Double> calculateDistanceProbabilityByJobType(String jobType, int origin) {
+    private Map<Integer, Double> calculateDistanceProbabilityByJobType(String jobType, int origin, double alpha_ld, double beta_ld) {
         Map<Integer, Double> probabilityByTypeAndZone = new HashMap<>();
         TableDataSet jobsByTaz = PropertiesSynPop.get().main.jobsByTaz;
         for (int destination : dataSetSynPop.getVacantJobsByTypeAndZone().get(jobType).keySet()) {
@@ -100,8 +111,6 @@ public class AssignJobsByState {
                 double impendanceDistance = 0;
                 double alpha = 0.27;  // 0.6500;  0.6000; 0.5500
                 double gamma =-0.020;  //-0.0300; -0.0200;-0.0050
-                double alpha_ld = 20;
-                double beta_ld = -0.005;
                 if (readFromTable) {
                     impendanceDistance = dataSetSynPop.getDistanceUtility().getValueAt(origin, destination);
                 } else if (useLongDistanceFormula) {
@@ -118,6 +127,9 @@ public class AssignJobsByState {
                 }
                 probabilityByTypeAndZone.putIfAbsent(destination, probability);
             }
+        }
+        if (probabilityByTypeAndZone.isEmpty()){
+            probabilityByTypeAndZone.put(origin, 1.);
         }
         return probabilityByTypeAndZone;
     }

@@ -56,7 +56,7 @@ public class PersonReaderMucMito implements PersonReader {
                 int age        = Integer.parseInt(lineElements[posAge]);
                 Gender gender     = Gender.valueOf(Integer.parseInt(lineElements[posGender]));
                 Occupation occupation = Occupation.valueOf(Integer.parseInt(lineElements[posOccupation]));
-                int workplace  = Integer.parseInt(lineElements[posWorkplace]);
+                int workplace  = (int) Double.parseDouble(lineElements[posWorkplace]);
                 int income     = Integer.parseInt(lineElements[posIncome]);
                 PersonMuc pp = (PersonMuc) ppFactory.createPerson(id, age, gender, occupation, PersonRole.SINGLE, workplace, income); //this automatically puts it in id->person map in Person class
                 householdDataManager.addPerson(pp);
