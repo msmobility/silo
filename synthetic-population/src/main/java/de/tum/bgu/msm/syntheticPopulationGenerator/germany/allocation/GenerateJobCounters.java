@@ -37,16 +37,19 @@ public class GenerateJobCounters {
     private void generateJobCounters(){
         logger.info("  Generating counters with vacant jobs by zone");
         Map<String, Map<Integer, Integer>> vacantJobsByTypeAndZone = new HashMap<>();
+        Map<String, Map<Integer, Integer>> assignedJobsByTypeAndZone = new HashMap<>();
         assignedJobs = 0;
         TableDataSet jobsByTaz = PropertiesSynPop.get().main.jobsByTaz;
-/*        for (String jobType : JobType.getJobTypes()) {
-            vacantJobsByTypeAndZone.putIfAbsent(jobType, new HashMap<>());
+        for (String jobType : JobType.getJobTypes()) {
+            //vacantJobsByTypeAndZone.putIfAbsent(jobType, new HashMap<>());
+            assignedJobsByTypeAndZone.putIfAbsent(jobType, new HashMap<>());
             for (int taz : jobsByTaz.getColumnAsInt("taz")) {
-                int jobs = (int) jobsByTaz.getValueAt(taz, jobType) * (1 + PropertiesSynPop.get().main.vacantJobPercentage / 100);
-                vacantJobsByTypeAndZone.get(jobType).putIfAbsent(taz, jobs);
-                assignedJobs = assignedJobs + jobs;
+                //int jobs = (int) jobsByTaz.getValueAt(taz, jobType) * (1 + PropertiesSynPop.get().main.vacantJobPercentage / 100);
+                //vacantJobsByTypeAndZone.get(jobType).putIfAbsent(taz, jobs);
+                //assignedJobs = assignedJobs + jobs;
+                assignedJobsByTypeAndZone.get(jobType).putIfAbsent(taz, 0);
             }
-        }*/
+        }
 
         vacantJobsByTypeAndZone.putIfAbsent("all", new HashMap<>());
         for (int taz : jobsByTaz.getColumnAsInt("taz")) {
@@ -60,6 +63,7 @@ public class GenerateJobCounters {
         }
 
         dataSetSynPop.setVacantJobsByTypeAndZone(vacantJobsByTypeAndZone);
+        dataSetSynPop.setAssignedJobsByTypeAndZone(assignedJobsByTypeAndZone);
     }
 
 

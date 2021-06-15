@@ -7,6 +7,7 @@ import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.common.matrix.Matrix;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import org.apache.log4j.Logger;
+import org.locationtech.jts.geom.Coordinate;
 import org.opengis.feature.simple.SimpleFeature;
 
 import java.util.ArrayList;
@@ -68,6 +69,8 @@ public class DataSetSynPop {
     private HashMap<Integer, HashMap<String, Float>> tazAttributes;
 
     private Map<String, Map<Integer, Integer>> vacantJobsByTypeAndZone;
+    private Map<String, Map<Integer, Integer>> assignedJobsByTypeAndZone;
+    private Map<String, Map<Integer, Map<Integer, Coordinate>>> microlocationsJobsByTypeAndZone;
     Map<String, Map<Integer, Map<Integer, Double>>> probabilityByTypeAndZone;
 
     public TableDataSet getWeights() {
@@ -365,6 +368,22 @@ public class DataSetSynPop {
 
     public void setVacantJobsByTypeAndZone(Map<String, Map<Integer, Integer>> vacantJobsByTypeAndZone) {
         this.vacantJobsByTypeAndZone = vacantJobsByTypeAndZone;
+    }
+
+    public Map<String, Map<Integer, Integer>> getAssignedJobsByTypeAndZone() {
+        return assignedJobsByTypeAndZone;
+    }
+
+    public void setAssignedJobsByTypeAndZone(Map<String, Map<Integer, Integer>> assignedJobsByTypeAndZone) {
+        this.assignedJobsByTypeAndZone = assignedJobsByTypeAndZone;
+    }
+
+    public Map<String, Map<Integer, Map<Integer, Coordinate>>> getMicrolocationsJobsByTypeAndZone() {
+        return microlocationsJobsByTypeAndZone;
+    }
+
+    public void setMicrolocationsJobsByTypeAndZone(Map<String, Map<Integer, Map<Integer, Coordinate>>> microlocationsJobsByTypeAndZone) {
+        this.microlocationsJobsByTypeAndZone = microlocationsJobsByTypeAndZone;
     }
 
     public Map<String, Map<Integer, Map<Integer, Double>>> getProbabilityByTypeAndZone() {

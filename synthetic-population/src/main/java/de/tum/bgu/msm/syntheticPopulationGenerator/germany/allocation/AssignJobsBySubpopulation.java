@@ -15,9 +15,9 @@ import org.apache.log4j.Logger;
 
 import java.util.*;
 
-public class AssignJobsByState {
+public class AssignJobsBySubpopulation {
 
-    private static final Logger logger = Logger.getLogger(AssignJobsByState.class);
+    private static final Logger logger = Logger.getLogger(AssignJobsBySubpopulation.class);
 
     private final DataSetSynPop dataSetSynPop;
     private final DataContainer dataContainer;
@@ -25,7 +25,7 @@ public class AssignJobsByState {
 
 
 
-    public AssignJobsByState(DataContainer dataContainer, DataSetSynPop dataSetSynPop){
+    public AssignJobsBySubpopulation(DataContainer dataContainer, DataSetSynPop dataSetSynPop){
         this.dataSetSynPop = dataSetSynPop;
         this.dataContainer = dataContainer;
     }
@@ -37,7 +37,7 @@ public class AssignJobsByState {
         RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
         HouseholdDataManager households = dataContainer.getHouseholdDataManager();
         double alpha_ld = 20;
-        double beta_ld = -0.005;
+        double beta_ld = -0.0055;
         int workersOutOfStudyArea = 0;
         int allLongerThan200 = 0;
         for (Person pp : dataContainer.getHouseholdDataManager().getPersons()){
@@ -106,7 +106,7 @@ public class AssignJobsByState {
             float distance = dataSetSynPop.getDistanceTazToTaz().getValueAt(origin, destination);
             //consider only the zones that are within 200 km
             if (distance < 200) {
-                boolean readFromTable = false;
+/*                boolean readFromTable = false;
                 boolean useLongDistanceFormula = true;
                 double impendanceDistance = 0;
                 double alpha = 0.27;  // 0.6500;  0.6000; 0.5500
@@ -124,7 +124,10 @@ public class AssignJobsByState {
                     probability = Math.exp(alpha_ld * impendanceDistance) * jobs;
                 } else {
                     probability = Math.exp(impendanceDistance * Math.pow(jobs, alpha));
-                }
+                }*/
+                int jobs = (int) jobsByTaz.getValueAt(destination,jobType);
+                double impendanceDistance = Math.exp(beta_ld * distance);
+                double probability = Math.exp(alpha_ld * impendanceDistance) * jobs;
                 probabilityByTypeAndZone.putIfAbsent(destination, probability);
             }
         }
