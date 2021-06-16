@@ -21,10 +21,11 @@ public class PersonMuc implements PersonWithSchool {
     private int schoolId = -1;
 
     //for health model
-    private Map<Mode, Double> weeklyTravelTimeInMinutesByMode;
+    private Map<Mode, Double> weeklyPhysicalActivityMmetHours;
     private double weeklyLightInjuryRisk;
     private double weeklySevereInjuryRisk;
     private Map<Pollutant, Double> weeklyExposureByPollutant = new HashMap<>();
+    private double allCauseRR;
 
 
 
@@ -172,12 +173,16 @@ public class PersonMuc implements PersonWithSchool {
         delegate.setAttribute(key, value);
     }
 
-    public Map<Mode, Double> getWeeklyTravelTimeInMinutesByMode() {
-        return weeklyTravelTimeInMinutesByMode;
+    public void addWeeklyPhysicalActivityMmetHours(Mode mode, double mmetHours) {
+        if(weeklyPhysicalActivityMmetHours.get(mode) == null) {
+            weeklyPhysicalActivityMmetHours.put(mode,mmetHours);
+        } else {
+            weeklyPhysicalActivityMmetHours.put(mode, weeklyPhysicalActivityMmetHours.get(mode) + mmetHours);
+        }
     }
 
-    public void setWeeklyTravelTimeInMinutesByMode(Map<Mode, Double> weeklyTravelTimeInMinutesByMode) {
-        this.weeklyTravelTimeInMinutesByMode = weeklyTravelTimeInMinutesByMode;
+    public double getWeeklyPhysicalActivityMmetHours(Mode mode) {
+        return weeklyPhysicalActivityMmetHours.get(mode);
     }
 
     public double getWeeklyLightInjuryRisk() {
@@ -203,4 +208,8 @@ public class PersonMuc implements PersonWithSchool {
     public void setWeeklyExposureByPollutant(Map<Pollutant, Double> weeklyExposureByPollutant) {
         this.weeklyExposureByPollutant = weeklyExposureByPollutant;
     }
+
+    public double getAllCauseRR() {return allCauseRR;}
+
+    public void setAllCauseRR(double RR) {this.allCauseRR = RR;}
 }

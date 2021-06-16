@@ -40,15 +40,17 @@ public class HealthPersonWriter implements PersonWriter {
         pwp.print(",");
         pwp.print("severeInjuryRisk");
         pwp.print(",");
-        pwp.print("weeklyWalkTime");
+        pwp.print("walkMmetHours");
         pwp.print(",");
-        pwp.print("weeklyCycleTime");
+        pwp.print("cycleMmetHours");
         pwp.print(",");
         pwp.print("PM2_5");
         pwp.print(",");
         pwp.print("PM2_5_non_exhaust");
         pwp.print(",");
         pwp.print("NO2");
+        pwp.print(",");
+        pwp.print("all_cause_RR");
         pwp.println();
 
         for (Person pp : householdData.getPersons()) {
@@ -81,15 +83,17 @@ public class HealthPersonWriter implements PersonWriter {
             pwp.print(",");
             pwp.print(((PersonMuc)pp).getWeeklySevereInjuryRisk());
             pwp.print(",");
-            pwp.print(((PersonMuc)pp).getWeeklyTravelTimeInMinutesByMode().get(Mode.walk));
+            pwp.print(((PersonMuc)pp).getWeeklyPhysicalActivityMmetHours(Mode.walk));
             pwp.print(",");
-            pwp.print(((PersonMuc)pp).getWeeklyTravelTimeInMinutesByMode().get(Mode.bicycle));
+            pwp.print(((PersonMuc)pp).getWeeklyPhysicalActivityMmetHours(Mode.bicycle));
             pwp.print(",");
             pwp.print(((PersonMuc)pp).getWeeklyExposureByPollutant().get(Pollutant.PM2_5));
             pwp.print(",");
             pwp.print(((PersonMuc)pp).getWeeklyExposureByPollutant().get(Pollutant.PM2_5_non_exhaust));
             pwp.print(",");
             pwp.print(((PersonMuc)pp).getWeeklyExposureByPollutant().get(Pollutant.NO2));
+            pwp.print(",");
+            pwp.print(((PersonMuc)pp).getAllCauseRR());
             pwp.println();
             if (pp.getId() == SiloUtil.trackPp) {
                 SiloUtil.trackingFile("Writing pp " + pp.getId() + " to micro data file.");

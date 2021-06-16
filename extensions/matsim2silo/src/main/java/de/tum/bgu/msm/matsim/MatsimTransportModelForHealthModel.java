@@ -20,9 +20,11 @@ package de.tum.bgu.msm.matsim;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Day;
+import de.tum.bgu.msm.data.MitoGender;
 import de.tum.bgu.msm.data.Mode;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.io.input.DefaultSpeedReader;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
@@ -54,10 +56,7 @@ import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleUtils;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static org.matsim.core.config.groups.PlanCalcScoreConfigGroup.*;
 
@@ -79,6 +78,9 @@ public final class MatsimTransportModelForHealthModel implements TransportModel 
     private final MatsimTravelTimesAndCosts internalTravelTimes;
 
     private final DataContainer dataContainer;
+    private final EnumMap<Mode, EnumMap<MitoGender,Map<Integer,Double>>> avgSpeeds;
+
+    private Integer badPeople = 0;
 
     private MatsimScenarioAssembler scenarioAssembler;
 
@@ -102,6 +104,7 @@ public final class MatsimTransportModelForHealthModel implements TransportModel 
         this.matsimData = matsimData;
         this.scenarioAssembler = scenarioAssembler;
         this.properties = properties;
+        this.avgSpeeds = new DefaultSpeedReader().readData(properties.main.baseDirectory + "input/avgSpeeds.csv");
     }
 
     @Override
@@ -205,14 +208,28 @@ public final class MatsimTransportModelForHealthModel implements TransportModel 
             controlerBikePed.addOverridingModule(new AbstractModule() {
                 @Override
                 public void install() {
-                    this.addTravelTimeBinding(TransportMode.bike).toInstance((l, t, p, v) -> l.getLength() / (AVG_CYCLESPEED / 3.6));
-                    this.addTravelTimeBinding(TransportMode.walk).toInstance((link, time, person, vehicle) -> link.getLength() / (AVG_WALKSPEED / 3.6));
+                    this.addTravelTimeBinding(TransportMode.bike).toInstance((link, time, person, vehicle) -> link.getLength() / getAvgCycleSpeed(person));
+                    this.addTravelTimeBinding(TransportMode.walk).toInstance((link, time, person, vehicle) -> link.getLength() / getAvgWalkSpeed(person));
                 }
             });
 
             controlerBikePed.run();
             logger.warn("Running MATSim transport model for Bike&Ped scenario " + year + " finished.");
         }
+    }
+
+    private double getAvgCycleSpeed(Person person) {
+        MitoGender sex = (MitoGender) person.getAttributes().getAttribute("sex");
+        int age = (int) person.getAttributes().getAttribute("age");
+        if(age >= 105) age = 105;
+        return avgSpeeds.get(Mode.bicycle).get(sex).get(age) / 3.6;
+    }
+
+    private double getAvgWalkSpeed(Person person) {
+        MitoGender sex = (MitoGender) person.getAttributes().getAttribute("sex");
+        int age = (int) person.getAttributes().getAttribute("age");
+        if(age >= 105) age = 105;
+        return avgSpeeds.get(Mode.walk).get(sex).get(age) / 3.6;
     }
 
     private void finalizeConfigForBikePedScenario(Config bikePedConfig, int year, Day day) {
@@ -233,6 +250,9 @@ public final class MatsimTransportModelForHealthModel implements TransportModel 
 
         ActivityParams shoppingActivity = new ActivityParams("shopping").setTypicalDuration(1 * 60 * 60);
         bikePedConfig.planCalcScore().addActivityParams(shoppingActivity);
+
+        ActivityParams recreationActivity = new ActivityParams("recreation").setTypicalDuration(1 * 60 * 60);
+        bikePedConfig.planCalcScore().addActivityParams(recreationActivity);
 
         ActivityParams otherActivity = new ActivityParams("other").setTypicalDuration(1 * 60 * 60);
         bikePedConfig.planCalcScore().addActivityParams(otherActivity);
@@ -309,6 +329,9 @@ public final class MatsimTransportModelForHealthModel implements TransportModel 
 
         ActivityParams shoppingActivity = new ActivityParams("shopping").setTypicalDuration(1 * 60 * 60);
         config.planCalcScore().addActivityParams(shoppingActivity);
+
+        ActivityParams recreationActivity = new ActivityParams("recreation").setTypicalDuration(1 * 60 * 60);
+        config.planCalcScore().addActivityParams(recreationActivity);
 
         ActivityParams otherActivity = new ActivityParams("other").setTypicalDuration(1 * 60 * 60);
         config.planCalcScore().addActivityParams(otherActivity);

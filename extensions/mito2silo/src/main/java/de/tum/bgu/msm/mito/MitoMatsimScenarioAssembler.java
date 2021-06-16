@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.mito;
 
-import de.tum.bgu.msm.MitoModel;
+
+import de.tum.bgu.msm.MitoModel2017;
 import de.tum.bgu.msm.MitoModel2017withMoped;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.DataSet;
@@ -59,7 +60,7 @@ public class MitoMatsimScenarioAssembler implements MatsimScenarioAssembler {
         DataSet dataSet = convertData(year);
 
         logger.info("  SILO data being sent to MITO");
-        MitoModel mito = MitoModel.initializeModelFromSilo(propertiesPath, dataSet, properties.main.scenarioName);
+        MitoModel2017 mito = MitoModel2017.initializeModelFromSilo(propertiesPath, dataSet, properties.main.scenarioName);
         mito.setRandomNumberGenerator(SiloUtil.getRandomObject());
         mito.run();
 
@@ -121,6 +122,9 @@ public class MitoMatsimScenarioAssembler implements MatsimScenarioAssembler {
 
         PlanCalcScoreConfigGroup.ActivityParams shoppingActivity = new PlanCalcScoreConfigGroup.ActivityParams("shopping").setTypicalDuration(1 * 60 * 60);
         config.planCalcScore().addActivityParams(shoppingActivity);
+
+        PlanCalcScoreConfigGroup.ActivityParams recreationActivity = new PlanCalcScoreConfigGroup.ActivityParams("recreation").setTypicalDuration(1 * 60 * 60);
+        config.planCalcScore().addActivityParams(recreationActivity);
 
         PlanCalcScoreConfigGroup.ActivityParams otherActivity = new PlanCalcScoreConfigGroup.ActivityParams("other").setTypicalDuration(1 * 60 * 60);
         config.planCalcScore().addActivityParams(otherActivity);

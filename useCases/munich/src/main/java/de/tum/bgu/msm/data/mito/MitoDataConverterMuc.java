@@ -145,7 +145,7 @@ public class MitoDataConverterMuc implements MitoDataConverter {
         }
 
         // Bicycle ownership (random for now) todo: make not random!
-        boolean ownBicycle = MitoUtil.getRandomObject().nextDouble() < 0.7;
+        boolean ownBicycle = SiloUtil.getRandomObject().nextDouble() < 0.7;
 
         return new MitoPerson(
                 person.getId(),

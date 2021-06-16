@@ -68,9 +68,9 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
 
         String networkFile;
         if (scenario.getConfig().controler().getRunId() == null || scenario.getConfig().controler().getRunId().equals("")) {
-            networkFile = scenario.getConfig().controler().getOutputDirectory() + "/" + Day.weekday + "car/" + "output_network.xml.gz";
+            networkFile = scenario.getConfig().controler().getOutputDirectory() + "/" + Day.weekday + "/car/" + "output_network.xml.gz";
         } else {
-            networkFile = scenario.getConfig().controler().getOutputDirectory() + "/" + Day.weekday + "car/" + scenario.getConfig().controler().getRunId() + ".output_network.xml.gz";
+            networkFile = scenario.getConfig().controler().getOutputDirectory() + "/" + Day.weekday + "/car/" + scenario.getConfig().controler().getRunId() + ".output_network.xml.gz";
         }
 
         new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
@@ -224,29 +224,33 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
                         double severeInjuryRisk = 0;
                         Map<String, Double> exposureMap = new HashMap<>();
 
-                        for(Link link : path.links){
+                        for(Link link : path.links) {
                             enterTimeInSecond = enterTimeInSecond + tt;
-                            LinkInfo linkInfo = ((HealthDataContainerImpl)dataContainer).getLinkInfoByDay().get(day).get(link.getId());
-                            if(linkInfo!=null) {
+                            LinkInfo linkInfo = ((HealthDataContainerImpl) dataContainer).getLinkInfoByDay().get(day).get(link.getId());
+                            if (linkInfo != null) {
                                 lightInjuryRisk += getLinkLightInjuryRisk(mode, (int) (enterTimeInSecond / 3600.), linkInfo);
                                 severeInjuryRisk += getLinkSevereInjuryRisk(mode, (int) (enterTimeInSecond / 3600.), linkInfo);
 
-                                for (Pollutant pollutant : ((HealthDataContainerImpl) dataContainer).getPollutantSet()){
-                                    double exposure =linkInfo.getExposure2Pollutant2TimeBin().get(pollutant).get((int) (enterTimeInSecond / 3600.));
-                                    if(exposureMap.get(pollutant)==null){
+                                for (Pollutant pollutant : ((HealthDataContainerImpl) dataContainer).getPollutantSet()) {
+                                    double exposure = linkInfo.getExposure2Pollutant2TimeBin().get(pollutant).get((int) (enterTimeInSecond / 3600.));
+                                    if (exposureMap.get(pollutant) == null) {
                                         exposureMap.put(pollutant.name(), exposure);
-                                    }else{
-                                        exposureMap.put(pollutant.name(),exposureMap.get(pollutant) + exposure);
+                                    } else {
+                                        exposureMap.put(pollutant.name(), exposureMap.get(pollutant) + exposure);
                                     }
                                 }
-                            }
 
-                            trip.setLightInjuryRisk(lightInjuryRisk);
-                            trip.setSevereInjuryRisk(severeInjuryRisk);
-                            trip.setExposureMap(exposureMap);
-                            trip.setMatsimTravelTimeInMinutes(path.travelTime/60.);
+                            }
                             tt = path.travelTime;
                         }
+                        trip.setLightInjuryRisk(lightInjuryRisk);
+                        trip.setSevereInjuryRisk(severeInjuryRisk);
+                        trip.setExposureMap(exposureMap);
+                        trip.setPhysicalActivityMmetHours(PhysicalActivity.calculate(
+                                trip.getTripMode(),
+                                path.links.stream().mapToDouble(x -> x.getLength()).sum(),
+                                path.travelTime));
+
                         counterr++;
                     }
                 } catch (Exception e) {
@@ -316,13 +320,7 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
             PersonMuc siloPerson = (PersonMuc) dataContainer.getHouseholdDataManager().getPersonFromId(mitoTrip.getPerson().getId());
             siloPerson.setWeeklyLightInjuryRisk(siloPerson.getWeeklyLightInjuryRisk()+mitoTrip.getLightInjuryRisk());
             siloPerson.setWeeklySevereInjuryRisk(siloPerson.getWeeklySevereInjuryRisk()+mitoTrip.getSevereInjuryRisk());
-            double tt = mitoTrip.getMatsimTravelTimeInMinutes();
-            if(siloPerson.getWeeklyTravelTimeInMinutesByMode().get(mitoTrip.getTripMode())==null){
-                siloPerson.getWeeklyTravelTimeInMinutesByMode().put(mitoTrip.getTripMode(),tt);
-            }else {
-                double previousTt = siloPerson.getWeeklyTravelTimeInMinutesByMode().get(mitoTrip.getTripMode());
-                siloPerson.getWeeklyTravelTimeInMinutesByMode().put(mitoTrip.getTripMode(),previousTt+tt);
-            }
+            siloPerson.addWeeklyPhysicalActivityMmetHours(mitoTrip.getTripMode(),mitoTrip.getPhysicalActivityMmetHours());
 
             for(Pollutant pollutant : ((HealthDataContainerImpl)dataContainer).getPollutantSet()){
                 double exposure = mitoTrip.getExposureMap().get(pollutant.name());
@@ -336,23 +334,30 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
         }
     }
 
-    //TODO: Corin
     private void calculateRelativeRisk() {
+        for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
+            PersonMuc personMuc = (PersonMuc)person;
 
-
+            personMuc.setAllCauseRR(
+                    RelativeRisks.walk(personMuc.getWeeklyPhysicalActivityMmetHours(Mode.walk)) *
+                    RelativeRisks.bike(personMuc.getWeeklyPhysicalActivityMmetHours(Mode.bicycle)) *
+                    RelativeRisks.no2(personMuc.getWeeklyExposureByPollutant().get(Pollutant.NO2)*10e2) *
+                    RelativeRisks.pm25(personMuc.getWeeklyExposureByPollutant().get(Pollutant.PM2_5)*10e2) *
+                    RelativeRisks.accident(personMuc.getWeeklySevereInjuryRisk()));
+        }
     }
 
 
     private void writeMitoTrips(String path) {
         logger.info("  Writing trips file");
         PrintWriter pwh = MitoUtil.openFileForSequentialWriting(path, false);
-        pwh.println("t.id,t.mode,t.matsimTravelTime,t.lightInjuryRisk,t.severeInjuryRisk,t.pmExposure,t.no2Exposure");
+        pwh.println("t.id,t.mode,t.mmetHours,t.lightInjuryRisk,t.severeInjuryRisk,t.pmExposure,t.no2Exposure");
         for (MitoTrip trip : mitoTrips.values()) {
             pwh.print(trip.getId());
             pwh.print(",");
             pwh.print(trip.getTripMode().toString());
             pwh.print(",");
-            pwh.print(trip.getMatsimTravelTimeInMinutes());
+            pwh.print(trip.getPhysicalActivityMmetHours());
             pwh.print(",");
             pwh.print(trip.getLightInjuryRisk());
             pwh.print(",");
