@@ -4,6 +4,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.math.LongMath;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.matsim.ZoneConnectorManager;
 import de.tum.bgu.msm.matsim.ZoneConnectorManagerImpl;
@@ -18,6 +19,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
+import org.matsim.contrib.accidents.AccidentLinkInfo;
 import org.matsim.contrib.accidents.AccidentType;
 import org.matsim.contrib.dvrp.trafficmonitoring.TravelTimeUtils;
 import org.matsim.contrib.emissions.Pollutant;
@@ -210,10 +212,10 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
                         double severeInjuryRisk = 0;
                         Map<String, Double> exposureMap = new HashMap<>();
 
-                        for(Link link : path.links){
+                        for(Link link : path.links) {
                             enterTimeInSecond = enterTimeInSecond + tt;
-                            LinkInfo linkInfo = ((HealthDataContainerImpl)dataContainer).getLinkInfoByDay().get(day).get(link.getId());
-                            if(linkInfo!=null) {
+                            LinkInfo linkInfo = ((HealthDataContainerImpl) dataContainer).getLinkInfoByDay().get(day).get(link.getId());
+                            if (linkInfo != null) {
                                 lightInjuryRisk += getLinkLightInjuryRisk(mode, (int) (enterTimeInSecond / 3600.), linkInfo);
                                 severeInjuryRisk += getLinkSevereInjuryRisk(mode, (int) (enterTimeInSecond / 3600.), linkInfo);
 
@@ -226,14 +228,18 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
                                         exposureMap.put(pollutant.name(),exposureMap.get(pollutant) + exposure);
                                     }
                                 }
-                            }
 
-                            trip.setLightInjuryRisk(lightInjuryRisk);
-                            trip.setSevereInjuryRisk(severeInjuryRisk);
-                            trip.setExposureMap(exposureMap);
-                            trip.setMatsimTravelTimeInMinutes(path.travelTime/60.);
+                            }
                             tt = path.travelTime;
                         }
+                        trip.setLightInjuryRisk(lightInjuryRisk);
+                        trip.setSevereInjuryRisk(severeInjuryRisk);
+                        trip.setExposureMap(exposureMap);
+                        trip.setPhysicalActivityMmetHours(PhysicalActivity.calculate(
+                                trip.getTripMode(),
+                                path.links.stream().mapToDouble(x -> x.getLength()).sum(),
+                                path.travelTime));
+
                         counterr++;
                     }
                 } catch (Exception e) {
@@ -303,13 +309,7 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
             PersonMuc siloPerson = (PersonMuc) dataContainer.getHouseholdDataManager().getPersonFromId(mitoTrip.getPerson().getId());
             siloPerson.setWeeklyLightInjuryRisk(siloPerson.getWeeklyLightInjuryRisk()+mitoTrip.getLightInjuryRisk());
             siloPerson.setWeeklySevereInjuryRisk(siloPerson.getWeeklySevereInjuryRisk()+mitoTrip.getSevereInjuryRisk());
-            double tt = mitoTrip.getMatsimTravelTimeInMinutes();
-            if(siloPerson.getWeeklyTravelTimeInMinutesByMode().get(mitoTrip.getTripMode())==null){
-                siloPerson.getWeeklyTravelTimeInMinutesByMode().put(mitoTrip.getTripMode(),tt);
-            }else {
-                double previousTt = siloPerson.getWeeklyTravelTimeInMinutesByMode().get(mitoTrip.getTripMode());
-                siloPerson.getWeeklyTravelTimeInMinutesByMode().put(mitoTrip.getTripMode(),previousTt+tt);
-            }
+            siloPerson.addWeeklyPhysicalActivityMmetHours(mitoTrip.getTripMode(),mitoTrip.getPhysicalActivityMmetHours());
 
             for(Pollutant pollutant : ((HealthDataContainerImpl)dataContainer).getPollutantSet()){
                 double exposure = mitoTrip.getExposureMap().get(pollutant.name());
@@ -323,23 +323,30 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
         }
     }
 
-    //TODO: Corin
     private void calculateRelativeRisk() {
+        for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
+            PersonMuc personMuc = (PersonMuc)person;
 
-
+            personMuc.setAllCauseRR(
+                    RelativeRisks.walk(personMuc.getWeeklyPhysicalActivityMmetHours(Mode.walk)) *
+                    RelativeRisks.bike(personMuc.getWeeklyPhysicalActivityMmetHours(Mode.bicycle)) *
+                    RelativeRisks.no2(personMuc.getWeeklyExposureByPollutant().get(Pollutant.NO2)*10e2) *
+                    RelativeRisks.pm25(personMuc.getWeeklyExposureByPollutant().get(Pollutant.PM2_5)*10e2) *
+                    RelativeRisks.accident(personMuc.getWeeklySevereInjuryRisk()));
+        }
     }
 
 
     private void writeMitoTrips(String path) {
         logger.info("  Writing trips file");
         PrintWriter pwh = MitoUtil.openFileForSequentialWriting(path, false);
-        pwh.println("t.id,t.mode,t.matsimTravelTime,t.lightInjuryRisk,t.severeInjuryRisk,t.pmExposure,t.no2Exposure");
+        pwh.println("t.id,t.mode,t.mmetHours,t.lightInjuryRisk,t.severeInjuryRisk,t.pmExposure,t.no2Exposure");
         for (MitoTrip trip : mitoTrips.values()) {
             pwh.print(trip.getId());
             pwh.print(",");
             pwh.print(trip.getTripMode().toString());
             pwh.print(",");
-            pwh.print(trip.getMatsimTravelTimeInMinutes());
+            pwh.print(trip.getPhysicalActivityMmetHours());
             pwh.print(",");
             pwh.print(trip.getLightInjuryRisk());
             pwh.print(",");

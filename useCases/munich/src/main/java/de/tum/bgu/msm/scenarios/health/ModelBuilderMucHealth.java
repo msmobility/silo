@@ -67,7 +67,7 @@ public class ModelBuilderMucHealth {
 
             BirthdayModel birthdayModel = new BirthdayModelImpl(dataContainer, properties, SiloUtil.provideNewRandom());
 
-            DeathModel deathModel = new DeathModelImpl(dataContainer, properties, new DefaultDeathStrategy(), SiloUtil.provideNewRandom());
+            DeathModel deathModel = new DeathModelImpl(dataContainer, properties, new DeathStrategyHealth(), SiloUtil.provideNewRandom());
 
 
             MovesModelImpl movesModel = new MovesModelImpl(
