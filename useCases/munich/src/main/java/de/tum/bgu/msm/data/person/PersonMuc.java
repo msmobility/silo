@@ -21,9 +21,10 @@ public class PersonMuc implements PersonWithSchool {
     private int schoolId = -1;
 
     //for health model
-    private Map<Mode, Double> weeklyPhysicalActivityMmetHours;
+    private Map<Mode, Double> weeklyPhysicalActivityMmetHours = new HashMap<>();
     private double weeklyLightInjuryRisk;
     private double weeklySevereInjuryRisk;
+    private double weeklyFatalityInjuryRisk;
     private Map<Pollutant, Double> weeklyExposureByPollutant = new HashMap<>();
     private double allCauseRR;
 
@@ -182,7 +183,7 @@ public class PersonMuc implements PersonWithSchool {
     }
 
     public double getWeeklyPhysicalActivityMmetHours(Mode mode) {
-        return weeklyPhysicalActivityMmetHours.get(mode);
+        return weeklyPhysicalActivityMmetHours.getOrDefault(mode,0.);
     }
 
     public double getWeeklyLightInjuryRisk() {
@@ -212,4 +213,12 @@ public class PersonMuc implements PersonWithSchool {
     public double getAllCauseRR() {return allCauseRR;}
 
     public void setAllCauseRR(double RR) {this.allCauseRR = RR;}
+
+    public double getWeeklyFatalityInjuryRisk() {
+        return weeklyFatalityInjuryRisk;
+    }
+
+    public void setWeeklyFatalityInjuryRisk(double weeklyFatalityInjuryRisk) {
+        this.weeklyFatalityInjuryRisk = weeklyFatalityInjuryRisk;
+    }
 }

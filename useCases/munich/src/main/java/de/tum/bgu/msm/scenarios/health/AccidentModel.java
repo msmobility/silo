@@ -63,14 +63,15 @@ public class AccidentModel extends AbstractModel implements ModelUpdateListener 
             config.controler().setRunId(String.valueOf(latestMatsimYear));
             final MutableScenario scenario = ScenarioUtils.createMutableScenario(config);
             scenario.getConfig().travelTimeCalculator().setTraveltimeBinSize(3600);
-            double scalingFactor = properties.main.scaleFactor * Double.parseDouble(Resources.instance.getString(de.tum.bgu.msm.resources.Properties.TRIP_SCALING_FACTOR));
+            float scalingFactor = (float) (properties.main.scaleFactor * Double.parseDouble(Resources.instance.getString(de.tum.bgu.msm.resources.Properties.TRIP_SCALING_FACTOR)));
             scenario.addScenarioElement("accidentModelFile",properties.main.baseDirectory+"input/accident/");
-            AccidentRateModel model = new AccidentRateModel(scenario, scalingFactor);
+            AccidentRateModel model = new AccidentRateModel(scenario, 1.f/scalingFactor);
             model.runModelOnline();
 
             for(Id<Link> linkId : model.getAccidentsContext().getLinkId2info().keySet()){
-                ((HealthDataContainerImpl)dataContainer).getLinkInfoByDay().get(day).get(linkId).
-                        setLightCasualityExposureByAccidentTypeByTime(model.getAccidentsContext().getLinkId2info().get(linkId).getLightCasualityExposureByAccidentTypeByTime());
+//                ((HealthDataContainerImpl)dataContainer).getLinkInfoByDay().get(day).get(linkId).
+//                        setLightCasualityExposureByAccidentTypeByTime(model.getAccidentsContext().getLinkId2info().get(linkId).getLightCasualityExposureByAccidentTypeByTime());
+//
                 ((HealthDataContainerImpl)dataContainer).getLinkInfoByDay().get(day).get(linkId).
                         setSevereFatalCasualityExposureByAccidentTypeByTime(model.getAccidentsContext().getLinkId2info().get(linkId).getSevereFatalCasualityExposureByAccidentTypeByTime());
             }

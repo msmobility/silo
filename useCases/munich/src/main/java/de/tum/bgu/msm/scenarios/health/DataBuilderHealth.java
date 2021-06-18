@@ -109,6 +109,8 @@ public class DataBuilderHealth {
         String schoolsFile = properties.main.baseDirectory + properties.schoolData.schoolsFileName + "_" + year + ".csv";
         ssReader.readData(schoolsFile);
 
+        ((HealthDataContainerImpl) dataContainer).setAvgSpeeds(new DefaultSpeedReader().readData(properties.main.baseDirectory + "input/avgSpeeds.csv"));
+
         MicroDataScaler microDataScaler = new MicroDataScaler(dataContainer, properties);
         microDataScaler.scale();
     }

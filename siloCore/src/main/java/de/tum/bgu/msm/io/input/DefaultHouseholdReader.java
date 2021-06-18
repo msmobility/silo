@@ -52,8 +52,8 @@ public class DefaultHouseholdReader implements HouseholdReader{
                 }
             }
         } catch (IOException e) {
-            logger.fatal("IO Exception caught reading synpop household file: " + fileName);
             logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
+            throw new RuntimeException("IO Exception caught reading synpop household file: " + fileName);
         }
         logger.info("Finished reading " + recCount + " households.");
 

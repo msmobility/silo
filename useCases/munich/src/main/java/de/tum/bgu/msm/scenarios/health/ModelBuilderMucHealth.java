@@ -130,12 +130,11 @@ public class ModelBuilderMucHealth {
             switch (properties.transportModel.transportModelIdentifier) {
                 case MITO_MATSIM:
                     MatsimScenarioAssembler delegate = new MitoMatsimScenarioAssembler(dataContainer, properties, new MitoDataConverterMuc());
-                    dataContainer.setMitoTrips(((MitoMatsimScenarioAssembler)delegate).getMitoTrips());
-                    transportModel = new MatsimTransportModelForHealthModel(dataContainer, config, properties, delegate, matsimData);
+                    transportModel = new MatsimTransportModelForHealthModel(dataContainer, config, properties, delegate, matsimData, dataContainer.getAvgSpeeds());
                     break;
                 case MATSIM:
                     delegate = new SimpleMatsimScenarioAssembler(dataContainer, properties);
-                    transportModel = new MatsimTransportModelForHealthModel(dataContainer, config, properties, delegate, matsimData);
+                    transportModel = new MatsimTransportModelForHealthModel(dataContainer, config, properties, delegate, matsimData, dataContainer.getAvgSpeeds());
                     break;
                 case NONE:
                 default:
@@ -155,11 +154,20 @@ public class ModelBuilderMucHealth {
                     construction, demolition, null, renovation,
                     null, inOutMigration, movesModel, transportModel);
 
+            /*final ModelContainer modelContainer = new ModelContainer(
+                    birthModel, null,
+                    null, null,
+                    null, null,
+                    null, null,
+                    null, null,
+                    null, null, null, null,
+                    null, null, null, transportModel);
+            */
 
             modelContainer.registerModelUpdateListener(new UpdateCarOwnershipModelMuc(dataContainer, properties, SiloUtil.provideNewRandom()));
 
-            modelContainer.registerModelUpdateListener(accidentModel);
             modelContainer.registerModelUpdateListener(airPollutantModel);
+            modelContainer.registerModelUpdateListener(accidentModel);
             modelContainer.registerModelUpdateListener(healthModel);
 
             return modelContainer;

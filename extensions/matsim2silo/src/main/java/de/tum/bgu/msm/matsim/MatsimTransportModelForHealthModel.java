@@ -24,7 +24,6 @@ import de.tum.bgu.msm.data.MitoGender;
 import de.tum.bgu.msm.data.Mode;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
-import de.tum.bgu.msm.io.input.DefaultSpeedReader;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
@@ -58,7 +57,8 @@ import org.matsim.vehicles.VehicleUtils;
 import java.io.File;
 import java.util.*;
 
-import static org.matsim.core.config.groups.PlanCalcScoreConfigGroup.*;
+import static org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
+import static org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ModeParams;
 
 /**
  * @author qinzhang
@@ -68,8 +68,6 @@ public final class MatsimTransportModelForHealthModel implements TransportModel 
     private static final Logger logger = Logger.getLogger(MatsimTransportModelForHealthModel.class);
     private static final double MAX_WALKSPEED = 5.0;
     private static final double MAX_CYCLESPEED = 15.0;
-    private static final double AVG_WALKSPEED = 5.0;
-    private static final double AVG_CYCLESPEED = 12.5;
 
     private final Properties properties;
     private final Config initialMatsimConfig;
@@ -80,13 +78,11 @@ public final class MatsimTransportModelForHealthModel implements TransportModel 
     private final DataContainer dataContainer;
     private final EnumMap<Mode, EnumMap<MitoGender,Map<Integer,Double>>> avgSpeeds;
 
-    private Integer badPeople = 0;
-
     private MatsimScenarioAssembler scenarioAssembler;
 
     public MatsimTransportModelForHealthModel(DataContainer dataContainer, Config matsimConfig,
                                               Properties properties, MatsimScenarioAssembler scenarioAssembler,
-                                              MatsimData matsimData) {
+                                              MatsimData matsimData, EnumMap<Mode, EnumMap<MitoGender,Map<Integer,Double>>> avgSpeeds) {
         this.dataContainer = Objects.requireNonNull(dataContainer);
         this.initialMatsimConfig = Objects.requireNonNull(matsimConfig,
                 "No initial matsim config provided to SiloModel class!");
@@ -104,7 +100,7 @@ public final class MatsimTransportModelForHealthModel implements TransportModel 
         this.matsimData = matsimData;
         this.scenarioAssembler = scenarioAssembler;
         this.properties = properties;
-        this.avgSpeeds = new DefaultSpeedReader().readData(properties.main.baseDirectory + "input/avgSpeeds.csv");
+        this.avgSpeeds = avgSpeeds;
     }
 
     @Override

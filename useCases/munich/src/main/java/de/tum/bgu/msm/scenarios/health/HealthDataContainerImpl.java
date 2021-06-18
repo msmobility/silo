@@ -1,7 +1,9 @@
 package de.tum.bgu.msm.scenarios.health;
 
 import de.tum.bgu.msm.data.Day;
+import de.tum.bgu.msm.data.MitoGender;
 import de.tum.bgu.msm.data.MitoTrip;
+import de.tum.bgu.msm.data.Mode;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
@@ -18,10 +20,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.accidents.AccidentLinkInfo;
 import org.matsim.contrib.emissions.Pollutant;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class HealthDataContainerImpl implements DataContainerWithSchools {
     private final static Logger logger = Logger.getLogger(HealthDataContainerImpl.class);
@@ -31,6 +30,7 @@ public class HealthDataContainerImpl implements DataContainerWithSchools {
     private Map<Integer, MitoTrip> mitoTrips = new HashMap<>();
     private Map<Day, Map<Id<Link>, LinkInfo>> linkInfoByDay = new HashMap<>();
     private Set<Pollutant> pollutantSet = new HashSet<>();
+    private EnumMap<Mode, EnumMap<MitoGender,Map<Integer,Double>>> avgSpeeds;
 
     public HealthDataContainerImpl(DataContainerWithSchools delegate,
                                    Properties properties) {
@@ -106,7 +106,7 @@ public class HealthDataContainerImpl implements DataContainerWithSchools {
                 + "_health_"
                 + year
                 + ".csv";
-        new HealthPersonWriter(getHouseholdDataManager()).writePersons(filepp);
+        new HealthPersonWriter(this).writePersons(filepp);
     }
 
 
@@ -128,5 +128,13 @@ public class HealthDataContainerImpl implements DataContainerWithSchools {
 
     public void setPollutantSet(Set<Pollutant> pollutantSet) {
         this.pollutantSet = pollutantSet;
+    }
+
+    public EnumMap<Mode, EnumMap<MitoGender, Map<Integer, Double>>> getAvgSpeeds() {
+        return avgSpeeds;
+    }
+
+    public void setAvgSpeeds(EnumMap<Mode, EnumMap<MitoGender, Map<Integer, Double>>> avgSpeeds) {
+        this.avgSpeeds = avgSpeeds;
     }
 }

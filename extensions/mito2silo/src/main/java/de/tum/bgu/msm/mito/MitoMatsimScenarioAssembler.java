@@ -41,7 +41,7 @@ public class MitoMatsimScenarioAssembler implements MatsimScenarioAssembler {
     private final MitoDataConverter dataConverter;
 
     private SkimTravelTimes mitoInputTravelTime;
-    private Map<Integer, MitoTrip> mitoTrips = new HashMap<>();
+    private static Map<Integer, MitoTrip> mitoTrips = new HashMap<>();
 
     public MitoMatsimScenarioAssembler(DataContainer dataContainer,
                                        Properties properties,
@@ -163,7 +163,7 @@ public class MitoMatsimScenarioAssembler implements MatsimScenarioAssembler {
         return dataSet;
     }
 
-    public Map<Integer, MitoTrip> getMitoTrips() {
+    public static Map<Integer, MitoTrip> getMitoTrips() {
         return mitoTrips;
     }
 }
