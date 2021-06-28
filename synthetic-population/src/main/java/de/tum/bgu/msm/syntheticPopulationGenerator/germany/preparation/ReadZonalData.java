@@ -10,12 +10,14 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import omx.OmxFile;
 import omx.OmxLookup;
 import org.apache.log4j.Logger;
+import org.locationtech.jts.geom.Coordinate;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class ReadZonalData {
@@ -107,6 +109,7 @@ public class ReadZonalData {
         Map<Integer, Map<Integer, Float>> probabilityZone = new HashMap<>();
         Table<Integer, Integer, Integer> schoolCapacity = HashBasedTable.create();
         Table<Integer, String, Integer> zoneCoordinates = HashBasedTable.create();
+        Map<Integer, Integer> universityByZone = new HashMap<>();
         ArrayList<Integer> tazs = new ArrayList<>();
         TableDataSet zoneAttributes;
         if (!PropertiesSynPop.get().main.boroughIPU){
@@ -142,6 +145,16 @@ public class ReadZonalData {
             schoolCapacity.put(taz,1,capacityPrimary);
             schoolCapacity.put(taz, 2, capacitySecondary);
             schoolCapacity.put(taz, 3, capacityTertiary);
+            if (!universityByZone.isEmpty()){
+                if (universityByZone.containsKey(taz)){
+                    int capacity = capacityTertiary + universityByZone.get(taz);
+                    universityByZone.put(taz, capacity);
+                } else {
+                    universityByZone.put(taz, capacityTertiary);
+                }
+            } else {
+                universityByZone.putIfAbsent(taz, capacityTertiary);
+            }
             zoneCoordinates.put(taz,"coordX",coordX);
             zoneCoordinates.put(taz,"coordY",coordY);
             if (isPowerOfFour(i)) {

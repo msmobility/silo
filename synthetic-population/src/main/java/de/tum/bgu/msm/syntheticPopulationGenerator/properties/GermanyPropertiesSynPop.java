@@ -44,7 +44,7 @@ public class GermanyPropertiesSynPop extends AbstractPropertiesSynPop {
         selectedMunicipalities = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"municipalities.list","input/syntheticPopulation/" + state + "/municipalitiesList.csv"));
         selectedMunicipalities.buildIndex(selectedMunicipalities.getColumnPosition("ID_city"));
 
-        cellsMatrix = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"taz.definition ","input/syntheticPopulation/" + state + "/zoneAttributeswithTAZ.csv"));
+        cellsMatrix = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"taz.definition","input/syntheticPopulation/" + state + "/zoneAttributeswithTAZ.csv"));
         cellsMatrix.buildIndex(cellsMatrix.getColumnPosition("ID_cell"));
 
         zoneSystemFileName = PropertiesUtil.getStringProperty(bundle,"taz.definition ","input/syntheticPopulation/" + state + "/zoneAttributeswithTAZ.csv");
@@ -91,7 +91,10 @@ public class GermanyPropertiesSynPop extends AbstractPropertiesSynPop {
 
         buildingLocationlist = null;
         jobLocationlist = null;
-        schoolLocationlist = null;
+        schoolLocationlist = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"school.location", "input/syntheticPopulation/08_schoolLocation.csv"));
+
+        /*cellsMicrolocations = SiloUtil.readCSVfile2("C:/models/silo/germany/input/syntheticPopulation/all_raster_100_updated.csv");
+        cellsMicrolocations.buildStringIndex(cellsMicrolocations.getColumnPosition("id"));*/
 
         microPersonsFileName = PropertiesUtil.getStringProperty(bundle, "micro.persons", "microData/" + state +  "/interimFiles/microPersons.csv");
         microHouseholdsFileName = PropertiesUtil.getStringProperty(bundle, "micro.households", "microData/" + state +  "/interimFiles/microHouseholds.csv");
@@ -117,7 +120,7 @@ public class GermanyPropertiesSynPop extends AbstractPropertiesSynPop {
             marginalsBorough.buildIndex(marginalsBorough.getColumnPosition("ID_borough"));
             selectedBoroughs = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"municipalities.list.borough","input/syntheticPopulation/" + state + "/municipalitiesListBorough.csv"));
             selectedBoroughs.buildIndex(selectedBoroughs.getColumnPosition("ID_borough"));
-            cellsMatrixBoroughs = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"taz.definition ","input/syntheticPopulation/" + state + "/zoneAttributesBoroughwithTAZ.csv"));
+            cellsMatrixBoroughs = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"taz.definition","input/syntheticPopulation/" + state + "/zoneAttributesBoroughwithTAZ.csv"));
             cellsMatrixBoroughs.buildIndex(cellsMatrixBoroughs.getColumnPosition("ID_cell"));
         }
     }

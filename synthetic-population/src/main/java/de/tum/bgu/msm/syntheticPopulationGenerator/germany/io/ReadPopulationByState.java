@@ -14,6 +14,7 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
+import javax.swing.table.TableRowSorter;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -36,7 +37,7 @@ public class ReadPopulationByState {
         folder = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles + "/" + state + "/";
         readHouseholdData(Properties.get().main.startYear);
         readPersonData(Properties.get().main.startYear);
-        readDwellingData(Properties.get().main.startYear);
+        readDwellingData(Properties.get().main.startYear, state);
     }
 
 
@@ -61,13 +62,18 @@ public class ReadPopulationByState {
     }
 
 
-    private void readDwellingData(int year) {
+    private void readDwellingData(int year, String state) {
         logger.info("Reading dwelling micro data from ascii file");
 
         RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
         String fileName = folder + PropertiesSynPop.get().main.dwellingsFileName + "_" + year + ".csv";
         DwellingReaderMucMito ddReader = new DwellingReaderMucMito(realEstate);
-        ddReader.readData(fileName);
+        boolean changeCoordinates = true;
+        if (changeCoordinates) {
+            ddReader.readDatawithStateChangeCoordinates(fileName, state);
+        } else {
+            ddReader.readData(fileName);
+        }
     }
 
 

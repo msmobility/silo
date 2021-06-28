@@ -58,6 +58,14 @@ public class ValidateTripLengthDistributionByState {
             Frequency commuteDistance = new Frequency();
             frequencies.putIfAbsent(jobType, commuteDistance);
         }
+        Frequency commuteDistanceAll = new Frequency();
+        frequencies.put("allJobs", commuteDistanceAll);
+        for (int i = 1; i <=3; i++) {
+            Frequency commuteDistance = new Frequency();
+            frequencies.putIfAbsent("schoolType" + i, commuteDistance);
+        }
+        Frequency commuteDistanceEdu = new Frequency();
+        frequencies.put("allSchools", commuteDistanceEdu);
         RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
         JobDataManager jobDataManager = dataContainer.getJobDataManager();
         for (Person pp : dataContainer.getHouseholdDataManager().getPersons()){
@@ -71,6 +79,23 @@ public class ValidateTripLengthDistributionByState {
                 Frequency distanceByType = frequencies.get(jobType);
                 distanceByType.addValue(value);
                 frequencies.put(jobType, distanceByType);
+                Frequency distanceByTypeAll = frequencies.get("allJobs");
+                distanceByTypeAll.addValue(value);
+                frequencies.put("allJobs", distanceByTypeAll);
+                totalTripLength = value + totalTripLength;
+            }
+            if (Integer.parseInt(String.valueOf(pp.getAttribute("schoolPlace").get())) > 0){
+                Household hh = pp.getHousehold();
+                int origin = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
+                int destination = Integer.parseInt(pp.getAttribute("schoolPlace").get().toString());
+                int value = (int) dataSetSynPop.getDistanceTazToTaz().getValueAt(origin, destination);
+                String schoolType = "schoolType" + pp.getAttribute("schoolType").get().toString();
+                Frequency distanceByType = frequencies.get(schoolType);
+                distanceByType.addValue(value);
+                frequencies.put(schoolType, distanceByType);
+                Frequency distanceByTypeAll = frequencies.get("allSchools");
+                distanceByTypeAll.addValue(value);
+                frequencies.put("allSchools", distanceByTypeAll);
                 totalTripLength = value + totalTripLength;
             }
         }
@@ -81,14 +106,14 @@ public class ValidateTripLengthDistributionByState {
     private void summarizeFlows(Map<String,Frequency> travelTimes, String fileName){
         //to obtain the trip length distribution
         int[] timeThresholds1 = new int[200];
-        double[] frequencyTT1 = new double[200];
         Map<String, double[]> cumFrequency = new HashMap<>();
-        for (String jobType : JobType.getJobTypes()) {
+        for (String keyFrequencies : travelTimes.keySet()) {
+            double[] frequencyTT1 = new double[200];
             for (int row = 0; row < timeThresholds1.length; row++) {
                 timeThresholds1[row] = row + 1;
-                frequencyTT1[row] = travelTimes.get(jobType).getCumPct(timeThresholds1[row]);
+                frequencyTT1[row] = travelTimes.get(keyFrequencies).getCumPct(timeThresholds1[row]);
             }
-            cumFrequency.putIfAbsent(jobType, frequencyTT1);
+            cumFrequency.putIfAbsent(keyFrequencies, frequencyTT1);
         }
         writeVectorToCSV(timeThresholds1, cumFrequency, fileName);
 
@@ -103,12 +128,20 @@ public class ValidateTripLengthDistributionByState {
                 for (String jobType : JobType.getJobTypes()) {
                     pw.print(",freq_" + jobType);
                 }
+                for (int i = 1; i <=3; i++) {
+                    String schoolType = "schoolType" + i;
+                    pw.print(",freq_" + schoolType);
+                }
                 pw.println();
             }
             for (int i = 0; i < thresholds.length; i++) {
                 pw.print(subPopulation + "," + thresholds[i]);
                 for (String jobType : JobType.getJobTypes()) {
                     pw.print("," + frequencies.get(jobType)[i]);
+                }
+                for (int ii = 1; ii <=3; ii++) {
+                    String schoolType = "schoolType" + ii;
+                    pw.print("," + frequencies.get(schoolType)[i]);
                 }
                 pw.println();
             }

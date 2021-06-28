@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.germany;
 
 import de.tum.bgu.msm.DataBuilder;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.Household;
@@ -16,6 +17,7 @@ import de.tum.bgu.msm.io.output.JobWriter;
 import de.tum.bgu.msm.io.output.PersonWriter;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
+import de.tum.bgu.msm.schools.SchoolsWriter;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import de.tum.bgu.msm.syntheticPopulationGenerator.germany.allocation.*;
@@ -73,16 +75,27 @@ public class SyntheticPopGermanyMitoByState implements SyntheticPopI {
         } else {
             if (PropertiesSynPop.get().main.runBySubpopulation) {
                 new GenerateJobCounters(dataContainer, dataSetSynPop).run();
+                new GenerateSchoolMicrolocations(dataContainer, dataSetSynPop).run();
                 for (int subPopulation = 0; subPopulation < PropertiesSynPop.get().main.numberOfSubpopulations; subPopulation++) {
-                    new ReadSubPopulations(dataContainer, true, subPopulation).run();
-                    new Read2011JobsForMicrolocation(dataContainer, dataSetSynPop, subPopulation).run();
-                    new AssignJobsBySubpopulation(dataContainer, dataSetSynPop).run();
-                    new GenerateJobsBySubpopulation(dataContainer, dataSetSynPop).run();
-                    new ValidateTripLengthDistributionByState(dataContainer, dataSetSynPop, subPopulation).run();
-                    summarizeMitoData(dataContainer, subPopulation);
+                    if (PropertiesSynPop.get().main.runJobAllocation) {
+                        new ReadSubPopulations(dataContainer, true, subPopulation).run();
+                        new Read2011JobsForMicrolocation(dataContainer, dataSetSynPop, subPopulation).run();
+                        new AssignJobsBySubpopulation(dataContainer, dataSetSynPop).run();
+                        new GenerateJobsBySubpopulation(dataContainer, dataSetSynPop).run();
+                        new AssignSchoolsBySubpopulation(dataContainer, dataSetSynPop).run();
+                        new ValidateTripLengthDistributionByState(dataContainer, dataSetSynPop, subPopulation).run();
+                        summarizeMitoData(dataContainer, subPopulation);
+                        removeHouseholds(dataContainer);
+                    } else {
+                        new ReadSubPopulations(dataContainer, true, subPopulation).run();
+                        new AssignSchoolsBySubpopulation(dataContainer, dataSetSynPop).run();
+                        summarizeMitoData(dataContainer, subPopulation);
+                        removeHouseholds(dataContainer);
+                    }
+
                 }
-                new GenerateVacantJobs(dataContainer, dataSetSynPop).run();
-                summarizeJobs(dataContainer);
+                //new GenerateVacantJobs(dataContainer, dataSetSynPop).run();
+                //summarizeJobs(dataContainer);
             } else {
                 new ReadSubPopulations(dataContainer, true, 0).run();
                 writesubsample(dataContainer, 20);
@@ -94,6 +107,18 @@ public class SyntheticPopGermanyMitoByState implements SyntheticPopI {
             logger.info("   Finished creating the synthetic population for state " + "state" + ". Elapsed time: " + estimatedTime);
 
     }
+
+
+    private void removeHouseholds(DataContainerWithSchools dataContainer){
+        HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
+        RealEstateDataManager realEstateDataManager = dataContainer.getRealEstateDataManager();
+        for( Household hh : householdDataManager.getHouseholds()){
+            int id = hh.getId();
+            householdDataManager.removeHousehold(id);
+            realEstateDataManager.removeDwelling(id);
+        }
+    }
+
 
     private void createDirectoryForOutput() {
         SiloUtil.createDirectoryIfNotExistingYet("microData");
@@ -126,7 +151,7 @@ public class SyntheticPopGermanyMitoByState implements SyntheticPopI {
     private void summarizeMitoData(DataContainerWithSchools dataContainer, int subPopulation){
 
         String outputFolder = properties.main.baseDirectory  + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
-                + "/subPopulationsWithJobs/" ;
+                + "/subPopulationsWithJobsAndSchool/" ;
         SiloUtil.createDirectoryIfNotExistingYet(outputFolder);
 
         String filehh = outputFolder
@@ -142,8 +167,13 @@ public class SyntheticPopGermanyMitoByState implements SyntheticPopI {
                 + subPopulation + "_"
                 + properties.main.baseYear
                 + ".csv";
-        PersonWriter ppwriter = new PersonWriterMucMito(dataContainer.getHouseholdDataManager());
-        ((PersonWriterMucMito) ppwriter).writePersonsWithJob(filepp);
+        String filejj = outputFolder
+                + PropertiesSynPop.get().main.jobsFileName
+                + subPopulation + "_"
+                + properties.main.baseYear
+                + ".csv";
+        PersonJobWriterMucMito ppwriter = new PersonJobWriterMucMito(dataContainer.getHouseholdDataManager(), dataContainer.getJobDataManager());
+        ppwriter.writePersonsWithJobAndJob(filepp, filejj);
 
         String filedd = outputFolder
                 + PropertiesSynPop.get().main.dwellingsFileName
@@ -153,13 +183,21 @@ public class SyntheticPopGermanyMitoByState implements SyntheticPopI {
         DwellingWriter ddwriter = new DwellingWriterMucMito(dataContainer.getHouseholdDataManager(), dataContainer.getRealEstateDataManager());
         ddwriter.writeDwellings(filedd);
 
-        String filejj = outputFolder
+/*        String filejj = outputFolder
                 + PropertiesSynPop.get().main.jobsFileName
                 + subPopulation + "_"
                 + properties.main.baseYear
                 + ".csv";
         JobWriter jjwriter = new JobWriterMuc(dataContainer.getJobDataManager());
-        jjwriter.writeJobs(filejj);
+        jjwriter.writeJobs(filejj);*/
+
+        String fileedu = outputFolder
+                + "ee"
+                + subPopulation + "_"
+                + properties.main.baseYear
+                + ".csv";
+        SchoolsWriter eduwriter = new SchoolsWriter(dataContainer.getSchoolData());
+        eduwriter.writeSchools(fileedu);
 
         if (PropertiesSynPop.get().main.populationSplitting){
             writeMultipleFilesForHouseholdsAndPersons(dataContainer);

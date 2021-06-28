@@ -85,5 +85,7 @@ public abstract class AbstractPropertiesSynPop {
     public boolean readMergeAndSplit;
     public boolean runBySubpopulation;
     public int vacantJobPercentage;
+    public TableDataSet schoolsLocation;
+    //public TableDataSet cellsMicrolocations;
 
 }

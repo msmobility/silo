@@ -3,6 +3,7 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.germany.io;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobDataManager;
+import de.tum.bgu.msm.data.job.JobMuc;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.io.output.PersonWriter;
@@ -12,14 +13,16 @@ import org.locationtech.jts.geom.Coordinate;
 
 import java.io.PrintWriter;
 
-public class PersonWriterMucMito implements PersonWriter {
+public class PersonJobWriterMucMito implements PersonWriter {
 
-    private final static Logger logger = Logger.getLogger(PersonWriterMucMito.class);
+    private final static Logger logger = Logger.getLogger(PersonJobWriterMucMito.class);
 
     private final HouseholdDataManager householdData;
+    private final JobDataManager jobData;
 
-    public PersonWriterMucMito(HouseholdDataManager householdData) {
+    public PersonJobWriterMucMito(HouseholdDataManager householdData, JobDataManager jobData) {
         this.householdData = householdData;
+        this.jobData = jobData;
     }
 
     @Override
@@ -77,7 +80,7 @@ public class PersonWriterMucMito implements PersonWriter {
     }
 
 
-    public void writePersonsWithJob(String path) {
+    public void writePersonsWithJobAndJob(String path, String pathJob) {
 
         logger.info("  Writing person file to " + path);
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(path, false);
@@ -103,6 +106,20 @@ public class PersonWriterMucMito implements PersonWriter {
         pwp.print(",");
         pwp.print("commuteEduDistanceKm");
         pwp.println();
+
+        logger.info("  Writing job file to " + pathJob);
+        PrintWriter pwj = SiloUtil.openFileForSequentialWriting(pathJob, false);
+        pwj.print("id,zone,personId,type");
+        pwj.print(",");
+        pwj.print("coordX");
+        pwj.print(",");
+        pwj.print("coordY");
+        pwj.print(",");
+        pwj.print("startTime");
+        pwj.print(",");
+        pwj.print("duration");
+        pwj.println();
+
         for (Person pp : householdData.getPersons()) {
             pwp.print(pp.getId());
             pwp.print(",");
@@ -140,11 +157,35 @@ public class PersonWriterMucMito implements PersonWriter {
             pwp.print(",");
             pwp.print(pp.getAttribute("commuteEduDistance").get().toString());
             pwp.println();
+            if (pp.getJobId() > 0) {
+                Job jj = jobData.getJobFromId(pp.getJobId());
+                pwj.print(jj.getId());
+                pwj.print(",");
+                pwj.print(jj.getZoneId());
+                pwj.print(",");
+                pwj.print(jj.getWorkerId());
+                pwj.print(",\"");
+                pwj.print(jj.getType());
+                pwj.print("\"");
+
+                Coordinate coordinate = jj.getCoordinate();
+                pwj.print(",");
+                pwj.print(coordinate.x);
+                pwj.print(",");
+                pwj.print(coordinate.y);
+                pwj.print(",");
+                pwj.print(((JobMuc)jj).getStartTimeInSeconds());
+                pwj.print(",");
+                pwj.print(((JobMuc)jj).getWorkingTimeInSeconds());
+                pwj.println();
+            }
+
             if (pp.getId() == SiloUtil.trackPp) {
                 SiloUtil.trackingFile("Writing pp " + pp.getId() + " to micro data file.");
                 SiloUtil.trackWriter.println(pp.toString());
             }
         }
         pwp.close();
+        pwj.close();
     }
 }

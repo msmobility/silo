@@ -87,7 +87,7 @@ public class PersonReaderMucMito implements PersonReader {
         logger.info("Finished reading " + recCount + " persons.");
     }
 
-    public int readDataWithState(String path, int finalPpIdPreviousState, int finalHhIdPreviousState, boolean generate) {
+    public int readDataWithStateAndReassignIds(String path, int finalPpIdPreviousState, int finalHhIdPreviousState, boolean generate) {
         logger.info("Reading person micro data from ascii file");
 
         PersonFactoryMuc ppFactory = new PersonFactoryMuc();
@@ -124,7 +124,7 @@ public class PersonReaderMucMito implements PersonReader {
                     Gender gender = Gender.valueOf(Integer.parseInt(lineElements[posGender]));
                     Occupation occupation = Occupation.valueOf(Integer.parseInt(lineElements[posOccupation]));
                     int workplace = Integer.parseInt(lineElements[posWorkplace]);
-                    int income = Integer.parseInt(lineElements[posIncome]);
+                    int income = Integer.parseInt(lineElements[posIncome]) * 12;
                     int correlativeId = id + finalPpIdPreviousState;
                     PersonMuc pp = (PersonMuc) ppFactory.createPerson(correlativeId, age, gender, occupation, PersonRole.SINGLE, workplace, income); //this automatically puts it in id->person map in Person class
                     householdDataManager.addPerson(pp);
@@ -192,8 +192,10 @@ public class PersonReaderMucMito implements PersonReader {
                 posOriginalId = SiloUtil.findPositionInArray("originalId", header);
             }
             int posWorkZone = 0;
+            int posWorkCommute = 0;
             if (haveWorkZone){
                 posWorkZone = SiloUtil.findPositionInArray("workZone", header);
+                posWorkCommute = SiloUtil.findPositionInArray("commuteDistanceKm", header);
             }
 
             // read line
@@ -236,8 +238,11 @@ public class PersonReaderMucMito implements PersonReader {
                     if (haveWorkZone) {
                         int workzone = Integer.parseInt(lineElements[posWorkZone]);
                         pp.setAttribute("workZone", workzone);
+                        double commuteDistace = Double.parseDouble(lineElements[posWorkCommute]);
+                        pp.setAttribute("commuteDistance", commuteDistace);
                     } else {
                         pp.setAttribute("workZone", 0);
+                        pp.setAttribute("commuteDistance", 0);
                     }
                     if (id == SiloUtil.trackPp) {
                         SiloUtil.trackWriter.println("Read person with following attributes from " + path);

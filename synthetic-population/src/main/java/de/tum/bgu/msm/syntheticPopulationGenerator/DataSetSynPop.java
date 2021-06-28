@@ -72,6 +72,10 @@ public class DataSetSynPop {
     private Map<String, Map<Integer, Integer>> assignedJobsByTypeAndZone;
     private Map<String, Map<Integer, Map<Integer, Coordinate>>> microlocationsJobsByTypeAndZone;
     Map<String, Map<Integer, Map<Integer, Double>>> probabilityByTypeAndZone;
+    Map<Integer, Map<Integer,Map<Integer,Integer>>> zoneSchoolTypeSchoolLocationCapacity;
+    Map<Integer, Map<Integer, Integer>> zoneSchoolTypeSchoolLocationVacancy;
+    private Map<Integer, Integer> assignedUniversitiesByZone;
+    private Map<Integer, Map< Integer, Map<Integer, Coordinate>>> microlocationsSchools;
 
     public TableDataSet getWeights() {
         return weights;
@@ -401,4 +405,37 @@ public class DataSetSynPop {
     public void setDistanceUtility(Matrix tripLengthProbabilityMatrix) {
         this.distanceUtilityHBW = tripLengthProbabilityMatrix;
     }
+
+    public Map<Integer, Map<Integer,Map<Integer,Integer>>> getZoneSchoolTypeSchoolLocationCapacity() {
+        return zoneSchoolTypeSchoolLocationCapacity;
+    }
+
+    public void setZoneSchoolTypeSchoolLocationCapacity(Map<Integer, Map<Integer,Map<Integer,Integer>>> vacantUniversitiesByZone) {
+        this.zoneSchoolTypeSchoolLocationCapacity = vacantUniversitiesByZone;
+    }
+
+    public Map<Integer, Map<Integer, Integer>> getZoneSchoolTypeSchoolLocationVacancy() {
+        return zoneSchoolTypeSchoolLocationVacancy;
+    }
+
+    public void setZoneSchoolTypeSchoolLocationVacancy(Map<Integer, Map<Integer, Integer>> zoneSchoolTypeSchoolLocationVacancy) {
+        this.zoneSchoolTypeSchoolLocationVacancy = zoneSchoolTypeSchoolLocationVacancy;
+    }
+
+    public Map<Integer, Integer> getAssignedUniversitiesByZone() {
+        return assignedUniversitiesByZone;
+    }
+
+    public void setAssignedUniversitiesByZone(Map<Integer, Integer> assignedUniversitiesByZone) {
+        this.assignedUniversitiesByZone = assignedUniversitiesByZone;
+    }
+
+    public Map<Integer, Map< Integer, Map<Integer, Coordinate>>> getMicrolocationsSchools() {
+        return microlocationsSchools;
+    }
+
+    public void setMicrolocationsSchools(Map<Integer, Map< Integer, Map<Integer, Coordinate>>> microlocationsSchools) {
+        this.microlocationsSchools = microlocationsSchools;
+    }
+
 }

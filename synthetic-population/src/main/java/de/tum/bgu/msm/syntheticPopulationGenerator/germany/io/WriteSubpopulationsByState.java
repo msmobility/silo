@@ -83,7 +83,7 @@ public class WriteSubpopulationsByState {
             PrintWriter pwDwelling0 = SiloUtil.openFileForSequentialWriting(filedd, true);
             if (state.equals(PropertiesSynPop.get().main.states[0])) {
                 pwHousehold0.println("id,dwelling,zone,hhSize,autos,state,originalId");
-                pwp.println("id,hhid,age,gender,occupation,driversLicense,workplace,income,jobType,disability,schoolId,schoolType,state,originalId");
+                pwp.println("id,hhid,age,gender,occupation,driversLicense,workplace,income,jobType,disability,schoolId,schoolType,schoolPlace,state,originalId");
                 pwDwelling0.println("id,hhId,zone,coordX,coordY,state,originalId");
             }
             householdWriter.put(part, pwHousehold0);

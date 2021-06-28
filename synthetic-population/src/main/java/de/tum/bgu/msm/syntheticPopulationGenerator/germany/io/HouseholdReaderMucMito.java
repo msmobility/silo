@@ -62,7 +62,7 @@ public class HouseholdReaderMucMito implements HouseholdReader {
 
     }
 
-    public int readDataWithState(String fileName, String state, int finalIdPreviousState, boolean generate) {
+    public int readDataWithStateAndReassignIds(String fileName, String state, int finalIdPreviousState, boolean generate) {
         logger.info("Reading household micro data from ascii file");
         String recString = "";
         int recCount = 0;
