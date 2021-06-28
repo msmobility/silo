@@ -9,7 +9,6 @@ import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.matsim.ZoneConnectorManager;
 import de.tum.bgu.msm.matsim.ZoneConnectorManagerImpl;
-import de.tum.bgu.msm.mito.MitoMatsimScenarioAssembler;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.moped.util.concurrent.ConcurrentExecutor;
@@ -44,7 +43,7 @@ import java.util.stream.Collectors;
 public class HealthModel extends AbstractModel implements ModelUpdateListener {
     private int latestMatsimYear = -1;
     private static final Logger logger = Logger.getLogger(HealthModel.class);
-    private Map<Integer, MitoTrip> mitoTrips;
+    private Map<Integer, Trip> mitoTrips;
     private final Config initialMatsimConfig;
 
     private final int threads;
@@ -85,17 +84,49 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
     @Override
     public void endYear(int year) {
         logger.warn("Health model end year:" + year);
-        this.mitoTrips = MitoMatsimScenarioAssembler.getMitoTrips();
+
         if(properties.main.startYear == year) {
             latestMatsimYear = year;
-            healthDataAssembler(year);
-            calculatePersonHealthIndicator();
-            calculateRelativeRisk();
+            for(Day day : Day.values()){
+                for(Mode mode : Mode.values()){
+                    switch (mode){
+                        case autoDriver:
+                        case autoPassenger:
+                        case bicycle:
+                        case walk:
+                            mitoTrips = new TripReaderMucHealth().readData(properties.main.baseDirectory + "scenOutput/"
+                                    + properties.main.scenarioName + "/" + latestMatsimYear + "/microData/trips_" + day + "_" + mode + ".csv");
+                            healthDataAssembler(latestMatsimYear, day, mode);
+                            calculatePersonHealthIndicator();
+                            calculateRelativeRisk();
+                            break;
+                        default:
+                            logger.warn("No health model for mode: " + mode);
+                    }
+                }
+            }
+
         } else if(properties.transportModel.transportModelYears.contains(year + 1)) {//why year +1
             latestMatsimYear = year + 1;
-            healthDataAssembler(year + 1);
-            calculatePersonHealthIndicator();
-            calculateRelativeRisk();
+            for(Day day : Day.values()){
+                for(Mode mode : Mode.values()){
+                    switch (mode){
+                        case autoDriver:
+                        case autoPassenger:
+                        case bicycle:
+                        case walk:
+                            mitoTrips = new TripReaderMucHealth().readData(properties.main.baseDirectory + "scenOutput/"
+                                    + properties.main.scenarioName + "/" + latestMatsimYear + "/microData/trips_" + day + "_" + mode + ".csv");
+                            healthDataAssembler(latestMatsimYear, day, mode);
+                            calculatePersonHealthIndicator();
+                            calculateRelativeRisk();
+                            break;
+                        default:
+                            logger.warn("No health model for mode: " + mode);
+                    }
+                }
+            }
+
         }
     }
 
@@ -103,39 +134,27 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
     public void endSimulation() {
     }
 
-    private void healthDataAssembler(int year) {
-        logger.info("Updating health data for year " + year + ".");
+    private void healthDataAssembler(int year, Day day, Mode mode) {
+        logger.info("Updating health data for year " + year + "|day: " + day + "|mode: " + mode + ".");
         String eventsFile;
-        String networkFile;
-        List<MitoTrip> trips;
 
         final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/"
                 + properties.main.scenarioName + "/matsim/" + latestMatsimYear;
         scenario.getConfig().controler().setOutputDirectory(outputDirectoryRoot);
 
-        for(Day day : Day.values()){
-            for(Mode mode : Mode.values()){
-                switch (mode){
-                    case autoDriver:
-                    case autoPassenger:
-                        eventsFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + latestMatsimYear + ".output_events.xml.gz";
-                        networkFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + latestMatsimYear + ".output_network.xml.gz";
-
-                        trips = mitoTrips.values().stream().filter(tt -> tt.getDepartureDay().equals(day) & tt.getTripMode().equals(mode)).collect(Collectors.toList());
-                        calculateTripHealthIndicator(eventsFile, trips, day, mode);
-                        break;
-                    case bicycle:
-                    case walk:
-                        eventsFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/bikePed/" + latestMatsimYear + ".output_events.xml.gz";
-                        networkFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/bikePed/" + latestMatsimYear + ".output_network.xml.gz";
-
-                        trips  = mitoTrips.values().stream().filter(tt -> tt.getDepartureDay().equals(day) & tt.getTripMode().equals(mode)).collect(Collectors.toList());
-                        calculateTripHealthIndicator(eventsFile, trips, day, mode);
-                        break;
-                    default:
-                        logger.warn("No health model for mode: " + mode);
-                }
-            }
+        switch (mode){
+            case autoDriver:
+            case autoPassenger:
+                eventsFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + latestMatsimYear + ".output_events.xml.gz";
+                calculateTripHealthIndicator(eventsFile, mitoTrips.values().stream().collect(Collectors.toList()), day, mode);
+                break;
+            case bicycle:
+            case walk:
+                eventsFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/bikePed/" + latestMatsimYear + ".output_events.xml.gz";
+                calculateTripHealthIndicator(eventsFile, mitoTrips.values().stream().collect(Collectors.toList()), day, mode);
+                break;
+            default:
+                logger.warn("No health model for mode: " + mode);
         }
 
         //TODO:
@@ -145,15 +164,17 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
         String filett = outputDirectory
                 + "healthIndicators_"
                 + year
+                + "_" + day
+                + "_" + mode
                 + ".csv";
         writeMitoTrips(filett);
     }
 
 
-    public void calculateTripHealthIndicator(String eventsFile, List<MitoTrip> trips, Day day, Mode mode) {
+    public void calculateTripHealthIndicator(String eventsFile, List<Trip> trips, Day day, Mode mode) {
         logger.info("Updating trip health data for mode " + mode + ", day " + day);
         final int partitionSize = (int) ((double) trips.size() / Runtime.getRuntime().availableProcessors()) + 1;
-        Iterable<List<MitoTrip>> partitions = Iterables.partition(trips, partitionSize);
+        Iterable<List<Trip>> partitions = Iterables.partition(trips, partitionSize);
 
         TravelTime travelTime = TravelTimeUtils.createTravelTimesFromEvents(scenario, eventsFile);
         TravelDisutility travelDisutility = ControlerDefaults.createDefaultTravelDisutilityFactory(scenario).createTravelDisutility(travelTime);
@@ -168,7 +189,7 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
 
         AtomicInteger NO_PATH_TRIP = new AtomicInteger();
 
-        for (final List<MitoTrip> partition : partitions) {
+        for (final List<Trip> partition : partitions) {
             LeastCostPathCalculator pathCalculator = new FastAStarLandmarksFactory(threads).createPathCalculator(network, travelDisutility, travelTime);
             //LeastCostPathCalculator pathCalculator = new FastDijkstraFactory(false).createPathCalculator(network, travelDisutility, travelTime);
 
@@ -177,43 +198,21 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
 
                     int id = counter.incrementAndGet();
                     int counterr = 0;
-                    for (MitoTrip trip : partition) {
+                    for (Trip trip : partition) {
 
                         if(LongMath.isPowerOfTwo(counterr)) {
                             logger.info(counterr + " in " + id);
                         };
 
-                        Coord originCoord;
-                        Coord destinationCoord;
-                        Location origin =trip.getTripOrigin();
-                        Location destination =trip.getTripDestination();
-
-                        //TODO: should not be random for walk trips
-                        if(trip.getOriginMopedZoneCoord()!=null){
-                            originCoord = trip.getOriginMopedZoneCoord();
-                        }else if(origin instanceof MicroLocation) {
-                            originCoord = CoordUtils.createCoord(((MicroLocation) origin).getCoordinate());
-                        } else {
-                            originCoord = CoordUtils.createCoord(((MitoZone) origin).getRandomCoord(MitoUtil.getRandomObject()));
-                        }
-
-                        if(trip.getDestinationMopedZoneCoord()!=null){
-                            destinationCoord = trip.getDestinationMopedZoneCoord();
-                        }else if(destination instanceof MicroLocation) {
-                            destinationCoord = CoordUtils.createCoord(((MicroLocation) destination).getCoordinate());
-                        } else {
-                            destinationCoord = CoordUtils.createCoord(((MitoZone) destination).getRandomCoord(MitoUtil.getRandomObject()));
-                        }
-
-                        Node originNode = NetworkUtils.getNearestNode(network, originCoord);
-                        Node destinationNode = NetworkUtils.getNearestNode(network, destinationCoord);
+                        Node originNode = NetworkUtils.getNearestNode(network, trip.getTripOrigin());
+                        Node destinationNode = NetworkUtils.getNearestNode(network, trip.getTripDestination());
 
                         LeastCostPathCalculator.Path path = pathCalculator.calcLeastCostPath(originNode, destinationNode,trip.getDepartureTimeInMinutes()*60,null,null);
 
                         if(path == null){
                             logger.warn("trip id: " + trip.getId() + ", trip depart time: " + trip.getDepartureTimeInMinutes() +
-                                    "origin coord: [" + originCoord.getX() + "," + originCoord.getY() + "], " +
-                                    "dest coord: [" + destinationCoord.getX() + "," + destinationCoord.getY() + "], " +
+                                    "origin coord: [" + trip.getTripOrigin().getX() + "," + trip.getTripOrigin().getY() + "], " +
+                                    "dest coord: [" + trip.getTripDestination().getX() + "," + trip.getTripDestination().getY() + "], " +
                                     "origin node: " + originNode + ", dest node: " + destinationNode);
                             NO_PATH_TRIP.getAndIncrement();
                         }
@@ -243,9 +242,9 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
                             }
 
                             if(mode.equals(Mode.walk)){
-                                tt += link.getLength()/getAvgWalkSpeed(trip.getPerson());
+                                tt += link.getLength()/getAvgWalkSpeed((PersonMuc) dataContainer.getHouseholdDataManager().getPersonFromId(trip.getPerson()));
                             }else if(mode.equals(Mode.bicycle)){
-                                tt += link.getLength()/getAvgCycleSpeed(trip.getPerson());
+                                tt += link.getLength()/getAvgCycleSpeed((PersonMuc) dataContainer.getHouseholdDataManager().getPersonFromId(trip.getPerson()));
                             } else{
                                 tt += travelTime.getLinkTravelTime(link, enterTimeInSecond, null, null);
                             }
@@ -341,8 +340,8 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
     //TODO: concurrent
     private void calculatePersonHealthIndicator() {
         int missingPerson = 0;
-        for(MitoTrip mitoTrip :  mitoTrips.values()){
-            Person siloPerson = dataContainer.getHouseholdDataManager().getPersonFromId(mitoTrip.getPerson().getId());
+        for(Trip mitoTrip :  mitoTrips.values()){
+            Person siloPerson = dataContainer.getHouseholdDataManager().getPersonFromId(mitoTrip.getPerson());
             if(siloPerson == null){
                 missingPerson++;
                 continue;
@@ -375,12 +374,12 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
         }
     }
 
-    private double getAvgCycleSpeed(MitoPerson person) {
-        return ((HealthDataContainerImpl)dataContainer).getAvgSpeeds().get(Mode.bicycle).get(person.getMitoGender()).get(Math.min(person.getAge(),105)) / 3.6;
+    private double getAvgCycleSpeed(PersonMuc person) {
+        return ((HealthDataContainerImpl)dataContainer).getAvgSpeeds().get(Mode.bicycle).get(MitoGender.valueOf(person.getGender().name())).get(Math.min(person.getAge(),105)) / 3.6;
     }
 
-    private double getAvgWalkSpeed(MitoPerson person) {
-        return ((HealthDataContainerImpl)dataContainer).getAvgSpeeds().get(Mode.walk).get(person.getMitoGender()).get(Math.min(person.getAge(),105)) / 3.6;
+    private double getAvgWalkSpeed(PersonMuc person) {
+        return ((HealthDataContainerImpl)dataContainer).getAvgSpeeds().get(Mode.walk).get(MitoGender.valueOf(person.getGender().name())).get(Math.min(person.getAge(),105)) / 3.6;
     }
 
 
@@ -397,7 +396,7 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
         }
         pwh.println();
 
-        for (MitoTrip trip : mitoTrips.values()) {
+        for (Trip trip : mitoTrips.values()) {
             pwh.print(trip.getId());
             pwh.print(",");
             pwh.print(trip.getTripMode().toString());

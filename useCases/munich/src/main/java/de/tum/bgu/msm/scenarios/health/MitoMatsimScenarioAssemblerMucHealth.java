@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.mito;
+package de.tum.bgu.msm.scenarios.health;
 
 
 import de.tum.bgu.msm.MitoModel2017;
@@ -11,6 +11,7 @@ import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.matsim.MatsimScenarioAssembler;
 import de.tum.bgu.msm.matsim.MatsimTravelTimesAndCosts;
+import de.tum.bgu.msm.mito.MitoDataConverter;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.resources.Resources;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -28,11 +29,10 @@ import org.matsim.core.scenario.ScenarioUtils;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
-public class MitoMatsimScenarioAssembler implements MatsimScenarioAssembler {
+public class MitoMatsimScenarioAssemblerMucHealth implements MatsimScenarioAssembler {
 
-    private static final Logger logger = Logger.getLogger(MitoMatsimScenarioAssembler.class);
+    private static final Logger logger = Logger.getLogger(MitoMatsimScenarioAssemblerMucHealth.class);
 
     private final String propertiesPath;
 
@@ -42,9 +42,11 @@ public class MitoMatsimScenarioAssembler implements MatsimScenarioAssembler {
 
     private SkimTravelTimes mitoInputTravelTime;
 
-    public MitoMatsimScenarioAssembler(DataContainer dataContainer,
-                                       Properties properties,
-                                       MitoDataConverter dataConverter) {
+
+
+    public MitoMatsimScenarioAssemblerMucHealth(DataContainer dataContainer,
+                                                Properties properties,
+                                                MitoDataConverter dataConverter) {
         this.dataContainer = dataContainer;
         this.properties = properties;
         this.dataConverter = dataConverter;
@@ -75,7 +77,29 @@ public class MitoMatsimScenarioAssembler implements MatsimScenarioAssembler {
 
     @Override
     public Map<Day, Scenario> assembleMultiScenarios(Config initialMatsimConfig, int year, TravelTimes travelTimes) {
-        return null;
+
+        logger.info("  Running travel demand model MITO for the year " + year);
+
+        DataSet dataSet = convertData(year);
+
+        logger.info("  SILO data being sent to MITO");
+        MitoModel2017withMoped mito = MitoModel2017withMoped.initializeModelFromSilo(propertiesPath, dataSet, properties.main.scenarioName);
+        mito.setRandomNumberGenerator(SiloUtil.getRandomObject());
+        mito.run();
+
+        logger.info("  Receiving demand from MITO");
+        Map<Day, Scenario> scenarios = new HashMap<>();
+
+        for (Day day : Day.values()){
+            Population population = mito.getData().getPopulation(day);
+            Config config = ConfigUtils.loadConfig(initialMatsimConfig.getContext());
+            setDemandSpecificConfigSettings(config);
+            MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(config);
+            scenario.setPopulation(population);
+            scenarios.put(day, scenario);
+        }
+
+        return scenarios;
     }
 
 
@@ -137,4 +161,5 @@ public class MitoMatsimScenarioAssembler implements MatsimScenarioAssembler {
         dataSet.setYear(year);
         return dataSet;
     }
+
 }
