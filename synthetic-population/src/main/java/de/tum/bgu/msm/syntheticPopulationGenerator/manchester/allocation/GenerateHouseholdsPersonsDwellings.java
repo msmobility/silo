@@ -1,16 +1,17 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.manchester.allocation;
 
 import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.PersonMCR;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.person.*;
-import de.tum.bgu.msm.run.ManchesterDwellingTypes;
+import de.tum.bgu.msm.data.ManchesterDwellingTypes;
 import de.tum.bgu.msm.run.data.dwelling.BangkokDwellingTypes;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
-import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.MicroDataManager;
+import de.tum.bgu.msm.syntheticPopulationGenerator.manchester.preparation.MicroDataManager;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -88,6 +89,7 @@ public class GenerateHouseholdsPersonsDwellings {
                     logging = Math.pow(2, it);
                 }
             }
+            //recalculate income and dwelling price??
             recalculateIncomeAndDwellingPrice(municipality);
             allocationErrorsByZone(municipality);
         }
@@ -116,18 +118,15 @@ public class GenerateHouseholdsPersonsDwellings {
             int age =(int) dataSetSynPop.getPersonDataSet().getValueAt(personSelected, "age");
             Gender gender = Gender.valueOf((int) dataSetSynPop.getPersonDataSet().getValueAt(personSelected, "gender"));
             Occupation occupation = Occupation.valueOf((int) dataSetSynPop.getPersonDataSet().getValueAt(personSelected, "employmentCode"));
-            //int income = microDataManager.translatePersonRole((int)dataSetSynPop.getPersonDataSet().getValueAt(personSelected, "income"));
-
-            int income = 0;
-            boolean license = MicroDataManager.obtainLicense(gender, age);
+            int income = microDataManager.translateIncome(dataSetSynPop.getPersonTable().get(personSelected, "income"));
+            boolean license = microDataManager.obtainLicense(gender, age);
+            //TODO: education degree
             int educationDegree = 1;
-            //PersonRole personRole = microDataManager.translatePersonRole((int)dataSetSynPop.getPersonDataSet().getValueAt(personSelected, "personRole"));
-            //TODO: person role,schoolType,income,educationDegree
-            PersonRole personRole = PersonRole.SINGLE;
-            int school = 1;
-            Person pers = factory.createPerson(id, age, gender, occupation,personRole, 0, income); //(int id, int age, int gender, Race race, int occupation, int workplace, int income)
+            PersonRole personRole = microDataManager.translatePersonRole((int)dataSetSynPop.getPersonDataSet().getValueAt(personSelected, "personRole"));
+            int school = microDataManager.guessSchoolType(occupation, age);
+            PersonMCR pers = (PersonMCR) factory.createPerson(id, age, gender, occupation,personRole, 0, income); //(int id, int age, int gender, Race race, int occupation, int workplace, int income)
             pers.setDriverLicense(license);
-           // pers.setSchoolType(school);
+            pers.setSchoolType(school);
             householdData.addPerson(pers);
             householdData.addPersonToHousehold(pers, hh);
             educationalLevel.put(pers, educationDegree);
@@ -146,19 +145,16 @@ public class GenerateHouseholdsPersonsDwellings {
         int newDdId = realEstate.getNextDwellingId();
         int year = 0;
         int floorSpace = 0;
-        //int useInteger = (int) dataSetSynPop.getHouseholdDataSet().getValueAt(hhSelected, "tenureCode");
-        int useInteger = 2;
+        int useInteger = (int) dataSetSynPop.getHouseholdDataSet().getValueAt(hhSelected, "tenureCode");
         DwellingUsage usage = DwellingUsage.valueOf(useInteger);
         int ddType = (int) dataSetSynPop.getHouseholdDataSet().getValueAt(hhSelected, "ddTypeCode");
         DwellingType type = ManchesterDwellingTypes.DwellingTypeManchester.valueOf(ddType);
-        //TODO: bedrooms,tenure,price,
-        //int bedRooms = (int) dataSetSynPop.getHouseholdDataSet().getValueAt(hhSelected, "bedrooms");
-        int bedRooms = 1;
+        int bedRooms = (int) dataSetSynPop.getHouseholdDataSet().getValueAt(hhSelected, "bedrooms");
         Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, tazSelected, null, idHousehold, type , bedRooms, 1, 0, year);
         realEstate.addDwelling(dwell);
         dwell.setFloorSpace(floorSpace);
         dwell.setUsage(usage);
-
+        //TODO:price
         guessPriceAndQuality(hhIncome, dwell);
     }
 
@@ -188,21 +184,20 @@ public class GenerateHouseholdsPersonsDwellings {
         int targetPrice =  (int)Math.round(hhIncome * 0.15 / 12);
         DwellingType ddType = dd.getType();
         int sizeDwelling = ((ManchesterDwellingTypes.DwellingTypeManchester)ddType).getsizeOfDwelling();
-        int priceLowQuality = 80 * sizeDwelling;
-        int priceMediumQuality = 160 * sizeDwelling;
-        int priceHighQuality = 240 * sizeDwelling;
-        int minDif = 10000000;
+        int priceLowQuality = 8 * sizeDwelling;
+        int priceMediumQuality = 16 * sizeDwelling;
+        int priceHighQuality = 24 * sizeDwelling;
         int quality = 0;
         int price = 0;
-        if (Math.abs(targetPrice - priceLowQuality) < minDif){
-            quality = 1;
-            price = priceLowQuality;
-        } else if (Math.abs(targetPrice - priceMediumQuality) < minDif){
-            quality = 2;
-            price = priceMediumQuality;
-        } else if (Math.abs(targetPrice - priceHighQuality) < minDif){
+        if (targetPrice >= priceHighQuality){
             quality = 3;
             price = priceHighQuality;
+        } else if (targetPrice >= priceMediumQuality){
+            quality = 2;
+            price = priceMediumQuality;
+        } else {
+            quality = 1;
+            price = priceLowQuality;
         }
         dd.setPrice(price);
         dd.setQuality(quality);

@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.run;
+package de.tum.bgu.msm.data;
 
 import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypes;
 import de.tum.bgu.msm.data.dwelling.DwellingType;

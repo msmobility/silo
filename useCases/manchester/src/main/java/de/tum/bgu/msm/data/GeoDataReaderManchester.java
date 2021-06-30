@@ -1,12 +1,10 @@
-package de.tum.bgu.msm.run;
+package de.tum.bgu.msm.data;
 
 import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.data.geo.ZoneImpl;
 import de.tum.bgu.msm.io.input.GeoDataReader;
 
 
-import de.tum.bgu.msm.data.Region;
-import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.geo.RegionImpl;
 

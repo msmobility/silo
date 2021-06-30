@@ -29,11 +29,14 @@ public class ReadZonalData {
     }
 
     public void run() {
+        //MSOA = cities
         readCities();
-        readZones();//LSOA = TAZs
-        readDistanceMatrix();
+        //LSOA = TAZs
+        readZones();
+        //Manchester job assignment approach: base year commute flows LSOA-LSOA
+        //readDistanceMatrix();
+        //readTripLengthFrequencyDistribution();
         readCommuteFlow();
-        readTripLengthFrequencyDistribution();
     }
 
     private void readCities() {
@@ -155,7 +158,7 @@ public class ReadZonalData {
     }
 
     private void readCommuteFlow(){
-        //Read the skim matrix
+        //Read the commuteFlow
         logger.info("   Starting to read CSV matrix");
         TableDataSet commuteFlow = SiloUtil.readCSVfile(PropertiesSynPop.get().main.commuteFlowFile);
         int[] externalNumbers = dataSetSynPop.getTazIDs();

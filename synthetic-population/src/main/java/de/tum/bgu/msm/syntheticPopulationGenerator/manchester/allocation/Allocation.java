@@ -30,11 +30,11 @@ public class Allocation extends ModuleSynPop{
         if (PropertiesSynPop.get().main.runAllocation) {
             generateHouseholdsPersonsDwellings();
             summarizeData(dataContainer, "afterGenerateHHppDD");
-            //generateVacantDwellings();
-            //summarizeData(dataContainer, "afterGenerateVacant");
+            generateVacantDwellings();
+            summarizeData(dataContainer, "afterGenerateVacant");
             generateJobs();
             summarizeData(dataContainer, "afterGenerateJobs");
-            //generateAutos();
+            generateAutos();
         } else {
             readPopulation();
         }
@@ -67,7 +67,7 @@ public class Allocation extends ModuleSynPop{
         new AssignSchools(dataContainer, dataSetSynPop).run();
     }
 
-    public void generateAutos() {new CarOwnership().run();}
+    public void generateAutos() {new CarOwnership(dataContainer).run();}
 
     public void readPopulation(){
         educationalLevel = new HashMap<>();

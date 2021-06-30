@@ -4,7 +4,7 @@ import de.tum.bgu.msm.DataBuilder;
 import de.tum.bgu.msm.io.input.GeoDataReader;
 import de.tum.bgu.msm.io.output.*;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.run.GeoDataReaderManchester;
+import de.tum.bgu.msm.data.GeoDataReaderManchester;
 import de.tum.bgu.msm.run.io.JobWriterBangkok;
 import de.tum.bgu.msm.run.io.PersonWriterBangkok;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;

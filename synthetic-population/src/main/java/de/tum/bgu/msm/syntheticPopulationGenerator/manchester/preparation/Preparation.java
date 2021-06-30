@@ -25,8 +25,7 @@ public class Preparation extends ModuleSynPop {
         if (PropertiesSynPop.get().main.runAllocation) {
             readMicroData();
             translatePersonMicroData();
-            //TODO
-            //checkHouseholdRelationships();
+            checkHouseholdRelationships();
             writeMicroData();
             if (PropertiesSynPop.get().main.runIPU) {
                 createFrequencyMatrix();
