@@ -1,6 +1,8 @@
 package de.tum.bgu.msm.scenarios.health;
 
 import de.tum.bgu.msm.data.Mode;
+import de.tum.bgu.msm.data.Purpose;
+import de.tum.bgu.msm.data.person.PersonMuc;
 
 // Calculates physical activity exposure for a given mode, distance, and time
 public class PhysicalActivity {
@@ -15,25 +17,29 @@ public class PhysicalActivity {
     private static final double STATIONARY_TIME_PROPORTION = 0.2;
     private static final double CYCLE_EFFICIENCY = 0.93;
 
-    public static double calculate(Mode mode, double metres, double hours) {
-        if(mode.equals(Mode.walk)) {
-            return calculateWalk(metres, hours);
+    public static double getMet(Mode mode, double metres, double seconds) {
+        if(mode.equals(Mode.autoDriver) || mode.equals(Mode.autoPassenger)) {
+            return 1.28;
+        } else if(mode.equals(Mode.publicTransport)) {
+            return 1.67;
+        } else if(mode.equals(Mode.walk)) {
+            return getWalkMet(metres, seconds);
         } else if(mode.equals(Mode.bicycle)) {
-            return calculateCycle(metres, hours);
+            return getCycleMet(metres, seconds);
         } else {
             return 0.;
         }
     }
 
-    private static double calculateWalk(double metres, double hours) {
-        double speed = metres / (hours * 3600.);
-        double walkMMET = 1.45*Math.exp(0.684*speed) - 1;
-        return walkMMET * hours;
+
+    private static double getWalkMet(double metres, double seconds) {
+        double speed = metres / seconds;
+
+        return 1.45*Math.exp(0.684*speed);
     }
 
-    private static double calculateCycle(double metres, double hours) {
-        double speed = metres / (hours * 3600.);
-
+    private static double getCycleMet(double metres, double seconds) {
+        double speed = metres / seconds;
         double speedMoving = speed / (1-STATIONARY_TIME_PROPORTION);
         double speedAir = speedMoving;
         double powerRoadResistance = GROUND_RESISTANCE_COEFFICIENT * (PERSON_KG + BIKE_AND_BAG_KG) * speedMoving;
@@ -41,9 +47,8 @@ public class PhysicalActivity {
         double power = (powerRoadResistance + powerWindResistance) / CYCLE_EFFICIENCY;
         double oxygenLitersPerMin = 0.01141 * power + 0.435;
         double kCalPerMin = oxygenLitersPerMin * 5;
-        double cycleMMET = kCalPerMin * 60 / (PERSON_KG * (1-STATIONARY_TIME_PROPORTION)) - 1;
 
-        return cycleMMET * hours;
+        return kCalPerMin * 60 / (PERSON_KG * (1-STATIONARY_TIME_PROPORTION));
     }
 
 }

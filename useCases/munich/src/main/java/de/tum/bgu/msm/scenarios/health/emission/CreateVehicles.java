@@ -13,6 +13,7 @@ import org.matsim.vehicles.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CreateVehicles {
 
@@ -59,40 +60,38 @@ public class CreateVehicles {
             sc.getVehicles().addVehicleType(type);
     }
 
-    public void runVehicle(String eventFile, String vehicleFile) {
-            //Read in events file and find out every agent by its id
-            List<Id<Vehicle>> listOfIds = new ArrayList<>();
+    public void runVehicle(String vehicleFile, String vehicleEmissionFile) {
+        //Read in events file and find out every agent by its id
+        //List<Id<Vehicle>> listOfIds = new ArrayList<>();
+        //EventsManager eventsManager = EventsUtils.createEventsManager();
+        //FindAgentsFromEventsHandler findAgentsFromEventsHandler = new FindAgentsFromEventsHandler(listOfIds);
+        //eventsManager.addHandler(findAgentsFromEventsHandler);
+        // new MatsimEventsReader(eventsManager).readFile(eventFile);
 
-            EventsManager eventsManager = EventsUtils.createEventsManager();
-            FindAgentsFromEventsHandler findAgentsFromEventsHandler = new FindAgentsFromEventsHandler(listOfIds);
-            eventsManager.addHandler(findAgentsFromEventsHandler);
-            new MatsimEventsReader(eventsManager).readFile(eventFile);
 
-            logger.info("Found " + listOfIds.size() + " different agents. Assign vehicle types according to their id.");
-
-            for (Id<Vehicle> vehicleId : listOfIds) {
-                String id = vehicleId.toString();
-                Id<Vehicle> vehId = Id.createVehicleId(id);
-                Vehicle vehicle;
-
-                if(id.contains("LD")){
-                    vehicle = VehicleUtils.getFactory().createVehicle(vehId, vehicles.getVehicleTypes().get(Id.create("HGV", VehicleType.class)));
-                    vehicles.addVehicle(vehicle);
-                } else if (id.contains("SD")){
-                    vehicle = VehicleUtils.getFactory().createVehicle(vehId, vehicles.getVehicleTypes().get(Id.create("HGV", VehicleType.class)));
-                    vehicles.addVehicle(vehicle);
-                } else if (id.contains("van")){
-                    vehicle = VehicleUtils.getFactory().createVehicle(vehId, vehicles.getVehicleTypes().get(Id.create("HGV", VehicleType.class)));
-                    vehicles.addVehicle(vehicle);
-                } else if (id.contains("cargoBike")){
-                    vehicle = VehicleUtils.getFactory().createVehicle(vehId, vehicles.getVehicleTypes().get(Id.create("ZERO_EMISSION_VEHICLE", VehicleType.class)));
-                    vehicles.addVehicle(vehicle);
-                } else {
-                    vehicle = VehicleUtils.getFactory().createVehicle(vehId, vehicles.getVehicleTypes().get(Id.create("pass. car", VehicleType.class)));
-                    vehicles.addVehicle(vehicle);
-                }
+        new MatsimVehicleReader(sc.getVehicles()).readFile(vehicleFile);
+        logger.info("Found " + sc.getVehicles().getVehicles().size() + " different agents. Assign vehicle types according to their id.");
+        for (Id<Vehicle> vehicleId : sc.getVehicles().getVehicles().keySet()) {
+            String id = vehicleId.toString();
+            Id<Vehicle> vehId = Id.createVehicleId(id);
+            Vehicle vehicle;
+            if(id.contains("LD")){
+                vehicle = VehicleUtils.getFactory().createVehicle(vehId, vehicles.getVehicleTypes().get(Id.create("HGV", VehicleType.class)));
+                vehicles.addVehicle(vehicle);
+            } else if (id.contains("SD")){
+                vehicle = VehicleUtils.getFactory().createVehicle(vehId, vehicles.getVehicleTypes().get(Id.create("HGV", VehicleType.class)));
+                vehicles.addVehicle(vehicle);
+            } else if (id.contains("van")){
+                vehicle = VehicleUtils.getFactory().createVehicle(vehId, vehicles.getVehicleTypes().get(Id.create("HGV", VehicleType.class)));
+                vehicles.addVehicle(vehicle);
+            } else if (id.contains("cargoBike")){
+                vehicle = VehicleUtils.getFactory().createVehicle(vehId, vehicles.getVehicleTypes().get(Id.create("ZERO_EMISSION_VEHICLE", VehicleType.class)));
+                vehicles.addVehicle(vehicle);
+            } else {
+                vehicle = VehicleUtils.getFactory().createVehicle(vehId, vehicles.getVehicleTypes().get(Id.create("pass. car", VehicleType.class)));
+                vehicles.addVehicle(vehicle);
             }
-
-            new VehicleWriterV1(vehicles).writeFile(vehicleFile);
+        }
+        new VehicleWriterV1(vehicles).writeFile(vehicleEmissionFile);
     }
 }

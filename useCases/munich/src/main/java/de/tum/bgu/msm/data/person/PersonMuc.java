@@ -3,8 +3,6 @@ package de.tum.bgu.msm.data.person;
 import de.tum.bgu.msm.data.Mode;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.schools.PersonWithSchool;
-import org.matsim.contrib.accidents.AccidentSeverity;
-import org.matsim.contrib.emissions.Pollutant;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,12 +18,16 @@ public class PersonMuc implements PersonWithSchool {
     private int schoolPlace = 0;
     private int schoolId = -1;
 
+    private double weeklyTravelSeconds = 0.;
+    private double weeklyActivityMinutes = 0.;
+    private double weeklyHomeHours = 0.;
+
     //for health model
     private Map<Mode, Double> weeklyPhysicalActivityMmetHours = new HashMap<>();
-    private double weeklyLightInjuryRisk;
-    private double weeklySevereInjuryRisk;
-    private double weeklyFatalityInjuryRisk;
-    private Map<Pollutant, Double> weeklyExposureByPollutant = new HashMap<>();
+    private double weeklyLightInjuryRisk = 0.;
+    private double weeklySevereInjuryRisk = 0.;
+    private double weeklyFatalityInjuryRisk = 0.;
+    private Map<String, Double> weeklyExposureByPollutant = new HashMap<>();
     private double allCauseRR;
 
 
@@ -174,13 +176,28 @@ public class PersonMuc implements PersonWithSchool {
         delegate.setAttribute(key, value);
     }
 
-    public void addWeeklyPhysicalActivityMmetHours(Mode mode, double mmetHours) {
+    public void updateWeeklyPhysicalActivityMmetHours(Mode mode, double mmetHours) {
         if(weeklyPhysicalActivityMmetHours.get(mode) == null) {
             weeklyPhysicalActivityMmetHours.put(mode,mmetHours);
         } else {
             weeklyPhysicalActivityMmetHours.put(mode, weeklyPhysicalActivityMmetHours.get(mode) + mmetHours);
         }
     }
+
+    public void updateWeeklyTravelSeconds(double seconds) {
+        weeklyTravelSeconds += seconds;
+    }
+    public void updateWeeklyActivityMinutes(double minutes) {
+        weeklyActivityMinutes += minutes; }
+
+    public double getWeeklyTravelSeconds() {
+        return weeklyTravelSeconds;
+    }
+    public double getWeeklyActivityMinutes() { return weeklyActivityMinutes; }
+
+    public void setWeeklyHomeHours(double hours) { this.weeklyHomeHours = hours; }
+
+    public double getWeeklyHomeHours() { return weeklyHomeHours; }
 
     public double getWeeklyPhysicalActivityMmetHours(Mode mode) {
         return weeklyPhysicalActivityMmetHours.getOrDefault(mode,0.);
@@ -190,24 +207,24 @@ public class PersonMuc implements PersonWithSchool {
         return weeklyLightInjuryRisk;
     }
 
-    public void setWeeklyLightInjuryRisk(double weeklyLightInjuryRisk) {
-        this.weeklyLightInjuryRisk = weeklyLightInjuryRisk;
+    public void updateWeeklyLightInjuryRisk(double weeklyLightInjuryRisk) {
+        this.weeklyLightInjuryRisk = 1 - ((1 - this.weeklyLightInjuryRisk) * (1 - weeklyLightInjuryRisk));
     }
 
     public double getWeeklySevereInjuryRisk() {
         return weeklySevereInjuryRisk;
     }
 
-    public void setWeeklySevereInjuryRisk(double weeklySevereInjuryRisk) {
-        this.weeklySevereInjuryRisk = weeklySevereInjuryRisk;
+    public void updateWeeklySevereInjuryRisk(double weeklySevereInjuryRisk) {
+        this.weeklySevereInjuryRisk = 1 - ((1 - this.weeklySevereInjuryRisk) * (1 - weeklySevereInjuryRisk));
     }
 
-    public Map<Pollutant, Double> getWeeklyExposureByPollutant() {
-        return weeklyExposureByPollutant;
+    public Double getWeeklyExposureByPollutant(String pollutant) {
+        return weeklyExposureByPollutant.get(pollutant);
     }
 
-    public void setWeeklyExposureByPollutant(Map<Pollutant, Double> weeklyExposureByPollutant) {
-        this.weeklyExposureByPollutant = weeklyExposureByPollutant;
+    public void updateWeeklyPollutionExposures(Map<String, Double> newExposures) {
+        newExposures.forEach((k, v) -> weeklyExposureByPollutant.merge(k, v, Double::sum));
     }
 
     public double getAllCauseRR() {return allCauseRR;}
@@ -218,7 +235,7 @@ public class PersonMuc implements PersonWithSchool {
         return weeklyFatalityInjuryRisk;
     }
 
-    public void setWeeklyFatalityInjuryRisk(double weeklyFatalityInjuryRisk) {
-        this.weeklyFatalityInjuryRisk = weeklyFatalityInjuryRisk;
+    public void updateWeeklyFatalityInjuryRisk(double weeklyFatalityInjuryRisk) {
+        this.weeklyFatalityInjuryRisk = 1 - ((1 - this.weeklyFatalityInjuryRisk) * (1 - weeklyFatalityInjuryRisk));
     }
 }

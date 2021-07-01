@@ -26,15 +26,17 @@ public class Trip implements Id {
     private int person;
     private Mode tripMode;
     private int departureInMinutes;
+    private int departureReturnInMinutes;
 
-    private double lightInjuryRisk;
-    private double severeInjuryRisk;
-    private double fatalityRisk;
-    private double physicalActivityMmetHours;
-    private double matsimTravelTime;
-    private double matsimTravelDistance;
-    private Map<String, Double> exposureMap = new HashMap<>();
-
+    private double activityDuration;
+    private double lightInjuryRisk = 0.;
+    private double severeInjuryRisk = 0.;
+    private double fatalityRisk = 0.;
+    private double physicalActivityMmetHours = 0.;
+    private double matsimTravelTime = 0.;
+    private double matsimTravelDistance = 0.;
+    private Map<String, Double> travelExposureMap = new HashMap<>();
+    private Map<String, Double> activityExposureMap = new HashMap<>();
 
     public Trip(int tripId, Purpose tripPurpose) {
         this.tripId = tripId;
@@ -74,6 +76,12 @@ public class Trip implements Id {
         return departureInMinutes;
     }
 
+    public void setDepartureReturnInMinutes(int departureReturnInMinutes) {
+        this.departureReturnInMinutes = departureReturnInMinutes;
+    }
+
+    public int getDepartureReturnInMinutes() { return departureReturnInMinutes; }
+
     public int getTripId() {
         return tripId;
     }
@@ -107,48 +115,62 @@ public class Trip implements Id {
         return severeInjuryRisk;
     }
 
-    public void setSevereInjuryRisk(double severeInjuryRisk) {
-        this.severeInjuryRisk = severeInjuryRisk;
+    public void updateSevereInjuryRisk(double severeInjuryRisk) {
+        this.severeInjuryRisk = 1 - ((1 - this.severeInjuryRisk) * (1 - severeInjuryRisk));
     }
 
     public double getPhysicalActivityMmetHours() {
         return physicalActivityMmetHours;
     }
 
-    public void setPhysicalActivityMmetHours(double mmetHours) {
-        this.physicalActivityMmetHours = mmetHours;
+    public void updatePhysicalActivityMarginalMetHours(double mmetHours) {
+        this.physicalActivityMmetHours += mmetHours;
     }
 
-    public Map<String, Double> getExposureMap() {
-        return exposureMap;
+    public Map<String, Double> getTravelExposureMap() {
+        return travelExposureMap;
     }
 
-    public void setExposureMap(Map<String, Double> exposureMap) {
-        this.exposureMap = exposureMap;
+    public Map<String, Double> getActivityExposureMap() {
+        return activityExposureMap;
+    }
+
+    public void updateTravelExposureMap(Map<String, Double> newExposures) {
+        newExposures.forEach((k, v) -> travelExposureMap.merge(k, v, Double::sum));
+    }
+
+    public void setActivityExposureMap(Map<String, Double> newExposures) {
+        this.activityExposureMap = newExposures;
     }
 
     public double getFatalityRisk() {
         return fatalityRisk;
     }
 
-    public void setFatalityRisk(double fatalityRisk) {
-        this.fatalityRisk = fatalityRisk;
+    public void updateFatalityRisk(double fatalityRisk) {
+        this.fatalityRisk = 1 - ((1 - this.fatalityRisk) * (1 - fatalityRisk));
+    }
+
+    public double getActivityDuration() { return activityDuration; }
+
+    public void setActivityDuration(double minutes) {
+        this.activityDuration = minutes;
     }
 
     public double getMatsimTravelTime() {
         return matsimTravelTime;
     }
 
-    public void setMatsimTravelTime(double matsimTravelTime) {
-        this.matsimTravelTime = matsimTravelTime;
+    public void updateMatsimTravelTime(double matsimTravelTime) {
+        this.matsimTravelTime += matsimTravelTime;
     }
 
     public double getMatsimTravelDistance() {
         return matsimTravelDistance;
     }
 
-    public void setMatsimTravelDistance(double matsimTravelDistance) {
-        this.matsimTravelDistance = matsimTravelDistance;
+    public void updateMatsimTravelDistance(double matsimTravelDistance) {
+        this.matsimTravelDistance += matsimTravelDistance;
     }
 
     public Coord getTripOrigin() {

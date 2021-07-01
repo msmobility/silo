@@ -8,13 +8,8 @@ import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.io.output.PersonWriter;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
-import org.matsim.contrib.emissions.Pollutant;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class HealthPersonWriter implements PersonWriter {
 
@@ -40,6 +35,12 @@ public class HealthPersonWriter implements PersonWriter {
         pwp.print(",");
         pwp.print("schoolId");
         pwp.print(",");
+        pwp.print("totalTravelTime_sec");
+        pwp.print(",");
+        pwp.print("totalActivityTime_min");
+        pwp.print(",");
+        pwp.print("totalTimeAtHome_hr");
+        pwp.print(",");
         pwp.print("lightInjuryRisk");
         pwp.print(",");
         pwp.print("severeInjuryRisk");
@@ -49,14 +50,10 @@ public class HealthPersonWriter implements PersonWriter {
         pwp.print("walkMmetHours");
         pwp.print(",");
         pwp.print("cycleMmetHours");
-
-        //order of Set is not fixed
-        List<Pollutant> fixedPollutantList = new ArrayList<>();
-        for(Pollutant pollutant : ((HealthDataContainerImpl) dataContainer).getPollutantSet()){
-            fixedPollutantList.add(pollutant);
-            pwp.print(",");
-            pwp.print(pollutant.name());
-        }
+        pwp.print(",");
+        pwp.print("exposureNo2");
+        pwp.print(",");
+        pwp.print("exposurePm25");
         pwp.print(",");
         pwp.print("all_cause_RR");
         pwp.println();
@@ -87,6 +84,12 @@ public class HealthPersonWriter implements PersonWriter {
             pwp.print(",");
             pwp.print(((PersonMuc)pp).getSchoolId());
             pwp.print(",");
+            pwp.print(((PersonMuc)pp).getWeeklyTravelSeconds());
+            pwp.print(",");
+            pwp.print(((PersonMuc)pp).getWeeklyActivityMinutes());
+            pwp.print(",");
+            pwp.print(((PersonMuc)pp).getWeeklyHomeHours());
+            pwp.print(",");
             pwp.print(((PersonMuc)pp).getWeeklyLightInjuryRisk());
             pwp.print(",");
             pwp.print(((PersonMuc)pp).getWeeklySevereInjuryRisk());
@@ -96,10 +99,10 @@ public class HealthPersonWriter implements PersonWriter {
             pwp.print(((PersonMuc)pp).getWeeklyPhysicalActivityMmetHours(Mode.walk));
             pwp.print(",");
             pwp.print(((PersonMuc)pp).getWeeklyPhysicalActivityMmetHours(Mode.bicycle));
-            for(Pollutant pollutant : fixedPollutantList){
-                pwp.print(",");
-                pwp.print(((PersonMuc)pp).getWeeklyExposureByPollutant().get(pollutant.name()));
-            }
+            pwp.print(",");
+            pwp.print((((PersonMuc) pp).getWeeklyExposureByPollutant("no2")));
+            pwp.print(",");
+            pwp.print((((PersonMuc) pp).getWeeklyExposureByPollutant("pm2.5")));
             pwp.print(",");
             pwp.print(((PersonMuc)pp).getAllCauseRR());
             pwp.println();

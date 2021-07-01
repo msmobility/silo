@@ -10,8 +10,6 @@ import java.util.Collection;
 // Dose-response functions for health exposures (simple for now but will become more complex)
 public class RelativeRisks {
 
-    private static final double SEVERE_ACCIDENT_DEATH_RATE = 0.5; // todo: get actual value from Qin!
-
     public static double walk(double mMEThrs) {
         return Math.exp(Math.log(0.9)*mMEThrs/8.75);
     }
@@ -20,15 +18,15 @@ public class RelativeRisks {
         return Math.exp(Math.log(0.9)*mMEThrs/8.75);
     }
 
-    public static double no2(double tenMicrogramPerM3) {
-        return 1 + 0.08 * tenMicrogramPerM3;
+    public static double no2(double microgramPerM3) {
+        return 1 + 0.008 * microgramPerM3;
     }
 
-    public static double pm25(double tenMicrogramPerM3) {
-        return 1 + 0.02 * tenMicrogramPerM3 + (tenMicrogramPerM3 > 50 ? .01 : 0);
+    public static double pm25(double microgramPerM3) {
+        return 1 + 0.002 * microgramPerM3 + (microgramPerM3 > 500 ? .01 : 0);
     }
 
     public static double accident(double risk) {
-        return 1 - risk * SEVERE_ACCIDENT_DEATH_RATE;
+        return 1 - risk;
     }
 }

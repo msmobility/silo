@@ -39,6 +39,7 @@ public class TripReaderMucHealth {
             int posMode = SiloUtil.findPositionInArray("mode", header);
             int posPerson = SiloUtil.findPositionInArray("p.ID", header);
             int posDepartureTime = SiloUtil.findPositionInArray("departure_time", header);
+            int posDepartureTimeReturn = SiloUtil.findPositionInArray("departure_time_return", header);
 
             // read line
             while ((recString = in.readLine()) != null) {
@@ -64,6 +65,10 @@ public class TripReaderMucHealth {
                 mitoTrip.setTripMode(Mode.valueOf(lineElements[posMode]));
                 mitoTrip.setPerson(Integer.parseInt(lineElements[posPerson]));
                 mitoTrip.setDepartureInMinutes(Integer.parseInt(lineElements[posDepartureTime]));
+                String departureTimeReturn = lineElements[posDepartureTimeReturn];
+                if(!departureTimeReturn.equals("NA")) {
+                    mitoTrip.setDepartureReturnInMinutes(Integer.parseInt(departureTimeReturn));
+                }
 
                 mitoTrips.put(id,mitoTrip);
             }
