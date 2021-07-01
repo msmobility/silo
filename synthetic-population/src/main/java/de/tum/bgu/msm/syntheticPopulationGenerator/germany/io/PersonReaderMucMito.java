@@ -193,9 +193,13 @@ public class PersonReaderMucMito implements PersonReader {
             }
             int posWorkZone = 0;
             int posWorkCommute = 0;
+            int posSchoolPlace = 0;
+            int posEduCommute = 0;
             if (haveWorkZone){
                 posWorkZone = SiloUtil.findPositionInArray("workZone", header);
                 posWorkCommute = SiloUtil.findPositionInArray("commuteDistanceKm", header);
+                posSchoolPlace = SiloUtil.findPositionInArray("schoolPlace", header);
+                posEduCommute = SiloUtil.findPositionInArray("commuteEduDistanceKm", header);
             }
 
             // read line
@@ -224,6 +228,7 @@ public class PersonReaderMucMito implements PersonReader {
                     pp.setAttribute("disability", disability);
                     int schoolId = Integer.parseInt(lineElements[posschoolId]);
                     pp.setSchoolId(schoolId);
+                    pp.setAttribute("schoolId", schoolId);
                     int schoolType = Integer.parseInt(lineElements[posschoolType]);
                     pp.setAttribute("schoolType", schoolType);
                     if (haveState) {
@@ -240,9 +245,15 @@ public class PersonReaderMucMito implements PersonReader {
                         pp.setAttribute("workZone", workzone);
                         double commuteDistace = Double.parseDouble(lineElements[posWorkCommute]);
                         pp.setAttribute("commuteDistance", commuteDistace);
+                        int schoolPlace = Integer.parseInt(lineElements[posSchoolPlace]);
+                        pp.setAttribute("schoolPlace", schoolPlace);
+                        double commuteEduDistance = Double.parseDouble(lineElements[posEduCommute]);
+                        pp.setAttribute("commuteEduDistance", commuteEduDistance);
                     } else {
                         pp.setAttribute("workZone", 0);
                         pp.setAttribute("commuteDistance", 0);
+                        pp.setAttribute("schoolPlace", 0);
+                        pp.setAttribute("commuteEduDistance", 0);
                     }
                     if (id == SiloUtil.trackPp) {
                         SiloUtil.trackWriter.println("Read person with following attributes from " + path);

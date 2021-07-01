@@ -93,6 +93,7 @@ public class GermanyPropertiesSynPop extends AbstractPropertiesSynPop {
         jobLocationlist = null;
         schoolLocationlist = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"school.location", "input/syntheticPopulation/08_schoolLocation.csv"));
 
+        firstVacantJob = PropertiesUtil.getIntProperty(bundle,"first.vacant.job.id", 45000000);
         /*cellsMicrolocations = SiloUtil.readCSVfile2("C:/models/silo/germany/input/syntheticPopulation/all_raster_100_updated.csv");
         cellsMicrolocations.buildStringIndex(cellsMicrolocations.getColumnPosition("id"));*/
 

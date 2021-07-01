@@ -42,4 +42,30 @@ public class HouseholdWriterMucMito implements HouseholdWriter {
         }
         pwh.close();
     }
+
+    public void writeHouseholdsWithCoordinates(String path, int subPopulation) {
+        logger.info("  Writing household file to " + path);
+        PrintWriter pwh = SiloUtil.openFileForSequentialWriting(path, true);
+        if (subPopulation == 0) {
+            pwh.println("id,zone,hhSize,autos,coordX,coordY");
+        }
+        for (Household hh : householdData.getHouseholds()) {
+            if (hh.getId() == SiloUtil.trackHh) {
+                SiloUtil.trackingFile("Writing hh " + hh.getId() + " to micro data file.");
+                SiloUtil.trackWriter.println(hh.toString());
+            }
+            pwh.print(hh.getId());
+            pwh.print(",");
+            pwh.print(realEstateData.getDwelling(hh.getDwellingId()).getZoneId());
+            pwh.print(",");
+            pwh.print(hh.getHhSize());
+            pwh.print(",");
+            pwh.print(hh.getAutos());
+            pwh.print(",");
+            pwh.print(realEstateData.getDwelling(hh.getDwellingId()).getCoordinate().x);
+            pwh.print(",");
+            pwh.println(realEstateData.getDwelling(hh.getDwellingId()).getCoordinate().y);
+        }
+        pwh.close();
+    }
 }

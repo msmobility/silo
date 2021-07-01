@@ -76,6 +76,7 @@ public class DataSetSynPop {
     Map<Integer, Map<Integer, Integer>> zoneSchoolTypeSchoolLocationVacancy;
     private Map<Integer, Integer> assignedUniversitiesByZone;
     private Map<Integer, Map< Integer, Map<Integer, Coordinate>>> microlocationsSchools;
+    private int nextVacantJobId;
 
     public TableDataSet getWeights() {
         return weights;
@@ -438,4 +439,11 @@ public class DataSetSynPop {
         this.microlocationsSchools = microlocationsSchools;
     }
 
+    public int getNextVacantJobId() {
+        return nextVacantJobId++;
+    }
+
+    public void setNextVacantJobId(int nextVacantJobId) {
+        this.nextVacantJobId = nextVacantJobId;
+    }
 }

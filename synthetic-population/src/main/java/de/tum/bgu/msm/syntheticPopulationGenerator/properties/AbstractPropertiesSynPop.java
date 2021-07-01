@@ -87,5 +87,6 @@ public abstract class AbstractPropertiesSynPop {
     public int vacantJobPercentage;
     public TableDataSet schoolsLocation;
     //public TableDataSet cellsMicrolocations;
+    public int firstVacantJob;
 
 }

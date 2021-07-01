@@ -204,11 +204,18 @@ public class ReadSubPopulations {
                 + subPopulation
                 + "_" + year + ".csv";
         if (hasWorkZone){
-            fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
-                    + "/" + "subPopulationsWithJobs" + "/"
-                    + PropertiesSynPop.get().main.householdsFileName
-                    + subPopulation
-                    + "_" + year + ".csv";
+            if (subPopulation != -1) {
+                fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
+                        + "/" + "subPopulationsWithJobs" + "/"
+                        + PropertiesSynPop.get().main.householdsFileName
+                        + subPopulation
+                        + "_" + year + ".csv";
+            } else {
+                fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
+                        + "/" + "subPopulationsWithJobs" + "/"
+                        + PropertiesSynPop.get().main.householdsFileName
+                        + "_" + year + ".csv";
+            }
         }
         HouseholdReaderMucMito hhReader = new HouseholdReaderMucMito(householdData, (HouseholdFactoryMuc) householdFactory);
         int totalHouseholds = hhReader.readDataWithState(fileName, haveState);
@@ -226,11 +233,18 @@ public class ReadSubPopulations {
                     + subPopulation
                     + "_" + year + ".csv";
         if (haveWorkZone){
-            fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
-                    + "/" + "subPopulationsWithJobs" + "/"
-                    + PropertiesSynPop.get().main.personsFileName
-                    + subPopulation
-                    + "_" + year + ".csv";
+            if (subPopulation != -1) {
+                fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
+                        + "/" + "subPopulationsWithJobs" + "/"
+                        + PropertiesSynPop.get().main.personsFileName
+                        + subPopulation
+                        + "_" + year + ".csv";
+            } else {
+                fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
+                        + "/" + "subPopulationsWithJobs" + "/"
+                        + PropertiesSynPop.get().main.personsFileName
+                        + "_" + year + ".csv";
+            }
         }
         PersonReaderMucMito ppReader = new PersonReaderMucMito(householdData);
         int totalPersons = ppReader.readDataWithState(fileName, haveState, haveWorkZone);
@@ -247,11 +261,18 @@ public class ReadSubPopulations {
                     + subPopulation
                     + "_" + year + ".csv";
         if (haveWorkZone){
-            fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
-                    + "/" + "subPopulationsWithJobs" + "/"
-                    + PropertiesSynPop.get().main.dwellingsFileName
-                    + subPopulation
-                    + "_" + year + ".csv";
+            if (subPopulation != -1) {
+                fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
+                        + "/" + "subPopulationsWithJobs" + "/"
+                        + PropertiesSynPop.get().main.dwellingsFileName
+                        + subPopulation
+                        + "_" + year + ".csv";
+            } else {
+                fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
+                        + "/" + "subPopulationsWithJobs" + "/"
+                        + PropertiesSynPop.get().main.dwellingsFileName
+                        + "_" + year + ".csv";
+            }
         }
         DwellingReaderMucMito ddReader = new DwellingReaderMucMito(realEstate);
         int dwellingsInState = ddReader.readDataWithState(fileName, hasState);
@@ -262,10 +283,17 @@ public class ReadSubPopulations {
         logger.info("Reading job micro data from ascii file from state " );
 
         String fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
-                + "/" + "subPopulationsWithJobs" + "/microData/"
+                + "/" + "subPopulationsWithJobs" + "/"
                 + PropertiesSynPop.get().main.jobsFileName
                 + subPopulation
                 + "_" + year + ".csv";
+
+        if (subPopulation == -1){
+            fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
+                    + "/" + "subPopulationsWithJobs" + "/"
+                    + PropertiesSynPop.get().main.jobsFileName
+                    + "_" + year + ".csv";
+        }
 
         JobReaderMucMito ddReader = new JobReaderMucMito(dataContainer.getJobDataManager(), (JobFactoryMuc) dataContainer.getJobDataManager().getFactory());
         ddReader.readData(fileName);
