@@ -38,8 +38,6 @@ public class GeoDataReaderMuc implements GeoDataReader {
 
         int[] regionColumn = zonalData.getColumnAsInt("Region");
 
-        int[] TAZ = zonalData.getColumnAsInt("TAZ");
-
         for (int i = 0; i < zoneIds.length; i++) {
             AreaTypes.SGType type = AreaTypes.SGType.valueOf(areaTypes[i]);
             Region region;
@@ -50,7 +48,7 @@ public class GeoDataReaderMuc implements GeoDataReader {
                 region = new RegionImpl(regionId);
                 geoDataMuc.addRegion(region);
             }
-            ZoneMuc zone = new ZoneMuc(zoneIds[i], zoneAreas[i], type, ptDistances[i], region, TAZ[i]);
+            ZoneMuc zone = new ZoneMuc(zoneIds[i], zoneAreas[i], type, ptDistances[i], region);
             region.addZone(zone);
             geoDataMuc.addZone(zone);
         }
