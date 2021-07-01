@@ -1,10 +1,9 @@
 package de.tum.bgu.msm.models.demography.death;
 
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
-import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonRole;
 import de.tum.bgu.msm.events.impls.person.DeathEvent;
@@ -65,22 +64,6 @@ public class DeathModelImpl extends AbstractModel implements DeathModel {
 
     @Override
     public void setup() {
-//        final Reader reader;
-//
-//        switch (properties.main.implementation) {
-//            case MUNICH:
-//                reader = new InputStreamReader(this.getClass().getResourceAsStream("DeathProbabilityCalc"));
-//                break;
-//            case MARYLAND:
-//                reader = new InputStreamReader(this.getClass().getResourceAsStream("DeathProbabilityCalcMstm"));
-//                break;
-//            case PERTH:
-//            case KAGAWA:
-//            case CAPE_TOWN:
-//            default:
-//                throw new RuntimeException("DeathModel implementation not applicable for " + properties.main.implementation);
-//        }
-
     }
 
     @Override

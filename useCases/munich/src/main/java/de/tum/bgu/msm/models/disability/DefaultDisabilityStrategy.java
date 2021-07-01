@@ -1,11 +1,8 @@
 package de.tum.bgu.msm.models.disability;
 
 import de.tum.bgu.msm.data.person.Person;
-import de.tum.bgu.msm.models.ScriptInputProvider;
-import de.tum.bgu.msm.models.demography.death.DeathStrategy;
 import de.tum.bgu.msm.util.js.JavaScriptCalculator;
 
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 

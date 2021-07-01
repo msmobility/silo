@@ -1,6 +1,5 @@
 package de.tum.bgu.msm.run.models.realEstate;
 
-import de.tum.bgu.msm.models.ScriptInputProvider;
 import de.tum.bgu.msm.models.realEstate.renovation.RenovationStrategy;
 import de.tum.bgu.msm.util.js.JavaScriptCalculator;
 
