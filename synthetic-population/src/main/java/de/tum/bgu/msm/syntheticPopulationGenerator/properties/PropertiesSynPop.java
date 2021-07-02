@@ -10,8 +10,9 @@ public final class PropertiesSynPop {
         return instance;
     }
 
-    public static void initializePropertiesSynPop(AbstractPropertiesSynPop propertiesSynPop){
+    public static PropertiesSynPop initializePropertiesSynPop(AbstractPropertiesSynPop propertiesSynPop){
         instance = new PropertiesSynPop(propertiesSynPop);
+        return instance;
     }
 
     public final AbstractPropertiesSynPop main;

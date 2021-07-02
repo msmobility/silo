@@ -4,6 +4,7 @@ import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.data.person.Nationality;
 import de.tum.bgu.msm.data.person.Person;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -108,4 +109,5 @@ public class HouseholdMuc implements Household {
         //}
         nationality = Nationality.OTHER;
     }
+
 }
