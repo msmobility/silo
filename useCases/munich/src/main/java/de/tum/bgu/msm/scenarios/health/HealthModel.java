@@ -140,21 +140,27 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
     private void healthDataAssembler(int year, Day day, Mode mode) {
         logger.info("Updating health data for year " + year + "|day: " + day + "|mode: " + mode + ".");
         String eventsFile;
+        String networkFile;
 
         final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/"
                 + properties.main.scenarioName + "/matsim/" + latestMatsimYear;
-        scenario.getConfig().controler().setOutputDirectory(outputDirectoryRoot);
 
         switch (mode){
             case autoDriver:
             case autoPassenger:
+                scenario = ScenarioUtils.createMutableScenario(initialMatsimConfig);
+                scenario.getConfig().controler().setOutputDirectory(outputDirectoryRoot);
                 eventsFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + latestMatsimYear + ".output_events.xml.gz";
-                calculateTripHealthIndicator(eventsFile, new ArrayList<>(mitoTrips.values()), day, mode);
+                networkFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + latestMatsimYear + ".output_network.xml.gz";
+                calculateTripHealthIndicator(networkFile, eventsFile, new ArrayList<>(mitoTrips.values()), day, mode);
                 break;
             case bicycle:
             case walk:
+                scenario = ScenarioUtils.createMutableScenario(initialMatsimConfig);
+                scenario.getConfig().controler().setOutputDirectory(outputDirectoryRoot);
                 eventsFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/bikePed/" + latestMatsimYear + ".output_events.xml.gz";
-                calculateTripHealthIndicator(eventsFile, new ArrayList<>(mitoTrips.values()), day, mode);
+                networkFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + latestMatsimYear + ".output_network.xml.gz";
+                calculateTripHealthIndicator(networkFile, eventsFile, new ArrayList<>(mitoTrips.values()), day, mode);
                 break;
             default:
                 logger.warn("No health model for mode: " + mode);
@@ -171,8 +177,10 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
     }
 
 
-    public void calculateTripHealthIndicator(String eventsFile, List<Trip> trips, Day day, Mode mode) {
+    public void calculateTripHealthIndicator(String networkFile, String eventsFile, List<Trip> trips, Day day, Mode mode) {
         logger.info("Updating trip health data for mode " + mode + ", day " + day);
+        new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
+
         final int partitionSize = (int) ((double) trips.size() / Runtime.getRuntime().availableProcessors()) + 1;
         Iterable<List<Trip>> partitions = Iterables.partition(trips, partitionSize);
 
@@ -186,11 +194,8 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
             roadPositionFactor = 1.;
         }
 
-        TravelTime travelTime = TempTravelTimeUtils.createTravelTimesFromEvents(scenario, eventsFile);
+        TravelTime travelTime = TravelTimeUtils.createTravelTimesFromEvents(scenario, eventsFile);
         TravelDisutility travelDisutility = ControlerDefaults.createDefaultTravelDisutilityFactory(scenario).createTravelDisutility(travelTime);
-
-        Network network = scenario.getNetwork();
-        //new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
 
         ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Runtime.getRuntime().availableProcessors());
 
@@ -200,8 +205,7 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
         AtomicInteger NO_PATH_TRIP = new AtomicInteger();
 
         for (final List<Trip> partition : partitions) {
-            LeastCostPathCalculator pathCalculator = new FastAStarLandmarksFactory(threads).createPathCalculator(network, travelDisutility, travelTime);
-            //LeastCostPathCalculator pathCalculator = new FastDijkstraFactory(false).createPathCalculator(network, travelDisutility, travelTime);
+            LeastCostPathCalculator pathCalculator = new FastAStarLandmarksFactory(threads).createPathCalculator(scenario.getNetwork(), travelDisutility, travelTime);
 
             executor.addTaskToQueue(() -> {
                 try {
@@ -214,8 +218,8 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
                             logger.info(counterr + " in " + id);
                         };
 
-                        Node originNode = NetworkUtils.getNearestNode(network, trip.getTripOrigin());
-                        Node destinationNode = NetworkUtils.getNearestNode(network, trip.getTripDestination());
+                        Node originNode = NetworkUtils.getNearestNode(scenario.getNetwork(), trip.getTripOrigin());
+                        Node destinationNode = NetworkUtils.getNearestNode(scenario.getNetwork(), trip.getTripDestination());
 
                         // Calculate exposures for outbound path
                         int outboundDepartureTimeInSeconds = trip.getDepartureTimeInMinutes()*60;
