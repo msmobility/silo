@@ -31,10 +31,9 @@ public class CreateVehicles {
         this.sc = sc;
     }
 
-    public void run(String eventFileWithoutEmissions, String individualVehicleFile){
+    public void run(String vehicleFile, String vehicleEmissionFile){
             runVehicleType();
-            runVehicle(eventFileWithoutEmissions, individualVehicleFile);
-
+            runVehicle(vehicleFile, vehicleEmissionFile);
     }
 
     public void runVehicleType() {
