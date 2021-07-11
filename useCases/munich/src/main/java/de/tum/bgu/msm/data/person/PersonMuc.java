@@ -20,7 +20,7 @@ public class PersonMuc implements PersonWithSchool {
 
     private double weeklyTravelSeconds = 0.;
     private double weeklyActivityMinutes = 0.;
-    private double weeklyHomeHours = 0.;
+    private double weeklyHomeMinutes = 0.;
 
     //for health model
     private Map<Mode, Double> weeklyPhysicalActivityMmetHours = new HashMap<>();
@@ -28,6 +28,7 @@ public class PersonMuc implements PersonWithSchool {
     private double weeklySevereInjuryRisk = 0.;
     private double weeklyFatalityInjuryRisk = 0.;
     private Map<String, Double> weeklyExposureByPollutant = new HashMap<>();
+    private Map<String, Double> relativeRisks;
     private double allCauseRR;
 
 
@@ -195,9 +196,9 @@ public class PersonMuc implements PersonWithSchool {
     }
     public double getWeeklyActivityMinutes() { return weeklyActivityMinutes; }
 
-    public void setWeeklyHomeHours(double hours) { this.weeklyHomeHours = hours; }
+    public void setWeeklyHomeMinutes(double hours) { this.weeklyHomeMinutes = hours; }
 
-    public double getWeeklyHomeHours() { return weeklyHomeHours; }
+    public double getWeeklyHomeMinutes() { return weeklyHomeMinutes; }
 
     public double getWeeklyPhysicalActivityMmetHours(Mode mode) {
         return weeklyPhysicalActivityMmetHours.getOrDefault(mode,0.);
@@ -223,13 +224,30 @@ public class PersonMuc implements PersonWithSchool {
         return weeklyExposureByPollutant.get(pollutant);
     }
 
+    // todo: make not hardcoded...
+    public double getWeeklyExposureByPollutantNormalised(String pollutant) {
+        if(pollutant.equals("pm2.5")) {
+            return weeklyExposureByPollutant.get(pollutant) * 0.01040365 - 9.357286;
+        } else if(pollutant.equals("no2")) {
+            return weeklyExposureByPollutant.get(pollutant) * 0.02421532 - 65.95702;
+        } else return 0;
+    }
+
     public void updateWeeklyPollutionExposures(Map<String, Double> newExposures) {
         newExposures.forEach((k, v) -> weeklyExposureByPollutant.merge(k, v, Double::sum));
     }
 
     public double getAllCauseRR() {return allCauseRR;}
 
-    public void setAllCauseRR(double RR) {this.allCauseRR = RR;}
+    public void setAllCauseRR(double rr) {this.allCauseRR = rr;}
+
+    public Double getRelativeRiskByType(String type) {
+        return relativeRisks.get(type);
+    }
+
+    public void setRelativeRisks(Map<String, Double> relativeRisks) {
+        this.relativeRisks = relativeRisks;
+    }
 
     public double getWeeklyFatalityInjuryRisk() {
         return weeklyFatalityInjuryRisk;

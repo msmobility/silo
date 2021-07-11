@@ -15,6 +15,7 @@ public class DeathStrategyHealth implements DeathStrategy {
         final int personAge = Math.min(person.getAge(), 100);
         Gender personSex = person.getGender();
         double allCauseRR = ((PersonMuc)person).getAllCauseRR();
+        double fatalAccidentRisk = ((PersonMuc)person).getWeeklyFatalityInjuryRisk();
 
         var alpha = 0.;
 
@@ -432,6 +433,7 @@ public class DeathStrategyHealth implements DeathStrategy {
             throw new RuntimeException("Undefined negative person age!"+personAge);
         }
 
-        return alpha * allCauseRR;
+        double adjustedAlpha = alpha * allCauseRR;
+        return adjustedAlpha + fatalAccidentRisk - adjustedAlpha * fatalAccidentRisk;
     }
 }

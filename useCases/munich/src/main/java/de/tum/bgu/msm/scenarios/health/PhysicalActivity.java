@@ -8,6 +8,8 @@ import de.tum.bgu.msm.data.person.PersonMuc;
 public class PhysicalActivity {
 
     // Cycle-specific assumptions/parameters
+    private static final double GRADIENT = .015;
+    private static final double GRAVITY_M_PER_S2 = 9.8;
     private static final double GROUND_RESISTANCE_COEFFICIENT = 0.007;
     private static final double WIND_RESISTANCE_COEFFICIENT = 0.5;
     private static final double PERSON_KG = 76.9;
@@ -31,24 +33,30 @@ public class PhysicalActivity {
         }
     }
 
+    public static double getMMet(Mode mode, double metres, double seconds) {
+        return getMet(mode, metres, seconds) - 1.;
+    }
+
 
     private static double getWalkMet(double metres, double seconds) {
+        // From ACSM's Guidelines for Exercise Testing and Prescription
         double speed = metres / seconds;
-
-        return 1.45*Math.exp(0.684*speed);
+        return (6. * speed + 108. * speed * GRADIENT + 3.5) / 3.5;
     }
 
     private static double getCycleMet(double metres, double seconds) {
+        // From Propensity to Cycle Tool
         double speed = metres / seconds;
         double speedMoving = speed / (1-STATIONARY_TIME_PROPORTION);
         double speedAir = speedMoving;
         double powerRoadResistance = GROUND_RESISTANCE_COEFFICIENT * (PERSON_KG + BIKE_AND_BAG_KG) * speedMoving;
         double powerWindResistance = WIND_RESISTANCE_COEFFICIENT * FRONTAL_AREA_M2 * AIR_DENSITY_KG_PER_M2 * Math.pow(speedAir,2) * speedMoving;
-        double power = (powerRoadResistance + powerWindResistance) / CYCLE_EFFICIENCY;
+        double powerGravity = GRAVITY_M_PER_S2 * GRADIENT *  (PERSON_KG + BIKE_AND_BAG_KG) * speedMoving;
+        double power = (powerRoadResistance + powerWindResistance + powerGravity) / CYCLE_EFFICIENCY;
         double oxygenLitersPerMin = 0.01141 * power + 0.435;
         double kCalPerMin = oxygenLitersPerMin * 5;
 
-        return kCalPerMin * 60 / (PERSON_KG * (1-STATIONARY_TIME_PROPORTION));
+        return 0.88586 * kCalPerMin * 60 / (PERSON_KG * (1-STATIONARY_TIME_PROPORTION));
     }
 
 }

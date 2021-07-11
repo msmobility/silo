@@ -1,10 +1,7 @@
 package de.tum.bgu.msm.scenarios.health;
 
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.data.person.PersonMuc;
-import org.locationtech.jts.geom.Coordinate;
 import org.matsim.api.core.v01.Coord;
-import org.matsim.api.core.v01.population.Person;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +29,11 @@ public class Trip implements Id {
     private double lightInjuryRisk = 0.;
     private double severeInjuryRisk = 0.;
     private double fatalityRisk = 0.;
-    private double physicalActivityMmetHours = 0.;
+    private double physicalActivityMarginalMetHours = 0.;
+
+    private int matsimLinks = 0;
+    private double matsimLinkConcentrationPm25Sum = 0.;
+    private double matsimLinkConcentrationNo2Sum = 0.;
     private double matsimTravelTime = 0.;
     private double matsimTravelDistance = 0.;
     private Map<String, Double> travelExposureMap = new HashMap<>();
@@ -119,12 +120,12 @@ public class Trip implements Id {
         this.severeInjuryRisk = 1 - ((1 - this.severeInjuryRisk) * (1 - severeInjuryRisk));
     }
 
-    public double getPhysicalActivityMmetHours() {
-        return physicalActivityMmetHours;
+    public double getPhysicalActivityMarginalMetHours() {
+        return physicalActivityMarginalMetHours;
     }
 
     public void updatePhysicalActivityMarginalMetHours(double mmetHours) {
-        this.physicalActivityMmetHours += mmetHours;
+        this.physicalActivityMarginalMetHours += mmetHours;
     }
 
     public Map<String, Double> getTravelExposureMap() {
@@ -155,6 +156,30 @@ public class Trip implements Id {
 
     public void setActivityDuration(double minutes) {
         this.activityDuration = minutes;
+    }
+
+    public int getMatsimLinks() {
+        return matsimLinks;
+    }
+
+    public void updateMatsimLinks(int linkCount) {
+        this.matsimLinks += linkCount;
+    }
+
+    public double getMatsimLinkConcentrationPm25Sum() {
+        return matsimLinkConcentrationPm25Sum;
+    }
+
+    public void updateMatsimLinkConcentrationPm25Sum(double total) {
+        this.matsimLinkConcentrationPm25Sum += total;
+    }
+
+    public double getMatsimLinkConcentrationNo2Sum() {
+        return matsimLinkConcentrationNo2Sum;
+    }
+
+    public void updateMatsimLinkConcentrationNo2Sum(double total) {
+        this.matsimLinkConcentrationNo2Sum += total;
     }
 
     public double getMatsimTravelTime() {
