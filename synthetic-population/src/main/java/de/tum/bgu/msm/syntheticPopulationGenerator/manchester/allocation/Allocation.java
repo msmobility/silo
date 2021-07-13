@@ -34,7 +34,8 @@ public class Allocation extends ModuleSynPop{
             summarizeData(dataContainer, "afterGenerateVacant");
             generateJobs();
             summarizeData(dataContainer, "afterGenerateJobs");
-            generateAutos();
+            //TODO:Shall we use the hhAuto from micro data?
+            //generateAutos();
         } else {
             readPopulation();
         }

@@ -43,13 +43,13 @@ public class CheckHouseholdRelationship {
         for (int person = 0; person < hhSize; person++){
             int row = firstMember + person;
             int spouseInHousehold = dataSetSynPop.getPersonTable().get(row, "spouseInHousehold");
-            int relationToHead = dataSetSynPop.getPersonTable().get(row, "relationship");
+            int relationToHead = dataSetSynPop.getPersonTable().get(row, "relationshipCode");
             int maritalStatus = dataSetSynPop.getPersonTable().get(row, "marriage");
             int age = dataSetSynPop.getPersonTable().get(row, "age");
             int gender = dataSetSynPop.getPersonTable().get(row, "gender");
             if (relationToHead == 3) {
                 childrenInHousehold.put(row, age); //children -> children
-            } else if (maritalStatus == 2||maritalStatus == 3) {
+            } else if (maritalStatus == 2||maritalStatus == 3||maritalStatus == 4) {
                 if (spouseInHousehold == 1) {
                     married = updateInnerMap(married, gender, age, row); //married and spouse in household -> married
                 } else if (spouseInHousehold == 2) {
@@ -57,7 +57,7 @@ public class CheckHouseholdRelationship {
                 } else {
                     noClass = updateInnerMap(noClass, gender, age, row); //need further classification at the household level. Look for cohabitation
                 }
-            } else if (maritalStatus >= 4) {
+            } else if (maritalStatus >= 5) {
                 singles = updateInnerMap(singles, gender, age, row); //same gender married, divorced or widow -> single
             } else {
                 noClass = updateInnerMap(noClass, gender, age, row); //need further classification at the household level. Look for cohabitation

@@ -189,7 +189,7 @@ public class TranslateMicroDataToCode {
                 }
                 break;
         }
-        dataSetSynPop.getPersonTable().put(personCount,"relationship", valueCode);
+        dataSetSynPop.getPersonTable().put(personCount,"relationshipCode", valueCode);
     }
 
 

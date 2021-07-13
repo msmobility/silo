@@ -51,7 +51,7 @@ public class AssignJobs {
 
     public void run() {
         logger.info("   Running module: job allocation");
-        calculateDistanceImpedance();
+        //calculateDistanceImpedance();
         identifyVacantJobsByZoneType();
         shuffleWorkers();
         logger.info("Number of workers " + workerArrayList.size());
@@ -127,7 +127,7 @@ public class AssignJobs {
             double[] probs = new double[numberZonesByType.get(selectedJobType)];
             int[] ids = idZonesVacantJobsByType.get(selectedJobType);
             RowVector commuteFlow = dataSetSynPop.getCommuteFlowTazToTaz().getRow(homeTaz);
-            IntStream.range(0, probs.length).parallel().forEach(id -> probs[id] = commuteFlow.getValueAt(ids[id] * 1000/ 100));
+            IntStream.range(0, probs.length).parallel().forEach(id -> probs[id] = commuteFlow.getValueAt(ids[id] * 1000/ 100)* Math.pow(numberVacantJobsByZoneByType.get(ids[id]), 0.45));
             workplace = select(probs, ids);
 
         return workplace;
