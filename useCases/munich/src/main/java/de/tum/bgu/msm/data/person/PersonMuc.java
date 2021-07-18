@@ -23,10 +23,8 @@ public class PersonMuc implements PersonWithSchool {
     private double weeklyHomeMinutes = 0.;
 
     //for health model
-    private Map<Mode, Double> weeklyPhysicalActivityMmetHours = new HashMap<>();
-    private double weeklyLightInjuryRisk = 0.;
-    private double weeklySevereInjuryRisk = 0.;
-    private double weeklyFatalityInjuryRisk = 0.;
+    private Map<Mode, Double> weeklyMarginalMetHours = new HashMap<>();
+    private Map<String, Double> weeklyAccidentRisks = new HashMap<>();
     private Map<String, Double> weeklyExposureByPollutant = new HashMap<>();
     private Map<String, Double> relativeRisks;
     private double allCauseRR;
@@ -177,12 +175,12 @@ public class PersonMuc implements PersonWithSchool {
         delegate.setAttribute(key, value);
     }
 
-    public void updateWeeklyPhysicalActivityMmetHours(Mode mode, double mmetHours) {
-        if(weeklyPhysicalActivityMmetHours.get(mode) == null) {
-            weeklyPhysicalActivityMmetHours.put(mode,mmetHours);
-        } else {
-            weeklyPhysicalActivityMmetHours.put(mode, weeklyPhysicalActivityMmetHours.get(mode) + mmetHours);
-        }
+    public double getWeeklyMarginalMetHours(Mode mode) {
+        return weeklyMarginalMetHours.getOrDefault(mode, 0.);
+    }
+
+    public void updateWeeklyMarginalMetHours(Mode mode, double mmetHours) {
+        weeklyMarginalMetHours.put(mode, weeklyMarginalMetHours.getOrDefault(mode, 0.) + mmetHours);
     }
 
     public void updateWeeklyTravelSeconds(double seconds) {
@@ -200,26 +198,6 @@ public class PersonMuc implements PersonWithSchool {
 
     public double getWeeklyHomeMinutes() { return weeklyHomeMinutes; }
 
-    public double getWeeklyPhysicalActivityMmetHours(Mode mode) {
-        return weeklyPhysicalActivityMmetHours.getOrDefault(mode,0.);
-    }
-
-    public double getWeeklyLightInjuryRisk() {
-        return weeklyLightInjuryRisk;
-    }
-
-    public void updateWeeklyLightInjuryRisk(double weeklyLightInjuryRisk) {
-        this.weeklyLightInjuryRisk = 1 - ((1 - this.weeklyLightInjuryRisk) * (1 - weeklyLightInjuryRisk));
-    }
-
-    public double getWeeklySevereInjuryRisk() {
-        return weeklySevereInjuryRisk;
-    }
-
-    public void updateWeeklySevereInjuryRisk(double weeklySevereInjuryRisk) {
-        this.weeklySevereInjuryRisk = 1 - ((1 - this.weeklySevereInjuryRisk) * (1 - weeklySevereInjuryRisk));
-    }
-
     public Double getWeeklyExposureByPollutant(String pollutant) {
         return weeklyExposureByPollutant.get(pollutant);
     }
@@ -227,10 +205,18 @@ public class PersonMuc implements PersonWithSchool {
     // todo: make not hardcoded...
     public double getWeeklyExposureByPollutantNormalised(String pollutant) {
         if(pollutant.equals("pm2.5")) {
-            return weeklyExposureByPollutant.get(pollutant) * 0.01040365 - 9.357286;
+            return weeklyExposureByPollutant.get(pollutant) * 0.008511726 - 6.018974;
         } else if(pollutant.equals("no2")) {
-            return weeklyExposureByPollutant.get(pollutant) * 0.02421532 - 65.95702;
+            return weeklyExposureByPollutant.get(pollutant) * 0.008599 - 12.07159;
         } else return 0;
+    }
+
+    public double getWeeklyAccidentRisk(String type) {
+        return weeklyAccidentRisks.getOrDefault(type, 0.);
+    }
+
+    public void updateWeeklyAccidentRisks(Map<String, Double> newRisks) {
+        newRisks.forEach((k, v) -> weeklyAccidentRisks.merge(k, v, (v1, v2) -> v1 + v2 - v1*v2));
     }
 
     public void updateWeeklyPollutionExposures(Map<String, Double> newExposures) {
@@ -247,13 +233,5 @@ public class PersonMuc implements PersonWithSchool {
 
     public void setRelativeRisks(Map<String, Double> relativeRisks) {
         this.relativeRisks = relativeRisks;
-    }
-
-    public double getWeeklyFatalityInjuryRisk() {
-        return weeklyFatalityInjuryRisk;
-    }
-
-    public void updateWeeklyFatalityInjuryRisk(double weeklyFatalityInjuryRisk) {
-        this.weeklyFatalityInjuryRisk = 1 - ((1 - this.weeklyFatalityInjuryRisk) * (1 - weeklyFatalityInjuryRisk));
     }
 }

@@ -144,9 +144,6 @@ public class MitoDataConverterMuc implements MitoDataConverter {
                 break;
         }
 
-        // Bicycle ownership (random for now) todo: make not random!
-        boolean ownBicycle = SiloUtil.getRandomObject().nextDouble() < 0.7;
-
         return new MitoPerson(
                 person.getId(),
                 household,
@@ -154,8 +151,7 @@ public class MitoDataConverterMuc implements MitoDataConverter {
                 mitoOccupation,
                 person.getAge(),
                 mitoGender,
-                person.hasDriverLicense(),
-                ownBicycle);
+                person.hasDriverLicense());
     }
 
     private void fillMitoZoneEmployees(DataSet dataSet, DataContainer dataContainer) {

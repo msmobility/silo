@@ -15,8 +15,8 @@ public class RelativeRisks {
     public static Map<String, Double> calculate(PersonMuc personMuc) {
         Map<String, Double> relativeRisks = new HashMap<>();
 
-        relativeRisks.put("walk", walk(personMuc.getWeeklyPhysicalActivityMmetHours(Mode.walk)));
-        relativeRisks.put("cycle", bike(personMuc.getWeeklyPhysicalActivityMmetHours(Mode.bicycle)));
+        relativeRisks.put("walk", walk(personMuc.getWeeklyMarginalMetHours(Mode.walk)));
+        relativeRisks.put("cycle", bike(personMuc.getWeeklyMarginalMetHours(Mode.bicycle)));
         relativeRisks.put("pm2.5", pm25(personMuc.getWeeklyExposureByPollutantNormalised("pm2.5")));
         relativeRisks.put("no2", no2(personMuc.getWeeklyExposureByPollutantNormalised("no2")));
 

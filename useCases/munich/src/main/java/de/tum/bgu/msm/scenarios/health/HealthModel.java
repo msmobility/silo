@@ -17,10 +17,8 @@ import de.tum.bgu.msm.util.MitoUtil;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.contrib.accidents.AccidentType;
-import org.matsim.contrib.dvrp.trafficmonitoring.TravelTimeUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.controler.ControlerDefaults;
 import org.matsim.core.network.NetworkUtils;
@@ -264,19 +262,25 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
         double pathLength = 0;
         double pathTime = 0;
         double pathMarginalMetHours = 0;
-        double pathPm25Sum = 0.;
-        double pathNo2Sum = 0.;
-        //double lightInjuryRisk = 0;
-        double severeInjuryRisk = 0;
-        double fatalityRisk = 0;
-        Map<String, Double> exposureMap = new HashMap<>();
+        double pathConcentrationPm25 = 0.;
+        double pathConcentrationNo2 = 0.;
+        double pathExposurePm25 = 0.;
+        double pathExposureNo2 = 0.;
+        //double pathLightInjuryRisk = 0;
+        double pathSevereInjuryRisk = 0;
+        double pathFatalityRisk = 0;
 
         for(Link link : path.links) {
             enterTimeInSecond = (double) departureTimeInSecond + pathTime;
             double linkLength = link.getLength();
+            //double linkLightInjuryRisk = 0.;
+            double linkSevereInjuryRisk = 0.;
+            double linkFatalityRisk = 0.;
             double linkMarginalMetHours = 0.;
-            double linkPm25 = 0.;
-            double linkNo2 = 0.;
+            double linkConcentrationPm25 = 0.;
+            double linkConcentrationNo2 = 0.;
+            double linkExposurePm25 = 0.;
+            double linkExposureNo2 = 0.;
 
             double linkTime;
             if(mode.equals(Mode.walk) || mode.equals(Mode.bicycle)) {
@@ -288,11 +292,10 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
             LinkInfo linkInfo = ((HealthDataContainerImpl)dataContainer).getLinkInfoByDay().get(day).get(link.getId());
             if(linkInfo!=null) {
                 // INJURY
-                //double lightRisk = getLinkLightInjuryRisk(mode, (int) (enterTimeInSecond / 3600.), linkInfo);
-                //lightInjuryRisk = lightInjuryRisk + lightRisk - (lightInjuryRisk * lightRisk);
+                //linkLightInjuryRisk = getLinkLightInjuryRisk(mode, (int) (enterTimeInSecond / 3600.), linkInfo);
                 double[] severeFatalRisk = getLinkSevereFatalInjuryRisk(mode, (int) (enterTimeInSecond / 3600.), linkInfo);
-                severeInjuryRisk = severeInjuryRisk + severeFatalRisk[0] - (severeInjuryRisk * severeFatalRisk[0]);
-                fatalityRisk = fatalityRisk + severeFatalRisk[1] - (fatalityRisk * severeFatalRisk[1]);
+                linkSevereInjuryRisk = severeFatalRisk[0];
+                linkFatalityRisk = severeFatalRisk[1];
 
                 // PHYSICAL ACTIVITY
                 double linkMarginalMet = PhysicalActivity.getMMet(mode, linkLength, linkTime);
@@ -301,35 +304,43 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
                 // AIR POLLUTION
                 // Concentration
                 int timeBin = (int) (AirPollutantModel.EMISSION_TIME_BIN_SIZE*(Math.floor(Math.abs(enterTimeInSecond/AirPollutantModel.EMISSION_TIME_BIN_SIZE))));
-                linkPm25 = (linkInfo.getExposure2Pollutant2TimeBin().getOrDefault(PM2_5,new OpenIntFloatHashMap()).get(timeBin) +
+                linkConcentrationPm25 = (linkInfo.getExposure2Pollutant2TimeBin().getOrDefault(PM2_5,new OpenIntFloatHashMap()).get(timeBin) +
                         linkInfo.getExposure2Pollutant2TimeBin().getOrDefault(PM2_5_non_exhaust,new OpenIntFloatHashMap()).get(timeBin)) * 10;
-                linkNo2 = linkInfo.getExposure2Pollutant2TimeBin().getOrDefault(NO2,new OpenIntFloatHashMap()).get(timeBin) * 10;
+                linkConcentrationNo2 = linkInfo.getExposure2Pollutant2TimeBin().getOrDefault(NO2,new OpenIntFloatHashMap()).get(timeBin) * 10;
 
-                double[] pollutionExposures = PollutionExposure.getLinkExposures(mode, linkPm25, linkNo2, linkTime, linkMarginalMet);
-
-                exposureMap.put("pm2.5",exposureMap.getOrDefault("pm2.5",0.) + pollutionExposures[0]);
-                exposureMap.put("no2",exposureMap.getOrDefault("no2",0.) + pollutionExposures[1]);
-
+                linkExposurePm25 = PollutionExposure.getLinkExposurePm25(mode, linkConcentrationPm25, linkTime, linkMarginalMet);
+                linkExposureNo2 = PollutionExposure.getLinkExposureNo2(mode, linkConcentrationPm25, linkTime, linkMarginalMet);
             }
 
             pathLength += linkLength;
             pathTime += linkTime;
+            //pathLightInjuryRisk += linkLightInjuryRisk - (pathLightInjuryRisk * linkLightInjuryRisk);
+            pathSevereInjuryRisk += linkSevereInjuryRisk - (pathSevereInjuryRisk * linkSevereInjuryRisk);
+            pathFatalityRisk += linkFatalityRisk - (pathFatalityRisk * linkFatalityRisk);
             pathMarginalMetHours += linkMarginalMetHours;
-            pathPm25Sum += linkPm25;
-            pathNo2Sum += linkNo2;
-
+            pathConcentrationPm25 += linkConcentrationPm25;
+            pathConcentrationNo2 += linkConcentrationNo2;
+            pathExposurePm25 += linkExposurePm25;
+            pathExposureNo2 += linkExposureNo2;
         }
 
-        //trip.setLightInjuryRisk(lightInjuryRisk);
-        trip.updateSevereInjuryRisk(severeInjuryRisk);
-        trip.updateFatalityRisk(fatalityRisk);
-        trip.updateTravelExposureMap(exposureMap);
-        trip.updateMatsimLinks(path.links.size());
-        trip.updateMatsimLinkConcentrationPm25Sum(pathPm25Sum);
-        trip.updateMatsimLinkConcentrationNo2Sum(pathNo2Sum);
-        trip.updateMatsimTravelTime(pathTime);
+        Map<String, Double> accidentRiskMap = new HashMap<>();
+        //accidentRiskMap.put("lightInjury", pathLightInjuryRisk);
+        accidentRiskMap.put("severeInjury", pathSevereInjuryRisk);
+        accidentRiskMap.put("fatality", pathFatalityRisk);
+
+        Map<String, Double> exposureMap = new HashMap<>();
+        exposureMap.put("pm2.5", pathExposurePm25);
+        exposureMap.put("no2", pathExposureNo2);
+
         trip.updateMatsimTravelDistance(pathLength);
-        trip.updatePhysicalActivityMarginalMetHours(pathMarginalMetHours);
+        trip.updateMatsimTravelTime(pathTime);
+        trip.updateMarginalMetHours(pathMarginalMetHours);
+        trip.updateTravelRiskMap(accidentRiskMap);
+        trip.updateTravelExposureMap(exposureMap);
+        trip.updateMatsimLinkCount(path.links.size());
+        trip.updateMatsimLinkConcentrationSumPm25(pathConcentrationPm25);
+        trip.updateMatsimLinkConcentrationSumNo2(pathConcentrationNo2);
     }
 
     private void calculateActivityExposures(Trip trip) {
@@ -342,9 +353,8 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
 
         // todo: consider location-specific exposures & occupation-specific METs for work activities
         Map<String, Double> exposureMap = new HashMap<>();
-        double[] pollutionExposures = PollutionExposure.getActivityExposures(activityDuration);
-        exposureMap.put("pm2.5", pollutionExposures[0]);
-        exposureMap.put("no2", pollutionExposures[1]);
+        exposureMap.put("pm2.5", PollutionExposure.getActivityExposurePm25(activityDuration));
+        exposureMap.put("no2", PollutionExposure.getActivityExposureNo2(activityDuration));
 
         trip.setActivityDuration(activityDuration);
         trip.setActivityExposureMap(exposureMap);
@@ -416,23 +426,16 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
                 continue;
             }
 
-            // Injury risk
-            ((PersonMuc) siloPerson).updateWeeklyLightInjuryRisk(mitoTrip.getLightInjuryRisk());
-            ((PersonMuc) siloPerson).updateWeeklySevereInjuryRisk(mitoTrip.getSevereInjuryRisk());
-            ((PersonMuc) siloPerson).updateWeeklyFatalityInjuryRisk(mitoTrip.getFatalityRisk());
-
-            // Physical activity
-            ((PersonMuc) siloPerson).updateWeeklyPhysicalActivityMmetHours(mitoTrip.getTripMode(),
-                    mitoTrip.getPhysicalActivityMarginalMetHours());
-
-            // Air pollution
+            ((PersonMuc) siloPerson).updateWeeklyAccidentRisks(mitoTrip.getTravelRiskMap());
+            ((PersonMuc) siloPerson).updateWeeklyMarginalMetHours(mitoTrip.getTripMode(), mitoTrip.getMarginalMetHours());
             ((PersonMuc) siloPerson).updateWeeklyPollutionExposures(mitoTrip.getTravelExposureMap());
-            ((PersonMuc) siloPerson).updateWeeklyPollutionExposures(mitoTrip.getActivityExposureMap());
-
-            // Time away from home
             ((PersonMuc) siloPerson).updateWeeklyTravelSeconds(mitoTrip.getMatsimTravelTime());
+
+            // Activity details (home-based trips only)
             if(mitoTrip.isHomeBased()) {
                 ((PersonMuc) siloPerson).updateWeeklyActivityMinutes(mitoTrip.getActivityDuration());
+                ((PersonMuc) siloPerson).updateWeeklyPollutionExposures(mitoTrip.getActivityExposureMap());
+
             }
         }
         logger.warn("total dismatched person: " + missingPerson);
@@ -442,11 +445,9 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
         for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
             double minutesAtHome = Math.max(0., 10080. - (((PersonMuc) person).getWeeklyTravelSeconds() / 60.) - (((PersonMuc) person).getWeeklyActivityMinutes()));
 
-            // todo: consider exposure by location
             Map<String, Double> exposureMap = new HashMap<>();
-            double[] pollutionExposures = PollutionExposure.getActivityExposures(minutesAtHome);
-            exposureMap.put("pm2.5", pollutionExposures[0]);
-            exposureMap.put("no2", pollutionExposures[1]);
+            exposureMap.put("pm2.5", PollutionExposure.getActivityExposurePm25(minutesAtHome));
+            exposureMap.put("no2", PollutionExposure.getActivityExposureNo2(minutesAtHome));
 
             ((PersonMuc) person).setWeeklyHomeMinutes(minutesAtHome);
             ((PersonMuc) person).updateWeeklyPollutionExposures(exposureMap);
@@ -492,19 +493,19 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
             pwh.print(",");
             pwh.print(trip.getActivityDuration());
             pwh.print(",");
-            pwh.print(trip.getPhysicalActivityMarginalMetHours());
+            pwh.print(trip.getMarginalMetHours());
             pwh.print(",");
-            pwh.print(trip.getLightInjuryRisk());
+            pwh.print(trip.getTravelRiskMap().get("lightInjury"));
             pwh.print(",");
-            pwh.print(trip.getSevereInjuryRisk());
+            pwh.print(trip.getTravelRiskMap().get("severeInjury"));
             pwh.print(",");
-            pwh.print(trip.getFatalityRisk());
+            pwh.print(trip.getTravelRiskMap().get("fatality"));
             pwh.print(",");
-            pwh.print(trip.getMatsimLinks());
+            pwh.print(trip.getMatsimLinkCount());
             pwh.print(",");
-            pwh.print(trip.getMatsimLinkConcentrationPm25Sum());
+            pwh.print(trip.getMatsimLinkConcentrationSumPm25());
             pwh.print(",");
-            pwh.print(trip.getMatsimLinkConcentrationNo2Sum());
+            pwh.print(trip.getMatsimLinkConcentrationSumNo2());
             pwh.print(",");
             pwh.print(trip.getTravelExposureMap().get("pm2.5"));
             pwh.print(",");

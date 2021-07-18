@@ -15,7 +15,7 @@ public class DeathStrategyHealth implements DeathStrategy {
         final int personAge = Math.min(person.getAge(), 100);
         Gender personSex = person.getGender();
         double allCauseRR = ((PersonMuc)person).getAllCauseRR();
-        double fatalAccidentRisk = ((PersonMuc)person).getWeeklyFatalityInjuryRisk();
+        double fatalAccidentRisk = ((PersonMuc)person).getWeeklyAccidentRisk("fatality");
 
         var alpha = 0.;
 

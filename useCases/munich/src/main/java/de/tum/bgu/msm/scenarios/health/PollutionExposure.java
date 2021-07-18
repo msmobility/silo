@@ -11,45 +11,61 @@ public class PollutionExposure {
 
     // Other Constants
     private static final double BASE_LEVEL_INHALATION_RATE = 1.;
-    private static final double CLOSED_WINDOW_PM_RATIO = 0.5;
-    private static final double CLOSED_WINDOW_RATIO = 0.5;
-    private static final double ROAD_RATIO_MAX = 3.216;
-    private static final double ROAD_RATIO_SLOPE = 0.379;
 
-    public static double[] getActivityExposures(double activityMinutes) {
+    // Activity Exposures
+    public static double getActivityExposurePm25(double activityMinutes) {
         double ventilationRate = BASE_LEVEL_INHALATION_RATE + 0.167;
-
-        double exposurePm25 = BACKGROUND_PM25 * ventilationRate * activityMinutes / 60.;
-        double exposureNo2 = BACKGROUND_NO2 * ventilationRate * activityMinutes / 60.;
-        return new double[] {exposurePm25, exposureNo2};
+        return BACKGROUND_PM25 * ventilationRate * activityMinutes / 60.;
     }
 
-    public static double[] getLinkExposures(Mode mode, double linkPm25, double linkNo2, double linkSeconds, double linkMarginalMet) {
-        double concentrationPm25 = BACKGROUND_PM25 + linkPm25;
-        double concentrationNo2 = BACKGROUND_NO2 + linkNo2;
+    public static double getActivityExposureNo2(double activityMinutes) {
+        double ventilationRate = BASE_LEVEL_INHALATION_RATE + 0.167;
+        return BACKGROUND_NO2 * ventilationRate * activityMinutes / 60.;
+    }
 
-        // Ventilation rates
-        double ventilationRate = BASE_LEVEL_INHALATION_RATE + linkMarginalMet / 2.;
+    // Link Exposures
+    public static double getLinkExposurePm25(Mode mode, double linkPm25, double linkSeconds, double linkMarginalMet) {
 
-        // On road off road ratios
-        double onRoadOffRoadRatioPm25 = ROAD_RATIO_MAX - ROAD_RATIO_SLOPE * Math.log(concentrationPm25);
-        double onRoadOffRoadRatioNo2 = ROAD_RATIO_MAX - ROAD_RATIO_SLOPE * Math.log(concentrationNo2);
-
-        // Exposure ratios
-        double exposureRatioPm25;
-        double exposureRatioNo2;
-        if(mode.equals(Mode.walk) || mode.equals(Mode.bicycle)) {
-            exposureRatioPm25 = onRoadOffRoadRatioPm25;
-            exposureRatioNo2 = onRoadOffRoadRatioNo2;
-        } else {
-            exposureRatioPm25 = (1 - CLOSED_WINDOW_RATIO) * onRoadOffRoadRatioPm25 + CLOSED_WINDOW_RATIO * CLOSED_WINDOW_PM_RATIO;
-            exposureRatioNo2 = (1 - CLOSED_WINDOW_RATIO) * onRoadOffRoadRatioNo2 + CLOSED_WINDOW_RATIO * CLOSED_WINDOW_PM_RATIO;
+        double modeExposureFactor = 0.;
+        switch(mode) {
+            case autoDriver:
+            case autoPassenger:
+                modeExposureFactor = 2.5;
+                break;
+            case walk:
+            case bus:
+                modeExposureFactor = 1.9;
+                break;
+            case bicycle:
+                modeExposureFactor = 2.;
+                break;
         }
 
-        double exposurePm25 = concentrationPm25 * exposureRatioPm25 * ventilationRate * linkSeconds / 3600.;
-        double exposureNo2 = concentrationNo2 * exposureRatioNo2 * ventilationRate * linkSeconds / 3600.;
+        double ventilationRate = BASE_LEVEL_INHALATION_RATE + linkMarginalMet / 2.;
 
-        return new double[] {exposurePm25, exposureNo2};
+        return (BACKGROUND_PM25 + linkPm25) * modeExposureFactor * ventilationRate * linkSeconds / 3600.;
+    }
+
+    public static double getLinkExposureNo2(Mode mode, double linkNo2, double linkSeconds, double linkMarginalMet) {
+
+        double modeExposureFactor = 0.;
+        switch(mode) {
+            case autoDriver:
+            case autoPassenger:
+                modeExposureFactor = 8.6;
+                break;
+            case bus:
+            case bicycle:
+                modeExposureFactor = 4.5;
+                break;
+            case walk:
+                modeExposureFactor = 3.0;
+                break;
+        }
+
+        double ventilationRate = BASE_LEVEL_INHALATION_RATE + linkMarginalMet / 2.;
+
+        return (BACKGROUND_NO2 + linkNo2) * modeExposureFactor * ventilationRate * linkSeconds / 3600.;
     }
 
 }

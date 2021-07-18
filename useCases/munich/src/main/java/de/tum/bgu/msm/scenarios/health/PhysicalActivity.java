@@ -22,7 +22,7 @@ public class PhysicalActivity {
     public static double getMet(Mode mode, double metres, double seconds) {
         if(mode.equals(Mode.autoDriver) || mode.equals(Mode.autoPassenger)) {
             return 1.28;
-        } else if(mode.equals(Mode.publicTransport)) {
+        } else if(mode.equals(Mode.bus)) {
             return 1.67;
         } else if(mode.equals(Mode.walk)) {
             return getWalkMet(metres, seconds);

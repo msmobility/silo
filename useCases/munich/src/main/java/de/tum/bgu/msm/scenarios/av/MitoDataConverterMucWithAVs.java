@@ -157,8 +157,7 @@ public class MitoDataConverterMucWithAVs implements MitoDataConverter {
                 mitoOccupation,
                 person.getAge(),
                 mitoGender,
-                person.hasDriverLicense(),
-                true);
+                person.hasDriverLicense());
     }
 
     private void fillMitoZoneEmployees(DataSet dataSet, DataContainer dataContainer) {

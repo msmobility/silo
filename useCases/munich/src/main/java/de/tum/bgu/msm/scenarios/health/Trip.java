@@ -26,16 +26,15 @@ public class Trip implements Id {
     private int departureReturnInMinutes;
 
     private double activityDuration;
-    private double lightInjuryRisk = 0.;
-    private double severeInjuryRisk = 0.;
-    private double fatalityRisk = 0.;
-    private double physicalActivityMarginalMetHours = 0.;
+    private double marginalMetHours = 0.;
 
     private int matsimLinks = 0;
-    private double matsimLinkConcentrationPm25Sum = 0.;
-    private double matsimLinkConcentrationNo2Sum = 0.;
+    private double matsimLinkConcentrationSumPm25 = 0.;
+    private double matsimLinkConcentrationSumNo2 = 0.;
     private double matsimTravelTime = 0.;
     private double matsimTravelDistance = 0.;
+
+    private Map<String, Double> travelRiskMap = new HashMap<>();
     private Map<String, Double> travelExposureMap = new HashMap<>();
     private Map<String, Double> activityExposureMap = new HashMap<>();
 
@@ -104,36 +103,22 @@ public class Trip implements Id {
         return tripId;
     }
 
-    public double getLightInjuryRisk() {
-        return lightInjuryRisk;
+    public double getMarginalMetHours() {
+        return marginalMetHours;
     }
 
-    public void setLightInjuryRisk(double lightInjuryRisk) {
-        this.lightInjuryRisk = lightInjuryRisk;
+    public void updateMarginalMetHours(double mmetHours) {
+        this.marginalMetHours += mmetHours;
     }
 
-    public double getSevereInjuryRisk() {
-        return severeInjuryRisk;
-    }
+    public Map<String, Double> getTravelRiskMap() { return travelRiskMap; }
 
-    public void updateSevereInjuryRisk(double severeInjuryRisk) {
-        this.severeInjuryRisk = 1 - ((1 - this.severeInjuryRisk) * (1 - severeInjuryRisk));
-    }
+    public Map<String, Double> getTravelExposureMap() { return travelExposureMap; }
 
-    public double getPhysicalActivityMarginalMetHours() {
-        return physicalActivityMarginalMetHours;
-    }
+    public Map<String, Double> getActivityExposureMap() { return activityExposureMap; }
 
-    public void updatePhysicalActivityMarginalMetHours(double mmetHours) {
-        this.physicalActivityMarginalMetHours += mmetHours;
-    }
-
-    public Map<String, Double> getTravelExposureMap() {
-        return travelExposureMap;
-    }
-
-    public Map<String, Double> getActivityExposureMap() {
-        return activityExposureMap;
+    public void updateTravelRiskMap(Map<String, Double> newRisks) {
+        newRisks.forEach((k, v) -> travelRiskMap.merge(k, v, (v1, v2) -> v1 + v2 - v1*v2));
     }
 
     public void updateTravelExposureMap(Map<String, Double> newExposures) {
@@ -144,42 +129,34 @@ public class Trip implements Id {
         this.activityExposureMap = newExposures;
     }
 
-    public double getFatalityRisk() {
-        return fatalityRisk;
-    }
-
-    public void updateFatalityRisk(double fatalityRisk) {
-        this.fatalityRisk = 1 - ((1 - this.fatalityRisk) * (1 - fatalityRisk));
-    }
-
     public double getActivityDuration() { return activityDuration; }
 
     public void setActivityDuration(double minutes) {
         this.activityDuration = minutes;
     }
 
-    public int getMatsimLinks() {
+    public int getMatsimLinkCount() {
         return matsimLinks;
     }
 
-    public void updateMatsimLinks(int linkCount) {
+    public void updateMatsimLinkCount(int linkCount) {
         this.matsimLinks += linkCount;
     }
 
-    public double getMatsimLinkConcentrationPm25Sum() {
-        return matsimLinkConcentrationPm25Sum;
+    public double getMatsimLinkConcentrationSumPm25() {
+        return matsimLinkConcentrationSumPm25;
     }
 
-    public void updateMatsimLinkConcentrationPm25Sum(double total) {
-        this.matsimLinkConcentrationPm25Sum += total;
+    public void updateMatsimLinkConcentrationSumPm25(double total) {
+        this.matsimLinkConcentrationSumPm25 += total;
     }
 
-    public double getMatsimLinkConcentrationNo2Sum() {
-        return matsimLinkConcentrationNo2Sum;
+    public double getMatsimLinkConcentrationSumNo2() {
+        return matsimLinkConcentrationSumNo2;
     }
 
-    public void updateMatsimLinkConcentrationNo2Sum(double total) {
-        this.matsimLinkConcentrationNo2Sum += total;
+    public void updateMatsimLinkConcentrationSumNo2(double total) {
+        this.matsimLinkConcentrationSumNo2 += total;
     }
 
     public double getMatsimTravelTime() {
