@@ -104,12 +104,12 @@ public class NoiseDwellingIml implements NoiseDwelling {
 
     @Override
     public Optional<Object> getAttribute(String key) {
-        return Optional.empty();
+        return delegate.getAttribute(key);
     }
 
     @Override
     public void setAttribute(String key, Object value) {
-
+        delegate.setAttribute(key, value);
     }
 
     @Override

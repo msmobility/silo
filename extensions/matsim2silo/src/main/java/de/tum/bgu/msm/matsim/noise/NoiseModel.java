@@ -172,7 +172,7 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
                 config.qsim().setEndTime(24 * 60 * 60);
 
                 noiseParameters.setConsiderNoiseBarriers(true);
-                noiseParameters.setNoiseBarriersFilePath("C:\\Users\\Nico\\tum\\diss\\noise\\aggBuildingPoly.geojson");
+                noiseParameters.setNoiseBarriersFilePath("D:\\resultStorage\\diss\\noise\\aggBuildingPoly.geojson");
                 noiseParameters.setNoiseBarriersSourceCRS("EPSG:31468");
                 config.global().setCoordinateSystem("EPSG:31468");
 

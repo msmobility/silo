@@ -64,8 +64,8 @@ public class NKHedonicPricingModelPredictor implements HedonicPricingModelPredic
         }
 
         try {
-            final Object matsim_accessibility = geoData.getZones().get(dwelling.getZoneId()).getAttributes().get("matsim_accessibility");
-            logPrice += BETA_ACCESSIBILITY * (Double) matsim_accessibility;
+           final Object matsim_accessibility = geoData.getZones().get(dwelling.getZoneId()).getAttributes().get("matsim_accessibility");
+           logPrice += BETA_ACCESSIBILITY * (Double) matsim_accessibility;
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         }
