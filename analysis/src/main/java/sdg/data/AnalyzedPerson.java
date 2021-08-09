@@ -12,6 +12,7 @@ public class AnalyzedPerson {
 
     private double congestedTime;
     private double freeFlowTime;
+    private double travelDistance;
 
     public AnalyzedPerson(int id) {
         this.id = id;
@@ -26,6 +27,7 @@ public class AnalyzedPerson {
         if (linkId == currentLink){
             congestedTime = congestedTime + (time - currentLinkEnterTime);
             freeFlowTime = freeFlowTime + Math.ceil(link.getLength() / link.getFreespeed());
+            travelDistance = travelDistance + link.getLength();
         }
     }
 
@@ -44,4 +46,13 @@ public class AnalyzedPerson {
     public double getFreeFlowTime() {
         return freeFlowTime;
     }
+
+    public double getTravelDistance() {
+        return travelDistance;
+    }
+
+    public void setTravelDistance(double travelDistance) {
+        this.travelDistance = travelDistance;
+    }
+
 }

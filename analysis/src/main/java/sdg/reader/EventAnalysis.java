@@ -17,7 +17,7 @@ public class EventAnalysis {
 
     public Map<Integer, AnalyzedPerson> runEventAnalysis(String networkFileName, String eventFileName){
 
-        EventsManager eventsManager = EventsUtils.createEventsManager();
+        EventsManager eventsManager = new EventsManagerImpl();
         Config config = ConfigUtils.createConfig();
         config.network().setInputFile(networkFileName);
         Scenario scenario = ScenarioUtils.loadScenario(config);

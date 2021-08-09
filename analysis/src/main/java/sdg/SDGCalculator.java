@@ -241,4 +241,7 @@ public class SDGCalculator {
     }
 
 
+    public Map<Integer, AnalyzedPerson> getMatsimPerson() {
+        return matsimPerson;
+    }
 }
