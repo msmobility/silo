@@ -81,7 +81,6 @@ public abstract class AbstractPropertiesSynPop {
     public int numberOfSubpopulations;
     public boolean populationSplitting;
     public String[] states;
-    public TableDataSet counters;
     public boolean readMergeAndSplit;
     public boolean runBySubpopulation;
     public int vacantJobPercentage;

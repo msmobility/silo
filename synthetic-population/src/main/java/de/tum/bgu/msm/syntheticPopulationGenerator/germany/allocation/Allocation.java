@@ -50,9 +50,11 @@ public class Allocation extends ModuleSynPop{
         new GenerateHouseholdsPersons(dataContainer, dataSetSynPop).run();
         if (PropertiesSynPop.get().main.boroughIPU){
             for (int county : dataSetSynPop.getBoroughsByCounty().keySet()){
+                //new SummarizeAllocation(dataContainer, dataSetSynPop).runBorough(county);
                 removeBoroughsAsCities(county);
             }
         }
+        //new SummarizeAllocation(dataContainer, dataSetSynPop).run();
     }
 
     public void generateJobs(){

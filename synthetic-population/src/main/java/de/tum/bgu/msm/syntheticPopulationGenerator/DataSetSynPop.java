@@ -78,6 +78,10 @@ public class DataSetSynPop {
     private Map<Integer, Map< Integer, Map<Integer, Coordinate>>> microlocationsSchools;
     private int nextVacantJobId;
 
+    private Map<String, Map<String, Integer>> countsPreviousState;
+    private Map<String, Map<String, Integer>> countsState;
+
+
     public TableDataSet getWeights() {
         return weights;
     }
@@ -441,6 +445,22 @@ public class DataSetSynPop {
 
     public int getNextVacantJobId() {
         return nextVacantJobId++;
+    }
+
+    public Map<String, Map<String, Integer>> getCountsPreviousState() {
+        return countsPreviousState;
+    }
+
+    public void setCountsPreviousState(Map<String, Map<String, Integer>> countsPreviousState) {
+        this.countsPreviousState = countsPreviousState;
+    }
+
+    public Map<String, Map<String, Integer>> getCountsState() {
+        return countsState;
+    }
+
+    public void setCountsState(Map<String, Map<String, Integer>> countsState) {
+        this.countsState = countsState;
     }
 
     public void setNextVacantJobId(int nextVacantJobId) {

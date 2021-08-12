@@ -14,11 +14,13 @@ import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
+import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
+import javax.xml.crypto.Data;
 import java.io.*;
 import java.util.*;
 
@@ -30,20 +32,22 @@ public class ReadSubPopulations {
     private Map<String, Map<String, Integer>> countsState;
     private boolean generateSyntheticObjects;
     private int subPopulation;
+    private DataSetSynPop dataSetSynPop;
 
-    public ReadSubPopulations(DataContainer dataContainer, boolean generateSyntheticObjects, int subPopulation){
+    public ReadSubPopulations(DataContainer dataContainer, boolean generateSyntheticObjects, int subPopulation, DataSetSynPop dataSetSynPop){
         this.dataContainer = dataContainer;
         this.generateSyntheticObjects = generateSyntheticObjects;
         this.subPopulation = subPopulation;
+        this.dataSetSynPop = dataSetSynPop;
     }
 
     public void run(){
         logger.info("   Running module: read subpopulation");
         startCounters();
         readPopulationAndFillCounters();
-        /*if (!PropertiesSynPop.get().main.runBySubpopulation) {
+        if (!PropertiesSynPop.get().main.runBySubpopulation) {
             printCounters();
-        }*/
+        }
     }
 
     private void readPopulationAndFillCounters(){
@@ -64,6 +68,8 @@ public class ReadSubPopulations {
                 countsState.get(state).put("hh", householdsInState);
                 countsState.get(state).put("pp", personsInState);
                 countsState.get(state).put("dd", dwellingsInState);
+                dataSetSynPop.setCountsPreviousState(countsPreviousState);
+                dataSetSynPop.setCountsState(countsState);
 
             }
         } else {
@@ -74,7 +80,9 @@ public class ReadSubPopulations {
             readHouseholdData(Properties.get().main.startYear, false, hasWorkZone);
             readDwellingData(Properties.get().main.startYear, false, hasWorkZone);
             readPersonData(Properties.get().main.startYear, false,hasWorkZone);
-            readJobData(Properties.get().main.startYear);
+            if (hasWorkZone) {
+                readJobData(Properties.get().main.startYear);
+            }
 
         }
     }
@@ -88,7 +96,7 @@ public class ReadSubPopulations {
                 PrintWriter pw = new PrintWriter(new FileWriter(fileName, true));
                 pw.println("state,hhInState,ppInState,ddInState,hhPrevious,ppPrevious,ddPrevious");
                 for (String state : PropertiesSynPop.get().main.states) {
-                    pw.print(state);
+                    pw.print("s_" + state);
                     pw.print(",");
                     pw.print(countsState.get(state).get("hh"));
                     pw.print(",");

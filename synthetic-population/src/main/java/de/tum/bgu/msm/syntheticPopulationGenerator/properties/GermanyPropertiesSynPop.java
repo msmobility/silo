@@ -110,9 +110,7 @@ public class GermanyPropertiesSynPop extends AbstractPropertiesSynPop {
         householdsStateFileName = PropertiesUtil.getStringProperty(bundle, "household.file.ascii.sp", "microData/" + state +  "/hh");
         personsStateFileName = PropertiesUtil.getStringProperty(bundle, "person.file.ascii.sp", "microData/" + state +  "/pp");
         dwellingsStateFileName = PropertiesUtil.getStringProperty(bundle, "dwelling.file.ascii.sp", "microData/" + state +  "/dd");
-        jobsStateFileName = PropertiesUtil.getStringProperty(bundle, "job.file.ascii.sp", "microData/" + state +  "/jj");
-        counters = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"counters.synthetic.population","microData/subPopulations/countersByState.csv"));
-        counters.buildStringIndex(counters.getColumnPosition("state"));
+        jobsStateFileName = PropertiesUtil.getStringProperty(bundle, "job.file.ascii.sp", "microData/" + state +  "/jj"); //for 2011 job file, add the specific route in the properties file
         vacantJobPercentage = PropertiesUtil.getIntProperty(bundle,"jobs.vacant.percentage", 25);
 
         if (boroughIPU) {

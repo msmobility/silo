@@ -1,25 +1,14 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.germany.allocation;
 
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
-import de.tum.bgu.msm.data.household.HouseholdDataManager;
-import de.tum.bgu.msm.data.household.HouseholdFactory;
-import de.tum.bgu.msm.data.household.HouseholdFactoryMuc;
-import de.tum.bgu.msm.data.job.JobDataManager;
-import de.tum.bgu.msm.data.job.JobFactoryMuc;
-import de.tum.bgu.msm.data.job.JobMuc;
 import de.tum.bgu.msm.data.job.JobType;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
-import de.tum.bgu.msm.syntheticPopulationGenerator.germany.io.DwellingReaderMucMito;
-import de.tum.bgu.msm.syntheticPopulationGenerator.germany.io.HouseholdReaderMucMito;
-import de.tum.bgu.msm.syntheticPopulationGenerator.germany.io.PersonReaderMucMito;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
-import javax.xml.crypto.Data;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -41,11 +30,11 @@ public class Read2011JobsForMicrolocation {
     }
 
     public void run(){
-        readJobData();
+        read2011JobData();
     }
 
 
-    private void readJobData() {
+    private void read2011JobData() {
         logger.info("Reading job micro data from ascii file");
 
         String fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.jobsStateFileName;

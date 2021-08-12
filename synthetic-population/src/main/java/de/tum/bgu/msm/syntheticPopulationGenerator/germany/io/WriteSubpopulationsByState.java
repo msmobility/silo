@@ -8,6 +8,7 @@ import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
+import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -31,10 +32,12 @@ public class WriteSubpopulationsByState {
     private final DataContainerWithSchools dataContainer;
     private String outputFolder;
     private final String state;
+    private DataSetSynPop dataSetSynPop;
 
-    public WriteSubpopulationsByState(DataContainerWithSchools dataContainer, String state) {
+    public WriteSubpopulationsByState(DataContainerWithSchools dataContainer, String state, DataSetSynPop dataSetSynPop) {
         this.dataContainer = dataContainer;
         this.state = state;
+        this.dataSetSynPop = dataSetSynPop;
     }
 
 
@@ -98,8 +101,8 @@ public class WriteSubpopulationsByState {
         RealEstateDataManager realEstateDataManager = dataContainer.getRealEstateDataManager();
 
         int numberOfHhSubpopulation = (int) (householdArrayList.size() / PropertiesSynPop.get().main.numberOfSubpopulations);
-        int startingHouseholdId = (int) PropertiesSynPop.get().main.counters.getStringIndexedValueAt(state, "startingHhId");
-        int startingPersonId = (int) PropertiesSynPop.get().main.counters.getStringIndexedValueAt(state, "startingPpId");
+        int startingHouseholdId = dataSetSynPop.getCountsPreviousState().get(state).get("hh");//(int) PropertiesSynPop.get().main.counters.getStringIndexedValueAt(stateForCounters, "startingHhId");
+        int startingPersonId = dataSetSynPop.getCountsPreviousState().get(state).get("pp");//(int) PropertiesSynPop.get().main.counters.getStringIndexedValueAt(stateForCounters, "startingPpId");
         for (Household hh : householdArrayList) {
             Dwelling dd = realEstateDataManager.getDwelling(hh.getDwellingId());
             if (hhCount <= numberOfHhSubpopulation) {
@@ -223,8 +226,8 @@ public class WriteSubpopulationsByState {
         RealEstateDataManager realEstateDataManager = dataContainer.getRealEstateDataManager();
 
         int numberOfHhSubpopulation = (int) (householdArrayList.size() * percentSampling / 100);
-        int startingHouseholdId = (int) PropertiesSynPop.get().main.counters.getStringIndexedValueAt(state, "startingHhId");
-        int startingPersonId = (int) PropertiesSynPop.get().main.counters.getStringIndexedValueAt(state, "startingPpId");
+        int startingHouseholdId = dataSetSynPop.getCountsPreviousState().get(state).get("hh");//(int) PropertiesSynPop.get().main.counters.getStringIndexedValueAt(stateForCounters, "startingHhId");
+        int startingPersonId = dataSetSynPop.getCountsPreviousState().get(state).get("pp");//int) PropertiesSynPop.get().main.counters.getStringIndexedValueAt(stateForCounters, "startingPpId");
         for (Household hh : householdArrayList) {
             Dwelling dd = realEstateDataManager.getDwelling(hh.getDwellingId());
             if (hhCount <= numberOfHhSubpopulation) {

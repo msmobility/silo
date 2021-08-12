@@ -68,7 +68,7 @@ public class SyntheticPopGermanyMitoByState implements SyntheticPopI {
         new ReadZonalData(dataSetSynPop).run();
 
         if (PropertiesSynPop.get().main.readMergeAndSplit) { //
-            new ReadSubPopulations(dataContainer, false, 0).run();
+            new ReadSubPopulations(dataContainer, false, 0, dataSetSynPop).run();
             for (String state : PropertiesSynPop.get().main.states) {
                 readAndSplit(state);
             }
@@ -79,7 +79,7 @@ public class SyntheticPopGermanyMitoByState implements SyntheticPopI {
                 dataSetSynPop.setNextVacantJobId(PropertiesSynPop.get().main.firstVacantJob);
                 for (int subPopulation = 0; subPopulation < PropertiesSynPop.get().main.numberOfSubpopulations; subPopulation++) {
                     if (PropertiesSynPop.get().main.runJobAllocation) {
-                        new ReadSubPopulations(dataContainer, true, subPopulation).run();
+                        new ReadSubPopulations(dataContainer, true, subPopulation, dataSetSynPop).run();
                         new Read2011JobsForMicrolocation(dataContainer, dataSetSynPop, subPopulation).run();
                         new AssignJobsBySubpopulation(dataContainer, dataSetSynPop).run();
                         new GenerateJobsBySubpopulation(dataContainer, dataSetSynPop).run();
@@ -89,14 +89,14 @@ public class SyntheticPopGermanyMitoByState implements SyntheticPopI {
                         summarizeMitoData(dataContainer, subPopulation);
                         removeHouseholds(dataContainer);
                     } else {
-                        new ReadSubPopulations(dataContainer, true, subPopulation).run();
+                        new ReadSubPopulations(dataContainer, true, subPopulation, dataSetSynPop).run();
                         summarizeMitoData(dataContainer, subPopulation);
                         removeHouseholds(dataContainer);
                     }
 
                 }
             } else {
-                new ReadSubPopulations(dataContainer, true, 0).run();
+                new ReadSubPopulations(dataContainer, true, 0, dataSetSynPop).run();
                 writesubsample(dataContainer, 20);
             }
         }
@@ -150,7 +150,7 @@ public class SyntheticPopGermanyMitoByState implements SyntheticPopI {
         long startTime = System.nanoTime();
 
         new ReadPopulationByState(dataContainer, state).run();
-        new WriteSubpopulationsByState(dataContainer, state).run();
+        new WriteSubpopulationsByState(dataContainer, state, dataSetSynPop).run();
 
 
         long estimatedTime = System.nanoTime() - startTime;

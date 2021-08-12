@@ -104,7 +104,7 @@ public class SyntheticPopGermanyMito implements SyntheticPopI {
         long startTime = System.nanoTime();
 
         new ReadPopulationByState(dataContainer, state).run();
-        new WriteSubpopulationsByState(dataContainer, state).run();
+        new WriteSubpopulationsByState(dataContainer, state, dataSetSynPop).run();
 
 
         long estimatedTime = System.nanoTime() - startTime;

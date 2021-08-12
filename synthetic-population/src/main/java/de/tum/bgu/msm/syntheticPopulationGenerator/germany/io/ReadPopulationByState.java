@@ -68,7 +68,7 @@ public class ReadPopulationByState {
         RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
         String fileName = folder + PropertiesSynPop.get().main.dwellingsFileName + "_" + year + ".csv";
         DwellingReaderMucMito ddReader = new DwellingReaderMucMito(realEstate);
-        boolean changeCoordinates = true;
+        boolean changeCoordinates = false;
         if (changeCoordinates) {
             ddReader.readDatawithStateChangeCoordinates(fileName, state);
         } else {

@@ -110,6 +110,7 @@ public class ReadZonalData {
         Table<Integer, Integer, Integer> schoolCapacity = HashBasedTable.create();
         Table<Integer, String, Integer> zoneCoordinates = HashBasedTable.create();
         Map<Integer, Integer> universityByZone = new HashMap<>();
+        HashMap<Integer, HashMap<String, Float>> attributesZone = new HashMap<>();
         ArrayList<Integer> tazs = new ArrayList<>();
         TableDataSet zoneAttributes;
         if (!PropertiesSynPop.get().main.boroughIPU){
@@ -126,6 +127,7 @@ public class ReadZonalData {
             int capacityTertiary = (int)zoneAttributes.getValueAt(i,"capacityTertiary");
             int coordX = (int)zoneAttributes.getValueAt(i,"coordX");
             int coordY = (int)zoneAttributes.getValueAt(i,"coordY");
+            float idCity = zoneAttributes.getValueAt(i, "ID_city");
             if (!tazs.contains(taz)) {
                 tazs.add(taz);
             }
@@ -157,6 +159,9 @@ public class ReadZonalData {
             }
             zoneCoordinates.put(taz,"coordX",coordX);
             zoneCoordinates.put(taz,"coordY",coordY);
+            HashMap<String, Float> Attributes = new HashMap<>();
+            Attributes.put("idCity", idCity);
+            attributesZone.put(taz, Attributes);
             if (isPowerOfFour(i)) {
                 logger.info("   Read " + i + " TAZ 100 by 100 m");
             }
@@ -167,6 +172,7 @@ public class ReadZonalData {
         dataSetSynPop.setTazs(tazs);
         dataSetSynPop.setTazIDs(tazs.stream().mapToInt(i -> i).toArray());
         dataSetSynPop.setZoneCoordinates(zoneCoordinates);
+        dataSetSynPop.setTazAttributes(attributesZone);
         logger.info("   Finished to read TAZ 100 by 100 m");
     }
 

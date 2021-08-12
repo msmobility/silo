@@ -34,6 +34,7 @@ public class GenerateJobsBySubpopulation {
         logger.info("   Running module: job generation");
         //read persons, their work zone id and job type. Generate a job with those values
         //update the counters for the final vacant jobs to add to each zone
+        int assignedJobs = 0;
         JobDataManager jobData = dataContainer.getJobDataManager();
         for (Person pp : dataContainer.getHouseholdDataManager().getPersons()){
             int workZone = Integer.parseInt(pp.getAttribute("workZone").get().toString());
@@ -59,6 +60,10 @@ public class GenerateJobsBySubpopulation {
                 }*/
                 jobData.addJob(JobUtils.getFactory().createJob(jobId, workZone, coords, pp.getId(), jobType));
                 pp.setWorkplace(jobId);
+                assignedJobs++;
+                if (LongMath.isPowerOfTwo(assignedJobs)) {
+                    logger.info("   Generated " + assignedJobs + " jobs.");
+                }
             }
         }
     }
