@@ -1,12 +1,14 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.germany;
 
 import de.tum.bgu.msm.DataBuilder;
+import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobDataManager;
+import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.io.GeoDataReaderMuc;
@@ -15,8 +17,11 @@ import de.tum.bgu.msm.io.input.GeoDataReader;
 import de.tum.bgu.msm.io.output.DwellingWriter;
 import de.tum.bgu.msm.io.output.HouseholdWriter;
 import de.tum.bgu.msm.io.output.JobWriter;
+import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipModelMuc;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
+import de.tum.bgu.msm.schools.School;
+import de.tum.bgu.msm.schools.SchoolData;
 import de.tum.bgu.msm.schools.SchoolsWriter;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
@@ -26,6 +31,7 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.germany.preparation.ReadZonal
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
+import org.locationtech.jts.geom.Coordinate;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -90,7 +96,9 @@ public class SyntheticPopGermanyMitoByState implements SyntheticPopI {
                         removeHouseholds(dataContainer);
                     } else {
                         new ReadSubPopulations(dataContainer, true, subPopulation, dataSetSynPop).run();
+                        new CreateCarOwnershipModelMuc(dataContainer).run();
                         summarizeMitoData(dataContainer, subPopulation);
+                        writesubsampleFromSubpopulationsForMito(dataContainer, 5, subPopulation);
                         removeHouseholds(dataContainer);
                     }
 
@@ -166,7 +174,7 @@ public class SyntheticPopGermanyMitoByState implements SyntheticPopI {
 
         String filehh = outputFolder
                 + PropertiesSynPop.get().main.householdsFileName
-                + subPopulation + "_"
+                + subPopulation + "___"
                 + properties.main.baseYear
                 + ".csv";
         HouseholdWriter hhwriter = new HouseholdWriterMucMito(dataContainer.getHouseholdDataManager(), dataContainer.getRealEstateDataManager());
@@ -174,19 +182,19 @@ public class SyntheticPopGermanyMitoByState implements SyntheticPopI {
 
         String filepp = outputFolder
                 + PropertiesSynPop.get().main.personsFileName
-                + subPopulation + "_"
+                + subPopulation + "___"
                 + properties.main.baseYear
                 + ".csv";
         String filejj = outputFolder
                 + PropertiesSynPop.get().main.jobsFileName
-                + subPopulation + "_"
+                + subPopulation + "___"
                 + properties.main.baseYear
                 + ".csv";
         PersonJobWriterMucMito ppwriter = new PersonJobWriterMucMito(dataContainer.getHouseholdDataManager(),
                 dataContainer.getJobDataManager(), dataContainer.getRealEstateDataManager(), dataContainer.getSchoolData());
         ppwriter.writePersonsWithJob(filepp, filejj);
 
-        String filehhForShortDistance = outputFolder
+/*        String filehhForShortDistance = outputFolderMITO
                 + PropertiesSynPop.get().main.householdsFileName
                 + "_"
                 + properties.main.baseYear
@@ -194,7 +202,7 @@ public class SyntheticPopGermanyMitoByState implements SyntheticPopI {
         HouseholdWriterMucMito hhwriterSD = new HouseholdWriterMucMito(dataContainer.getHouseholdDataManager(), dataContainer.getRealEstateDataManager());
         hhwriterSD.writeHouseholdsWithCoordinates(filehhForShortDistance, subPopulation);
 
-        String fileppForShortDistance = outputFolder
+        String fileppForShortDistance = outputFolderMITO
                 + PropertiesSynPop.get().main.personsFileName
                 + "_"
                 + properties.main.baseYear
@@ -202,11 +210,11 @@ public class SyntheticPopGermanyMitoByState implements SyntheticPopI {
 
         PersonJobWriterMucMito ppwriterSD = new PersonJobWriterMucMito(dataContainer.getHouseholdDataManager(),
                 dataContainer.getJobDataManager(), dataContainer.getRealEstateDataManager(), dataContainer.getSchoolData());
-        ppwriterSD.writePersonsWithJobAttributes(fileppForShortDistance, subPopulation);
+        ppwriterSD.writePersonsWithJobAttributes(fileppForShortDistance, subPopulation);*/
 
         String filedd = outputFolder
                 + PropertiesSynPop.get().main.dwellingsFileName
-                + subPopulation + "_"
+                + subPopulation + "___"
                 + properties.main.baseYear
                 + ".csv";
         DwellingWriter ddwriter = new DwellingWriterMucMito(dataContainer.getHouseholdDataManager(), dataContainer.getRealEstateDataManager());
@@ -214,7 +222,7 @@ public class SyntheticPopGermanyMitoByState implements SyntheticPopI {
 
         String fileedu = outputFolder
                 + "ee"
-                + subPopulation + "_"
+                + subPopulation + "___"
                 + properties.main.baseYear
                 + ".csv";
         SchoolsWriter eduwriter = new SchoolsWriter(dataContainer.getSchoolData());
@@ -509,6 +517,211 @@ public class SyntheticPopGermanyMitoByState implements SyntheticPopI {
             personWriter.get(part).close();
             dwellingWriter.get(part).close();
         }
+
+    }
+
+    private void writesubsampleFromSubpopulationsForMito(DataContainerWithSchools dataContainer, int samplingRate, int subPopulation){
+
+        logger.info("       Writing subpopulation " + subPopulation);
+        String outputFolderMITO = properties.main.baseDirectory  + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
+                + "/subPopulationsMito_autos/" ;
+
+        String filehhForShortDistance5perc = outputFolderMITO
+                + PropertiesSynPop.get().main.householdsFileName
+                + "_5_percent__"
+                + properties.main.baseYear
+                + ".csv";
+
+        String fileppForShortDistance5perc = outputFolderMITO
+                + PropertiesSynPop.get().main.personsFileName
+                + "_5_percent__"
+                + properties.main.baseYear
+                + ".csv";
+
+        String filehhForShortDistance100perc = outputFolderMITO
+                + PropertiesSynPop.get().main.householdsFileName
+                + "_100_percent__"
+                + properties.main.baseYear
+                + ".csv";
+
+        String fileppForShortDistance100perc = outputFolderMITO
+                + PropertiesSynPop.get().main.personsFileName
+                + "_100_percent__"
+                + properties.main.baseYear
+                + ".csv";
+
+        ArrayList<Household> householdArrayList = new ArrayList<>();
+        for (Household hh : dataContainer.getHouseholdDataManager().getHouseholds()){
+            householdArrayList.add(hh);
+        }
+        Collections.shuffle(householdArrayList);
+
+        PrintWriter pwh = SiloUtil.openFileForSequentialWriting(filehhForShortDistance5perc, true);
+        PrintWriter pwp = SiloUtil.openFileForSequentialWriting(fileppForShortDistance5perc, true);
+
+        PrintWriter pwh100 = SiloUtil.openFileForSequentialWriting(filehhForShortDistance100perc, true);
+        PrintWriter pwp100 = SiloUtil.openFileForSequentialWriting(fileppForShortDistance100perc, true);
+
+        int autos = 0;
+
+        if (subPopulation == 0) {
+            pwh.println("id,zone,hhSize,autos,coordX,coordY");
+            pwp.println("id,hhid,age,gender,occupation,driversLicense,workplace,income,jobType," +
+                    "schoolId,JobId,zone,jobCoordX,jobCoordY");
+            pwh100.println("id,zone,hhSize,autos,coordX,coordY");
+            pwp100.println("id,hhid,age,gender,occupation,driversLicense,workplace,income,jobType," +
+                    "schoolId,JobId,zone,jobCoordX,jobCoordY");
+        }
+
+        int hhCount = 1;
+
+        HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
+        RealEstateDataManager realEstateDataManager = dataContainer.getRealEstateDataManager();
+        JobDataManager jobDataManager = dataContainer.getJobDataManager();
+        SchoolData schoolData = dataContainer.getSchoolData();
+
+        int numberOfHhSubpopulation = (int) (householdArrayList.size() * samplingRate / 100);
+        for (Household hh : householdArrayList) {
+            Dwelling dd = realEstateDataManager.getDwelling(hh.getDwellingId());
+            if (hhCount <= numberOfHhSubpopulation) {
+                pwh.print(hh.getId());
+                pwh.print(",");
+                pwh.print(dd.getZoneId());
+                pwh.print(",");
+                pwh.print(hh.getHhSize());
+                pwh.print(",");
+                pwh.print(hh.getAutos());
+                autos = autos + hh.getAutos();
+                pwh.print(",");
+                pwh.print(dd.getCoordinate().x);
+                pwh.print(",");
+                pwh.println(dd.getCoordinate().y);
+                for (Person pp : hh.getPersons().values()){
+                    pwp.print(pp.getId());
+                    pwp.print(",");
+                    pwp.print(pp.getHousehold().getId());
+                    pwp.print(",");
+                    pwp.print(pp.getAge());
+                    pwp.print(",");
+                    pwp.print(pp.getGender().getCode());
+                    pwp.print(",");
+                    pwp.print(pp.getOccupation().getCode());
+                    pwp.print(",");
+                    pwp.print(pp.hasDriverLicense());
+                    pwp.print(",");
+                    pwp.print(pp.getJobId());
+                    pwp.print(",");
+                    pwp.print(pp.getAnnualIncome());
+                    pwp.print(",");
+                    pwp.print(pp.getAttribute("jobType").get().toString());
+                    pwp.print(",");
+                    pwp.print(pp.getAttribute("schoolId").get().toString());
+                    pwp.print(",");
+                    if (pp.getOccupation().equals(Occupation.EMPLOYED)){
+                        Job jj = jobDataManager.getJobFromId(pp.getJobId());
+                        pwp.print(jj.getId());
+                        pwp.print(",");
+                        pwp.print(jj.getZoneId());
+                        pwp.print(",");
+                        pwp.print(jj.getCoordinate().x);
+                        pwp.print(",");
+                        pwp.print(jj.getCoordinate().y);
+                        pwp.println(",");
+                    } else {
+                        pwp.print(0);
+                        pwp.print(",");
+                        if (pp.getOccupation().equals(Occupation.STUDENT)) {
+                            School school = schoolData.getSchoolFromId((Integer) pp.getAttribute("schoolId").get());
+                            pwp.print(school.getZoneId());
+                            pwp.print(",");
+                            Coordinate coordinate = ((MicroLocation) school).getCoordinate();
+                            pwp.print(coordinate.x);
+                            pwp.print(",");
+                            pwp.print(coordinate.y);
+                            pwp.println(",");
+                        } else {
+                            pwp.print(0);
+                            pwp.print(",");
+                            pwp.print(0);
+                            pwp.print(",");
+                            pwp.print(0);
+                            pwp.println(",");
+                        }
+                    }
+                }
+            }
+            //for all households
+            pwh100.print(hh.getId());
+            pwh100.print(",");
+            pwh100.print(dd.getZoneId());
+            pwh100.print(",");
+            pwh100.print(hh.getHhSize());
+            pwh100.print(",");
+            pwh100.print(hh.getAutos());
+            pwh100.print(",");
+            pwh100.print(dd.getCoordinate().x);
+            pwh100.print(",");
+            pwh100.println(dd.getCoordinate().y);
+            for (Person pp : hh.getPersons().values()) {
+                pwp100.print(pp.getId());
+                pwp100.print(",");
+                pwp100.print(pp.getHousehold().getId());
+                pwp100.print(",");
+                pwp100.print(pp.getAge());
+                pwp100.print(",");
+                pwp100.print(pp.getGender().getCode());
+                pwp100.print(",");
+                pwp100.print(pp.getOccupation().getCode());
+                pwp100.print(",");
+                pwp100.print(pp.hasDriverLicense());
+                pwp100.print(",");
+                pwp100.print(pp.getJobId());
+                pwp100.print(",");
+                pwp100.print(pp.getAnnualIncome());
+                pwp100.print(",");
+                pwp100.print(pp.getAttribute("jobType").get().toString());
+                pwp100.print(",");
+                pwp100.print(pp.getAttribute("schoolId").get().toString());
+                pwp100.print(",");
+                if (pp.getOccupation().equals(Occupation.EMPLOYED)) {
+                    Job jj = jobDataManager.getJobFromId(pp.getJobId());
+                    pwp100.print(jj.getId());
+                    pwp100.print(",");
+                    pwp100.print(jj.getZoneId());
+                    pwp100.print(",");
+                    pwp100.print(jj.getCoordinate().x);
+                    pwp100.print(",");
+                    pwp100.print(jj.getCoordinate().y);
+                    pwp100.println(",");
+                } else {
+                    pwp100.print(0);
+                    pwp100.print(",");
+                    if (pp.getOccupation().equals(Occupation.STUDENT)) {
+                        School school = schoolData.getSchoolFromId((Integer) pp.getAttribute("schoolId").get());
+                        pwp100.print(school.getZoneId());
+                        pwp100.print(",");
+                        Coordinate coordinate = ((MicroLocation) school).getCoordinate();
+                        pwp100.print(coordinate.x);
+                        pwp100.print(",");
+                        pwp100.print(coordinate.y);
+                        pwp100.println(",");
+                    } else {
+                        pwp100.print(0);
+                        pwp100.print(",");
+                        pwp100.print(0);
+                        pwp100.print(",");
+                        pwp100.print(0);
+                        pwp100.println(",");
+                    }
+                }
+            }
+            hhCount++;
+        }
+        pwh.close();
+        pwp.close();
+        pwh100.close();
+        pwp100.close();
+        logger.info("autos " + autos + "in subpop " + subPopulation);
 
     }
 

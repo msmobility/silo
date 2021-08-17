@@ -214,13 +214,13 @@ public class ReadSubPopulations {
         if (hasWorkZone){
             if (subPopulation != -1) {
                 fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
-                        + "/" + "subPopulationsWithJobs" + "/"
+                        + "/" + "subPopulationsWithJobsAndSchools" + "/"
                         + PropertiesSynPop.get().main.householdsFileName
                         + subPopulation
                         + "_" + year + ".csv";
             } else {
                 fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
-                        + "/" + "subPopulationsWithJobs" + "/"
+                        + "/" + "subPopulationsWithJobsAndSchools" + "/"
                         + PropertiesSynPop.get().main.householdsFileName
                         + "_" + year + ".csv";
             }
@@ -243,13 +243,13 @@ public class ReadSubPopulations {
         if (haveWorkZone){
             if (subPopulation != -1) {
                 fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
-                        + "/" + "subPopulationsWithJobs" + "/"
+                        + "/" + "subPopulationsWithJobsAndSchools" + "/"
                         + PropertiesSynPop.get().main.personsFileName
                         + subPopulation
                         + "_" + year + ".csv";
             } else {
                 fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
-                        + "/" + "subPopulationsWithJobs" + "/"
+                        + "/" + "subPopulationsWithJobsAndSchools" + "/"
                         + PropertiesSynPop.get().main.personsFileName
                         + "_" + year + ".csv";
             }
@@ -271,13 +271,13 @@ public class ReadSubPopulations {
         if (haveWorkZone){
             if (subPopulation != -1) {
                 fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
-                        + "/" + "subPopulationsWithJobs" + "/"
+                        + "/" + "subPopulationsWithJobsAndSchools" + "/"
                         + PropertiesSynPop.get().main.dwellingsFileName
                         + subPopulation
                         + "_" + year + ".csv";
             } else {
                 fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
-                        + "/" + "subPopulationsWithJobs" + "/"
+                        + "/" + "subPopulationsWithJobsAndSchools" + "/"
                         + PropertiesSynPop.get().main.dwellingsFileName
                         + "_" + year + ".csv";
             }
@@ -291,14 +291,14 @@ public class ReadSubPopulations {
         logger.info("Reading job micro data from ascii file from state " );
 
         String fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
-                + "/" + "subPopulationsWithJobs" + "/"
+                + "/" + "subPopulationsWithJobsAndSchools" + "/"
                 + PropertiesSynPop.get().main.jobsFileName
                 + subPopulation
                 + "_" + year + ".csv";
 
         if (subPopulation == -1){
             fileName = Properties.get().main.baseDirectory + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
-                    + "/" + "subPopulationsWithJobs" + "/"
+                    + "/" + "subPopulationsWithJobsAndSchools" + "/"
                     + PropertiesSynPop.get().main.jobsFileName
                     + "_" + year + ".csv";
         }
