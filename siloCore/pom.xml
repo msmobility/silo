@@ -342,7 +342,7 @@
             <version>2.6</version>
         </dependency>
         <dependency>
-            <groupId>com.github.msmobility</groupId>
+            <groupId>de.tum.bgu.msm</groupId>
             <artifactId>mito</artifactId>
             <version>master</version>
             <exclusions>
