@@ -48,11 +48,6 @@
         </dependency>
         <dependency>
             <groupId>org.matsim.contrib</groupId>
-            <artifactId>multimodal</artifactId>
-            <version>${matsimVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.matsim.contrib</groupId>
             <artifactId>emissions</artifactId>
             <version>14.0-SNAPSHOT</version>
             <exclusions>

@@ -19,6 +19,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.contrib.accidents.AccidentType;
+import org.matsim.contrib.dvrp.trafficmonitoring.TravelTimeUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.controler.ControlerDefaults;
 import org.matsim.core.network.NetworkUtils;
@@ -62,7 +63,7 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
     public void setup() {
         logger.warn("Health model setup: ");
         scenario = ScenarioUtils.createMutableScenario(initialMatsimConfig);
-        String networkFile = scenario.getConfig().network().getInputFile();
+        String networkFile = properties.main.baseDirectory + "/" + scenario.getConfig().network().getInputFile();
         new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
 
         for(Day day : Day.values()){
@@ -176,7 +177,7 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
         final int partitionSize = (int) ((double) trips.size() / Runtime.getRuntime().availableProcessors()) + 1;
         Iterable<List<Trip>> partitions = Iterables.partition(trips, partitionSize);
 
-        TravelTime travelTime = TempTravelTimeUtils.createTravelTimesFromEvents(scenario, eventsFile);
+        TravelTime travelTime = TravelTimeUtils.createTravelTimesFromEvents(scenario, eventsFile);
         TravelDisutility travelDisutility = ControlerDefaults.createDefaultTravelDisutilityFactory(scenario).createTravelDisutility(travelTime);
 
         ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Runtime.getRuntime().availableProcessors());
@@ -198,7 +199,7 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
 
                         if(LongMath.isPowerOfTwo(counterr)) {
                             logger.info(counterr + " in " + id);
-                        };
+                        }
 
                         Node originNode = NetworkUtils.getNearestNode(scenario.getNetwork(), trip.getTripOrigin());
                         Node destinationNode = NetworkUtils.getNearestNode(scenario.getNetwork(), trip.getTripDestination());
@@ -262,8 +263,8 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
         double pathLength = 0;
         double pathTime = 0;
         double pathMarginalMetHours = 0;
-        double pathConcentrationPm25 = 0.;
-        double pathConcentrationNo2 = 0.;
+        double pathConcMetersPm25 = 0.;
+        double pathConcMetersNo2 = 0.;
         double pathExposurePm25 = 0.;
         double pathExposureNo2 = 0.;
         //double pathLightInjuryRisk = 0;
@@ -318,8 +319,8 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
             pathSevereInjuryRisk += linkSevereInjuryRisk - (pathSevereInjuryRisk * linkSevereInjuryRisk);
             pathFatalityRisk += linkFatalityRisk - (pathFatalityRisk * linkFatalityRisk);
             pathMarginalMetHours += linkMarginalMetHours;
-            pathConcentrationPm25 += linkConcentrationPm25;
-            pathConcentrationNo2 += linkConcentrationNo2;
+            pathConcMetersPm25 += linkConcentrationPm25 * linkLength;
+            pathConcMetersNo2 += linkConcentrationNo2 * linkLength;
             pathExposurePm25 += linkExposurePm25;
             pathExposureNo2 += linkExposureNo2;
         }
@@ -339,8 +340,8 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
         trip.updateTravelRiskMap(accidentRiskMap);
         trip.updateTravelExposureMap(exposureMap);
         trip.updateMatsimLinkCount(path.links.size());
-        trip.updateMatsimLinkConcentrationSumPm25(pathConcentrationPm25);
-        trip.updateMatsimLinkConcentrationSumNo2(pathConcentrationNo2);
+        trip.updateMatsimConcMetersPm25(pathConcMetersPm25);
+        trip.updateMatsimConcMetersNo2(pathConcMetersNo2);
     }
 
     private void calculateActivityExposures(Trip trip) {
@@ -479,8 +480,8 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
         PrintWriter pwh = MitoUtil.openFileForSequentialWriting(path, false);
         pwh.println("t.id,t.mode,t.matsimTravelTime_s,t.matsimTravelDistance_m,t.activityDuration_min," +
                 "t.mmetHours,t.lightInjuryRisk,t.severeInjuryRisk,t.fatalityRisk," +
-                "t.links, t.linkPm25Sum, t.linkNo2Sum," +
-                "t.tripExposurePm25,t.tripExposureNo2,t.activityExposurePm25,t.activityExposureNo2");
+                "t.links,t.avgConcentrationPm25,t.avgConcentrationNo2," +
+                "t.exposurePm25,t.exposureNo2,t.activityExposurePm25,t.activityExposureNo2");
 
         for (Trip trip : mitoTrips.values()) {
             pwh.print(trip.getId());
@@ -503,9 +504,9 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
             pwh.print(",");
             pwh.print(trip.getMatsimLinkCount());
             pwh.print(",");
-            pwh.print(trip.getMatsimLinkConcentrationSumPm25());
+            pwh.print(trip.getMatsimConcMetersPm25() / trip.getMatsimTravelDistance());
             pwh.print(",");
-            pwh.print(trip.getMatsimLinkConcentrationSumNo2());
+            pwh.print(trip.getMatsimConcMetersNo2() / trip.getMatsimTravelDistance());
             pwh.print(",");
             pwh.print(trip.getTravelExposureMap().get("pm2.5"));
             pwh.print(",");

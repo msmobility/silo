@@ -136,8 +136,7 @@ public class MitoDataConverterImpl implements MitoDataConverter {
                 mitoOccupation,
                 person.getAge(),
                 mitoGender,
-                person.hasDriverLicense(),
-                false);
+                person.hasDriverLicense());
     }
 
     private void fillMitoZoneEmployees(DataSet dataSet, DataContainer dataContainer) {

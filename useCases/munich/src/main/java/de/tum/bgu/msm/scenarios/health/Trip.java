@@ -29,8 +29,8 @@ public class Trip implements Id {
     private double marginalMetHours = 0.;
 
     private int matsimLinks = 0;
-    private double matsimLinkConcentrationSumPm25 = 0.;
-    private double matsimLinkConcentrationSumNo2 = 0.;
+    private double matsimConcMetersPm25 = 0.;
+    private double matsimConcMetersNo2 = 0.;
     private double matsimTravelTime = 0.;
     private double matsimTravelDistance = 0.;
 
@@ -143,20 +143,20 @@ public class Trip implements Id {
         this.matsimLinks += linkCount;
     }
 
-    public double getMatsimLinkConcentrationSumPm25() {
-        return matsimLinkConcentrationSumPm25;
+    public double getMatsimConcMetersPm25() {
+        return matsimConcMetersPm25;
     }
 
-    public void updateMatsimLinkConcentrationSumPm25(double total) {
-        this.matsimLinkConcentrationSumPm25 += total;
+    public void updateMatsimConcMetersPm25(double total) {
+        this.matsimConcMetersPm25 += total;
     }
 
-    public double getMatsimLinkConcentrationSumNo2() {
-        return matsimLinkConcentrationSumNo2;
+    public double getMatsimConcMetersNo2() {
+        return matsimConcMetersNo2;
     }
 
-    public void updateMatsimLinkConcentrationSumNo2(double total) {
-        this.matsimLinkConcentrationSumNo2 += total;
+    public void updateMatsimConcMetersNo2(double total) {
+        this.matsimConcMetersNo2 += total;
     }
 
     public double getMatsimTravelTime() {
