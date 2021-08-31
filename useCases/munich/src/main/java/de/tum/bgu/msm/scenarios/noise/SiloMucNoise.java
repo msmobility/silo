@@ -1,12 +1,10 @@
 package de.tum.bgu.msm.scenarios.noise;
 
-import de.tum.bgu.msm.ModelBuilderMuc;
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.SiloMuc;
 import de.tum.bgu.msm.container.ModelContainer;
-import de.tum.bgu.msm.io.ResultsMonitorMuc;
+import de.tum.bgu.msm.io.MultiFileResultsMonitorMuc;
 import de.tum.bgu.msm.io.output.ResultsMonitor;
-import de.tum.bgu.msm.matsim.noise.NoiseModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -30,7 +28,7 @@ public class SiloMucNoise {
         DataBuilderNoise.read(properties, dataContainer);
         ModelContainer modelContainer = ModelBuilderMucNoise.getModelContainerForMuc(dataContainer, properties, config);
 //        modelContainer.registerModelUpdateListener(new NoiseModel(dataContainer, properties, SiloUtil.provideNewRandom()));
-        ResultsMonitor resultsMonitor = new ResultsMonitorMuc(dataContainer, properties);
+        ResultsMonitor resultsMonitor = new MultiFileResultsMonitorMuc(dataContainer, properties);
         SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
         model.addResultMonitor(resultsMonitor);
         model.runModel();

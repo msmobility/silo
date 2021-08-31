@@ -1,6 +1,5 @@
 package de.tum.bgu.msm.transportModel.matsim;
 
-import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.Region;
@@ -15,7 +14,7 @@ import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.data.person.PersonRole;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
-import de.tum.bgu.msm.io.ResultsMonitorMuc;
+import de.tum.bgu.msm.io.MultiFileResultsMonitorMuc;
 import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.matsim.noise.NoiseDwelling;
 import de.tum.bgu.msm.matsim.noise.NoiseModel;
@@ -69,7 +68,7 @@ public class SiloNoiseTest {
         DataBuilderNoise.read(properties, dataContainer);
         ModelContainer modelContainer = ModelBuilderMucNoise.getModelContainerForMuc(dataContainer, properties, config);
 
-        ResultsMonitor resultsMonitor = new ResultsMonitorMuc(dataContainer, properties);
+        ResultsMonitor resultsMonitor = new MultiFileResultsMonitorMuc(dataContainer, properties);
 
         final List<ModelUpdateListener> modelUpdateListeners = modelContainer.getModelUpdateListeners();
         for(ModelUpdateListener listenr: modelUpdateListeners) {
