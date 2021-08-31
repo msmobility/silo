@@ -20,6 +20,7 @@ import org.matsim.api.core.v01.TransportMode;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.List;
 import java.util.Map;
 
 public class AVOwnershipResultsMonitor implements ResultsMonitor {
@@ -58,7 +59,7 @@ public class AVOwnershipResultsMonitor implements ResultsMonitor {
     }
 
     @Override
-    public void endYear(int year, Multiset<Class<? extends MicroEvent>> eventCounter) {
+    public void endYear(int year, Multiset<Class<? extends MicroEvent>> eventCounter, List<MicroEvent> events) {
         Map<String, Integer> summaryForThisYear = switchToAutonomousVehicleModelMuc.getSummaryForThisYear();
         resultWriter.print(year);
         resultWriter.print(",");

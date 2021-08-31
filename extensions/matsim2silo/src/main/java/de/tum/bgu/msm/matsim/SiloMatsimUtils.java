@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.matsim;
 
-import com.pb.common.matrix.Matrix;
+import de.tum.bgu.msm.common.matrix.Matrix;
 
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;

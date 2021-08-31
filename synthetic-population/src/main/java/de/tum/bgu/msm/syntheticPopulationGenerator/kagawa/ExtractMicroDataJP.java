@@ -2,8 +2,8 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.kagawa;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import com.pb.common.datafile.TableDataSet;
-import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
+import de.tum.bgu.msm.common.util.ResourceUtil;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;

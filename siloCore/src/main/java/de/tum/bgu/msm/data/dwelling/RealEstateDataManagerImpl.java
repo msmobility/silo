@@ -2,7 +2,7 @@ package de.tum.bgu.msm.data.dwelling;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
-import com.pb.common.datafile.TableDataSet;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.development.Development;
 import de.tum.bgu.msm.data.development.DevelopmentImpl;
@@ -102,7 +102,7 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
 
     @Override
     public void endYear(int year) {
-        if (properties.realEstate.dwellingsIntermediatesFileName != "") {
+        if (!properties.realEstate.dwellingsIntermediatesFileName.equals("")) {
             final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/";
             String filedd = outputDirectory
                     + properties.realEstate.dwellingsIntermediatesFileName
@@ -196,6 +196,7 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
         for (Dwelling dd : dwellingData.getDwellings()) {
             if (dd.getResidentId() == -1) {
                 int dwellingId = dd.getId();
+                //logger.info(dwellingId);
                 int region = geoData.getZones().get(dd.getZoneId()).getRegion().getId();
                 vacDwellingsByRegion.putIfAbsent(region, new ArrayList<>());
                 vacDwellingsByRegion.get(region).add(dd);
@@ -216,14 +217,19 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
         }
     }
 
+    /**
+     *
+     * @return map of rent by region. Infinity value if no dwellings are present in that region
+     */
     @Override
     public Map<Integer, Double> calculateRegionalPrices() {
         final Map<Integer, Zone> zones = geoData.getZones();
         final Map<Integer, List<Dwelling>> dwellingsByRegion =
                 dwellingData.getDwellings().parallelStream().collect(Collectors.groupingByConcurrent(d ->
                         zones.get(d.getZoneId()).getRegion().getId()));
-        final Map<Integer, Double> rentsByRegion = dwellingsByRegion.entrySet().parallelStream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().stream().mapToDouble(Dwelling::getPrice).average().getAsDouble()));
+        //We set
+        final Map<Integer, Double> rentsByRegion = geoData.getRegions().entrySet().parallelStream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> dwellingsByRegion.getOrDefault(e.getKey(),Collections.emptyList()).stream().mapToDouble(Dwelling::getPrice).average().orElse(Double.POSITIVE_INFINITY)));
         return rentsByRegion;
     }
 
@@ -457,16 +463,18 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
         double[] landUseData = developmentTable.getColumnAsDouble("DevLandUse");
 
         for (int i = 0; i < zoneIdData.length; i++) {
+            if(geoData.getZones().containsKey(zoneIdData[i])) {
 
-            Map<DwellingType, Boolean> constraints = new HashMap<>();
-            for (DwellingType dwellingType : dwellingTypes.getTypes()) {
-                constraints.put(dwellingType, constraintData.get(dwellingType)[i] == 1);
+                Map<DwellingType, Boolean> constraints = new HashMap<>();
+                for (DwellingType dwellingType : dwellingTypes.getTypes()) {
+                    constraints.put(dwellingType, constraintData.get(dwellingType)[i] == 1);
+                }
+                int thisZoneCapacity = (int) (dwellingCapacityData[i] * properties.main.scaleFactor);
+                double thisZoneLandUse = landUseData[i] * properties.main.scaleFactor;
+
+                Development development = new DevelopmentImpl(thisZoneLandUse, thisZoneCapacity, constraints, Properties.get().geo.useCapacityForDwellings);
+                geoData.getZones().get(zoneIdData[i]).setDevelopment(development);
             }
-            int thisZoneCapacity = (int) (dwellingCapacityData[i] * properties.main.scaleFactor);
-            double thisZoneLandUse = landUseData[i]  * properties.main.scaleFactor;
-
-            Development development = new DevelopmentImpl(thisZoneLandUse, thisZoneCapacity, constraints, Properties.get().geo.useCapacityForDwellings);
-            geoData.getZones().get(zoneIdData[i]).setDevelopment(development);
         }
 
     }

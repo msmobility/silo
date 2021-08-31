@@ -1,8 +1,8 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.capeTown;
 
-import com.pb.common.datafile.TableDataSet;
-import com.pb.common.matrix.Matrix;
-import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
+import de.tum.bgu.msm.common.matrix.Matrix;
+import de.tum.bgu.msm.common.util.ResourceUtil;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;

@@ -4,6 +4,7 @@ package de.tum.bgu.msm.models.carOwnership;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.geo.DefaultGeoData;
 import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdMuc;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.geo.ZoneMuc;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
@@ -58,6 +59,8 @@ public class CreateCarOwnershipModelMuc implements CreateCarOwnershipModel {
         int income = HouseholdUtil.getAnnualHhIncome(hh)/12;  // convert yearly into monthly income
         ZoneMuc zone = (ZoneMuc) geoData.getZones().get(dataContainer.getRealEstateDataManager().
                 getDwelling(hh.getDwellingId()).getZoneId());
+        //int zoneId = (int) ((HouseholdMuc)hh).getAttribute("zone").get();
+
 
         double logDistanceToTransit = Math.log(zone.getPTDistance_m() + 1); // add 1 to avoid taking log of 0
         int areaType = zone.getAreaTypeSG().code();

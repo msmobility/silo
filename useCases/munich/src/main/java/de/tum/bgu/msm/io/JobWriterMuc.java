@@ -50,10 +50,10 @@ public class JobWriterMuc implements JobWriter {
             pwj.print(",");
             pwj.print(coordinate.y);
 
-            pwj.print(",");
-            pwj.print(((JobMuc)jj).getStartTimeInSeconds().orElse(-1));
-            pwj.print(",");
-            pwj.print(((JobMuc)jj).getWorkingTimeInSeconds().orElse(-1));
+//            pwj.print(",");
+//            pwj.print(((JobMuc)jj).getStartTimeInSeconds());
+//            pwj.print(",");
+//            pwj.print(((JobMuc)jj).getWorkingTimeInSeconds());
 
             pwj.println();
             if (jj.getId() == SiloUtil.trackJj) {
