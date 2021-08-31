@@ -141,7 +141,7 @@
 	</build>
 
 	<properties>
-		<geotools.version>21.5</geotools.version>
+		<geotools.version>24.2</geotools.version>
 		<matsimVersion>13.0</matsimVersion>
 		<jackson.version>2.9.5</jackson.version>
 	</properties>
