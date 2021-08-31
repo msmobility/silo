@@ -1,9 +1,9 @@
 package de.tum.bgu.msm.utils;
 
-import com.pb.common.datafile.CSVFileWriter;
-import com.pb.common.datafile.TableDataFileReader;
-import com.pb.common.datafile.TableDataSet;
-import com.pb.common.matrix.Matrix;
+import de.tum.bgu.msm.common.datafile.CSVFileWriter;
+import de.tum.bgu.msm.common.datafile.TableDataFileReader;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
+import de.tum.bgu.msm.common.matrix.Matrix;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.SummarizeData;
@@ -602,6 +602,12 @@ public class SiloUtil {
 
     public static int[] convertArrayListToIntArray (ArrayList<Integer> al) {
         int[] list = new int[al.size()];
+        for (int i = 0; i < al.size(); i++) list[i] = al.get(i);
+        return list;
+    }
+
+    public static float[] convertArrayListToFloatArray (ArrayList<Float> al) {
+        float[] list = new float[al.size()];
         for (int i = 0; i < al.size(); i++) list[i] = al.get(i);
         return list;
     }

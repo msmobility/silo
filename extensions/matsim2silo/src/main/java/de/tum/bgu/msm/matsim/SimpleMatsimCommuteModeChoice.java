@@ -73,7 +73,7 @@ public class SimpleMatsimCommuteModeChoice implements CommuteModeChoice {
                     utilityByMode.put(TransportMode.pt, ptUtility);
                     commuteModesByPerson.put(pp.getId(), utilityByMode);
                     double probabilityAsKey;
-                    if(carUtility == 0 && ptUtility == 0) {
+                    if (carUtility == 0 && ptUtility == 0) {
                         probabilityAsKey = 0.5;
                     } else {
                         probabilityAsKey = carUtility / (carUtility + ptUtility);
@@ -92,7 +92,7 @@ public class SimpleMatsimCommuteModeChoice implements CommuteModeChoice {
         for (Map.Entry<Double, Person> personForProbability : personByProbability.descendingMap().entrySet()) {
             Person person = personForProbability.getValue();
             CommuteModeChoiceMapping.CommuteMode commuteMode;
-            if(counter == 0) {
+            if (counter == 0) {
                 commuteMode = new CommuteModeChoiceMapping.CommuteMode(TransportMode.pt, commuteModesByPerson.get(person.getId()).get(TransportMode.pt));
             } else {
                 if (random.nextDouble() < personForProbability.getKey()) {
@@ -138,7 +138,7 @@ public class SimpleMatsimCommuteModeChoice implements CommuteModeChoice {
                     utilityByMode.put(TransportMode.pt, ptUtility);
                     commuteModesByPerson.put(pp.getId(), utilityByMode);
                     double probabilityAsKey;
-                    if(carUtility == 0 && ptUtility == 0) {
+                    if (carUtility == 0 && ptUtility == 0) {
                         probabilityAsKey = 0.5;
                     } else {
                         probabilityAsKey = carUtility / (carUtility + ptUtility);
@@ -157,7 +157,7 @@ public class SimpleMatsimCommuteModeChoice implements CommuteModeChoice {
         for (Map.Entry<Double, Person> personForProbability : personByProbability.descendingMap().entrySet()) {
             Person person = personForProbability.getValue();
             CommuteModeChoiceMapping.CommuteMode commuteMode;
-            if(counter == 0) {
+            if (counter == 0) {
                 commuteMode = new CommuteModeChoiceMapping.CommuteMode(TransportMode.pt, commuteModesByPerson.get(person.getId()).get(TransportMode.pt));
             } else {
                 if (random.nextDouble() < personForProbability.getKey()) {
@@ -172,4 +172,10 @@ public class SimpleMatsimCommuteModeChoice implements CommuteModeChoice {
 
         return commuteModeChoiceMapping;
     }
+
+    @Override
+    public CommuteModeChoiceMapping assignRegionalCommuteModeChoiceToFindNewJobs(Region jobRegion, Zone homeZone, TravelTimes travelTimes, Person person) {
+        return null;
+    }
+
 }

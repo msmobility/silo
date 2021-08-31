@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.run;
 
 import com.google.common.collect.Multiset;
-import com.pb.common.datafile.TableDataSet;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.Zone;
@@ -47,7 +47,7 @@ public class MstmMonitor implements ResultsMonitor {
     }
 
     @Override
-    public void endYear(int year, Multiset<Class<? extends MicroEvent>> eventCounter) {
+    public void endYear(int year, Multiset<Class<? extends MicroEvent>> eventCounter, List<MicroEvent> events) {
 
     }
 

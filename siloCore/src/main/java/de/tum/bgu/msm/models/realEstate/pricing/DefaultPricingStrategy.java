@@ -1,15 +1,8 @@
 package de.tum.bgu.msm.models.realEstate.pricing;
 
 import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.models.ScriptInputProvider;
-import de.tum.bgu.msm.util.js.JavaScriptCalculator;
 
-import java.io.InputStreamReader;
-import java.io.Reader;
-
-public class DefaultPricingStrategy extends JavaScriptCalculator<Double> implements PricingStrategy{
-
-    private final static Reader reader = new InputStreamReader(ScriptInputProvider.getPricingScriptInput());
+public class DefaultPricingStrategy implements PricingStrategy{
 
     private double inflectionLow;
     private double inflectionHigh;
@@ -20,7 +13,6 @@ public class DefaultPricingStrategy extends JavaScriptCalculator<Double> impleme
     private double maxVacancyRateForPriceChange;
 
     public DefaultPricingStrategy() {
-        super(reader);
         inflectionLow = getLowInflectionPoint();
         inflectionHigh = getHighInflectionPoint();
         slopeLow = getLowerSlope();
@@ -31,7 +23,10 @@ public class DefaultPricingStrategy extends JavaScriptCalculator<Double> impleme
     }
 
     private double getMaxVacancyRateForPriceChange() {
-        return super.calculate("getMaxVacancyRateForPriceChange");
+        // This value defines the vacancy rate (not multiplied by structural vacancies) from which the price will not change at all.
+        // For vacancies rates above 10% (if set to 0.1) the price will not decrease any more.
+        // This value applies for all dwelling types.
+        return 0.1;
     }
 
 
@@ -68,28 +63,35 @@ public class DefaultPricingStrategy extends JavaScriptCalculator<Double> impleme
     }
 
     private double getLowInflectionPoint() {
-        return super.calculate("getLowInflectionPoint");
+        // The value below is multiplied with the structural vacancy of a given dwelling type and defines the tipping point from where prices increase steeply
+        // If this value is set to 1., it means that vacancies below the structural vacancy will lead to a steep price increase
+        // If this value is set to 0.5, it means that vacancies below half the structural vacancy will lead to a steep price incrase
+        return 0.9;
     }
 
     private double getHighInflectionPoint() {
-        return super.calculate("getHighInflectionPoint");
+        // The value below is multiplied with the structural vacancy of a given dwelling type and defines the tipping point from which prices decrease slowly
+        // If this value is set to 2., it means that vacancy rates above twice the structural vacancy will lead to very slow price increases
+        return 2.;
     }
 
     private double getLowerSlope() {
-        return super.calculate("getLowerSlope");
+        // describes the steep slope that is used for vacancies below the lower inflection point
+        return -10.;
     }
 
     private double getMainSlope() {
-        return super.calculate("getMainSlope");
+        // describes the medium slope that is used for vacancies between the lower and the higher inflection point
+        return -1.;
     }
 
     private double getHighSlope() {
-        return super.calculate("getHighSlope");
+        // describes the flat slope that is used for vacancies above the higher inflection point
+        return -0.1;
     }
 
     private double getMaximumChange() {
-        return super.calculate("getMaximumChange");
+        // describes the maximum change in percent by which the housing may change within one year
+        return 0.1;
     }
-
-
 }

@@ -8,7 +8,11 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
+import java.io.File;
+import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -26,21 +30,44 @@ public final class PricingModelImpl extends AbstractModel implements PricingMode
         this.strategy = strategy;
     }
 
+    private Map<DwellingType, Map<Integer, Integer>> changeRateDistribution;
+    private PrintWriter priceWriter;
+
     @Override
     public void setup() {
+
+        priceWriter = SiloUtil.openFileForSequentialWriting(properties.main.baseDirectory +
+                "/scenOutput/" +
+                properties.main.scenarioName +
+                "/pricingModel.csv", false);
+
+        priceWriter.println("year,type,rate_bin,count");
+
     }
 
     @Override
     public void prepareYear(int year) {
+
+        changeRateDistribution = new HashMap<>();
+        for (DwellingType type : dataContainer.getRealEstateDataManager().getDwellingTypes().getTypes()) {
+            changeRateDistribution.put(type, new HashMap<>());
+        }
     }
 
     @Override
     public void endYear(int year) {
         updateRealEstatePrices(year);
+        changeRateDistribution.keySet().forEach(type-> {
+            changeRateDistribution.get(type).keySet().forEach(x -> {
+                priceWriter.println(year + "," + type.toString() + "," + x + "," + changeRateDistribution.get(type).get(x));
+            });
+            });
+        priceWriter.flush();
     }
 
     @Override
     public void endSimulation() {
+        priceWriter.close();
     }
 
     private void updateRealEstatePrices(int year) {
@@ -52,6 +79,7 @@ public final class PricingModelImpl extends AbstractModel implements PricingMode
         List<DwellingType> dwellingTypes = dataContainer.getRealEstateDataManager().getDwellingTypes().getTypes();
 //        HashMap<String, Integer> priceChange = new HashMap<>();
 
+        double[] globalVacRate = dataContainer.getRealEstateDataManager().getAverageVacancyByDwellingType();
         int[] cnt = new int[dwellingTypes.size()];
         double[] sumOfPrices = new double[dwellingTypes.size()];
         for (Dwelling dd: dataContainer.getRealEstateDataManager().getDwellings()) {
@@ -63,10 +91,19 @@ public final class PricingModelImpl extends AbstractModel implements PricingMode
             int region = dataContainer.getGeoData().getZones().get(dd.getZoneId()).getRegion().getId();
             double vacancyRateAtThisRegion = vacRate[dto][region];
             float structuralVacancyRate = dd.getType().getStructuralVacancyRate();
-            double changeRate = strategy.getPriceChangeRate(vacancyRateAtThisRegion, structuralVacancyRate);
+            double changeRate;
+            if (vacancyRateAtThisRegion == 0) {
+                changeRate = strategy.getPriceChangeRate(globalVacRate[dto], structuralVacancyRate);
+            } else {
+                changeRate = strategy.getPriceChangeRate(vacancyRateAtThisRegion, structuralVacancyRate);
+            }
 
 
+            int changeRateInt = (int) Math.round((changeRate - 1) * 100);
 
+            Map<Integer, Integer> changeRatesForThisType = changeRateDistribution.get(dd.getType());
+            changeRatesForThisType.putIfAbsent(changeRateInt, 0);
+            changeRatesForThisType.put(changeRateInt, changeRatesForThisType.get(changeRateInt)+1);
 
             double newPrice = currentPrice * changeRate;
 

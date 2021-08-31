@@ -2,8 +2,8 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.maryland;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
-import com.pb.common.datafile.TableDataSet;
-import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
+import de.tum.bgu.msm.common.util.ResourceUtil;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.Accessibility;

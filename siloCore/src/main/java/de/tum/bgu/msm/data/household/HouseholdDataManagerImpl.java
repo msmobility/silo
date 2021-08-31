@@ -88,14 +88,14 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
 
         final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
 
-        if (Properties.get().householdData.householdIntermediatesFileName != "") {
+        if (!Properties.get().householdData.householdIntermediatesFileName.equals("")) {
             String filehh = outputDirectory + "/" + properties.householdData.householdFinalFileName + "_"
                     + year
                     + ".csv";
             new DefaultHouseholdWriter(this.householdData.getHouseholds()).writeHouseholds(filehh);
         }
 
-        if (Properties.get().householdData.personIntermediatesFileName != "") {
+        if (!Properties.get().householdData.personIntermediatesFileName.equals("")) {
             String filepp = outputDirectory + "/" + properties.householdData.personIntermediatesFileName + "_"
                     + year
                     + ".csv";

@@ -1,5 +1,7 @@
 package de.tum.bgu.msm.properties.modules;
 
+import de.tum.bgu.msm.data.person.PersonType;
+import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.PropertiesUtil;
 
 import java.util.ResourceBundle;
@@ -29,7 +31,7 @@ public final class GeoProperties {
      * Use dwelling capacity as development capacity (instead of land use area). Default is false
      */
     public final boolean useCapacityForDwellings;
-
+    public final String parkingZonalDataFile;
 
 
     public GeoProperties(ResourceBundle bundle) {
@@ -42,6 +44,7 @@ public final class GeoProperties {
         landUseAndDevelopmentFile = PropertiesUtil.getStringProperty(bundle, "development.file", "input/development.csv");
         useCapacityForDwellings = PropertiesUtil.getBooleanProperty(bundle, "use.growth.capacity.data", false);
 
+        parkingZonalDataFile = PropertiesUtil.getStringProperty(bundle, "parking.zone.data", "scenarios/av/parking_by_zone.csv");
     }
 }
 
