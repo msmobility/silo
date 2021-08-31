@@ -215,7 +215,7 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
             householdData.removePerson(pp.getId());
         }
         householdData.removeHousehold(householdId);
-        householdMementos.remove(household);
+        householdMementos.remove(householdId);
         if (householdId == SiloUtil.trackHh) {
             SiloUtil.trackWriter.println("Households " + householdId + " was removed");
         }

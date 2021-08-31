@@ -4,6 +4,7 @@ import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobImpl;
+import de.tum.bgu.msm.data.job.JobMuc;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -56,7 +57,7 @@ public class GenerateJobMicrolocation {
             } else {
                 zoneJobTypeJobLocationArea.get(zoneID).get(jobType).put(selectedJobID, 0.0f);
             }
-            ((JobImpl)jj).setCoordinate(new Coordinate(jobX.get(selectedJobID),jobY.get(selectedJobID)));
+            ((JobMuc)jj).setCoordinate(new Coordinate(jobX.get(selectedJobID),jobY.get(selectedJobID)));
         }
         logger.warn( errorjob +"   Dwellings cannot find specific building location. Their coordinates are assigned randomly in TAZ" );
         logger.info("   Finished job microlocation.");
@@ -96,18 +97,23 @@ public class GenerateJobMicrolocation {
             jobY.put(id,yCoordinate);
 
 
-            if (zoneJobTypeJobLocationArea.get(zone) != null){
-                zoneJobTypeJobLocationArea.get(zone).get("Agri").put(id,agriArea);
-                zoneJobTypeJobLocationArea.get(zone).get("Mnft").put(id,mnftArea);
-                zoneJobTypeJobLocationArea.get(zone).get("Util").put(id,utilArea);
-                zoneJobTypeJobLocationArea.get(zone).get("Cons").put(id,consArea);
-                zoneJobTypeJobLocationArea.get(zone).get("Retl").put(id,retlArea);
-                zoneJobTypeJobLocationArea.get(zone).get("Trns").put(id,trnsArea);
-                zoneJobTypeJobLocationArea.get(zone).get("Finc").put(id,fincArea);
-                zoneJobTypeJobLocationArea.get(zone).get("Rlst").put(id,rlstArea);
-                zoneJobTypeJobLocationArea.get(zone).get("Admn").put(id,admnArea);
-                zoneJobTypeJobLocationArea.get(zone).get("Serv").put(id,servArea);
-            }
+            final Map<String, Map<Integer, Float>> stringMapMap = zoneJobTypeJobLocationArea.get(zone);
+            if (stringMapMap != null) {
+                    try {
+                    stringMapMap.get("Agri").put(id, agriArea);
+                    stringMapMap.get("Mnft").put(id, mnftArea);
+                    stringMapMap.get("Util").put(id, utilArea);
+                    stringMapMap.get("Cons").put(id, consArea);
+                    stringMapMap.get("Retl").put(id, retlArea);
+                    stringMapMap.get("Trns").put(id, trnsArea);
+                    stringMapMap.get("Finc").put(id, fincArea);
+                    stringMapMap.get("Rlst").put(id, rlstArea);
+                    stringMapMap.get("Admn").put(id, admnArea);
+                    stringMapMap.get("Serv").put(id, servArea);
+                    } catch (NullPointerException e) {
+                        System.out.println(e);
+                    }
+                }
 
         }
     }
