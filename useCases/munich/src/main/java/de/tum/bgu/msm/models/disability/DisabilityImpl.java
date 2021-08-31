@@ -3,7 +3,7 @@ package de.tum.bgu.msm.models.disability;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.person.Disability;
 import de.tum.bgu.msm.data.person.Person;
-import de.tum.bgu.msm.data.person.PersonMucDisability;
+import de.tum.bgu.msm.scenarios.disabilities.PersonMucDisability;
 import de.tum.bgu.msm.events.DisabilityEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;

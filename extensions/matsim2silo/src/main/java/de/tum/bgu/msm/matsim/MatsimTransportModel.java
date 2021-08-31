@@ -32,6 +32,8 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.population.PopulationFactory;
 import org.matsim.contrib.dvrp.trafficmonitoring.TravelTimeUtils;
+import org.matsim.contrib.noise.NoiseModule;
+import org.matsim.contrib.noise.NoiseReceiverPoints;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
@@ -158,6 +160,7 @@ public final class MatsimTransportModel implements TransportModel {
         assembledScenario = scenarioAssembler.assembleScenario(initialMatsimConfig, year, travelTimes);
 
         finalizeConfig(assembledScenario.getConfig(), year);
+        assembledScenario.getConfig().transit().setUsingTransitInMobsim(false);
 
         final Controler controler = new Controler(assembledScenario);
 
@@ -186,8 +189,9 @@ public final class MatsimTransportModel implements TransportModel {
      * @param eventsFile
      */
     private void replayFromEvents(String eventsFile) {
+        logger.warn("Setting up MATSim with initial events file: " + eventsFile);
         Scenario scenario = ScenarioUtils.loadScenario(initialMatsimConfig);
-        TravelTime travelTime = TravelTimeUtils.createTravelTimesFromEvents(scenario, eventsFile);
+        TravelTime travelTime = TravelTimeUtils.createTravelTimesFromEvents(scenario.getNetwork(), initialMatsimConfig, eventsFile);
         TravelDisutility travelDisutility = ControlerDefaults.createDefaultTravelDisutilityFactory(scenario).createTravelDisutility(travelTime);
         updateTravelTimes(travelTime, travelDisutility);
     }
@@ -205,5 +209,9 @@ public final class MatsimTransportModel implements TransportModel {
             ((SkimTravelTimes) mainTravelTimes).updateRegionalTravelTimes(dataContainer.getGeoData().getRegions().values(),
                     dataContainer.getGeoData().getZones().values());
         }
+    }
+
+    public MatsimData getMatsimData() {
+        return matsimData;
     }
 }

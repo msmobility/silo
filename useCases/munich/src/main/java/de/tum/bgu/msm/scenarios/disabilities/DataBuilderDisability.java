@@ -9,7 +9,6 @@ import de.tum.bgu.msm.data.geo.DefaultGeoData;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.*;
 import de.tum.bgu.msm.data.job.*;
-import de.tum.bgu.msm.data.person.PersonFactoryMucDisability;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.*;
@@ -74,7 +73,7 @@ public class DataBuilderDisability {
         SchoolData schoolData = new SchoolDataImpl(geoData, dwellingData, properties);
 
         return new DataContainerWithSchoolsImpl(geoData, realEstateDataManager, jobDataManager, householdDataManager, travelTimes, accessibility,
-        		commutingTimeProbability, schoolData, properties);
+                commutingTimeProbability, schoolData, properties);
     }
 
     static public void read(Properties properties, DataContainerWithSchoolsImpl dataContainer){
@@ -96,7 +95,7 @@ public class DataBuilderDisability {
         PersonReader personReader = new PersonReaderMucDisability(dataContainer.getHouseholdDataManager(), new DefaultDisabilityStrategy());
         personReader.readData(personFile);
 
-        DwellingReader ddReader = new DwellingReaderMuc(dataContainer.getRealEstateDataManager());
+        DwellingReader ddReader = new DwellingReaderMuc(dataContainer.getRealEstateDataManager().getDwellingData(), new DwellingFactoryImpl());
         String dwellingsFile = properties.main.baseDirectory + properties.realEstate.dwellingsFileName + "_" + year + ".csv";
         ddReader.readData(dwellingsFile);
 

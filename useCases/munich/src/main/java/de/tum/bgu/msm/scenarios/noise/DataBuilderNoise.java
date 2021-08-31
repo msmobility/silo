@@ -1,6 +1,9 @@
-package de.tum.bgu.msm;
+package de.tum.bgu.msm.scenarios.noise;
 
-import de.tum.bgu.msm.data.accessibility.*;
+import de.tum.bgu.msm.data.accessibility.Accessibility;
+import de.tum.bgu.msm.data.accessibility.AccessibilityImpl;
+import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
+import de.tum.bgu.msm.data.accessibility.CommutingTimeProbabilityImpl;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.geo.DefaultGeoData;
 import de.tum.bgu.msm.data.geo.GeoData;
@@ -12,19 +15,16 @@ import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.io.input.*;
 import de.tum.bgu.msm.matsim.MatsimTravelTimesAndCosts;
-import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.*;
-import de.tum.bgu.msm.utils.SiloUtil;
 import org.matsim.core.config.Config;
 
-public class DataBuilder {
+public class DataBuilderNoise {
 
-    private DataBuilder() {
+    private DataBuilderNoise() {
     }
 
-    public static DataContainerWithSchools getModelDataForMuc(Properties properties, Config config) {
-
+    public static NoiseDataContainerImpl getModelDataForMuc(Properties properties, Config config) {
         HouseholdData householdData = new HouseholdDataImpl();
         JobData jobData = new JobDataImpl();
         DwellingData dwellingData = new DwellingDataImpl();
@@ -49,9 +49,7 @@ public class DataBuilder {
                 throw new RuntimeException("Travel time not recognized! Please set property \"travel.time\" accordingly!");
         }
 
-        CommutingTimeProbability commutingTimeProbability =
-                new CommutingTimeProbabilityExponential(properties.accessibility.betaTimeCarExponentialCommutingTime,
-                        properties.accessibility.betaTimePtExponentialCommutingTime);
+        CommutingTimeProbability commutingTimeProbability = new CommutingTimeProbabilityImpl(properties);
 
         //TODO: revise this!
         new JobType(properties.jobData.jobTypes);
@@ -62,12 +60,10 @@ public class DataBuilder {
 
 
         RealEstateDataManager realEstateDataManager = new RealEstateDataManagerImpl(
-                new DefaultDwellingTypes(), dwellingData, householdData, geoData, new DwellingFactoryImpl(), properties);
+                new DefaultDwellingTypes(), dwellingData, householdData, geoData, new NoiseDwellingFactory(new DwellingFactoryImpl()), properties);
 
-        JobDataManager jobDataManager = new JobDataManagerWithCommuteModeChoice(
-                properties, jobFactory, jobData, geoData, travelTimes,
-                commutingTimeProbability, new SimpleCommuteModeChoice(commutingTimeProbability,
-                travelTimes, geoData, properties, SiloUtil.provideNewRandom()));
+        JobDataManager jobDataManager = new JobDataManagerImpl(
+                properties, jobFactory, jobData, geoData, travelTimes, commutingTimeProbability);
 
         final HouseholdFactoryMuc hhFactory = new HouseholdFactoryMuc();
         HouseholdDataManager householdDataManager = new HouseholdDataManagerImpl(
@@ -76,11 +72,13 @@ public class DataBuilder {
 
         SchoolData schoolData = new SchoolDataImpl(geoData, dwellingData, properties);
 
-        return new DataContainerWithSchoolsImpl(geoData, realEstateDataManager, jobDataManager, householdDataManager, travelTimes, accessibility,
-        		commutingTimeProbability, schoolData, properties);
+        DataContainerWithSchools delegate = new DataContainerWithSchoolsImpl(geoData, realEstateDataManager, jobDataManager, householdDataManager, travelTimes, accessibility,
+                commutingTimeProbability, schoolData, properties);
+        return new NoiseDataContainerImpl(delegate, properties);
+
     }
 
-    static public void read(Properties properties, DataContainerWithSchools dataContainer){
+    static public void read(Properties properties, NoiseDataContainerImpl dataContainer){
 
         GeoDataReader reader = new GeoDataReaderMuc(dataContainer.getGeoData());
         String pathShp = properties.main.baseDirectory + properties.geo.zoneShapeFile;
@@ -99,7 +97,7 @@ public class DataBuilder {
         PersonReader personReader = new PersonReaderMuc(dataContainer.getHouseholdDataManager());
         personReader.readData(personFile);
 
-        DwellingReader ddReader = new DwellingReaderMuc(dataContainer.getRealEstateDataManager().getDwellingData(), new DwellingFactoryImpl());
+        DwellingReader ddReader = new DwellingReaderMuc(dataContainer.getRealEstateDataManager().getDwellingData(), new NoiseDwellingFactory(new DwellingFactoryImpl()));
         String dwellingsFile = properties.main.baseDirectory + properties.realEstate.dwellingsFileName + "_" + year + ".csv";
         ddReader.readData(dwellingsFile);
 
@@ -111,8 +109,5 @@ public class DataBuilder {
         SchoolReader ssReader = new SchoolReaderImpl(dataContainer.getSchoolData());
         String schoolsFile = properties.main.baseDirectory + properties.schoolData.schoolsFileName + "_" + year + ".csv";
         ssReader.readData(schoolsFile);
-
-        MicroDataScaler microDataScaler = new MicroDataScaler(dataContainer, properties);
-        microDataScaler.scale();
     }
 }

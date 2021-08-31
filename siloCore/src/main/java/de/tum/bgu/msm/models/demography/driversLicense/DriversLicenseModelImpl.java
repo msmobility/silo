@@ -17,7 +17,6 @@ import java.util.Random;
  * Author: Rolf Moeckel, TUM and Ana Moreno, TUM
  * Created on 13 October 2017 in Cape Town, South Africa
  **/
-
 public class DriversLicenseModelImpl extends AbstractModel implements DriversLicenseModel {
 
     private final DriversLicenseStrategy strategy;

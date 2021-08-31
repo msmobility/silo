@@ -1,22 +1,19 @@
-package de.tum.bgu.msm;
+package de.tum.bgu.msm.scenarios.noise;
 
-import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
-import de.tum.bgu.msm.matsim.*;
-import de.tum.bgu.msm.mito.MitoMatsimScenarioAssembler;
-import de.tum.bgu.msm.models.construction.ConstructionDemandStrategyMuc;
-import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
-import de.tum.bgu.msm.models.relocation.moves.RegionProbabilityStrategyImpl;
-import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.mito.MitoDataConverterMuc;
 import de.tum.bgu.msm.data.person.PersonFactory;
+import de.tum.bgu.msm.matsim.*;
+import de.tum.bgu.msm.matsim.noise.NoiseModel;
+import de.tum.bgu.msm.mito.MitoMatsimScenarioAssembler;
 import de.tum.bgu.msm.models.EducationModelMuc;
 import de.tum.bgu.msm.models.MarriageModelMuc;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipModelMuc;
 import de.tum.bgu.msm.models.carOwnership.UpdateCarOwnershipModelMuc;
+import de.tum.bgu.msm.models.construction.ConstructionDemandStrategyMuc;
 import de.tum.bgu.msm.models.demography.birth.BirthModelImpl;
 import de.tum.bgu.msm.models.demography.birth.DefaultBirthStrategy;
 import de.tum.bgu.msm.models.demography.birthday.BirthdayModel;
@@ -40,6 +37,7 @@ import de.tum.bgu.msm.models.demography.marriage.DefaultMarriageStrategy;
 import de.tum.bgu.msm.models.demography.marriage.MarriageModel;
 import de.tum.bgu.msm.models.jobmography.JobMarketUpdate;
 import de.tum.bgu.msm.models.jobmography.JobMarketUpdateImpl;
+import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
 import de.tum.bgu.msm.models.realEstate.construction.*;
 import de.tum.bgu.msm.models.realEstate.demolition.DefaultDemolitionStrategy;
 import de.tum.bgu.msm.models.realEstate.demolition.DemolitionModel;
@@ -55,21 +53,16 @@ import de.tum.bgu.msm.models.relocation.HousingStrategyMuc;
 import de.tum.bgu.msm.models.relocation.InOutMigrationMuc;
 import de.tum.bgu.msm.models.relocation.RegionUtilityStrategyMucImpl;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigration;
-import de.tum.bgu.msm.models.relocation.moves.DefaultDwellingProbabilityStrategy;
-import de.tum.bgu.msm.models.relocation.moves.DefaultMovesStrategy;
-import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
-import de.tum.bgu.msm.models.relocation.moves.RegionProbabilityStrategyImpl;
-import de.tum.bgu.msm.models.transportModel.TransportModel;
+import de.tum.bgu.msm.models.relocation.moves.*;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
 import org.matsim.core.scenario.ScenarioUtils;
 
-public class ModelBuilderMuc {
+public class ModelBuilderMucNoiseInsensitive {
 
-    public static ModelContainer getModelContainerForMuc(DataContainer dataContainer, Properties properties, Config config) {
+    public static ModelContainer getModelContainerForMuc(NoiseDataContainerImpl dataContainer, Properties properties, Config config) {
 
         PersonFactory ppFactory = dataContainer.getHouseholdDataManager().getPersonFactory();
         HouseholdFactory hhFactory = dataContainer.getHouseholdDataManager().getHouseholdFactory();
@@ -81,18 +74,22 @@ public class ModelBuilderMuc {
 
         DeathModel deathModel = new DeathModelImpl(dataContainer, properties, new DefaultDeathStrategy(), SiloUtil.provideNewRandom());
 
+
+        HousingStrategy housingStrategyDelegate
+                = new HousingStrategyMuc(dataContainer, properties,
+                dataContainer.getTravelTimes(), new DefaultDwellingProbabilityStrategy(),
+                new DwellingUtilityStrategyImpl(), new RegionUtilityStrategyMucImpl(),
+                new RegionProbabilityStrategyImpl(), new SimpleCommuteModeChoice(dataContainer, properties, SiloUtil.getRandomObject()));
+
+        HuntNoiseInsensitiveDwellingUtilityStrategy housingStrategy
+                = new HuntNoiseInsensitiveDwellingUtilityStrategy(dataContainer.getTravelTimes(),
+                dataContainer.getJobDataManager(), dataContainer.getRealEstateDataManager(),
+                housingStrategyDelegate);
+
         MovesModelImpl movesModel = new MovesModelImpl(
                 dataContainer, properties,
                 new DefaultMovesStrategy(),
-                new HousingStrategyMuc(dataContainer,
-                        properties,
-                        dataContainer.getTravelTimes(),
-                        new DefaultDwellingProbabilityStrategy(),
-                        new DwellingUtilityStrategyImpl(),
-                        new RegionUtilityStrategyMucImpl(),
-                        new RegionProbabilityStrategyImpl(),
-                        new SimpleCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom())
-                ), SiloUtil.provideNewRandom());
+                housingStrategy, SiloUtil.provideNewRandom());
 
         CreateCarOwnershipModel carOwnershipModel = new CreateCarOwnershipModelMuc(dataContainer);
 
@@ -102,7 +99,7 @@ public class ModelBuilderMuc {
 
         DriversLicenseModel driversLicenseModel = new DriversLicenseModelImpl(dataContainer, properties, new DefaultDriversLicenseStrategy(), SiloUtil.provideNewRandom());
 
-        EducationModel educationModel = new EducationModelMuc((DataContainerWithSchools) dataContainer, properties, SiloUtil.provideNewRandom());
+        EducationModel educationModel = new EducationModelMuc(dataContainer, properties, SiloUtil.provideNewRandom());
 
         EmploymentModel employmentModel = new EmploymentModelImpl(dataContainer, properties, SiloUtil.provideNewRandom());
 
@@ -131,29 +128,29 @@ public class ModelBuilderMuc {
                 carOwnershipModel, hhFactory, properties, new DefaultMarriageStrategy(), SiloUtil.provideNewRandom());
 
 
-        TransportModel transportModel;
-        MatsimScenarioAssembler scenarioAssembler;
-
-
+        MatsimTransportModel transportModel;
         MatsimData matsimData = null;
         if (config != null) {
             final Scenario scenario = ScenarioUtils.loadScenario(config);
-            matsimData = new MatsimData(config, properties, ZoneConnectorManagerImpl.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
+            matsimData = new MatsimData(config, properties, ZoneConnectorManager.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
         }
         switch (properties.transportModel.transportModelIdentifier) {
             case MITO_MATSIM:
-                scenarioAssembler = new MitoMatsimScenarioAssembler(dataContainer, properties, new MitoDataConverterMuc());
-                transportModel = new MatsimTransportModel(dataContainer, config, properties, scenarioAssembler, matsimData);
+                MatsimScenarioAssembler delegate = new MitoMatsimScenarioAssembler(dataContainer, properties, new MitoDataConverterMuc());
+                transportModel = new MatsimTransportModel(dataContainer, config, properties, delegate, matsimData);
                 break;
             case MATSIM:
-                SimpleCommuteModeChoice commuteModeChoice = new SimpleCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom());
-                scenarioAssembler = new SimpleCommuteModeChoiceMatsimScenarioAssembler(dataContainer, properties, commuteModeChoice);
-                transportModel = new MatsimTransportModel(dataContainer, config, properties, scenarioAssembler, matsimData);
+                delegate = new SimpleMatsimScenarioAssembler(dataContainer, properties);
+
+                transportModel = new MatsimTransportModel(dataContainer, config, properties, delegate, matsimData);
                 break;
             case NONE:
             default:
                 transportModel = null;
         }
+        NoiseModel noiseModel  = new NoiseModel(config, dataContainer, properties, SiloUtil.provideNewRandom(), transportModel.getMatsimData());
+
+
 
         final ModelContainer modelContainer = new ModelContainer(
                 birthModel, birthdayModel,
@@ -165,6 +162,7 @@ public class ModelBuilderMuc {
                 constructionOverwrite, inOutMigration, movesModel, transportModel);
 
         modelContainer.registerModelUpdateListener(new UpdateCarOwnershipModelMuc(dataContainer, properties, SiloUtil.provideNewRandom()));
+        modelContainer.registerModelUpdateListener(noiseModel);
 
         return modelContainer;
     }

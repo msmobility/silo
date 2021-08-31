@@ -40,6 +40,11 @@ public class TransportModelPropertiesModule {
     public final String matsimInitialEventsFile;
 
     /**
+     * PLans file at the base year for warm start of travel times based on MATSim.
+     */
+    public final String matsimInitialPlansFile;
+
+    /**
      * Scale factor for MATSim transport model.
      */
     public final double matsimScaleFactor;
@@ -90,6 +95,8 @@ public class TransportModelPropertiesModule {
 
         PropertiesUtil.newPropertySubmodule("MATSim - Include access and egress walks for all modes");
         includeAccessEgress = PropertiesUtil.getBooleanProperty(bundle, "matsim.include.access.egress", false);
+        matsimInitialPlansFile = PropertiesUtil.getStringProperty(bundle, "matsim.initial.plans", null);
+
     }
 
 }
