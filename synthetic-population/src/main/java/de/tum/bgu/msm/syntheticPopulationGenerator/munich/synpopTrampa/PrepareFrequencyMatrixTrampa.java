@@ -1,15 +1,16 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.synpopTrampa;
 
-import com.google.common.collect.*;
-import com.pb.common.datafile.TableDataSet;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.google.common.collect.Table;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
-import org.paukov.combinatorics3.Generator;
 
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class PrepareFrequencyMatrixTrampa {

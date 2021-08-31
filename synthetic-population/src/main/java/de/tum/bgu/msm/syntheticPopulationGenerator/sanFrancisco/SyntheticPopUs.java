@@ -3,15 +3,18 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.sanFrancisco;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
-import com.pb.common.datafile.TableDataSet;
-import com.pb.common.util.ResourceUtil;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
+import de.tum.bgu.msm.common.util.ResourceUtil;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
-import de.tum.bgu.msm.data.dwelling.*;
+import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypes;
+import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.dwelling.DwellingUtils;
+import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.geo.GeoDataMstm;
 import de.tum.bgu.msm.data.geo.MstmZone;
 import de.tum.bgu.msm.data.household.Household;
@@ -47,7 +50,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
-import java.util.function.BiFunction;
 
 /**
  * Generates a simple synthetic population for the MSTM Study Area
