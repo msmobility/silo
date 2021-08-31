@@ -130,11 +130,11 @@ public final class MatsimData {
 
         if (config.transit().isUseTransit() && schedule != null) {
             RaptorStaticConfig raptorConfig = RaptorUtils.createStaticConfig(config);
-            raptorData = SwissRailRaptorData.create(schedule, raptorConfig, ptNetwork);
+            raptorData = SwissRailRaptorData.create(schedule, null, raptorConfig, ptNetwork, new OccupancyData());
 
             RaptorStaticConfig raptorConfigOneToAll = RaptorUtils.createStaticConfig(config);
             raptorConfigOneToAll.setOptimization(RaptorStaticConfig.RaptorOptimization.OneToAllRouting);
-            raptorDataOneToAll = SwissRailRaptorData.create(schedule, raptorConfigOneToAll, ptNetwork);
+            raptorDataOneToAll = SwissRailRaptorData.create(schedule, null, raptorConfigOneToAll, ptNetwork, new OccupancyData());
 
             parametersForPerson = new DefaultRaptorParametersForPerson(config);
             defaultRaptorStopFinder = new DefaultRaptorStopFinder(
@@ -187,9 +187,9 @@ public final class MatsimData {
     SwissRailRaptor createSwissRailRaptor(RaptorStaticConfig.RaptorOptimization optimitzaion) {
         switch (optimitzaion) {
             case OneToAllRouting:
-                return new SwissRailRaptor(raptorDataOneToAll, parametersForPerson, routeSelector, defaultRaptorStopFinder);
+                return new SwissRailRaptor(raptorDataOneToAll, parametersForPerson, routeSelector, defaultRaptorStopFinder, new DefaultRaptorInVehicleCostCalculator(), new DefaultRaptorTransferCostCalculator());
             case OneToOneRouting:
-                return new SwissRailRaptor(raptorData, parametersForPerson, routeSelector, defaultRaptorStopFinder);
+                return new SwissRailRaptor(raptorData, parametersForPerson, routeSelector, defaultRaptorStopFinder, new DefaultRaptorInVehicleCostCalculator(), new DefaultRaptorTransferCostCalculator());
             default:
                 throw new RuntimeException("Unrecognized raptor optimization!");
         }
