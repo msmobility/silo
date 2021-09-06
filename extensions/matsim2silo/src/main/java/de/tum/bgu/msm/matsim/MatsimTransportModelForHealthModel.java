@@ -148,13 +148,14 @@ public final class MatsimTransportModelForHealthModel implements TransportModel 
             Scenario assembledScenario = assembledMultiScenario.get(day);
             MainModeIdentifierImpl mainModeIdentifier = new MainModeIdentifierImpl();
 
-            Population populationCar = PopulationUtils.createPopulation(ConfigUtils.createConfig());
+            Population populationCarTruck = PopulationUtils.createPopulation(ConfigUtils.createConfig());
+            PopulationUtils.readPopulation(populationCarTruck, "C:/models/muc/input/foca/ld_trucks_muc.xml");
             Population populationBikePed = PopulationUtils.createPopulation(ConfigUtils.createConfig());
             for (Person pp : assembledScenario.getPopulation().getPersons().values()) {
                 String mode = mainModeIdentifier.identifyMainMode(TripStructureUtils.getLegs(pp.getSelectedPlan()));
                 switch (mode) {
                     case "car":
-                        populationCar.addPerson(pp);
+                        populationCarTruck.addPerson(pp);
                         break;
                     case "bike":
                     case "walk":
@@ -166,10 +167,10 @@ public final class MatsimTransportModelForHealthModel implements TransportModel 
             }
 
             logger.warn("Running MATSim transport model for " + day + " car scenario " + year + ".");
-            Config carConfig = ConfigUtils.loadConfig(initialMatsimConfig.getContext());
-            MutableScenario scenarioCar = (MutableScenario) ScenarioUtils.loadScenario(carConfig);
-            scenarioCar.setPopulation(populationCar);
-            finalizeCarConfig(scenarioCar.getConfig(), year, day);
+            Config carTruckConfig = ConfigUtils.loadConfig(initialMatsimConfig.getContext());
+            MutableScenario scenarioCar = (MutableScenario) ScenarioUtils.loadScenario(carTruckConfig);
+            scenarioCar.setPopulation(populationCarTruck);
+            finalizeCarTruckConfig(scenarioCar.getConfig(), year, day);
             final Controler controlerCar = new Controler(scenarioCar);
             controlerCar.run();
             logger.warn("Running MATSim transport model for " + day + " car scenario " + year + " finished.");
@@ -307,12 +308,18 @@ public final class MatsimTransportModelForHealthModel implements TransportModel 
         bikePedConfig.planCalcScore().addModeParams(walkParams);
     }
 
-    private void finalizeCarConfig(Config config, int year, Day day) {
+    private void finalizeCarTruckConfig(Config config, int year, Day day) {
         config.qsim().setFlowCapFactor(properties.main.scaleFactor * Double.parseDouble(Resources.instance.getString(de.tum.bgu.msm.resources.Properties.TRIP_SCALING_FACTOR)));
         config.qsim().setStorageCapFactor(properties.main.scaleFactor * Double.parseDouble(Resources.instance.getString(de.tum.bgu.msm.resources.Properties.TRIP_SCALING_FACTOR)));
 
         logger.info("Flow Cap Factor: " + config.qsim().getFlowCapFactor());
         logger.info("Storage Cap Factor: " + config.qsim().getStorageCapFactor());
+
+        ActivityParams startActivity = new ActivityParams("start").setTypicalDuration(12 * 60 * 60);
+        config.planCalcScore().addActivityParams(startActivity);
+
+        ActivityParams endActivity = new ActivityParams("end").setTypicalDuration(8 * 60 * 60);
+        config.planCalcScore().addActivityParams(endActivity);
 
         ActivityParams homeActivity = new ActivityParams("home").setTypicalDuration(12 * 60 * 60);
         config.planCalcScore().addActivityParams(homeActivity);
@@ -347,6 +354,21 @@ public final class MatsimTransportModelForHealthModel implements TransportModel 
         }
         config.transit().setUsingTransitInMobsim(false);
         config.qsim().setEndTime(24*60*60);
+
+        List<String> mainModeList = new ArrayList<>();
+        mainModeList.add("car");
+        mainModeList.add("truck");
+        config.qsim().setMainModes(mainModeList);
+        config.plansCalcRoute().setNetworkModes(mainModeList);
+
+        ModeParams carParams = config.planCalcScore().getOrCreateModeParams(TransportMode.car);
+        ModeParams truckParams = new ModeParams(TransportMode.truck);
+        truckParams.setConstant(carParams.getConstant());
+        truckParams.setDailyMonetaryConstant(carParams.getDailyMonetaryConstant());
+        truckParams.setMarginalUtilityOfDistance(carParams.getMarginalUtilityOfDistance());
+        truckParams.setDailyUtilityConstant(carParams.getDailyUtilityConstant());
+        truckParams.setMonetaryDistanceRate(carParams.getMonetaryDistanceRate());
+        config.planCalcScore().addModeParams(truckParams);
     }
 
     /**
