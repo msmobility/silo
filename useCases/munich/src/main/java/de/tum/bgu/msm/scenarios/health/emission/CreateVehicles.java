@@ -38,7 +38,6 @@ public class CreateVehicles {
 
     public void runVehicleType() {
             createVehicleType("HGV",mode,7.2,1.0,1.0,1.0,"BEGIN_EMISSIONSHEAVY_GOODS_VEHICLE;average;average;averageEND_EMISSIONS");
-
             //LCV is not in vehicle types average
             //createVehicleType("LCV",mode,6.2,1.0,1.0,1.0,"BEGIN_EMISSIONSPASSENGER_CAR;petrol (4S);&gt;=2L;PC-P-Euro-1END_EMISSIONS");
             createVehicleType("pass. car",mode,5.2,1.0,1.0,1.0, "BEGIN_EMISSIONSPASSENGER_CAR;average;average;averageEND_EMISSIONS");
@@ -74,7 +73,10 @@ public class CreateVehicles {
             String id = vehicleId.toString();
             Id<Vehicle> vehId = Id.createVehicleId(id);
             Vehicle vehicle;
-            if(id.contains("LD")){
+            if(id.contains("truck")){
+                vehicle = VehicleUtils.getFactory().createVehicle(vehId, vehicles.getVehicleTypes().get(Id.create("HGV", VehicleType.class)));
+                vehicles.addVehicle(vehicle);
+            } else if(id.contains("LD")){
                 vehicle = VehicleUtils.getFactory().createVehicle(vehId, vehicles.getVehicleTypes().get(Id.create("HGV", VehicleType.class)));
                 vehicles.addVehicle(vehicle);
             } else if (id.contains("SD")){

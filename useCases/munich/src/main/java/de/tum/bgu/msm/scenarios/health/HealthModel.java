@@ -115,6 +115,7 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
                                     + properties.main.scenarioName + "/" + latestMatsimYear + "/microData/trips_" + day + "_" + mode + ".csv");
                             healthDataAssembler(latestMatsimYear, day, mode);
                             calculatePersonHealthExposures();
+                            mitoTrips.clear();
                             break;
                         default:
                             logger.warn("No health model for mode: " + mode);
