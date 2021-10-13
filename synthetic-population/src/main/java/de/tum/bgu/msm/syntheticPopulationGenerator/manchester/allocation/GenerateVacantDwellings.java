@@ -48,7 +48,7 @@ public class GenerateVacantDwellings {
 
         realEstateData = dataContainer.getRealEstateDataManager();
         for (Dwelling dd: realEstateData.getDwellings()){
-            int municipality = (int) PropertiesSynPop.get().main.cellsMatrix.getIndexedValueAt(dd.getZoneId(),"ID_city");
+            int municipality = (int) PropertiesSynPop.get().main.cellsMatrix.getIndexedValueAt(dd.getZoneId(),"cityID");
             updateQualityMap(municipality, dd.getYearBuilt(), dd.getQuality());
         }
         highestDwellingIdInUse = 0;

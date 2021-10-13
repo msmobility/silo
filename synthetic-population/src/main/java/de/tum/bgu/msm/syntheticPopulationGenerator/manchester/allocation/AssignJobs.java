@@ -62,8 +62,7 @@ public class AssignJobs {
             Household hh = pp.getHousehold();
             int origin = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
             //int selectedJobType = guessjobType(pp.getGender(),educationalLevel.get(pp));
-            //int selectedJobType = guessjobType(origin);
-            int selectedJobType = 4;
+            int selectedJobType = guessjobType(origin);
             int[] workplace = selectWorkplaceByCommuteFlow(origin, selectedJobType);
             //int[] workplace = selectWorkplace(origin, selectedJobType);
             if (workplace[0] > 0) {
@@ -127,7 +126,7 @@ public class AssignJobs {
             double[] probs = new double[numberZonesByType.get(selectedJobType)];
             int[] ids = idZonesVacantJobsByType.get(selectedJobType);
             RowVector commuteFlow = dataSetSynPop.getCommuteFlowTazToTaz().getRow(homeTaz);
-            IntStream.range(0, probs.length).parallel().forEach(id -> probs[id] = commuteFlow.getValueAt(ids[id] * 1000/ 100)* Math.pow(numberVacantJobsByZoneByType.get(ids[id]), 0.45));
+            IntStream.range(0, probs.length).parallel().forEach(id -> probs[id] = commuteFlow.getValueAt(ids[id]/100)* Math.pow(numberVacantJobsByZoneByType.get(ids[id]), 0.45));
             workplace = select(probs, ids);
 
         return workplace;
@@ -313,19 +312,43 @@ public class AssignJobs {
 
     public int guessjobType(int zone){
 
-        float[] cumProbability = new float[3];
-        cumProbability[0] = dataSetSynPop.getTazAttributes().get(zone).get("pri");
-        cumProbability[1] = dataSetSynPop.getTazAttributes().get(zone).get("sec");
-        cumProbability[2] = dataSetSynPop.getTazAttributes().get(zone).get("ter");
+        float[] cumProbability = new float[jobStringTypes.length];
+        double sum = 0;
+        for(int id = 0; id < jobStringTypes.length; id++){
+            cumProbability[id] = dataSetSynPop.getTazAttributes().get(zone).get(jobStringTypes[id]);
+            sum += cumProbability[id];
+        }
+
+        if(sum == 0){
+            return cumProbability.length - 1;
+        }
+
         float threshold = SiloUtil.getRandomNumberAsFloat();
         for (int i = 0; i < cumProbability.length; i++) {
-            if (cumProbability[i] > threshold) {
+            if (cumProbability[i]/sum > threshold) {
                 return i;
             }
         }
         return cumProbability.length - 1;
 
     }
+
+//    public int guessjobType(int zone){
+//
+//        float[] cumProbability = new float[3];
+//        cumProbability[0] = dataSetSynPop.getTazAttributes().get(zone).get("pri");
+//        cumProbability[1] = dataSetSynPop.getTazAttributes().get(zone).get("sec");
+//        cumProbability[2] = dataSetSynPop.getTazAttributes().get(zone).get("ter");
+//        double total = dataSetSynPop.getTazAttributes().get(zone).get("tot");
+//        float threshold = SiloUtil.getRandomNumberAsFloat();
+//        for (int i = 0; i < cumProbability.length; i++) {
+//            if (cumProbability[i]/total > threshold) {
+//                return i;
+//            }
+//        }
+//        return cumProbability.length - 1;
+//
+//    }
 
 
     public static int[] select (double[] probabilities, int[] id) {

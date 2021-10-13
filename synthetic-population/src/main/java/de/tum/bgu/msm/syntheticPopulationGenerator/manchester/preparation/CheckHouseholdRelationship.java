@@ -23,9 +23,9 @@ public class CheckHouseholdRelationship {
 
     public void run(){
         initialize();
-        for (int household = 1; household <= dataSetSynPop.getHouseholdTable().rowKeySet().size(); household++){
-            int hhSize = dataSetSynPop.getHouseholdTable().get(household, "hhSize");
-            int firstMember = dataSetSynPop.getHouseholdTable().get(household, "id_firstPerson");
+        for (int household : dataSetSynPop.getHouseholdDataSet().getColumnAsInt("HouseholdID")){
+            int hhSize = (int) dataSetSynPop.getHouseholdDataSet().getValueAt(household, "hhSize");
+            int firstMember = (int) dataSetSynPop.getHouseholdDataSet().getValueAt(household, "id_firstPerson");
             if (hhSize == 1){
                 setPersonAsSingle(firstMember);
             } else {
@@ -42,11 +42,11 @@ public class CheckHouseholdRelationship {
     private void obtainRolesInHousehold(int firstMember, int hhSize){
         for (int person = 0; person < hhSize; person++){
             int row = firstMember + person;
-            int spouseInHousehold = dataSetSynPop.getPersonTable().get(row, "spouseInHousehold");
-            int relationToHead = dataSetSynPop.getPersonTable().get(row, "relationshipCode");
-            int maritalStatus = dataSetSynPop.getPersonTable().get(row, "marriage");
-            int age = dataSetSynPop.getPersonTable().get(row, "age");
-            int gender = dataSetSynPop.getPersonTable().get(row, "gender");
+            int spouseInHousehold = (int) dataSetSynPop.getPersonDataSet().getValueAt(row, "spouseInHousehold");
+            int relationToHead = (int) dataSetSynPop.getPersonDataSet().getValueAt(row, "relationshipCode");
+            int maritalStatus = (int) dataSetSynPop.getPersonDataSet().getValueAt(row, "marriage");
+            int age = (int) dataSetSynPop.getPersonDataSet().getValueAt(row, "age");
+            int gender = (int) dataSetSynPop.getPersonDataSet().getValueAt(row, "gender");
             if (relationToHead == 3) {
                 childrenInHousehold.put(row, age); //children -> children
             } else if (maritalStatus == 2||maritalStatus == 3||maritalStatus == 4) {
@@ -98,7 +98,7 @@ public class CheckHouseholdRelationship {
                 int row = pair.getKey();
 /*                microDataPerson.setValueAt(row, "personRole", 3);
                 dataSetSynPop.getPersons().get(row).put("personRole", 3);*/
-                dataSetSynPop.getPersonTable().put(row, "personRole", 3);
+                dataSetSynPop.getPersonDataSet().setValueAt(row, "personRole", 3);
             }
         }
         //set singles and married in the household
@@ -111,7 +111,7 @@ public class CheckHouseholdRelationship {
                     int row = pair.getKey();
 /*                    microDataPerson.setValueAt(row, "personRole", 1);
                     dataSetSynPop.getPersons().get(row).put("personRole", 1);*/
-                    dataSetSynPop.getPersonTable().put(row, "personRole", 1);
+                    dataSetSynPop.getPersonDataSet().setValueAt(row, "personRole", 1);
                 }
             }
             inner = married.get(key);
@@ -120,7 +120,7 @@ public class CheckHouseholdRelationship {
                     int row = pair.getKey();
 /*                    microDataPerson.setValueAt(row, "personRole", 2);
                     dataSetSynPop.getPersons().get(row).put("personRole", 2);*/
-                    dataSetSynPop.getPersonTable().put(row, "personRole", 2);
+                    dataSetSynPop.getPersonDataSet().setValueAt(row, "personRole", 2);
                 }
             }
             inner = noClass.get(key);
@@ -129,7 +129,7 @@ public class CheckHouseholdRelationship {
                     int row = pair.getKey();
 /*                    microDataPerson.setValueAt(row, "rearrangedRole", 1);
                     dataSetSynPop.getPersons().get(row).put("personRole", 1);*/
-                    dataSetSynPop.getPersonTable().put(row, "personRole", 1);
+                    dataSetSynPop.getPersonDataSet().setValueAt(row, "personRole", 1);
                 }
             }
         }
@@ -137,7 +137,7 @@ public class CheckHouseholdRelationship {
 
 
     private void setPersonAsSingle(int ppID){
-        dataSetSynPop.getPersonTable().put(ppID, "personRole", 1);
+        dataSetSynPop.getPersonDataSet().setValueAt(ppID, "personRole", 1);
     }
 
 

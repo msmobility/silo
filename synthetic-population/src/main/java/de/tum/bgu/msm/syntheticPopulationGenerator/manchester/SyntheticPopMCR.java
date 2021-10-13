@@ -4,7 +4,7 @@ import de.tum.bgu.msm.DataBuilder;
 import de.tum.bgu.msm.io.input.GeoDataReader;
 import de.tum.bgu.msm.io.output.*;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.data.GeoDataReaderManchester;
+import io.*;
 import de.tum.bgu.msm.run.io.JobWriterBangkok;
 import de.tum.bgu.msm.run.io.PersonWriterBangkok;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
@@ -81,7 +81,7 @@ public class SyntheticPopMCR implements SyntheticPopI {
                 + "_"
                 + properties.main.baseYear
                 + ".csv";
-        HouseholdWriter hhwriter = new DefaultHouseholdWriter(dataContainer.getHouseholdDataManager().getHouseholds());
+        HouseholdWriter hhwriter = new HouseholdWriterMCR(dataContainer.getHouseholdDataManager(),dataContainer.getRealEstateDataManager());
         hhwriter.writeHouseholds(filehh);
 
         String filepp = properties.main.baseDirectory
@@ -89,7 +89,7 @@ public class SyntheticPopMCR implements SyntheticPopI {
                 + "_"
                 + properties.main.baseYear
                 + ".csv";
-        PersonWriter ppwriter = new PersonWriterBangkok(dataContainer.getHouseholdDataManager());
+        PersonWriter ppwriter = new PersonWriterMCR(dataContainer.getHouseholdDataManager());
         ppwriter.writePersons(filepp);
 
         String filedd = properties.main.baseDirectory
@@ -97,7 +97,7 @@ public class SyntheticPopMCR implements SyntheticPopI {
                 + "_"
                 + properties.main.baseYear
                 + ".csv";
-        DwellingWriter ddwriter = new DefaultDwellingWriter(dataContainer.getRealEstateDataManager().getDwellings());
+        DwellingWriter ddwriter = new DwellingWriterMCR(dataContainer);
         ddwriter.writeDwellings(filedd);
 
         String filejj = properties.main.baseDirectory
@@ -105,7 +105,7 @@ public class SyntheticPopMCR implements SyntheticPopI {
                 + "_"
                 + properties.main.baseYear
                 + ".csv";
-        JobWriter jjwriter = new JobWriterBangkok(dataContainer.getJobDataManager());
+        JobWriter jjwriter = new JobWriterMCR(dataContainer.getJobDataManager());
         jjwriter.writeJobs(filejj);
 
 

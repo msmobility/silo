@@ -34,7 +34,7 @@ public class ReadZonalData {
         //LSOA = TAZs
         readZones();
         //Manchester job assignment approach: base year commute flows LSOA-LSOA
-        //readDistanceMatrix();
+        readDistanceMatrix();
         //readTripLengthFrequencyDistribution();
         readCommuteFlow();
     }

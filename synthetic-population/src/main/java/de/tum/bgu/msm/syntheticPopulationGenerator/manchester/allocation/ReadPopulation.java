@@ -1,6 +1,8 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.manchester.allocation;
 
 import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.PersonFactoryMCR;
+import de.tum.bgu.msm.data.PersonMCR;
 import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypes;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingUtils;
@@ -113,7 +115,7 @@ public class ReadPopulation {
 
 
             // read line
-            PersonFactoryMuc ppFactory = new PersonFactoryMuc();;
+            PersonFactoryMCR ppFactory = new PersonFactoryMCR();;
             while ((recString = in.readLine()) != null) {
                 recCount++;
                 String[] lineElements = recString.split(",");
@@ -126,7 +128,7 @@ public class ReadPopulation {
                 Occupation occupation = Occupation.valueOf(Integer.parseInt(lineElements[posOccupation]));
                 int workplace  = Integer.parseInt(lineElements[posWorkplace]);
                 int income     = Integer.parseInt(lineElements[posIncome]);
-                PersonMuc pp = (PersonMuc) ppFactory.createPerson(id, age, gender, occupation, pr, workplace, income); //this automatically puts it in id->person map in Person class
+                PersonMCR pp = ppFactory.createPerson(id, age, gender, occupation, pr, workplace, income); //this automatically puts it in id->person map in Person class
                 householdData.addPerson(pp);
                 householdData.addPersonToHousehold(pp, householdData.getHouseholdFromId(hhid));
                 String nationality = lineElements[posNationality];
@@ -139,7 +141,6 @@ public class ReadPopulation {
                 if (licenseStr.equals("true")){
                     license = true;
                 }
-                pp.setNationality(nat);
                 pp.setDriverLicense(license);
                 if (id == SiloUtil.trackPp) {
                     SiloUtil.trackWriter.println("Read person with following attributes from " + fileName);

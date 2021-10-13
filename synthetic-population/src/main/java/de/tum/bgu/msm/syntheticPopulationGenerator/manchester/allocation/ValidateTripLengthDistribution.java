@@ -34,7 +34,7 @@ public class ValidateTripLengthDistribution {
     }
 
     public void run(){
-        logger.info("   Running module: read population");
+        logger.info("   Running module: validate trip length distribution");
         initializeODmatrices();
         summarizeCommutersTripLength();
         //summarizeStudentsTripLength();

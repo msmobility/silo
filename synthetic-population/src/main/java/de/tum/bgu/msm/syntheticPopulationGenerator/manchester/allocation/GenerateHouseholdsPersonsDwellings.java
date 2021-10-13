@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.manchester.allocation;
 
 import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.PersonFactoryMCR;
 import de.tum.bgu.msm.data.PersonMCR;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.household.Household;
@@ -111,20 +112,20 @@ public class GenerateHouseholdsPersonsDwellings {
     private void generatePersons(int hhSelected, Household hh){
 
         int hhSize = (int) dataSetSynPop.getHouseholdDataSet().getValueAt(hhSelected, "hhSize");
-        PersonFactory factory = PersonUtils.getFactory();
+        PersonFactoryMCR factory = new PersonFactoryMCR();
         for (int person = 0; person < hhSize; person++) {
             int id = householdData.getNextPersonId();
             int personSelected = (int) dataSetSynPop.getHouseholdDataSet().getValueAt(hhSelected, "id_firstPerson") + person;
             int age =(int) dataSetSynPop.getPersonDataSet().getValueAt(personSelected, "age");
             Gender gender = Gender.valueOf((int) dataSetSynPop.getPersonDataSet().getValueAt(personSelected, "gender"));
             Occupation occupation = Occupation.valueOf((int) dataSetSynPop.getPersonDataSet().getValueAt(personSelected, "employmentCode"));
-            int income = microDataManager.translateIncome(dataSetSynPop.getPersonTable().get(personSelected, "income"));
+            int monthlyIncome = microDataManager.translateIncome((int) dataSetSynPop.getPersonDataSet().getValueAt(personSelected, "income"));
             boolean license = microDataManager.obtainLicense(gender, age);
             //TODO: education degree
             int educationDegree = 1;
             PersonRole personRole = microDataManager.translatePersonRole((int)dataSetSynPop.getPersonDataSet().getValueAt(personSelected, "personRole"));
             int school = microDataManager.guessSchoolType(occupation, age);
-            PersonMCR pers = (PersonMCR) factory.createPerson(id, age, gender, occupation,personRole, 0, income); //(int id, int age, int gender, Race race, int occupation, int workplace, int income)
+            PersonMCR pers = factory.createPerson(id, age, gender, occupation,personRole, 0, monthlyIncome*12); //(int id, int age, int gender, Race race, int occupation, int workplace, int income)
             pers.setDriverLicense(license);
             pers.setSchoolType(school);
             householdData.addPerson(pers);
@@ -149,7 +150,7 @@ public class GenerateHouseholdsPersonsDwellings {
         DwellingUsage usage = DwellingUsage.valueOf(useInteger);
         int ddType = (int) dataSetSynPop.getHouseholdDataSet().getValueAt(hhSelected, "ddTypeCode");
         DwellingType type = ManchesterDwellingTypes.DwellingTypeManchester.valueOf(ddType);
-        int bedRooms = (int) dataSetSynPop.getHouseholdDataSet().getValueAt(hhSelected, "bedrooms");
+        int bedRooms = (int) dataSetSynPop.getHouseholdDataSet().getValueAt(hhSelected, "bedroom");
         Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, tazSelected, null, idHousehold, type , bedRooms, 1, 0, year);
         realEstate.addDwelling(dwell);
         dwell.setFloorSpace(floorSpace);

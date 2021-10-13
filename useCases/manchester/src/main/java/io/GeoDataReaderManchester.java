@@ -1,6 +1,8 @@
-package de.tum.bgu.msm.data;
+package io;
 
 import de.tum.bgu.msm.common.datafile.TableDataSet;
+import de.tum.bgu.msm.data.Region;
+import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.geo.ZoneImpl;
 import de.tum.bgu.msm.io.input.GeoDataReader;
 

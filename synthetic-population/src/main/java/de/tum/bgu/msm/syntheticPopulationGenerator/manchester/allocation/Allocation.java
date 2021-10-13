@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.manchester.allocation;
 
 
+import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.io.output.*;
 import de.tum.bgu.msm.run.io.PersonWriterBangkok;
@@ -8,6 +9,10 @@ import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.ModuleSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
+import io.DwellingWriterMCR;
+import io.HouseholdWriterMCR;
+import io.JobWriterMCR;
+import io.PersonWriterMCR;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -35,7 +40,8 @@ public class Allocation extends ModuleSynPop{
             generateJobs();
             summarizeData(dataContainer, "afterGenerateJobs");
             //TODO:Shall we use the hhAuto from micro data?
-            //generateAutos();
+            generateAutos();
+            summarizeData(dataContainer, "afterGenerateAutos");
         } else {
             readPopulation();
         }
@@ -108,18 +114,20 @@ public class Allocation extends ModuleSynPop{
     private void summarizeData(DataContainerWithSchools dataContainer, String stage){
 
         String filehh = "microData/interimFiles/hh_" + stage + ".csv";
-        HouseholdWriter hhwriter = new DefaultHouseholdWriter(dataContainer.getHouseholdDataManager().getHouseholds());
+        HouseholdWriter hhwriter = new HouseholdWriterMCR(dataContainer.getHouseholdDataManager(),dataContainer.getRealEstateDataManager());
         hhwriter.writeHouseholds(filehh);
 
         String filepp = "microData/interimFiles/pp_" + stage + ".csv";
-        PersonWriter ppwriter = new PersonWriterBangkok(dataContainer.getHouseholdDataManager());
+        PersonWriter ppwriter = new PersonWriterMCR(dataContainer.getHouseholdDataManager());
         ppwriter.writePersons(filepp);
 
         String filedd = "microData/interimFiles/dd_" + stage + ".csv";
-        DwellingWriter ddwriter = new DefaultDwellingWriter(dataContainer.getRealEstateDataManager().getDwellings());
+        DwellingWriter ddwriter = new DwellingWriterMCR(dataContainer);
         ddwriter.writeDwellings(filedd);
 
-
+        String filejj = "microData/interimFiles/jj_" + stage + ".csv";
+        JobWriter jjwriter = new JobWriterMCR(dataContainer.getJobDataManager());
+        jjwriter.writeJobs(filejj);
 
     }
 }

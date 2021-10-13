@@ -35,6 +35,7 @@ public class TranslateMicroDataToCode {
         //convert one by one the records from microHouseholds
         for (int hhCount : dataSetSynPop.getHouseholdDataSet().getColumnAsInt("HouseholdID")){
             translateDwellingType(hhCount);
+            translateDwellingUsage(hhCount);
         }
         logger.info("   Finished translating the micro data");
     }
@@ -42,7 +43,10 @@ public class TranslateMicroDataToCode {
     private void initializeNewVariables(){
         appendNewColumnToTDS(dataSetSynPop.getPersonDataSet(), "employmentCode");
         appendNewColumnToTDS(dataSetSynPop.getPersonDataSet(),"ageCode");
+        appendNewColumnToTDS(dataSetSynPop.getPersonDataSet(),"relationshipCode");
+        appendNewColumnToTDS(dataSetSynPop.getPersonDataSet(),"personRole");
         appendNewColumnToTDS(dataSetSynPop.getHouseholdDataSet(),"ddTypeCode");
+        appendNewColumnToTDS(dataSetSynPop.getHouseholdDataSet(),"tenureCode");
     }
 
     private void translateOccupation(int personCount) {
@@ -146,7 +150,7 @@ public class TranslateMicroDataToCode {
 
     private void translateRelationshipToHouseholdHead(int personCount){
         int valueCode = 0;
-        int valueMicroData = (int) dataSetSynPop.getPersonTable().get(personCount,"relationship");
+        int valueMicroData = (int) dataSetSynPop.getPersonDataSet().getValueAt(personCount,"relationship");
         switch (valueMicroData){
             case 0: //Household head (hHH)
                 valueCode = 1;
@@ -182,14 +186,14 @@ public class TranslateMicroDataToCode {
             case 3:
             case 18: //other relationship with hHH
             case 19: //not related with hHH
-                if ((int) dataSetSynPop.getPersonTable().get(personCount, "age") < 16) {
+                if ((int) dataSetSynPop.getPersonDataSet().getValueAt(personCount,"age") < 16) {
                     valueCode = 3;
                 } else {
                     valueCode = 4;
                 }
                 break;
         }
-        dataSetSynPop.getPersonTable().put(personCount,"relationshipCode", valueCode);
+        dataSetSynPop.getPersonDataSet().setValueAt(personCount,"relationshipCode", valueCode);
     }
 
 
@@ -243,6 +247,27 @@ public class TranslateMicroDataToCode {
 
 
         dataSetSynPop.getHouseholdDataSet().setValueAt(hhCount,"ddTypeCode",valueCode);
+    }
+
+    private void translateDwellingUsage(int ddCount){
+        int valueCode = 0;
+        int valueMicroData = (int) dataSetSynPop.getHouseholdDataSet().getValueAt(ddCount,"tenure");
+        switch (valueMicroData){
+            case 1:
+                valueCode = 1;
+                break;
+            case 2:
+            case 3:
+            case 4:
+                valueCode = 2;
+                break;
+        }
+        // 1 = own
+        // 2 = rent
+        // 3 = local authority
+        // 4 = RSL
+
+        dataSetSynPop.getHouseholdDataSet().setValueAt(ddCount,"tenureCode",valueCode);
     }
 
 
