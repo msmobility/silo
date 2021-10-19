@@ -17,9 +17,9 @@ public class CreateCarOwnershipTak implements CreateCarOwnershipModel {
 
     private final DataContainer dataContainer;
     private final DefaultGeoData geoData;
-    private final CreateCarOwnershipStrategyImpl strategy;
+    private final CreateCarOwnershipStrategy strategy;
 
-    public CreateCarOwnershipTak(DataContainer dataContainer, CreateCarOwnershipStrategyImpl strategy) {
+    public CreateCarOwnershipTak(DataContainer dataContainer, CreateCarOwnershipStrategy strategy) {
         this.strategy = strategy;
         logger.info(" Setting up probabilities for car ownership model");
         this.dataContainer = dataContainer;

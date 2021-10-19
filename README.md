@@ -1,4 +1,13 @@
-[![Build Status](https://travis-ci.org/msmobility/silo.svg?branch=master)](https://travis-ci.org/msmobility/silo)
+
+![CI status](https://github.com/msmobility/silo/workflows/Java%20CI/badge.svg)
+[![Cloudsmith Deployment](https://github.com/msmobility/silo/actions/workflows/deployment.yml/badge.svg?branch=master)](https://github.com/msmobility/silo/actions/workflows/deployment.yml)
+[![Hosted By: Cloudsmith](https://img.shields.io/badge/OSS%20hosting%20by-cloudsmith-blue?logo=cloudsmith&style=for-the-badge)](https://cloudsmith.com)
+
+Package repository hosting is graciously provided by  [Cloudsmith](https://cloudsmith.com).
+Cloudsmith is the only fully hosted, cloud-native, universal package management solution, that
+enables your organization to create, store and share packages in any format, to any place, with total
+confidence.
+
 
 # siloCode
 SILO Model Java Code
@@ -14,6 +23,4 @@ A possibility is
 (2) in eclipse: import --> Maven --> existing maven projects --> browse to location of local git repository --> import
 
 -----
-
-For a full step-by-step guide of the overall setup, pelase see "SILO-MATSim_Installation.docx" in this directory
 

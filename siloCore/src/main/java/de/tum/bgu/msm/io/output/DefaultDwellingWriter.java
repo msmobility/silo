@@ -1,19 +1,19 @@
 package de.tum.bgu.msm.io.output;
 
 import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
+import java.util.Collection;
 
 public class DefaultDwellingWriter implements DwellingWriter {
 
     private final static Logger logger = Logger.getLogger(DefaultDwellingWriter.class);
-    private final RealEstateDataManager realEstateDataManager;
+    private final Collection<Dwelling> dwellings;
 
-    public DefaultDwellingWriter(RealEstateDataManager realEstateDataManager) {
-        this.realEstateDataManager = realEstateDataManager;
+    public DefaultDwellingWriter(Collection<Dwelling> dwellings) {
+        this.dwellings = dwellings;
     }
 
     @Override
@@ -23,7 +23,7 @@ public class DefaultDwellingWriter implements DwellingWriter {
         pwd.print("id,zone,type,hhID,bedrooms,quality,monthlyCost,yearBuilt,coordX,coordY");
         pwd.println();
 
-        for (Dwelling dd : realEstateDataManager.getDwellings()) {
+        for (Dwelling dd : dwellings) {
             pwd.print(dd.getId());
             pwd.print(",");
             pwd.print(dd.getZoneId());

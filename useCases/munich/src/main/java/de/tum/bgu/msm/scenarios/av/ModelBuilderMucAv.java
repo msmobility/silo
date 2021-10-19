@@ -3,7 +3,6 @@ package de.tum.bgu.msm.scenarios.av;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
-import de.tum.bgu.msm.data.mito.MitoDataConverterMuc;
 import de.tum.bgu.msm.data.person.PersonFactory;
 import de.tum.bgu.msm.matsim.*;
 import de.tum.bgu.msm.mito.MitoMatsimScenarioAssembler;
@@ -50,7 +49,6 @@ import de.tum.bgu.msm.models.realEstate.renovation.DefaultRenovationStrategy;
 import de.tum.bgu.msm.models.realEstate.renovation.RenovationModel;
 import de.tum.bgu.msm.models.realEstate.renovation.RenovationModelImpl;
 import de.tum.bgu.msm.models.relocation.DwellingUtilityStrategyImpl;
-import de.tum.bgu.msm.models.relocation.HousingStrategyMuc;
 import de.tum.bgu.msm.models.relocation.InOutMigrationMuc;
 import de.tum.bgu.msm.models.relocation.RegionUtilityStrategyMucImpl;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigration;
@@ -68,7 +66,7 @@ import org.matsim.core.scenario.ScenarioUtils;
 
 public class ModelBuilderMucAv {
 
-    public static ModelContainer getModelContainerAvForMuc(DataContainerWithSchools dataContainer, Properties properties, Config config) {
+    public static ModelContainer getModelContainerAvForMuc(DataContainerWithSchools dataContainer, Properties properties, Config config, boolean useAv, String penetrationRateCalculator) {
 
         PersonFactory ppFactory = dataContainer.getHouseholdDataManager().getPersonFactory();
         HouseholdFactory hhFactory = dataContainer.getHouseholdDataManager().getHouseholdFactory();
@@ -83,10 +81,11 @@ public class ModelBuilderMucAv {
         MovesModelImpl movesModel = new MovesModelImpl(
                 dataContainer, properties,
                 new DefaultMovesStrategy(),
-                new HousingStrategyMuc(dataContainer,
+                new ParkingBasedHousingStrategyMuc(dataContainer,
                         properties,
                         dataContainer.getTravelTimes(), new DefaultDwellingProbabilityStrategy(),
-                        new DwellingUtilityStrategyImpl(), new RegionUtilityStrategyMucImpl(), new RegionProbabilityStrategyImpl()), SiloUtil.provideNewRandom());
+                        new DwellingUtilityStrategyImpl(), new RegionUtilityStrategyMucImpl(), new RegionProbabilityStrategyImpl(),
+                        new AvAndParkingSimpleModeChoice(dataContainer, properties, SiloUtil.provideNewRandom())), SiloUtil.provideNewRandom());
 
         CreateCarOwnershipModel carOwnershipModel = new CreateCarOwnershipModelMuc(dataContainer);
 
@@ -130,11 +129,11 @@ public class ModelBuilderMucAv {
         MatsimData matsimData = null;
         if (config != null) {
             final Scenario scenario = ScenarioUtils.loadScenario(config);
-            matsimData = new MatsimData(config, properties, ZoneConnectorManager.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
+            matsimData = new MatsimData(config, properties, ZoneConnectorManagerImpl.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
         }
         switch (properties.transportModel.transportModelIdentifier) {
             case MITO_MATSIM:
-                scenarioAssembler = new MitoMatsimScenarioAssembler(dataContainer, properties, new MitoDataConverterMuc());
+                scenarioAssembler = new MitoMatsimScenarioAssembler(dataContainer, properties, new MitoDataConverterMucWithAVs());
                 transportModel = new MatsimTransportModel(dataContainer, config, properties, scenarioAssembler, matsimData);
                 break;
             case MATSIM:
@@ -157,10 +156,13 @@ public class ModelBuilderMucAv {
                 constructionOverwrite, inOutMigration, movesModel, transportModel);
 
         modelContainer.registerModelUpdateListener(new UpdateCarOwnershipModelMuc(dataContainer, properties, SiloUtil.provideNewRandom()));
-        modelContainer.registerModelUpdateListener(new SwitchToAutonomousVehicleModelMuc(dataContainer,
-                properties,
-                SwitchToAutonomousVehicleModelMuc.class.getResourceAsStream("SwitchToAutonomousVehicleCalc"), SiloUtil.provideNewRandom()));
 
+        if (useAv) {
+            modelContainer.registerModelUpdateListener(new SwitchToAutonomousVehicleModelMuc(dataContainer,
+                    properties,
+                    SwitchToAutonomousVehicleModelMuc.class.getResourceAsStream(penetrationRateCalculator), SiloUtil.provideNewRandom()));
+        }
+        modelContainer.registerModelUpdateListener(new ParkingDataManager(dataContainer, SiloUtil.provideNewRandom(), properties));
         return modelContainer;
     }
 }

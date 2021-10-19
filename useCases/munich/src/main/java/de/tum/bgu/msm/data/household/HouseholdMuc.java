@@ -4,7 +4,9 @@ import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.data.person.Nationality;
 import de.tum.bgu.msm.data.person.Person;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class HouseholdMuc implements Household {
 
@@ -68,6 +70,16 @@ public class HouseholdMuc implements Household {
         delegate.setAutos(autos);
     }
 
+    @Override
+    public Optional<Object> getAttribute(String key) {
+        return delegate.getAttribute(key);
+    }
+
+    @Override
+    public void setAttribute(String key, Object value) {
+        delegate.setAttribute(key, value);
+    }
+
     public void setAutonomous(int autonomous){
         this.autonomous = autonomous;
     }
@@ -86,15 +98,16 @@ public class HouseholdMuc implements Household {
     }
 
     private void defineHouseholdNationality() {
-        Nationality householdNationaliy = null;
-        for (Person pp : getPersons().values()) {
-            if (householdNationaliy == null) {
-                householdNationaliy = ((PersonMuc)pp).getNationality();
-            } else if (((PersonMuc)pp).getNationality() != householdNationaliy) {
-                nationality = Nationality.OTHER;
-                return;
-            }
-        }
-        nationality = householdNationaliy;
+        Nationality householdNationaliy = Nationality.OTHER;
+        //for (Person pp : getPersons().values()) {
+        //    if (householdNationaliy == null) {
+         //       householdNationaliy = ((PersonMuc)pp).getNationality();
+        //    } else if ((p).getNationality() != householdNationaliy) {
+        //        nationality = Nationality.OTHER;
+        //        return;
+         //   }
+        //}
+        nationality = Nationality.OTHER;
     }
+
 }

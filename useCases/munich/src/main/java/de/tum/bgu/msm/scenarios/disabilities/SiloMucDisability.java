@@ -40,7 +40,7 @@ public class SiloMucDisability {
         //summarizeData(dataContainer, properties);
         ModelContainer modelContainer = ModelBuilderMuc.getModelContainerForMuc(dataContainer, properties, config);
         modelContainer.registerEventModel(DisabilityEvent.class, new DisabilityImpl(dataContainer, properties,new DefaultDisabilityStrategy(), SiloUtil.provideNewRandom()));
-        ResultsMonitor resultsMonitor = new ResultsMonitorMuc(dataContainer, properties);
+        ResultsMonitor resultsMonitor = new MultiFileResultsMonitorMuc(dataContainer, properties);
         SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
         model.addResultMonitor(resultsMonitor);
         model.runModel();
@@ -70,7 +70,7 @@ public class SiloMucDisability {
                 + "_"
                 + properties.main.baseYear
                 + "d.csv";
-        DwellingWriter ddwriter = new DefaultDwellingWriter(dataContainer.getRealEstateDataManager());
+        DwellingWriter ddwriter = new DefaultDwellingWriter(dataContainer.getRealEstateDataManager().getDwellings());
         ddwriter.writeDwellings(filedd);
 
         String filejj = properties.main.baseDirectory

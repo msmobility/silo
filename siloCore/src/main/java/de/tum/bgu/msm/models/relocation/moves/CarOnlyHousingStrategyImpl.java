@@ -125,7 +125,7 @@ public class CarOnlyHousingStrategyImpl implements HousingStrategy {
                 final Job job = jobDataManager.getJobFromId(pp.getJobId());
                 if(job != null) {
                     int expectedCommuteTime = (int) travelTimes.getTravelTime(dwelling, job, properties.transportModel.peakHour_s, TransportMode.car);
-                    double factorForThisZone = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, expectedCommuteTime));
+                    double factorForThisZone = commutingTimeProbability.getCommutingTimeProbability(Math.max(1, expectedCommuteTime), TransportMode.car);
                     workDistanceUtility *= factorForThisZone;
                 }
             }
@@ -162,7 +162,7 @@ public class CarOnlyHousingStrategyImpl implements HousingStrategy {
                     Zone workZone = geoData.getZones().get(job.getZoneId());
                     int timeFromZoneToRegion = (int) dataContainer.getTravelTimes().getTravelTimeToRegion(
                             workZone, region, properties.transportModel.peakHour_s, TransportMode.car);
-                    thisRegionFactor = thisRegionFactor * commutingTimeProbability.getCommutingTimeProbability(timeFromZoneToRegion);
+                    thisRegionFactor = thisRegionFactor * commutingTimeProbability.getCommutingTimeProbability(timeFromZoneToRegion, TransportMode.car);
 
                 }
             }

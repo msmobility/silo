@@ -13,9 +13,14 @@ public class MunichPropertiesSynPop extends AbstractPropertiesSynPop {
 
         PropertiesUtil.newPropertySubmodule("SP: main properties");
 
+        runIPU = PropertiesUtil.getBooleanProperty(bundle, "run.ipu.synthetic.pop", false);
         runMicrolocation = PropertiesUtil.getBooleanProperty(bundle, "run.sp.microlocation", false);
 
         //todo I would read these attributes from a file, probable, the same as read in the next property
+
+        runAllocation = PropertiesUtil.getBooleanProperty(bundle, "run.population.allocation", false);
+
+        attributesMunicipality = PropertiesUtil.getStringPropertyArray(bundle, "attributes.municipality");
 
         // todo this table is not a property but a data container, "ID_city" might be a property? (if this is applciable to other implementations)
         marginalsMunicipality = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"marginals.municipality","input/syntheticPopulation/marginalsMunicipality.csv"));
@@ -38,7 +43,14 @@ public class MunichPropertiesSynPop extends AbstractPropertiesSynPop {
         ageBracketsPerson = PropertiesUtil.getIntPropertyArray(bundle, "age.brackets", new int[]{9, 14, 19, 24, 29, 34, 39, 44, 49, 54, 59, 64, 69, 74, 79, 84, 120});
         ageBracketsPersonQuarter = null;
 
-        jobStringType = PropertiesUtil.getStringPropertyArray(bundle, "employment.types", new String[]{"Agr", "Ind", "Srv"});
+        jobStringType = PropertiesUtil.getStringPropertyArray(bundle, "employment.types", new String[]{"Agri","Mnft","Util","Cons","Retl","Trns","Finc","Rlst","Admn","Serv"});
+
+        for(String s: jobStringType) {
+            System.out.println(s);
+        }
+        runJobAllocation = PropertiesUtil.getBooleanProperty(bundle, "run.job.allocation", false);
+
+
         alphaJob = PropertiesUtil.getDoubleProperty(bundle, "employment.choice.alpha", 50);
         gammaJob = PropertiesUtil.getDoubleProperty(bundle, "employment.choice.gamma", -0.003);
         tripLengthDistributionFileName = PropertiesUtil.getStringProperty(bundle, "trip.length.distribution", "input/syntheticPopulation/tripLengthDistribution.csv");

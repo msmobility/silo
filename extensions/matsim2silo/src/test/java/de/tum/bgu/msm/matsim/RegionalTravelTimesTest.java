@@ -28,6 +28,7 @@ import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.vehicles.Vehicle;
 import org.opengis.feature.simple.SimpleFeature;
 
+import java.util.Map;
 import java.util.Random;
 
 public class RegionalTravelTimesTest {
@@ -64,11 +65,11 @@ public class RegionalTravelTimesTest {
 
         final Config config = ConfigUtils.createConfig();
         Properties properties = Properties.initializeProperties("./test/silo.properties");
-        MatsimTravelTimes travelTimes = new MatsimTravelTimes(config);
+        MatsimTravelTimesAndCosts travelTimes = new MatsimTravelTimesAndCosts(config);
         DefaultDataContainer dataContainer = new DefaultDataContainer(geoData, null,
                 null, null, travelTimes, null, null, properties);
         final Network network = getNetwork();
-        final MatsimData matsimData = new MatsimData(config, properties, ZoneConnectorManager.ZoneConnectorMethod.RANDOM, dataContainer, network, null);
+        final MatsimData matsimData = new MatsimData(config, properties, ZoneConnectorManagerImpl.ZoneConnectorMethod.RANDOM, dataContainer, network, null);
 
         matsimData.update(new TravelDisutility() {
             @Override
@@ -180,6 +181,11 @@ public class RegionalTravelTimesTest {
         @Override
         public void setDevelopment(Development development) {
             delegate.setDevelopment(development);
+        }
+
+        @Override
+        public Map<String, Object> getAttributes() {
+            return null;
         }
 
         @Override

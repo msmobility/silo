@@ -1,29 +1,14 @@
 package de.tum.bgu.msm.matsim;
 
-import com.pb.common.matrix.Matrix;
-import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.data.household.Household;
-import de.tum.bgu.msm.data.household.HouseholdDataManager;
-import de.tum.bgu.msm.data.household.HouseholdUtil;
-import de.tum.bgu.msm.data.job.Job;
-import de.tum.bgu.msm.data.job.JobDataManager;
-import de.tum.bgu.msm.data.person.Occupation;
+import de.tum.bgu.msm.common.matrix.Matrix;
+
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
-import org.locationtech.jts.geom.Coordinate;
-import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.population.*;
 import org.matsim.core.config.Config;
-import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
-import org.matsim.core.config.groups.VspExperimentalConfigGroup.VspDefaultsCheckingLevel;
-import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
-import org.matsim.core.population.PopulationUtils;
+import org.matsim.core.population.PersonUtils;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.utils.collections.Tuple;
@@ -31,7 +16,6 @@ import org.matsim.facilities.ActivityFacilities;
 import org.matsim.facilities.ActivityFacility;
 import org.matsim.vehicles.Vehicle;
 
-import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -39,10 +23,25 @@ import java.util.Map;
  */
 public class SiloMatsimUtils {
 	private final static Logger LOG = Logger.getLogger(SiloMatsimUtils.class);
-		
 
+	public static void checkSiloPropertiesAndMatsimConfigConsistency (Config matsimConfig, Properties properties) {
+		double matsimScalingFactor = properties.transportModel.matsimScaleFactor;
+		double flowCapFactor = matsimConfig.qsim().getFlowCapFactor();
+		double storageCapFactor = matsimConfig.qsim().getStorageCapFactor();
 
-
+		if (flowCapFactor != storageCapFactor) {
+			LOG.warn("MATSim flow capacity factor is " + flowCapFactor + ", whereas MATSim storage capacity factor is " + storageCapFactor + "." +
+					" Only use a setup with diverging factors cautiously and if you know how to interpret the effects.");
+		}
+		if (flowCapFactor != matsimScalingFactor) {
+			LOG.warn("MATSim flow capacity factor is " + flowCapFactor + ", whereas population scaling factor is " + matsimScalingFactor + "." +
+					" Only use a setup with diverging factors cautiously and if you know how to interpret the effects.");
+		}
+		if (storageCapFactor != matsimScalingFactor) {
+			LOG.warn("MATSim storage capacity factor is " + storageCapFactor + ", whereas population scaling factor is " + matsimScalingFactor + "." +
+					" Only use a setup with diverging factors cautiously and if you know how to interpret the effects.");
+		}
+	}
 	
 	public static final Matrix convertTravelTimesToImpedanceMatrix(
 			Map<Tuple<Integer, Integer>, Float> travelTimesMap, int rowCount, int columnCount, int year) {
@@ -111,5 +110,17 @@ public class SiloMatsimUtils {
 			}
 		};
 
+	}
+
+	static org.matsim.api.core.v01.population.Person createMatsimAlterEgo(PopulationFactory populationFactory, de.tum.bgu.msm.data.person.Person person, int noHHAUtos) {
+		org.matsim.api.core.v01.population.Person matsimAlterEgo = populationFactory.createPerson(Id.createPersonId(person.getId()));
+
+		if (noHHAUtos > 0 && person.hasDriverLicense()) {
+			PersonUtils.setCarAvail(matsimAlterEgo, "maybe");
+		} else {
+			PersonUtils.setCarAvail(matsimAlterEgo, "never"); // Needs to be exactly this string to work, cf. PermissibleModesCalculator:69
+		}
+
+		return matsimAlterEgo;
 	}
 }

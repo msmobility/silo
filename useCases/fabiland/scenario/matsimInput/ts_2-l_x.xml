@@ -1,0 +1,540 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE transitSchedule SYSTEM "http://www.matsim.org/files/dtd/transitSchedule_v2.dtd">
+
+<transitSchedule>
+
+	<transitStops>
+		<stopFacility id="1" x="-10000.0" y="10000.0" linkRefId="pt-10" isBlocking="false"/>
+		<stopFacility id="1.1" x="-10000.0" y="10000.0" linkRefId="pt-19" stopAreaId="1" isBlocking="false"/>
+		<stopFacility id="13" x="0.0" y="0.0" linkRefId="pt-2" isBlocking="false"/>
+		<stopFacility id="13.1" x="0.0" y="0.0" linkRefId="pt-7" stopAreaId="13" isBlocking="false"/>
+		<stopFacility id="13.2" x="0.0" y="0.0" linkRefId="pt-12" stopAreaId="13" isBlocking="false"/>
+		<stopFacility id="13.3" x="0.0" y="0.0" linkRefId="pt-17" stopAreaId="13" isBlocking="false"/>
+		<stopFacility id="17" x="-5000.0" y="-5000.0" linkRefId="pt-3" isBlocking="false"/>
+		<stopFacility id="17.1" x="-5000.0" y="-5000.0" linkRefId="pt-6" stopAreaId="17" isBlocking="false"/>
+		<stopFacility id="19" x="5000.0" y="-5000.0" linkRefId="pt-13" isBlocking="false"/>
+		<stopFacility id="19.1" x="5000.0" y="-5000.0" linkRefId="pt-16" stopAreaId="19" isBlocking="false"/>
+		<stopFacility id="21" x="-10000.0" y="-10000.0" linkRefId="pt-4" isBlocking="false"/>
+		<stopFacility id="21.1" x="-10000.0" y="-10000.0" linkRefId="pt-5" stopAreaId="21" isBlocking="false"/>
+		<stopFacility id="25" x="10000.0" y="-10000.0" linkRefId="pt-14" isBlocking="false"/>
+		<stopFacility id="25.1" x="10000.0" y="-10000.0" linkRefId="pt-15" stopAreaId="25" isBlocking="false"/>
+		<stopFacility id="5" x="10000.0" y="10000.0" linkRefId="pt-0" isBlocking="false"/>
+		<stopFacility id="5.1" x="10000.0" y="10000.0" linkRefId="pt-9" stopAreaId="5" isBlocking="false"/>
+		<stopFacility id="7" x="-5000.0" y="5000.0" linkRefId="pt-11" isBlocking="false"/>
+		<stopFacility id="7.1" x="-5000.0" y="5000.0" linkRefId="pt-18" stopAreaId="7" isBlocking="false"/>
+		<stopFacility id="9" x="5000.0" y="5000.0" linkRefId="pt-1" isBlocking="false"/>
+		<stopFacility id="9.1" x="5000.0" y="5000.0" linkRefId="pt-8" stopAreaId="9" isBlocking="false"/>
+	</transitStops>
+	<transitLine id="x-ne">
+		<transitRoute id="x-ne-1">
+			<transportMode>pt</transportMode>
+			<routeProfile>
+				<stop refId="5" arrivalOffset="00:00:00" departureOffset="00:00:00" awaitDeparture="false"/>
+				<stop refId="9" arrivalOffset="00:08:20" departureOffset="00:08:20" awaitDeparture="false"/>
+				<stop refId="13" arrivalOffset="00:16:40" departureOffset="00:16:40" awaitDeparture="false"/>
+				<stop refId="17" arrivalOffset="00:25:00" departureOffset="00:25:00" awaitDeparture="false"/>
+				<stop refId="21" arrivalOffset="00:33:20" departureOffset="00:33:20" awaitDeparture="false"/>
+			</routeProfile>
+			<route>
+				<link refId="pt-0"/>
+				<link refId="pt-1"/>
+				<link refId="pt-2"/>
+				<link refId="pt-3"/>
+				<link refId="pt-4"/>
+			</route>
+			<departures>
+				<departure id="21600.0" departureTime="06:00:00"/>
+				<departure id="22200.0" departureTime="06:10:00"/>
+				<departure id="22800.0" departureTime="06:20:00"/>
+				<departure id="23400.0" departureTime="06:30:00"/>
+				<departure id="24000.0" departureTime="06:40:00"/>
+				<departure id="24600.0" departureTime="06:50:00"/>
+				<departure id="25200.0" departureTime="07:00:00"/>
+				<departure id="25800.0" departureTime="07:10:00"/>
+				<departure id="26400.0" departureTime="07:20:00"/>
+				<departure id="27000.0" departureTime="07:30:00"/>
+				<departure id="27600.0" departureTime="07:40:00"/>
+				<departure id="28200.0" departureTime="07:50:00"/>
+				<departure id="28800.0" departureTime="08:00:00"/>
+				<departure id="29400.0" departureTime="08:10:00"/>
+				<departure id="30000.0" departureTime="08:20:00"/>
+				<departure id="30600.0" departureTime="08:30:00"/>
+				<departure id="31200.0" departureTime="08:40:00"/>
+				<departure id="31800.0" departureTime="08:50:00"/>
+				<departure id="32400.0" departureTime="09:00:00"/>
+				<departure id="33000.0" departureTime="09:10:00"/>
+				<departure id="33600.0" departureTime="09:20:00"/>
+				<departure id="34200.0" departureTime="09:30:00"/>
+				<departure id="34800.0" departureTime="09:40:00"/>
+				<departure id="35400.0" departureTime="09:50:00"/>
+				<departure id="36000.0" departureTime="10:00:00"/>
+				<departure id="36600.0" departureTime="10:10:00"/>
+				<departure id="37200.0" departureTime="10:20:00"/>
+				<departure id="37800.0" departureTime="10:30:00"/>
+				<departure id="38400.0" departureTime="10:40:00"/>
+				<departure id="39000.0" departureTime="10:50:00"/>
+				<departure id="39600.0" departureTime="11:00:00"/>
+				<departure id="40200.0" departureTime="11:10:00"/>
+				<departure id="40800.0" departureTime="11:20:00"/>
+				<departure id="41400.0" departureTime="11:30:00"/>
+				<departure id="42000.0" departureTime="11:40:00"/>
+				<departure id="42600.0" departureTime="11:50:00"/>
+				<departure id="43200.0" departureTime="12:00:00"/>
+				<departure id="43800.0" departureTime="12:10:00"/>
+				<departure id="44400.0" departureTime="12:20:00"/>
+				<departure id="45000.0" departureTime="12:30:00"/>
+				<departure id="45600.0" departureTime="12:40:00"/>
+				<departure id="46200.0" departureTime="12:50:00"/>
+				<departure id="46800.0" departureTime="13:00:00"/>
+				<departure id="47400.0" departureTime="13:10:00"/>
+				<departure id="48000.0" departureTime="13:20:00"/>
+				<departure id="48600.0" departureTime="13:30:00"/>
+				<departure id="49200.0" departureTime="13:40:00"/>
+				<departure id="49800.0" departureTime="13:50:00"/>
+				<departure id="50400.0" departureTime="14:00:00"/>
+				<departure id="51000.0" departureTime="14:10:00"/>
+				<departure id="51600.0" departureTime="14:20:00"/>
+				<departure id="52200.0" departureTime="14:30:00"/>
+				<departure id="52800.0" departureTime="14:40:00"/>
+				<departure id="53400.0" departureTime="14:50:00"/>
+				<departure id="54000.0" departureTime="15:00:00"/>
+				<departure id="54600.0" departureTime="15:10:00"/>
+				<departure id="55200.0" departureTime="15:20:00"/>
+				<departure id="55800.0" departureTime="15:30:00"/>
+				<departure id="56400.0" departureTime="15:40:00"/>
+				<departure id="57000.0" departureTime="15:50:00"/>
+				<departure id="57600.0" departureTime="16:00:00"/>
+				<departure id="58200.0" departureTime="16:10:00"/>
+				<departure id="58800.0" departureTime="16:20:00"/>
+				<departure id="59400.0" departureTime="16:30:00"/>
+				<departure id="60000.0" departureTime="16:40:00"/>
+				<departure id="60600.0" departureTime="16:50:00"/>
+				<departure id="61200.0" departureTime="17:00:00"/>
+				<departure id="61800.0" departureTime="17:10:00"/>
+				<departure id="62400.0" departureTime="17:20:00"/>
+				<departure id="63000.0" departureTime="17:30:00"/>
+				<departure id="63600.0" departureTime="17:40:00"/>
+				<departure id="64200.0" departureTime="17:50:00"/>
+				<departure id="64800.0" departureTime="18:00:00"/>
+				<departure id="65400.0" departureTime="18:10:00"/>
+				<departure id="66000.0" departureTime="18:20:00"/>
+				<departure id="66600.0" departureTime="18:30:00"/>
+				<departure id="67200.0" departureTime="18:40:00"/>
+				<departure id="67800.0" departureTime="18:50:00"/>
+				<departure id="68400.0" departureTime="19:00:00"/>
+				<departure id="69000.0" departureTime="19:10:00"/>
+				<departure id="69600.0" departureTime="19:20:00"/>
+				<departure id="70200.0" departureTime="19:30:00"/>
+				<departure id="70800.0" departureTime="19:40:00"/>
+				<departure id="71400.0" departureTime="19:50:00"/>
+				<departure id="72000.0" departureTime="20:00:00"/>
+				<departure id="72600.0" departureTime="20:10:00"/>
+				<departure id="73200.0" departureTime="20:20:00"/>
+				<departure id="73800.0" departureTime="20:30:00"/>
+				<departure id="74400.0" departureTime="20:40:00"/>
+				<departure id="75000.0" departureTime="20:50:00"/>
+				<departure id="75600.0" departureTime="21:00:00"/>
+				<departure id="76200.0" departureTime="21:10:00"/>
+				<departure id="76800.0" departureTime="21:20:00"/>
+				<departure id="77400.0" departureTime="21:30:00"/>
+				<departure id="78000.0" departureTime="21:40:00"/>
+				<departure id="78600.0" departureTime="21:50:00"/>
+				<departure id="79200.0" departureTime="22:00:00"/>
+				<departure id="79800.0" departureTime="22:10:00"/>
+				<departure id="80400.0" departureTime="22:20:00"/>
+				<departure id="81000.0" departureTime="22:30:00"/>
+				<departure id="81600.0" departureTime="22:40:00"/>
+				<departure id="82200.0" departureTime="22:50:00"/>
+				<departure id="82800.0" departureTime="23:00:00"/>
+				<departure id="83400.0" departureTime="23:10:00"/>
+				<departure id="84000.0" departureTime="23:20:00"/>
+				<departure id="84600.0" departureTime="23:30:00"/>
+				<departure id="85200.0" departureTime="23:40:00"/>
+				<departure id="85800.0" departureTime="23:50:00"/>
+			</departures>
+		</transitRoute>
+		<transitRoute id="x-ne-2">
+			<transportMode>pt</transportMode>
+			<routeProfile>
+				<stop refId="21.1" arrivalOffset="00:00:00" departureOffset="00:00:00" awaitDeparture="false"/>
+				<stop refId="17.1" arrivalOffset="00:08:20" departureOffset="00:08:20" awaitDeparture="false"/>
+				<stop refId="13.1" arrivalOffset="00:16:40" departureOffset="00:16:40" awaitDeparture="false"/>
+				<stop refId="9.1" arrivalOffset="00:25:00" departureOffset="00:25:00" awaitDeparture="false"/>
+				<stop refId="5.1" arrivalOffset="00:33:20" departureOffset="00:33:20" awaitDeparture="false"/>
+			</routeProfile>
+			<route>
+				<link refId="pt-5"/>
+				<link refId="pt-6"/>
+				<link refId="pt-7"/>
+				<link refId="pt-8"/>
+				<link refId="pt-9"/>
+			</route>
+			<departures>
+				<departure id="21600.0" departureTime="06:00:00"/>
+				<departure id="22200.0" departureTime="06:10:00"/>
+				<departure id="22800.0" departureTime="06:20:00"/>
+				<departure id="23400.0" departureTime="06:30:00"/>
+				<departure id="24000.0" departureTime="06:40:00"/>
+				<departure id="24600.0" departureTime="06:50:00"/>
+				<departure id="25200.0" departureTime="07:00:00"/>
+				<departure id="25800.0" departureTime="07:10:00"/>
+				<departure id="26400.0" departureTime="07:20:00"/>
+				<departure id="27000.0" departureTime="07:30:00"/>
+				<departure id="27600.0" departureTime="07:40:00"/>
+				<departure id="28200.0" departureTime="07:50:00"/>
+				<departure id="28800.0" departureTime="08:00:00"/>
+				<departure id="29400.0" departureTime="08:10:00"/>
+				<departure id="30000.0" departureTime="08:20:00"/>
+				<departure id="30600.0" departureTime="08:30:00"/>
+				<departure id="31200.0" departureTime="08:40:00"/>
+				<departure id="31800.0" departureTime="08:50:00"/>
+				<departure id="32400.0" departureTime="09:00:00"/>
+				<departure id="33000.0" departureTime="09:10:00"/>
+				<departure id="33600.0" departureTime="09:20:00"/>
+				<departure id="34200.0" departureTime="09:30:00"/>
+				<departure id="34800.0" departureTime="09:40:00"/>
+				<departure id="35400.0" departureTime="09:50:00"/>
+				<departure id="36000.0" departureTime="10:00:00"/>
+				<departure id="36600.0" departureTime="10:10:00"/>
+				<departure id="37200.0" departureTime="10:20:00"/>
+				<departure id="37800.0" departureTime="10:30:00"/>
+				<departure id="38400.0" departureTime="10:40:00"/>
+				<departure id="39000.0" departureTime="10:50:00"/>
+				<departure id="39600.0" departureTime="11:00:00"/>
+				<departure id="40200.0" departureTime="11:10:00"/>
+				<departure id="40800.0" departureTime="11:20:00"/>
+				<departure id="41400.0" departureTime="11:30:00"/>
+				<departure id="42000.0" departureTime="11:40:00"/>
+				<departure id="42600.0" departureTime="11:50:00"/>
+				<departure id="43200.0" departureTime="12:00:00"/>
+				<departure id="43800.0" departureTime="12:10:00"/>
+				<departure id="44400.0" departureTime="12:20:00"/>
+				<departure id="45000.0" departureTime="12:30:00"/>
+				<departure id="45600.0" departureTime="12:40:00"/>
+				<departure id="46200.0" departureTime="12:50:00"/>
+				<departure id="46800.0" departureTime="13:00:00"/>
+				<departure id="47400.0" departureTime="13:10:00"/>
+				<departure id="48000.0" departureTime="13:20:00"/>
+				<departure id="48600.0" departureTime="13:30:00"/>
+				<departure id="49200.0" departureTime="13:40:00"/>
+				<departure id="49800.0" departureTime="13:50:00"/>
+				<departure id="50400.0" departureTime="14:00:00"/>
+				<departure id="51000.0" departureTime="14:10:00"/>
+				<departure id="51600.0" departureTime="14:20:00"/>
+				<departure id="52200.0" departureTime="14:30:00"/>
+				<departure id="52800.0" departureTime="14:40:00"/>
+				<departure id="53400.0" departureTime="14:50:00"/>
+				<departure id="54000.0" departureTime="15:00:00"/>
+				<departure id="54600.0" departureTime="15:10:00"/>
+				<departure id="55200.0" departureTime="15:20:00"/>
+				<departure id="55800.0" departureTime="15:30:00"/>
+				<departure id="56400.0" departureTime="15:40:00"/>
+				<departure id="57000.0" departureTime="15:50:00"/>
+				<departure id="57600.0" departureTime="16:00:00"/>
+				<departure id="58200.0" departureTime="16:10:00"/>
+				<departure id="58800.0" departureTime="16:20:00"/>
+				<departure id="59400.0" departureTime="16:30:00"/>
+				<departure id="60000.0" departureTime="16:40:00"/>
+				<departure id="60600.0" departureTime="16:50:00"/>
+				<departure id="61200.0" departureTime="17:00:00"/>
+				<departure id="61800.0" departureTime="17:10:00"/>
+				<departure id="62400.0" departureTime="17:20:00"/>
+				<departure id="63000.0" departureTime="17:30:00"/>
+				<departure id="63600.0" departureTime="17:40:00"/>
+				<departure id="64200.0" departureTime="17:50:00"/>
+				<departure id="64800.0" departureTime="18:00:00"/>
+				<departure id="65400.0" departureTime="18:10:00"/>
+				<departure id="66000.0" departureTime="18:20:00"/>
+				<departure id="66600.0" departureTime="18:30:00"/>
+				<departure id="67200.0" departureTime="18:40:00"/>
+				<departure id="67800.0" departureTime="18:50:00"/>
+				<departure id="68400.0" departureTime="19:00:00"/>
+				<departure id="69000.0" departureTime="19:10:00"/>
+				<departure id="69600.0" departureTime="19:20:00"/>
+				<departure id="70200.0" departureTime="19:30:00"/>
+				<departure id="70800.0" departureTime="19:40:00"/>
+				<departure id="71400.0" departureTime="19:50:00"/>
+				<departure id="72000.0" departureTime="20:00:00"/>
+				<departure id="72600.0" departureTime="20:10:00"/>
+				<departure id="73200.0" departureTime="20:20:00"/>
+				<departure id="73800.0" departureTime="20:30:00"/>
+				<departure id="74400.0" departureTime="20:40:00"/>
+				<departure id="75000.0" departureTime="20:50:00"/>
+				<departure id="75600.0" departureTime="21:00:00"/>
+				<departure id="76200.0" departureTime="21:10:00"/>
+				<departure id="76800.0" departureTime="21:20:00"/>
+				<departure id="77400.0" departureTime="21:30:00"/>
+				<departure id="78000.0" departureTime="21:40:00"/>
+				<departure id="78600.0" departureTime="21:50:00"/>
+				<departure id="79200.0" departureTime="22:00:00"/>
+				<departure id="79800.0" departureTime="22:10:00"/>
+				<departure id="80400.0" departureTime="22:20:00"/>
+				<departure id="81000.0" departureTime="22:30:00"/>
+				<departure id="81600.0" departureTime="22:40:00"/>
+				<departure id="82200.0" departureTime="22:50:00"/>
+				<departure id="82800.0" departureTime="23:00:00"/>
+				<departure id="83400.0" departureTime="23:10:00"/>
+				<departure id="84000.0" departureTime="23:20:00"/>
+				<departure id="84600.0" departureTime="23:30:00"/>
+				<departure id="85200.0" departureTime="23:40:00"/>
+				<departure id="85800.0" departureTime="23:50:00"/>
+			</departures>
+		</transitRoute>
+	</transitLine>
+	<transitLine id="x-nw">
+		<transitRoute id="x-nw-1">
+			<transportMode>pt</transportMode>
+			<routeProfile>
+				<stop refId="1" arrivalOffset="00:00:00" departureOffset="00:00:00" awaitDeparture="false"/>
+				<stop refId="7" arrivalOffset="00:08:20" departureOffset="00:08:20" awaitDeparture="false"/>
+				<stop refId="13.2" arrivalOffset="00:16:40" departureOffset="00:16:40" awaitDeparture="false"/>
+				<stop refId="19" arrivalOffset="00:25:00" departureOffset="00:25:00" awaitDeparture="false"/>
+				<stop refId="25" arrivalOffset="00:33:20" departureOffset="00:33:20" awaitDeparture="false"/>
+			</routeProfile>
+			<route>
+				<link refId="pt-10"/>
+				<link refId="pt-11"/>
+				<link refId="pt-12"/>
+				<link refId="pt-13"/>
+				<link refId="pt-14"/>
+			</route>
+			<departures>
+				<departure id="21600.0" departureTime="06:00:00"/>
+				<departure id="22200.0" departureTime="06:10:00"/>
+				<departure id="22800.0" departureTime="06:20:00"/>
+				<departure id="23400.0" departureTime="06:30:00"/>
+				<departure id="24000.0" departureTime="06:40:00"/>
+				<departure id="24600.0" departureTime="06:50:00"/>
+				<departure id="25200.0" departureTime="07:00:00"/>
+				<departure id="25800.0" departureTime="07:10:00"/>
+				<departure id="26400.0" departureTime="07:20:00"/>
+				<departure id="27000.0" departureTime="07:30:00"/>
+				<departure id="27600.0" departureTime="07:40:00"/>
+				<departure id="28200.0" departureTime="07:50:00"/>
+				<departure id="28800.0" departureTime="08:00:00"/>
+				<departure id="29400.0" departureTime="08:10:00"/>
+				<departure id="30000.0" departureTime="08:20:00"/>
+				<departure id="30600.0" departureTime="08:30:00"/>
+				<departure id="31200.0" departureTime="08:40:00"/>
+				<departure id="31800.0" departureTime="08:50:00"/>
+				<departure id="32400.0" departureTime="09:00:00"/>
+				<departure id="33000.0" departureTime="09:10:00"/>
+				<departure id="33600.0" departureTime="09:20:00"/>
+				<departure id="34200.0" departureTime="09:30:00"/>
+				<departure id="34800.0" departureTime="09:40:00"/>
+				<departure id="35400.0" departureTime="09:50:00"/>
+				<departure id="36000.0" departureTime="10:00:00"/>
+				<departure id="36600.0" departureTime="10:10:00"/>
+				<departure id="37200.0" departureTime="10:20:00"/>
+				<departure id="37800.0" departureTime="10:30:00"/>
+				<departure id="38400.0" departureTime="10:40:00"/>
+				<departure id="39000.0" departureTime="10:50:00"/>
+				<departure id="39600.0" departureTime="11:00:00"/>
+				<departure id="40200.0" departureTime="11:10:00"/>
+				<departure id="40800.0" departureTime="11:20:00"/>
+				<departure id="41400.0" departureTime="11:30:00"/>
+				<departure id="42000.0" departureTime="11:40:00"/>
+				<departure id="42600.0" departureTime="11:50:00"/>
+				<departure id="43200.0" departureTime="12:00:00"/>
+				<departure id="43800.0" departureTime="12:10:00"/>
+				<departure id="44400.0" departureTime="12:20:00"/>
+				<departure id="45000.0" departureTime="12:30:00"/>
+				<departure id="45600.0" departureTime="12:40:00"/>
+				<departure id="46200.0" departureTime="12:50:00"/>
+				<departure id="46800.0" departureTime="13:00:00"/>
+				<departure id="47400.0" departureTime="13:10:00"/>
+				<departure id="48000.0" departureTime="13:20:00"/>
+				<departure id="48600.0" departureTime="13:30:00"/>
+				<departure id="49200.0" departureTime="13:40:00"/>
+				<departure id="49800.0" departureTime="13:50:00"/>
+				<departure id="50400.0" departureTime="14:00:00"/>
+				<departure id="51000.0" departureTime="14:10:00"/>
+				<departure id="51600.0" departureTime="14:20:00"/>
+				<departure id="52200.0" departureTime="14:30:00"/>
+				<departure id="52800.0" departureTime="14:40:00"/>
+				<departure id="53400.0" departureTime="14:50:00"/>
+				<departure id="54000.0" departureTime="15:00:00"/>
+				<departure id="54600.0" departureTime="15:10:00"/>
+				<departure id="55200.0" departureTime="15:20:00"/>
+				<departure id="55800.0" departureTime="15:30:00"/>
+				<departure id="56400.0" departureTime="15:40:00"/>
+				<departure id="57000.0" departureTime="15:50:00"/>
+				<departure id="57600.0" departureTime="16:00:00"/>
+				<departure id="58200.0" departureTime="16:10:00"/>
+				<departure id="58800.0" departureTime="16:20:00"/>
+				<departure id="59400.0" departureTime="16:30:00"/>
+				<departure id="60000.0" departureTime="16:40:00"/>
+				<departure id="60600.0" departureTime="16:50:00"/>
+				<departure id="61200.0" departureTime="17:00:00"/>
+				<departure id="61800.0" departureTime="17:10:00"/>
+				<departure id="62400.0" departureTime="17:20:00"/>
+				<departure id="63000.0" departureTime="17:30:00"/>
+				<departure id="63600.0" departureTime="17:40:00"/>
+				<departure id="64200.0" departureTime="17:50:00"/>
+				<departure id="64800.0" departureTime="18:00:00"/>
+				<departure id="65400.0" departureTime="18:10:00"/>
+				<departure id="66000.0" departureTime="18:20:00"/>
+				<departure id="66600.0" departureTime="18:30:00"/>
+				<departure id="67200.0" departureTime="18:40:00"/>
+				<departure id="67800.0" departureTime="18:50:00"/>
+				<departure id="68400.0" departureTime="19:00:00"/>
+				<departure id="69000.0" departureTime="19:10:00"/>
+				<departure id="69600.0" departureTime="19:20:00"/>
+				<departure id="70200.0" departureTime="19:30:00"/>
+				<departure id="70800.0" departureTime="19:40:00"/>
+				<departure id="71400.0" departureTime="19:50:00"/>
+				<departure id="72000.0" departureTime="20:00:00"/>
+				<departure id="72600.0" departureTime="20:10:00"/>
+				<departure id="73200.0" departureTime="20:20:00"/>
+				<departure id="73800.0" departureTime="20:30:00"/>
+				<departure id="74400.0" departureTime="20:40:00"/>
+				<departure id="75000.0" departureTime="20:50:00"/>
+				<departure id="75600.0" departureTime="21:00:00"/>
+				<departure id="76200.0" departureTime="21:10:00"/>
+				<departure id="76800.0" departureTime="21:20:00"/>
+				<departure id="77400.0" departureTime="21:30:00"/>
+				<departure id="78000.0" departureTime="21:40:00"/>
+				<departure id="78600.0" departureTime="21:50:00"/>
+				<departure id="79200.0" departureTime="22:00:00"/>
+				<departure id="79800.0" departureTime="22:10:00"/>
+				<departure id="80400.0" departureTime="22:20:00"/>
+				<departure id="81000.0" departureTime="22:30:00"/>
+				<departure id="81600.0" departureTime="22:40:00"/>
+				<departure id="82200.0" departureTime="22:50:00"/>
+				<departure id="82800.0" departureTime="23:00:00"/>
+				<departure id="83400.0" departureTime="23:10:00"/>
+				<departure id="84000.0" departureTime="23:20:00"/>
+				<departure id="84600.0" departureTime="23:30:00"/>
+				<departure id="85200.0" departureTime="23:40:00"/>
+				<departure id="85800.0" departureTime="23:50:00"/>
+			</departures>
+		</transitRoute>
+		<transitRoute id="x-nw-2">
+			<transportMode>pt</transportMode>
+			<routeProfile>
+				<stop refId="25.1" arrivalOffset="00:00:00" departureOffset="00:00:00" awaitDeparture="false"/>
+				<stop refId="19.1" arrivalOffset="00:08:20" departureOffset="00:08:20" awaitDeparture="false"/>
+				<stop refId="13.3" arrivalOffset="00:16:40" departureOffset="00:16:40" awaitDeparture="false"/>
+				<stop refId="7.1" arrivalOffset="00:25:00" departureOffset="00:25:00" awaitDeparture="false"/>
+				<stop refId="1.1" arrivalOffset="00:33:20" departureOffset="00:33:20" awaitDeparture="false"/>
+			</routeProfile>
+			<route>
+				<link refId="pt-15"/>
+				<link refId="pt-16"/>
+				<link refId="pt-17"/>
+				<link refId="pt-18"/>
+				<link refId="pt-19"/>
+			</route>
+			<departures>
+				<departure id="21600.0" departureTime="06:00:00"/>
+				<departure id="22200.0" departureTime="06:10:00"/>
+				<departure id="22800.0" departureTime="06:20:00"/>
+				<departure id="23400.0" departureTime="06:30:00"/>
+				<departure id="24000.0" departureTime="06:40:00"/>
+				<departure id="24600.0" departureTime="06:50:00"/>
+				<departure id="25200.0" departureTime="07:00:00"/>
+				<departure id="25800.0" departureTime="07:10:00"/>
+				<departure id="26400.0" departureTime="07:20:00"/>
+				<departure id="27000.0" departureTime="07:30:00"/>
+				<departure id="27600.0" departureTime="07:40:00"/>
+				<departure id="28200.0" departureTime="07:50:00"/>
+				<departure id="28800.0" departureTime="08:00:00"/>
+				<departure id="29400.0" departureTime="08:10:00"/>
+				<departure id="30000.0" departureTime="08:20:00"/>
+				<departure id="30600.0" departureTime="08:30:00"/>
+				<departure id="31200.0" departureTime="08:40:00"/>
+				<departure id="31800.0" departureTime="08:50:00"/>
+				<departure id="32400.0" departureTime="09:00:00"/>
+				<departure id="33000.0" departureTime="09:10:00"/>
+				<departure id="33600.0" departureTime="09:20:00"/>
+				<departure id="34200.0" departureTime="09:30:00"/>
+				<departure id="34800.0" departureTime="09:40:00"/>
+				<departure id="35400.0" departureTime="09:50:00"/>
+				<departure id="36000.0" departureTime="10:00:00"/>
+				<departure id="36600.0" departureTime="10:10:00"/>
+				<departure id="37200.0" departureTime="10:20:00"/>
+				<departure id="37800.0" departureTime="10:30:00"/>
+				<departure id="38400.0" departureTime="10:40:00"/>
+				<departure id="39000.0" departureTime="10:50:00"/>
+				<departure id="39600.0" departureTime="11:00:00"/>
+				<departure id="40200.0" departureTime="11:10:00"/>
+				<departure id="40800.0" departureTime="11:20:00"/>
+				<departure id="41400.0" departureTime="11:30:00"/>
+				<departure id="42000.0" departureTime="11:40:00"/>
+				<departure id="42600.0" departureTime="11:50:00"/>
+				<departure id="43200.0" departureTime="12:00:00"/>
+				<departure id="43800.0" departureTime="12:10:00"/>
+				<departure id="44400.0" departureTime="12:20:00"/>
+				<departure id="45000.0" departureTime="12:30:00"/>
+				<departure id="45600.0" departureTime="12:40:00"/>
+				<departure id="46200.0" departureTime="12:50:00"/>
+				<departure id="46800.0" departureTime="13:00:00"/>
+				<departure id="47400.0" departureTime="13:10:00"/>
+				<departure id="48000.0" departureTime="13:20:00"/>
+				<departure id="48600.0" departureTime="13:30:00"/>
+				<departure id="49200.0" departureTime="13:40:00"/>
+				<departure id="49800.0" departureTime="13:50:00"/>
+				<departure id="50400.0" departureTime="14:00:00"/>
+				<departure id="51000.0" departureTime="14:10:00"/>
+				<departure id="51600.0" departureTime="14:20:00"/>
+				<departure id="52200.0" departureTime="14:30:00"/>
+				<departure id="52800.0" departureTime="14:40:00"/>
+				<departure id="53400.0" departureTime="14:50:00"/>
+				<departure id="54000.0" departureTime="15:00:00"/>
+				<departure id="54600.0" departureTime="15:10:00"/>
+				<departure id="55200.0" departureTime="15:20:00"/>
+				<departure id="55800.0" departureTime="15:30:00"/>
+				<departure id="56400.0" departureTime="15:40:00"/>
+				<departure id="57000.0" departureTime="15:50:00"/>
+				<departure id="57600.0" departureTime="16:00:00"/>
+				<departure id="58200.0" departureTime="16:10:00"/>
+				<departure id="58800.0" departureTime="16:20:00"/>
+				<departure id="59400.0" departureTime="16:30:00"/>
+				<departure id="60000.0" departureTime="16:40:00"/>
+				<departure id="60600.0" departureTime="16:50:00"/>
+				<departure id="61200.0" departureTime="17:00:00"/>
+				<departure id="61800.0" departureTime="17:10:00"/>
+				<departure id="62400.0" departureTime="17:20:00"/>
+				<departure id="63000.0" departureTime="17:30:00"/>
+				<departure id="63600.0" departureTime="17:40:00"/>
+				<departure id="64200.0" departureTime="17:50:00"/>
+				<departure id="64800.0" departureTime="18:00:00"/>
+				<departure id="65400.0" departureTime="18:10:00"/>
+				<departure id="66000.0" departureTime="18:20:00"/>
+				<departure id="66600.0" departureTime="18:30:00"/>
+				<departure id="67200.0" departureTime="18:40:00"/>
+				<departure id="67800.0" departureTime="18:50:00"/>
+				<departure id="68400.0" departureTime="19:00:00"/>
+				<departure id="69000.0" departureTime="19:10:00"/>
+				<departure id="69600.0" departureTime="19:20:00"/>
+				<departure id="70200.0" departureTime="19:30:00"/>
+				<departure id="70800.0" departureTime="19:40:00"/>
+				<departure id="71400.0" departureTime="19:50:00"/>
+				<departure id="72000.0" departureTime="20:00:00"/>
+				<departure id="72600.0" departureTime="20:10:00"/>
+				<departure id="73200.0" departureTime="20:20:00"/>
+				<departure id="73800.0" departureTime="20:30:00"/>
+				<departure id="74400.0" departureTime="20:40:00"/>
+				<departure id="75000.0" departureTime="20:50:00"/>
+				<departure id="75600.0" departureTime="21:00:00"/>
+				<departure id="76200.0" departureTime="21:10:00"/>
+				<departure id="76800.0" departureTime="21:20:00"/>
+				<departure id="77400.0" departureTime="21:30:00"/>
+				<departure id="78000.0" departureTime="21:40:00"/>
+				<departure id="78600.0" departureTime="21:50:00"/>
+				<departure id="79200.0" departureTime="22:00:00"/>
+				<departure id="79800.0" departureTime="22:10:00"/>
+				<departure id="80400.0" departureTime="22:20:00"/>
+				<departure id="81000.0" departureTime="22:30:00"/>
+				<departure id="81600.0" departureTime="22:40:00"/>
+				<departure id="82200.0" departureTime="22:50:00"/>
+				<departure id="82800.0" departureTime="23:00:00"/>
+				<departure id="83400.0" departureTime="23:10:00"/>
+				<departure id="84000.0" departureTime="23:20:00"/>
+				<departure id="84600.0" departureTime="23:30:00"/>
+				<departure id="85200.0" departureTime="23:40:00"/>
+				<departure id="85800.0" departureTime="23:50:00"/>
+			</departures>
+		</transitRoute>
+	</transitLine>
+</transitSchedule>

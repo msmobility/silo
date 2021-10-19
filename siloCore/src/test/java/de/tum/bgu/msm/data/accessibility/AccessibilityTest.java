@@ -97,14 +97,14 @@ public class AccessibilityTest {
         final JobData jobData = new JobDataImpl();
 
         DwellingFactory factory = new DwellingFactoryImpl();
-        dwellingData.addDwelling(factory.createDwelling(1, 1, null, -1, DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
-        dwellingData.addDwelling(factory.createDwelling(2, 1, null, -1, DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
-        dwellingData.addDwelling(factory.createDwelling(3, 2, null, -1, DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
-        dwellingData.addDwelling(factory.createDwelling(4, 5, null, -1, DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
-        dwellingData.addDwelling(factory.createDwelling(5, 7, null, -1, DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
-        dwellingData.addDwelling(factory.createDwelling(6, 7, null, -1, DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
-        dwellingData.addDwelling(factory.createDwelling(7, 8, null, -1, DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
-        dwellingData.addDwelling(factory.createDwelling(8, 8, null, -1, DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
+        dwellingData.addDwelling(factory.createDwelling(1, 1, null, -1, DefaultDwellingTypes.DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
+        dwellingData.addDwelling(factory.createDwelling(2, 1, null, -1, DefaultDwellingTypes.DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
+        dwellingData.addDwelling(factory.createDwelling(3, 2, null, -1, DefaultDwellingTypes.DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
+        dwellingData.addDwelling(factory.createDwelling(4, 5, null, -1, DefaultDwellingTypes.DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
+        dwellingData.addDwelling(factory.createDwelling(5, 7, null, -1, DefaultDwellingTypes.DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
+        dwellingData.addDwelling(factory.createDwelling(6, 7, null, -1, DefaultDwellingTypes.DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
+        dwellingData.addDwelling(factory.createDwelling(7, 8, null, -1, DefaultDwellingTypes.DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
+        dwellingData.addDwelling(factory.createDwelling(8, 8, null, -1, DefaultDwellingTypes.DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
 
         JobFactory jobFactory = new JobFactoryImpl();
         jobData.addJob(jobFactory.createJob(1, 1, null, -1, null));
@@ -192,14 +192,14 @@ public class AccessibilityTest {
         final JobData jobData = new JobDataImpl();
 
         DwellingFactory factory = new DwellingFactoryImpl();
-        dwellingData.addDwelling(factory.createDwelling(1, 1, null, -1, DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
-        dwellingData.addDwelling(factory.createDwelling(2, 1, null, -1, DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
-        dwellingData.addDwelling(factory.createDwelling(3, 2, null, -1, DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
-        dwellingData.addDwelling(factory.createDwelling(4, 5, null, -1, DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
-        dwellingData.addDwelling(factory.createDwelling(5, 7, null, -1, DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
-        dwellingData.addDwelling(factory.createDwelling(6, 7, null, -1, DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
-        dwellingData.addDwelling(factory.createDwelling(7, 8, null, -1, DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
-        dwellingData.addDwelling(factory.createDwelling(8, 8, null, -1, DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
+        dwellingData.addDwelling(factory.createDwelling(1, 1, null, -1, DefaultDwellingTypes.DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
+        dwellingData.addDwelling(factory.createDwelling(2, 1, null, -1, DefaultDwellingTypes.DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
+        dwellingData.addDwelling(factory.createDwelling(3, 2, null, -1, DefaultDwellingTypes.DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
+        dwellingData.addDwelling(factory.createDwelling(4, 5, null, -1, DefaultDwellingTypes.DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
+        dwellingData.addDwelling(factory.createDwelling(5, 7, null, -1, DefaultDwellingTypes.DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
+        dwellingData.addDwelling(factory.createDwelling(6, 7, null, -1, DefaultDwellingTypes.DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
+        dwellingData.addDwelling(factory.createDwelling(7, 8, null, -1, DefaultDwellingTypes.DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
+        dwellingData.addDwelling(factory.createDwelling(8, 8, null, -1, DefaultDwellingTypes.DefaultDwellingTypeImpl.MF5plus, 2, 2, 1000, 1985));
 
         JobFactory jobFactory = new JobFactoryImpl();
         jobData.addJob(jobFactory.createJob(1, 1, null, -1, null));

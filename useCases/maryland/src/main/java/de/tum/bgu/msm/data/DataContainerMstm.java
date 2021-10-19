@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.data;
 
-import com.pb.common.datafile.TableDataSet;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.DefaultDataContainer;
 import de.tum.bgu.msm.data.accessibility.Accessibility;

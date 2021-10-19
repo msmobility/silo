@@ -17,6 +17,7 @@ import de.tum.bgu.msm.data.person.Nationality;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.models.modeChoice.CommuteModeChoice;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoiceMapping;
 import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
 import de.tum.bgu.msm.models.relocation.moves.DwellingProbabilityStrategy;
@@ -77,7 +78,7 @@ public class HousingStrategyMuc implements HousingStrategy {
     private IndexedDoubleMatrix1D regionalShareForeigners;
     private IndexedDoubleMatrix1D hhByRegion;
 
-    private final SimpleCommuteModeChoice simpleCommuteModeChoice;
+    private final CommuteModeChoice commuteModeChoice;
 
     private EnumMap<IncomeCategory, EnumMap<Nationality, Map<Region, Double>>> utilityByIncomeByNationalityByRegion = new EnumMap<>(IncomeCategory.class);
 
@@ -86,7 +87,7 @@ public class HousingStrategyMuc implements HousingStrategy {
                               TravelTimes travelTimes,
                               DwellingProbabilityStrategy dwellingProbabilityStrategy,
                               DwellingUtilityStrategy dwellingUtilityStrategy,
-                              RegionUtilityStrategyMuc regionUtilityStrategyMuc, RegionProbabilityStrategy regionProbabilityStrategy) {
+                              RegionUtilityStrategyMuc regionUtilityStrategyMuc, RegionProbabilityStrategy regionProbabilityStrategy, CommuteModeChoice commuteModeChoice) {
         this.dataContainer = dataContainer;
         this.properties = properties;
         this.accessibility = dataContainer.getAccessibility();
@@ -97,7 +98,7 @@ public class HousingStrategyMuc implements HousingStrategy {
         this.dwellingUtilityStrategy = dwellingUtilityStrategy;
         this.regionUtilityStrategyMuc = regionUtilityStrategyMuc;
         this.regionProbabilityStrategy = regionProbabilityStrategy;
-        simpleCommuteModeChoice = new SimpleCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom());
+        this.commuteModeChoice = commuteModeChoice;
     }
 
     @Override
@@ -125,7 +126,8 @@ public class HousingStrategyMuc implements HousingStrategy {
 
         double workDistanceUtility = 1;
 
-        CommuteModeChoiceMapping commuteModeChoiceMapping = simpleCommuteModeChoice.assignCommuteModeChoice(dd, travelTimes, hh);
+        CommuteModeChoiceMapping commuteModeChoiceMapping = commuteModeChoice.assignCommuteModeChoice(dd, travelTimes, hh);
+        hh.setAttribute("COMMUTE_MODE_CHOICE_MAPPING", commuteModeChoiceMapping);
 
 
         for (Person pp : hh.getPersons().values()) {
@@ -203,7 +205,7 @@ public class HousingStrategyMuc implements HousingStrategy {
                     final int averageRegionalRent;
                     final float regAcc;
                     float priceUtil;
-                    if (rentsByRegion.containsKey(region)) {
+                    if (rentsByRegion.containsKey(region.getId())) {
                         averageRegionalRent = rentsByRegion.get(region.getId()).intValue();
                         priceUtil = (float) convertPriceToUtility(averageRegionalRent, incomeCategory);
                         regAcc = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region));
@@ -245,7 +247,7 @@ public class HousingStrategyMuc implements HousingStrategy {
     public double calculateRegionalUtility(Household household, Region region) {
 
         double thisRegionFactor = 1;
-        CommuteModeChoiceMapping commuteModeChoiceMapping = simpleCommuteModeChoice.assignRegionalCommuteModeChoice(region, travelTimes, household);
+        CommuteModeChoiceMapping commuteModeChoiceMapping = commuteModeChoice.assignRegionalCommuteModeChoice(region, travelTimes, household);
 
         for (Person pp : household.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
@@ -299,7 +301,7 @@ public class HousingStrategyMuc implements HousingStrategy {
     @Override
     public HousingStrategy duplicate() {
         TravelTimes travelTimes = this.travelTimes.duplicate();
-        final HousingStrategyMuc housingStrategyMuc = new HousingStrategyMuc(dataContainer, properties, travelTimes, dwellingProbabilityStrategy, dwellingUtilityStrategy, regionUtilityStrategyMuc, regionProbabilityStrategy);
+        final HousingStrategyMuc housingStrategyMuc = new HousingStrategyMuc(dataContainer, properties, travelTimes, dwellingProbabilityStrategy, dwellingUtilityStrategy, regionUtilityStrategyMuc, regionProbabilityStrategy, commuteModeChoice);
         housingStrategyMuc.regionalShareForeigners = this.regionalShareForeigners;
         housingStrategyMuc.hhByRegion = this.hhByRegion;
         housingStrategyMuc.utilityByIncomeByNationalityByRegion = this.utilityByIncomeByNationalityByRegion;

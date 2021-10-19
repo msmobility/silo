@@ -25,19 +25,24 @@ import java.util.Optional;
 
 /**
  * Job interface
+ *
  * @author Nkuehnel
  **/
- public interface Job extends MicroLocation, Id {
+public interface Job extends MicroLocation, Id {
 
-     int getWorkerId();
+    int getWorkerId();
 
-     String getType();
+    String getType();
 
-     void setWorkerID(int personID);
+    void setWorkerID(int personID);
 
-     Optional<Integer> getStartTimeInSeconds();
+    Optional<Integer> getStartTimeInSeconds();
 
-     Optional<Integer> getWorkingTimeInSeconds();
+    Optional<Integer> getWorkingTimeInSeconds();
+
+    Optional<Object> getAttribute(String key);
+
+    void setAttribute(String key, Object value);
 
      void relocateJob(Zone newZone, Coordinate newCoordinate);
 

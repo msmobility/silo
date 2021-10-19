@@ -5,10 +5,7 @@ import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.person.PersonFactory;
-import de.tum.bgu.msm.matsim.MatsimData;
-import de.tum.bgu.msm.matsim.MatsimTransportModel;
-import de.tum.bgu.msm.matsim.SimpleMatsimScenarioAssembler;
-import de.tum.bgu.msm.matsim.ZoneConnectorManager;
+import de.tum.bgu.msm.matsim.*;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.demography.MarriageModelCapeTown;
 import de.tum.bgu.msm.models.demography.birth.BirthModelImpl;
@@ -128,7 +125,7 @@ public class ModelBuilderCapeTown {
                 MatsimData matsimData = null;
                 if (config != null) {
                     final Scenario scenario = ScenarioUtils.loadScenario(config);
-                    matsimData = new MatsimData(config, properties, ZoneConnectorManager.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
+                    matsimData = new MatsimData(config, properties, ZoneConnectorManagerImpl.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
                 }
                 transportModel = new MatsimTransportModel(dataContainer, config, properties,
                         new SimpleMatsimScenarioAssembler(dataContainer, properties), matsimData);
