@@ -3,7 +3,7 @@ package de.tum.bgu.msm.scenarios.draconicResettlement;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.AreaTypes;
 import de.tum.bgu.msm.data.Zone;
-import de.tum.bgu.msm.data.geo.MunichZone;
+import de.tum.bgu.msm.data.geo.ZoneMuc;
 import de.tum.bgu.msm.data.job.*;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.jobmography.JobMarketUpdate;
@@ -81,7 +81,7 @@ public class DraconicResettlementJobMarketUpdate extends AbstractModel implement
 
         Sampler<Zone> zoneSampler = new Sampler<>(dataContainer.getGeoData().getZones().size(), Zone.class);
         for(Zone zone: dataContainer.getGeoData().getZones().values()) {
-            AreaTypes.SGType areaTypeSG = ((MunichZone) zone).getAreaTypeSG();
+            AreaTypes.SGType areaTypeSG = ((ZoneMuc) zone).getAreaTypeSG();
             if(areaTypeSG == AreaTypes.SGType.CORE_CITY || areaTypeSG == AreaTypes.SGType.MEDIUM_SIZED_CITY) {
                 zoneSampler.incrementalAdd(zone, jobDataManager.getJobDensityInZone(zone.getZoneId()));
             }
@@ -91,7 +91,7 @@ public class DraconicResettlementJobMarketUpdate extends AbstractModel implement
             if(random.nextDouble() < 0.1) {
                 int zoneId = job.getZoneId();
                 Zone zone = dataContainer.getGeoData().getZones().get(zoneId);
-                AreaTypes.SGType areaTypeSG = ((MunichZone) zone).getAreaTypeSG();
+                AreaTypes.SGType areaTypeSG = ((ZoneMuc) zone).getAreaTypeSG();
                 if(areaTypeSG == AreaTypes.SGType.RURAL || areaTypeSG == AreaTypes.SGType.TOWN) {
                     try {
                         Zone urbanZone = zoneSampler.sampleObject();

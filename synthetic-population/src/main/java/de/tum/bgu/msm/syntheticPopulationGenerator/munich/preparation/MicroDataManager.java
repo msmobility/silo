@@ -11,7 +11,6 @@ import de.tum.bgu.msm.data.person.PersonRole;
 import de.tum.bgu.msm.data.person.Race;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
-import org.apache.commons.math.MathException;
 import org.apache.log4j.Logger;
 
 import java.util.HashMap;

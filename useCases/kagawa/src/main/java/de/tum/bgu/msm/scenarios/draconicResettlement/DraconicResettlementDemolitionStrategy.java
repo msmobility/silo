@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.scenarios.draconicResettlement;
 
-import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
+import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypes.DefaultDwellingTypeImpl;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.geo.ZoneImpl;

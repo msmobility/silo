@@ -7,7 +7,7 @@ import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.person.PersonFactory;
 import de.tum.bgu.msm.matsim.*;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
-import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipStrategyTakImpl;
+import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipStrategyTak;
 import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipTak;
 import de.tum.bgu.msm.models.carOwnership.UpdateCarOwnershipTak;
 import de.tum.bgu.msm.models.demography.birth.BirthModelImpl;
@@ -78,7 +78,7 @@ public class DraconicResettlementModelBuilderTak {
                         new DwellingUtilityStrategyImpl(), new DefaultDwellingProbabilityStrategy(),
                         new RegionUtilityStrategyImpl(), new RegionProbabilityStrategyImpl()), SiloUtil.provideNewRandom());
 
-        CreateCarOwnershipModel carOwnershipModel = new CreateCarOwnershipTak(dataContainer, new CreateCarOwnershipStrategyTakImpl());
+        CreateCarOwnershipModel carOwnershipModel = new CreateCarOwnershipTak(dataContainer, new CreateCarOwnershipStrategyTak());
 
         DivorceModel divorceModel = new DivorceModelImpl(
                 dataContainer, movesModel, carOwnershipModel, hhFactory,

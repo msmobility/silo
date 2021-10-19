@@ -2,7 +2,7 @@ package de.tum.bgu.msm.scenarios.draconicResettlement;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Zone;
-import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypeImpl;
+import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypes;
 import de.tum.bgu.msm.data.job.*;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.jobmography.JobMarketUpdate;
@@ -82,7 +82,7 @@ public class DraconicResettlementJobMarketUpdateTak extends AbstractModel implem
         Sampler<Zone> zoneSampler = new Sampler<>(dataContainer.getGeoData().getZones().size(), Zone.class);
         for (Zone zone : dataContainer.getGeoData().getZones().values()) {
             boolean isRural = true;
-            for (DefaultDwellingTypeImpl dTp : DefaultDwellingTypeImpl.values()) {
+            for (DefaultDwellingTypes.DefaultDwellingTypeImpl dTp : DefaultDwellingTypes.DefaultDwellingTypeImpl.values()) {
                 if (zone.getDevelopment().isThisDwellingTypeAllowed(dTp)) isRural = false;
 
             }
@@ -96,7 +96,7 @@ public class DraconicResettlementJobMarketUpdateTak extends AbstractModel implem
                 int zoneId = job.getZoneId();
                 Zone zone = dataContainer.getGeoData().getZones().get(zoneId);
                 boolean isRural = true;
-                for (DefaultDwellingTypeImpl dTp : DefaultDwellingTypeImpl.values()) {
+                for (DefaultDwellingTypes.DefaultDwellingTypeImpl dTp : DefaultDwellingTypes.DefaultDwellingTypeImpl.values()) {
                     if (zone.getDevelopment().isThisDwellingTypeAllowed(dTp)) isRural = false;
 
                 }
