@@ -158,7 +158,7 @@ public class PersonMuc implements PersonWithSchool {
 
     @Override
     public String toString() {
-        return delegate.toString()
+        return delegate
                 +"\nNationality                  " + nationality
                 +"\nSchool type               " + schoolType
                 +"\nSchool place               " + schoolPlace
@@ -204,11 +204,7 @@ public class PersonMuc implements PersonWithSchool {
 
     // todo: make not hardcoded...
     public double getWeeklyExposureByPollutantNormalised(String pollutant) {
-        if(pollutant.equals("pm2.5")) {
-            return weeklyExposureByPollutant.get(pollutant) * 0.008511726 - 6.018974;
-        } else if(pollutant.equals("no2")) {
-            return weeklyExposureByPollutant.get(pollutant) * 0.008599 - 12.07159;
-        } else return 0;
+        return weeklyExposureByPollutant.get(pollutant) / (168. * 1.167);
     }
 
     public double getWeeklyAccidentRisk(String type) {

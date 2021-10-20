@@ -33,9 +33,9 @@ public class TruckSubPopulationGenerator {
 
         Population population = PopulationUtils.createPopulation(ConfigUtils.createConfig());
         Population subPopulation = PopulationUtils.createPopulation(ConfigUtils.createConfig());
-        PopulationUtils.readPopulation(population, "C:/models/muc/input/foca/ld_trucks.xml");
+        PopulationUtils.readPopulation(population, "C:/models/muc/input/foca/truck_plans_eur.xml");
 
-        Network networkEur = NetworkUtils.readNetwork("C:/models/muc/input/mito/trafficAssignment/final_network.xml.gz");
+        Network networkEur = NetworkUtils.readNetwork("C:/models/muc/input/foca/network_europe.xml.gz");
         Network networkMucCoarse = NetworkUtils.readNetwork("C:/models/muc/input/mito/trafficAssignment/studyNetworkDenseCarHealth_Hbefa.xml.gz");
         logger.info("Links in original health network: " + networkMucCoarse.getLinks().size());
         logger.info("Nodes in original health network: " + networkMucCoarse.getNodes().size());
@@ -75,8 +75,7 @@ public class TruckSubPopulationGenerator {
         NetworkWriter nw = new NetworkWriter(networkMucCoarse);
         nw.write("C:/models/muc/input/foca/mucNetworkCoarse.xml.gz");
 
-        ArrayList<SimpleFeature> features = new ArrayList<>();
-        features.addAll(ShapeFileReader.getAllFeatures(args[1]));
+        ArrayList<SimpleFeature> features = new ArrayList<>(ShapeFileReader.getAllFeatures(args[1]));
         SimpleFeature feature = features.get(0);
         Geometry mucRegion = ((Geometry) feature.getDefaultGeometry());
 

@@ -149,8 +149,32 @@ public final class MatsimTransportModelForHealthModel implements TransportModel 
             MainModeIdentifierImpl mainModeIdentifier = new MainModeIdentifierImpl();
 
             Population populationCarTruck = PopulationUtils.createPopulation(ConfigUtils.createConfig());
-            PopulationUtils.readPopulation(populationCarTruck, "C:/models/muc/input/foca/ld_trucks_muc.xml");
             Population populationBikePed = PopulationUtils.createPopulation(ConfigUtils.createConfig());
+
+            // Add truck plans from FOCA (static)
+            String truckPlans = properties.main.baseDirectory + "input/foca/truck_plans_muc.xml";
+            PopulationUtils.readPopulation(populationCarTruck, truckPlans);
+
+            // Sample down truck plans to match MATSim sample
+            double truckSample = properties.main.scaleFactor *
+                    Resources.instance.getDouble(de.tum.bgu.msm.resources.Properties.TRIP_SCALING_FACTOR, 1.);
+            if(day.equals(Day.weekday)) {
+                truckSample *= 1.278066;
+            } else if (day.equals(Day.saturday)) {
+                truckSample *= 0.430817;
+            } else if (day.equals(Day.sunday)) {
+                truckSample *= 0.178852;
+            } else {
+                throw new RuntimeException("Unrecognised day " + day);
+            }
+            logger.info(day + " truck sample: " + truckSample);
+            if(truckSample < 1.) {
+                PopulationUtils.sampleDown(populationCarTruck, truckSample);
+            } else {
+                throw new RuntimeException("Requested truck sample > 1. Ask Carlos to re-run FOCA.");
+            }
+
+            // Add car, bike, and pedestrian plans from MITO
             for (Person pp : assembledScenario.getPopulation().getPersons().values()) {
                 String mode = mainModeIdentifier.identifyMainMode(TripStructureUtils.getLegs(pp.getSelectedPlan()));
                 switch (mode) {
