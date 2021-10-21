@@ -18,6 +18,8 @@ package de.tum.bgu.msm.data.job;
 
 import de.tum.bgu.msm.data.Id;
 import de.tum.bgu.msm.data.MicroLocation;
+import de.tum.bgu.msm.data.Zone;
+import org.locationtech.jts.geom.Coordinate;
 
 import java.util.Optional;
 
@@ -41,5 +43,7 @@ public interface Job extends MicroLocation, Id {
     Optional<Object> getAttribute(String key);
 
     void setAttribute(String key, Object value);
+
+     void relocateJob(Zone newZone, Coordinate newCoordinate);
 
 }
