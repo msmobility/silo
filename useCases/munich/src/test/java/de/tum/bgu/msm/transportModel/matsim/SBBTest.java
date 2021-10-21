@@ -2,6 +2,7 @@ package de.tum.bgu.msm.transportModel.matsim;
 
 import ch.sbb.matsim.routing.pt.raptor.*;
 import com.google.common.collect.Lists;
+import org.checkerframework.checker.units.qual.A;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.matsim.api.core.v01.Coord;
@@ -28,6 +29,7 @@ import org.matsim.facilities.Facility;
 import org.matsim.pt.PtConstants;
 import org.matsim.pt.transitSchedule.api.TransitScheduleReader;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
+import org.matsim.utils.objectattributes.attributable.Attributes;
 
 import javax.inject.Provider;
 import java.util.List;
@@ -96,11 +98,12 @@ public class SBBTest {
 
         RaptorStaticConfig raptorConfig = RaptorUtils.createStaticConfig(config);
         raptorConfig.setOptimization(RaptorStaticConfig.RaptorOptimization.OneToAllRouting);
-        SwissRailRaptorData raptorData = SwissRailRaptorData.create(scenario.getTransitSchedule(), raptorConfig, scenario.getNetwork());
-        SwissRailRaptor raptor = new SwissRailRaptor(raptorData, new DefaultRaptorParametersForPerson(config), null,  new DefaultRaptorStopFinder(
-                        null,
+        SwissRailRaptorData raptorData = SwissRailRaptorData.create(scenario.getTransitSchedule(), scenario.getTransitVehicles(), raptorConfig,
+                scenario.getNetwork(),  new OccupancyData());
+        SwissRailRaptor raptor = new SwissRailRaptor(raptorData, new DefaultRaptorParametersForPerson(config), null,
+                new DefaultRaptorStopFinder(null,
                         new DefaultRaptorIntermodalAccessEgress(),
-                        null));
+                        null), new DefaultRaptorInVehicleCostCalculator(), new DefaultRaptorTransferCostCalculator());
 
 //        RoutingModule routingModule =
 //                new SwissRailRaptorRoutingModule(
@@ -116,7 +119,8 @@ public class SBBTest {
         Facility fromFacility = ((ActivityFacilitiesFactory) activityFacilitiesFactory).createActivityFacility(Id.create(1, ActivityFacility.class), originCoord);
 
         long time = System.currentTimeMillis();
-        final Map<Id<TransitStopFacility>, SwissRailRaptorCore.TravelInfo> idTravelInfoMap = raptor.calcTree(fromFacility, 28800, null);
+        final Map<Id<TransitStopFacility>, SwissRailRaptorCore.TravelInfo> idTravelInfoMap = raptor.calcTree(fromFacility,
+                28800, null, new Attributes());
 
         System.out.println(System.currentTimeMillis() - time);
 

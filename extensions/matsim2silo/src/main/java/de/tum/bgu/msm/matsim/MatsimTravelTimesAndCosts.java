@@ -30,6 +30,7 @@ import org.matsim.facilities.ActivityFacilitiesFactory;
 import org.matsim.facilities.ActivityFacilitiesFactoryImpl;
 import org.matsim.facilities.ActivityFacility;
 import org.matsim.facilities.Facility;
+import org.matsim.utils.objectattributes.attributable.Attributes;
 
 import java.util.*;
 
@@ -226,7 +227,7 @@ public final class MatsimTravelTimesAndCosts implements TravelTimes {
         if (siloPerson != null) {
             matsimPerson = matsimData.getMatsimPopulation().getPersons().get(Id.createPersonId(siloPerson.getId()));
         }
-        return tripRouter.calcRoute(mode, fromFacility, toFacility, timeOfDay_s, matsimPerson);
+        return tripRouter.calcRoute(mode, fromFacility, toFacility, timeOfDay_s, matsimPerson, new Attributes());
     }
 
     @Override

@@ -5,6 +5,7 @@ import com.google.common.collect.Iterables;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix2D;
 import org.apache.log4j.Logger;
+import org.checkerframework.checker.units.qual.A;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Network;
@@ -19,6 +20,7 @@ import org.matsim.facilities.ActivityFacilitiesFactoryImpl;
 import org.matsim.facilities.ActivityFacility;
 import org.matsim.facilities.Facility;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
+import org.matsim.utils.objectattributes.attributable.Attributes;
 
 import java.util.*;
 
@@ -114,7 +116,7 @@ public class MatsimSkimCreator {
                         //calc tree from origin zone connector. note that it will search for multiple
                         //start stops accessible from the connector
                         final Map<Id<TransitStopFacility>, SwissRailRaptorCore.TravelInfo> idTravelInfoMap
-                                = raptor.calcTree(fromFacility, peakHour_s, null);
+                                = raptor.calcTree(fromFacility, peakHour_s, null, new Attributes());
                         for (de.tum.bgu.msm.data.Id destination : zones) {
                             if (origin.equals(destination)) {
                                 //Intrazonals will be assigned afterwards
@@ -180,7 +182,7 @@ public class MatsimSkimCreator {
                             ActivityFacilitiesFactoryImpl activityFacilitiesFactory = new ActivityFacilitiesFactoryImpl();
                             Facility fromFacility = ((ActivityFacilitiesFactory) activityFacilitiesFactory).createActivityFacility(Id.create(1, ActivityFacility.class), originCoord);
                             Facility toFacility = ((ActivityFacilitiesFactory) activityFacilitiesFactory).createActivityFacility(Id.create(2, ActivityFacility.class), destinationCoord);
-                            List<? extends PlanElement> planElements = teleportationRouter.calcRoute(fromFacility, toFacility, peakHour_s, null);
+                            List<? extends PlanElement> planElements = teleportationRouter.calcRoute(DefaultRoutingRequest.of(fromFacility, toFacility, peakHour_s, null, new Attributes()));
                             double arrivalTime = peakHour_s;
 
                             if (!planElements.isEmpty()) {
