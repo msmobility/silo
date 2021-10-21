@@ -141,7 +141,7 @@ public final class MatsimData {
 
             parametersForPerson = new DefaultRaptorParametersForPerson(config);
             defaultRaptorStopFinder = new DefaultRaptorStopFinder(
-                    null,
+                    config,
                     new DefaultRaptorIntermodalAccessEgress(),
                     null);
             routeSelector = new LeastCostRaptorRouteSelector();
