@@ -96,11 +96,16 @@ public class SBBTest {
 
         RaptorStaticConfig raptorConfig = RaptorUtils.createStaticConfig(config);
         raptorConfig.setOptimization(RaptorStaticConfig.RaptorOptimization.OneToAllRouting);
-        SwissRailRaptorData raptorData = SwissRailRaptorData.create(scenario.getTransitSchedule(), raptorConfig, scenario.getNetwork());
-        SwissRailRaptor raptor = new SwissRailRaptor(raptorData, new DefaultRaptorParametersForPerson(config), null,  new DefaultRaptorStopFinder(
-                        null,
-                        new DefaultRaptorIntermodalAccessEgress(),
-                        null));
+        SwissRailRaptorData raptorData = SwissRailRaptorData.create(scenario.getTransitSchedule(),
+                null,  raptorConfig, scenario.getNetwork(), null);
+        final DefaultRaptorStopFinder stopFinder = new DefaultRaptorStopFinder(
+                null,
+                new DefaultRaptorIntermodalAccessEgress(),
+                null);
+        SwissRailRaptor raptor = new SwissRailRaptor(raptorData,
+
+                new DefaultRaptorParametersForPerson(config), null, stopFinder,
+                new DefaultRaptorInVehicleCostCalculator(), new DefaultRaptorTransferCostCalculator());
 
 //        RoutingModule routingModule =
 //                new SwissRailRaptorRoutingModule(
@@ -116,7 +121,7 @@ public class SBBTest {
         Facility fromFacility = ((ActivityFacilitiesFactory) activityFacilitiesFactory).createActivityFacility(Id.create(1, ActivityFacility.class), originCoord);
 
         long time = System.currentTimeMillis();
-        final Map<Id<TransitStopFacility>, SwissRailRaptorCore.TravelInfo> idTravelInfoMap = raptor.calcTree(fromFacility, 28800, null);
+        final Map<Id<TransitStopFacility>, SwissRailRaptorCore.TravelInfo> idTravelInfoMap = raptor.calcTree(fromFacility, 28800, null, null );
 
         System.out.println(System.currentTimeMillis() - time);
 

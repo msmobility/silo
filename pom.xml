@@ -64,7 +64,12 @@
 		</repository>
 		<repository>
 			<id>ojo-snapshots</id>
-			<url>http://oss.jfrog.org/libs-snapshot</url>
+			<url>https://oss.jfrog.org/libs-snapshot</url>
+		</repository>
+		<repository>
+			<id>matsim</id>
+			<name>MATSim Maven repository</name>
+			<url>https://repo.matsim.org/repository/matsim/</url>
 		</repository>
 
 	</repositories>
@@ -136,8 +141,8 @@
 	</build>
 
 	<properties>
-		<geotools.version>21.5</geotools.version>
-		<matsimVersion>13.0-2020w37-SNAPSHOT</matsimVersion>
+		<geotools.version>24.2</geotools.version>
+		<matsimVersion>14.0-PR1766</matsimVersion>
 		<jackson.version>2.9.5</jackson.version>
 	</properties>
 </project>

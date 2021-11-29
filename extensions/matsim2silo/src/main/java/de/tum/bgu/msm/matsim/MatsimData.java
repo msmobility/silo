@@ -12,6 +12,7 @@ import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
+import org.matsim.core.mobsim.qsim.pt.TransitVehicle;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.TransportModeNetworkFilter;
 import org.matsim.core.population.PopulationUtils;
@@ -22,7 +23,9 @@ import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.core.utils.timing.TimeInterpretation;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
+import org.matsim.vehicles.Vehicles;
 
 import java.util.Collection;
 import java.util.Set;
@@ -130,15 +133,17 @@ public final class MatsimData {
 
         if (config.transit().isUseTransit() && schedule != null) {
             RaptorStaticConfig raptorConfig = RaptorUtils.createStaticConfig(config);
-            raptorData = SwissRailRaptorData.create(schedule, raptorConfig, ptNetwork);
+            Vehicles ptVehicles = null;
+            OccupancyData occupancyData = null;
+            raptorData = SwissRailRaptorData.create(schedule, ptVehicles, raptorConfig, ptNetwork, occupancyData);
 
             RaptorStaticConfig raptorConfigOneToAll = RaptorUtils.createStaticConfig(config);
             raptorConfigOneToAll.setOptimization(RaptorStaticConfig.RaptorOptimization.OneToAllRouting);
-            raptorDataOneToAll = SwissRailRaptorData.create(schedule, raptorConfigOneToAll, ptNetwork);
+            raptorDataOneToAll = SwissRailRaptorData.create(schedule, ptVehicles, raptorConfig, ptNetwork, occupancyData);
 
             parametersForPerson = new DefaultRaptorParametersForPerson(config);
             defaultRaptorStopFinder = new DefaultRaptorStopFinder(
-                    null,
+                    config,
                     new DefaultRaptorIntermodalAccessEgress(),
                     null);
             routeSelector = new LeastCostRaptorRouteSelector();
@@ -163,7 +168,8 @@ public final class MatsimData {
 //        if (config.plansCalcRoute().isInsertingAccessEgressWalk()) { // in matsim-12
         if ( !config.plansCalcRoute().getAccessEgressType().equals(PlansCalcRouteConfigGroup.AccessEgressType.none) ) { // in matsim-13-w37
             carRoutingModule = DefaultRoutingModules.createAccessEgressNetworkRouter(
-                    TransportMode.car, routeAlgo, scenario, carNetwork, accessEgressToNetworkRouter); // TODO take access egress type correctly
+                    TransportMode.car, routeAlgo, scenario, carNetwork, accessEgressToNetworkRouter,
+                    accessEgressToNetworkRouter, TimeInterpretation.create(scenario.getConfig())); // TODO take access egress type correctly
         } else {
             carRoutingModule = DefaultRoutingModules.createPureNetworkRouter(
                     TransportMode.car, PopulationUtils.getFactory(), carNetwork, routeAlgo);
@@ -185,11 +191,15 @@ public final class MatsimData {
     }
 
     SwissRailRaptor createSwissRailRaptor(RaptorStaticConfig.RaptorOptimization optimitzaion) {
+
+
         switch (optimitzaion) {
             case OneToAllRouting:
-                return new SwissRailRaptor(raptorDataOneToAll, parametersForPerson, routeSelector, defaultRaptorStopFinder);
+                return new SwissRailRaptor(raptorDataOneToAll, parametersForPerson, routeSelector, defaultRaptorStopFinder,
+                        new DefaultRaptorInVehicleCostCalculator(), new DefaultRaptorTransferCostCalculator());
             case OneToOneRouting:
-                return new SwissRailRaptor(raptorData, parametersForPerson, routeSelector, defaultRaptorStopFinder);
+                return new SwissRailRaptor(raptorData, parametersForPerson, routeSelector, defaultRaptorStopFinder,
+                        new DefaultRaptorInVehicleCostCalculator(), new DefaultRaptorTransferCostCalculator());
             default:
                 throw new RuntimeException("Unrecognized raptor optimization!");
         }

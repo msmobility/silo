@@ -187,7 +187,7 @@ public final class MatsimTransportModel implements TransportModel {
      */
     private void replayFromEvents(String eventsFile) {
         Scenario scenario = ScenarioUtils.loadScenario(initialMatsimConfig);
-        TravelTime travelTime = TravelTimeUtils.createTravelTimesFromEvents(scenario, eventsFile);
+        TravelTime travelTime = TravelTimeUtils.createTravelTimesFromEvents(scenario.getNetwork(), scenario.getConfig(), eventsFile);
         TravelDisutility travelDisutility = ControlerDefaults.createDefaultTravelDisutilityFactory(scenario).createTravelDisutility(travelTime);
         updateTravelTimes(travelTime, travelDisutility);
     }
