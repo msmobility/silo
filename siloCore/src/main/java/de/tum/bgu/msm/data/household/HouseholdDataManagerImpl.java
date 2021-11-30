@@ -208,6 +208,7 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
             Dwelling dd = dwellingData.getDwelling(dwellingId);
             dd.setResidentID(-1);
             realEstateDataManager.addDwellingToVacancyList(dd);
+
         }
         for (Person pp : household.getPersons().values()) {
             pp.setHousehold(null);
