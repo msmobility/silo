@@ -10,17 +10,30 @@ public class PollutionExposure {
     private static final double BACKGROUND_NO2 = 17.6;
 
     // Other Constants
-    private static final double BASE_LEVEL_INHALATION_RATE = 1.;
+    private static final double BASE_LEVEL_INHALATION_RATE = 1.;  // from METAHIT
+    private static final double SLEEP_VENTILATION_RATE = 0.27; // from Tainio et al., 2016
+    private static final double REST_VENTILATION_RATE = 0.61; // from Tainio et al., 2016
+
+    // Home exposures
+    public static double getHomeExposurePm25(double minutesAtHome) {
+        double minutesResting = Math.min(0,minutesAtHome - 3360);
+        double minutesSleeping = minutesAtHome - minutesResting;
+        return BACKGROUND_PM25 * (REST_VENTILATION_RATE * minutesResting + SLEEP_VENTILATION_RATE * minutesSleeping) / 60.;
+    }
+
+    public static double getHomeExposureNo2(double minutesAtHome) {
+        double minutesResting = Math.min(0,minutesAtHome - 3360);
+        double minutesSleeping = minutesAtHome - minutesResting;
+        return BACKGROUND_NO2 * (REST_VENTILATION_RATE * minutesResting + SLEEP_VENTILATION_RATE * minutesSleeping) / 60.;
+    }
 
     // Activity Exposures
     public static double getActivityExposurePm25(double activityMinutes) {
-        double ventilationRate = BASE_LEVEL_INHALATION_RATE + 0.167;
-        return BACKGROUND_PM25 * ventilationRate * activityMinutes / 60.;
+        return BACKGROUND_PM25 * REST_VENTILATION_RATE * activityMinutes / 60.;
     }
 
     public static double getActivityExposureNo2(double activityMinutes) {
-        double ventilationRate = BASE_LEVEL_INHALATION_RATE + 0.167;
-        return BACKGROUND_NO2 * ventilationRate * activityMinutes / 60.;
+        return BACKGROUND_NO2 * REST_VENTILATION_RATE * activityMinutes / 60.;
     }
 
     // Link Exposures

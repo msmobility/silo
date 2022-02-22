@@ -203,8 +203,9 @@ public class PersonMuc implements PersonWithSchool {
     }
 
     // todo: make not hardcoded...
+    // 1.49/3 is the "minimum" weekly ventilation rate (8hr sleep + 16hr rest per day)
     public double getWeeklyExposureByPollutantNormalised(String pollutant) {
-        return weeklyExposureByPollutant.get(pollutant) / (168. * 1.167);
+        return weeklyExposureByPollutant.get(pollutant) / (168. * (1.49/3.));
     }
 
     public double getWeeklyAccidentRisk(String type) {

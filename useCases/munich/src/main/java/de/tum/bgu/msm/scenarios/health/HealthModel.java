@@ -448,8 +448,8 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
             double minutesAtHome = Math.max(0., 10080. - (((PersonMuc) person).getWeeklyTravelSeconds() / 60.) - (((PersonMuc) person).getWeeklyActivityMinutes()));
 
             Map<String, Double> exposureMap = new HashMap<>();
-            exposureMap.put("pm2.5", PollutionExposure.getActivityExposurePm25(minutesAtHome));
-            exposureMap.put("no2", PollutionExposure.getActivityExposureNo2(minutesAtHome));
+            exposureMap.put("pm2.5", PollutionExposure.getHomeExposurePm25(minutesAtHome));
+            exposureMap.put("no2", PollutionExposure.getHomeExposureNo2(minutesAtHome));
 
             ((PersonMuc) person).setWeeklyHomeMinutes(minutesAtHome);
             ((PersonMuc) person).updateWeeklyPollutionExposures(exposureMap);
