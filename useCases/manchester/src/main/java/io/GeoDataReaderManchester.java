@@ -19,38 +19,38 @@ public class GeoDataReaderManchester implements GeoDataReader {
 
     private static Logger logger = Logger.getLogger(GeoDataReaderManchester.class);
 
-    private GeoData geoDataMuc;
+    private GeoData geoDataMcr;
 
-    private final String SHAPE_IDENTIFIER = "ZONE";
-    private final String ZONE_ID_COLUMN = "Zone";
+    private final String SHAPE_IDENTIFIER = "zoneID";
+    private final String ZONE_ID_COLUMN = "zoneID";
 
-    public GeoDataReaderManchester(GeoData geoDataMuc) {
-        this.geoDataMuc = geoDataMuc;
+    public GeoDataReaderManchester(GeoData geoDataMcr) {
+        this.geoDataMcr = geoDataMcr;
     }
 
     @Override
     public void readZoneCsv(String path) {
         TableDataSet zonalData = SiloUtil.readCSVfile(path);
         int[] zoneIds = zonalData.getColumnAsInt(ZONE_ID_COLUMN);
-        float[] zoneAreas = zonalData.getColumnAsFloat("Area");
+        float[] zoneAreas = zonalData.getColumnAsFloat("area");
 
         //int[] areaTypes = zonalData.getColumnAsInt("BBSR_Type");
 
-        int[] regionColumn = zonalData.getColumnAsInt("Region");
+        int[] regionColumn = zonalData.getColumnAsInt("cityID");
 
         for (int i = 0; i < zoneIds.length; i++) {
             //AreaTypes.SGType type = AreaTypes.SGType.valueOf(areaTypes[i]);
             Region region;
             int regionId = regionColumn[i];
-            if (geoDataMuc.getRegions().containsKey(regionId)) {
-                region = geoDataMuc.getRegions().get(regionId);
+            if (geoDataMcr.getRegions().containsKey(regionId)) {
+                region = geoDataMcr.getRegions().get(regionId);
             } else {
                 region = new RegionImpl(regionId);
-                geoDataMuc.addRegion(region);
+                geoDataMcr.addRegion(region);
             }
             ZoneImpl zone = new ZoneImpl(zoneIds[i], zoneAreas[i], region);
             region.addZone(zone);
-            geoDataMuc.addZone(zone);
+            geoDataMcr.addZone(zone);
         }
     }
 
@@ -63,7 +63,7 @@ public class GeoDataReaderManchester implements GeoDataReader {
         int counter = 0;
         for (SimpleFeature feature : ShapeFileReader.getAllFeatures(path)) {
             int zoneId = Integer.parseInt(feature.getAttribute(SHAPE_IDENTIFIER).toString());
-            Zone zone = geoDataMuc.getZones().get(zoneId);
+            Zone zone = geoDataMcr.getZones().get(zoneId);
             if (zone != null) {
                 zone.setZoneFeature(feature);
             } else {
