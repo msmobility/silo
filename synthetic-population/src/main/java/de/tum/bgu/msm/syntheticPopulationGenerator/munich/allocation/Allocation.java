@@ -37,6 +37,9 @@ public class Allocation extends ModuleSynPop{
             assignSchools();
             validateTripLengths();
         }
+        if (PropertiesSynPop.get().main.runSeniorReallocation){
+            reallocateSeniors();
+        }
         logger.info("   Completed allocation model.");
 
     }
@@ -71,6 +74,10 @@ public class Allocation extends ModuleSynPop{
     public void readPopulation(){
         educationalLevel = new HashMap<>();
         new ReadPopulation(dataContainer, educationalLevel).run();
+    }
+
+    public void reallocateSeniors(){
+        new ReallocateSeniorsNursingHome(dataContainer, dataSetSynPop).run();
     }
 
     public void validateTripLengths(){

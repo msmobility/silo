@@ -9,6 +9,7 @@ public abstract class AbstractPropertiesSynPop {
     public boolean runIPU;
     public boolean runAllocation;
     public boolean runJobAllocation;
+    public boolean runSeniorReallocation;
     public boolean twoGeographicalAreasIPU;
     public boolean runDisability;
     public String[] attributesMunicipality;
@@ -89,4 +90,8 @@ public abstract class AbstractPropertiesSynPop {
     //public TableDataSet cellsMicrolocations;
     public int firstVacantJob;
 
+    public TableDataSet nursingHomeResidents;
+
+
+    public TableDataSet nursingHomes;
 }

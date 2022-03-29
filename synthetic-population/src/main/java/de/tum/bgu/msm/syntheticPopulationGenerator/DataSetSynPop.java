@@ -6,6 +6,7 @@ import com.google.common.collect.Table;
 import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.common.matrix.Matrix;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
+import de.tum.bgu.msm.data.person.Person;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.opengis.feature.simple.SimpleFeature;
@@ -77,6 +78,9 @@ public class DataSetSynPop {
     private Map<Integer, Integer> assignedUniversitiesByZone;
     private Map<Integer, Map< Integer, Map<Integer, Coordinate>>> microlocationsSchools;
     private int nextVacantJobId;
+
+    private Map<Integer, Map<Integer, Person>> residentsByNursingHome;
+
 
     public TableDataSet getWeights() {
         return weights;
@@ -445,5 +449,13 @@ public class DataSetSynPop {
 
     public void setNextVacantJobId(int nextVacantJobId) {
         this.nextVacantJobId = nextVacantJobId;
+    }
+
+    public Map<Integer, Map<Integer, Person>> getResidentsByNursingHome() {
+        return residentsByNursingHome;
+    }
+
+    public void setResidentsByNursingHome(Map<Integer, Map<Integer, Person>> residentsByNursingHome) {
+        this.residentsByNursingHome = residentsByNursingHome;
     }
 }

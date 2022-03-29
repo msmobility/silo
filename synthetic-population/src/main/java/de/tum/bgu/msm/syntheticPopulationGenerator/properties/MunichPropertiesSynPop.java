@@ -26,10 +26,19 @@ public class MunichPropertiesSynPop extends AbstractPropertiesSynPop {
         marginalsMunicipality = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"marginals.municipality","input/syntheticPopulation/marginalsMunicipality.csv"));
         marginalsMunicipality.buildIndex(marginalsMunicipality.getColumnPosition("ID_city"));
 
-
+        microDataFile = PropertiesUtil.getStringProperty(bundle, "micro.data", "C:/topSecretData/suf2010v1.dat");
+        microPersonsFileName = PropertiesUtil.getStringProperty(bundle, "micro.persons", "microData/interimFiles/microPersons.csv");
+        microHouseholdsFileName = PropertiesUtil.getStringProperty(bundle, "micro.households", "microData/interimFiles/microHouseholds.csv");
+        microDwellingsFileName = PropertiesUtil.getStringProperty(bundle, "micro.dwellings", "microData/interimFiles/microDwellings.csv");
         //todo same as municipalities
-        marginalsCounty = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"marginals.county ","input/syntheticPopulation/marginalsCounty.csv"));
+        marginalsCounty = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"marginals.county","input/syntheticPopulation/marginalsCounty.csv"));
         marginalsCounty.buildIndex(marginalsCounty.getColumnPosition("ID_county"));
+
+        nursingHomeResidents = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"nursingHomeResidents.county","input/syntheticPopulation/county_nursing_home_residents.csv"));
+        nursingHomeResidents.buildIndex(nursingHomeResidents.getColumnPosition("County"));
+
+        nursingHomes = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"nursingHomes.county","input/syntheticPopulation/county_nursing_homes.csv"));
+        nursingHomes.buildIndex(nursingHomes.getColumnPosition("n_home_id"));
 
         selectedMunicipalities = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle,"municipalities.list","input/syntheticPopulation/municipalitiesList.csv"));
         selectedMunicipalities.buildIndex(selectedMunicipalities.getColumnPosition("ID_city"));
@@ -41,7 +50,7 @@ public class MunichPropertiesSynPop extends AbstractPropertiesSynPop {
         omxFileName = PropertiesUtil.getStringProperty(bundle, "distanceODmatrix", "input/syntheticPopulation/tdTest.omx");
 
         ageBracketsPerson = PropertiesUtil.getIntPropertyArray(bundle, "age.brackets", new int[]{9, 14, 19, 24, 29, 34, 39, 44, 49, 54, 59, 64, 69, 74, 79, 84, 120});
-        ageBracketsPersonQuarter = null;
+        ageBracketsPersonQuarter = PropertiesUtil.getIntPropertyArray(bundle, "age.brackets.quarter", new int[]{74,  84, 94, 120});;
 
         jobStringType = PropertiesUtil.getStringPropertyArray(bundle, "employment.types", new String[]{"Agri","Mnft","Util","Cons","Retl","Trns","Finc","Rlst","Admn","Serv"});
 
@@ -49,7 +58,7 @@ public class MunichPropertiesSynPop extends AbstractPropertiesSynPop {
             System.out.println(s);
         }
         runJobAllocation = PropertiesUtil.getBooleanProperty(bundle, "run.job.allocation", false);
-
+        runSeniorReallocation = PropertiesUtil.getBooleanProperty(bundle, "run.senior.reallocation", false);
 
         alphaJob = PropertiesUtil.getDoubleProperty(bundle, "employment.choice.alpha", 50);
         gammaJob = PropertiesUtil.getDoubleProperty(bundle, "employment.choice.gamma", -0.003);

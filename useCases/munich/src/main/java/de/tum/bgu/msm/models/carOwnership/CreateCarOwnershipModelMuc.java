@@ -56,17 +56,21 @@ public class CreateCarOwnershipModelMuc implements CreateCarOwnershipModel {
     public void simulateCarOwnership(Household hh) {
         int license = HouseholdUtil.getHHLicenseHolders(hh);
         int workers = HouseholdUtil.getNumberOfWorkers(hh);
-        int income = HouseholdUtil.getAnnualHhIncome(hh)/12;  // convert yearly into monthly income
-        ZoneMuc zone = (ZoneMuc) geoData.getZones().get(dataContainer.getRealEstateDataManager().
-                getDwelling(hh.getDwellingId()).getZoneId());
-        //int zoneId = (int) ((HouseholdMuc)hh).getAttribute("zone").get();
+        int income = HouseholdUtil.getAnnualHhIncome(hh) / 12;  // convert yearly into monthly income
+        if (hh.getAttribute("Nursing_home").equals("yes")) {
+            hh.setAutos(0);
+        } else {
+            ZoneMuc zone = (ZoneMuc) geoData.getZones().get(dataContainer.getRealEstateDataManager().
+                    getDwelling(hh.getDwellingId()).getZoneId());
+            //int zoneId = (int) ((HouseholdMuc)hh).getAttribute("zone").get();
 
 
-        double logDistanceToTransit = Math.log(zone.getPTDistance_m() + 1); // add 1 to avoid taking log of 0
-        int areaType = zone.getAreaTypeSG().code();
+            double logDistanceToTransit = Math.log(zone.getPTDistance_m() + 1); // add 1 to avoid taking log of 0
+            int areaType = zone.getAreaTypeSG().code();
 
-        double[] prob = calculator.calculate(license, workers, income, logDistanceToTransit, areaType);
-        hh.setAutos(SiloUtil.select(prob));
+            double[] prob = calculator.calculate(license, workers, income, logDistanceToTransit, areaType);
+            hh.setAutos(SiloUtil.select(prob));
+        }
     }
 }
 
