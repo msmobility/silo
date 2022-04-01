@@ -41,7 +41,7 @@ public class MitoDataConverterMuc implements MitoDataConverter {
 
     private void convertZones(DataSet dataSet, DataContainer dataContainer) {
         for (Zone siloZone : dataContainer.getGeoData().getZones().values()) {
-            MitoZone zone = new MitoZone(siloZone.getZoneId(), ((ZoneMuc) siloZone).getAreaTypeSG());
+            MitoZone zone = new MitoZone(siloZone.getZoneId(), ((ZoneMuc) siloZone).getPTDistance_m() / 1000., ((ZoneMuc) siloZone).getAreaTypeSG());
             zone.setGeometry((Geometry) siloZone.getZoneFeature().getDefaultGeometry());
             dataSet.addZone(zone);
         }

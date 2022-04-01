@@ -33,11 +33,12 @@ public class RelativeRisks {
         return Math.max(0.55,Math.exp(-0.0120412*mMEThrs));
     }
 
+    // todo: should we cap the air pollution RR at some maximum?
     private static double pm25(double microgramPerM3) {
-        return 1 + 0.008 * microgramPerM3;
+        return Math.min(2.,Math.exp(0.0076961*microgramPerM3));
     }
 
     private static double no2(double microgramPerM3) {
-        return 1 + 0.002 * microgramPerM3 + (microgramPerM3 > 500 ? .01 : 0);
+        return Math.min(2.,Math.exp(0.0019803*microgramPerM3));
     }
 }
