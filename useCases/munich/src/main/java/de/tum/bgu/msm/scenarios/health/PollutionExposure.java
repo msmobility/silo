@@ -16,13 +16,13 @@ public class PollutionExposure {
 
     // Home exposures
     public static double getHomeExposurePm25(double minutesAtHome) {
-        double minutesResting = Math.min(0,minutesAtHome - 3360);
+        double minutesResting = Math.max(0,minutesAtHome - 3360);
         double minutesSleeping = minutesAtHome - minutesResting;
         return BACKGROUND_PM25 * (REST_VENTILATION_RATE * minutesResting + SLEEP_VENTILATION_RATE * minutesSleeping) / 60.;
     }
 
     public static double getHomeExposureNo2(double minutesAtHome) {
-        double minutesResting = Math.min(0,minutesAtHome - 3360);
+        double minutesResting = Math.max(0,minutesAtHome - 3360);
         double minutesSleeping = minutesAtHome - minutesResting;
         return BACKGROUND_NO2 * (REST_VENTILATION_RATE * minutesResting + SLEEP_VENTILATION_RATE * minutesSleeping) / 60.;
     }
