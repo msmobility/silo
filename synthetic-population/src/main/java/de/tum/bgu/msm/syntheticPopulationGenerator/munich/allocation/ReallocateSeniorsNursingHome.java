@@ -54,14 +54,18 @@ public class ReallocateSeniorsNursingHome {
             logger.info("               County  "+ county );
             double logging = 2;
             int it = 1;
+            int nursingHomeResidents = 0;
             Map<Integer, Integer> femalesSelected = new HashMap<>();
+            Map<Integer, Integer> malesSelected = new HashMap<>();
             for (int age : PropertiesSynPop.get().main.ageBracketsPersonQuarter) {
                 femalesSelected.put(age, 0);
+                malesSelected.put(age, 0);
             }
             //select senior households based on males
             for (int age : PropertiesSynPop.get().main.ageBracketsPersonQuarter){
                 String columnName = "male"+age;
                 int count = (int) PropertiesSynPop.get().main.nursingHomeResidents.getIndexedValueAt(county, columnName);
+                count = count - malesSelected.get(age);
                 if (nursingHomesByCounty.get(county).size() > 0) {
                     Map<Integer, Integer> hhSelection = selectMicroHouseholdWithReplacement(count,
                             seniorMalesinHouseholdsByCounty.get(county).get(age));
@@ -69,34 +73,40 @@ public class ReallocateSeniorsNursingHome {
                             nursingHomesByCounty.get(county).toArray(new Integer[0]));
                     int selected = 0;
                     for (int draw = 1; draw <= hhSelection.size(); draw++) {
+                        if (selected <= count) {
                         Household hhSelected = householdData.getHouseholdFromId(hhSelection.get(draw));
-                        realEstate.getDwelling(hhSelected.getDwellingId()).setResidentID(-1);
+                            if (hhSelected.getDwellingId() != -1) {
+                                realEstate.getDwelling(hhSelected.getDwellingId()).setResidentID(-1);
+                            }
                         hhSelected.setDwelling(-1);
                         hhSelected.setAttribute("Nursing_home", "yes");
                         hhSelected.setAttribute("Nursing_home_id", nursingHomeSelection[draw - 1]);
                         hhSelected.setAttribute("Nursing_home_zone", nursingHomeTAZ.get(nursingHomeSelection[draw - 1]));
                         for (Person pp : hhSelected.getPersons().values()) {
                             residentsByNursingHome.get(nursingHomeSelection[draw - 1]).put(pp.getId(), pp);
+                            int row = 0;
+                            while (pp.getAge() > PropertiesSynPop.get().main.ageBracketsPersonQuarter[row]) {
+                                row++;
+                            }
                             if (pp.getGender().equals(Gender.FEMALE)) {
-                                int row = 0;
-                                while (pp.getAge() > PropertiesSynPop.get().main.ageBracketsPersonQuarter[row]) {
-                                    row++;
-                                }
                                 int previous = femalesSelected.get(PropertiesSynPop.get().main.ageBracketsPersonQuarter[row]);
                                 femalesSelected.put(PropertiesSynPop.get().main.ageBracketsPersonQuarter[row], previous + 1);
+                            } else {
+                                if (age == PropertiesSynPop.get().main.ageBracketsPersonQuarter[row]){
+                                    selected = selected + 1;
+                                }
+                                int previous = malesSelected.get(PropertiesSynPop.get().main.ageBracketsPersonQuarter[row]);
+                                malesSelected.put(PropertiesSynPop.get().main.ageBracketsPersonQuarter[row], previous + 1);
                             }
+                            nursingHomeResidents++;
                         }
-                        if (seniorMalesinHouseholdsByCounty.get(county).get(age).containsKey(hhSelected.getId())) {
-                            selected = selected + seniorMalesinHouseholdsByCounty.get(county).get(age).get(hhSelected.getId());
-                        }
-                        for (int ageFemales : PropertiesSynPop.get().main.ageBracketsPersonQuarter) {
+/*                        for (int ageFemales : PropertiesSynPop.get().main.ageBracketsPersonQuarter) {
                             if (seniorFemalesinHouseholdsByCounty.get(county).get(age).containsKey(hhSelected.getId())) {
                                 int previousFemales = femalesSelected.get(ageFemales);
                                 femalesSelected.put(ageFemales, seniorFemalesinHouseholdsByCounty.get(county).get(age).get(hhSelected.getId()) + previousFemales);
                             }
-                        }
-                        if (selected > count) {
-                            break;
+                        }*/
+
                         }
                     }
                 }
@@ -117,8 +127,11 @@ public class ReallocateSeniorsNursingHome {
                                     nursingHomesByCounty.get(county).toArray(new Integer[0]));
                             int selected = 0;
                             for (int draw = 1; draw <= hhSelection.size(); draw++) {
+                                if (selected <= hhSelection.size()){
                                 Household hhSelected = householdData.getHouseholdFromId(hhSelection.get(draw));
-                                realEstate.getDwelling(hhSelected.getDwellingId()).setResidentID(-1);
+                                if (hhSelected.getDwellingId() != -1) {
+                                    realEstate.getDwelling(hhSelected.getDwellingId()).setResidentID(-1);
+                                }
                                 hhSelected.setDwelling(-1);
                                 hhSelected.setAttribute("Nursing_home", true);
                                 hhSelected.setAttribute("Nursing_home_id", nursingHomeSelection[draw - 1]);
@@ -130,34 +143,34 @@ public class ReallocateSeniorsNursingHome {
                                     while (pp.getAge() > PropertiesSynPop.get().main.ageBracketsPersonQuarter[row]) {
                                         row++;
                                     }
-                                    if (PropertiesSynPop.get().main.ageBracketsPersonQuarter[row] >= age) {
-                                        seniorFemalesinFemaleHouseholdsByCounty.get(county).get(PropertiesSynPop.get().main.ageBracketsPersonQuarter[row]).remove(hhSelected.getId());
+                                    int previous = femalesSelected.get(PropertiesSynPop.get().main.ageBracketsPersonQuarter[row]);
+                                    femalesSelected.put(PropertiesSynPop.get().main.ageBracketsPersonQuarter[row], previous + 1);
+                                    if (age == PropertiesSynPop.get().main.ageBracketsPersonQuarter[row]){
+                                        selected = selected + 1;
+                                    } else {
+                                        if (seniorFemalesinFemaleHouseholdsByCounty.get(county).get(age).containsKey(hhSelected.getId())){
+                                            seniorFemalesinFemaleHouseholdsByCounty.get(county).get(age).remove(hhSelected.getId());
+                                        }
                                     }
-
+                                    nursingHomeResidents++;
                                 }
-                                if (seniorFemalesinFemaleHouseholdsByCounty.get(county).get(age).containsKey(hhSelected.getId())) {
+/*                                if (seniorFemalesinFemaleHouseholdsByCounty.get(county).get(age).containsKey(hhSelected.getId())) {
                                     selected = selected + seniorFemalesinFemaleHouseholdsByCounty.get(county).get(age).get(hhSelected.getId());
-                                }
-                                for (int ageFemales : PropertiesSynPop.get().main.ageBracketsPersonQuarter) {
+                                }*/
+/*                                for (int ageFemales : PropertiesSynPop.get().main.ageBracketsPersonQuarter) {
                                     if (seniorFemalesinFemaleHouseholdsByCounty.get(county).get(age).containsKey(hhSelected.getId())) {
                                         int previousFemales = femalesSelected.get(ageFemales);
                                         femalesSelected.put(ageFemales, seniorFemalesinFemaleHouseholdsByCounty.get(county).get(age).get(hhSelected.getId()) + previousFemales);
                                     }
-                                }
-                                if (selected >= count) {
-                                    break;
-                                }
-                                if (draw == logging & draw > 2) {
-                                    logger.info("   County " + county + ". Generated household " + draw);
-                                    it++;
-                                    logging = Math.pow(2, it);
-                                }
+                                }*/
                             }
                         }
                     }
                 }
-            //}
+            }
+            logger.info(" County " + county + ". Nursing home persons " + nursingHomeResidents);
         }
+
         dataSetSynPop.setResidentsByNursingHome(residentsByNursingHome);
     }
 

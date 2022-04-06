@@ -35,14 +35,14 @@ public class HouseholdWriterMucNursingHome implements HouseholdWriter {
             pwh.print(",");
             pwh.print(hh.getDwellingId());
             pwh.print(",");
-            pwh.print(hh.getAttribute("Nursing_home_id"));
+            pwh.print(hh.getAttribute("Nursing_home_id").get().toString());
             pwh.print(",");
             pwh.print(hh.getHhSize());
             pwh.print(",");
-            if (hh.getAttribute("Nursing_home").equals("yes")) {
-                pwh.print(hh.getAttribute("Nursing_home_zone"));
+            if (hh.getAttribute("Nursing_home").get().toString().equals("yes")) {
+                pwh.print(hh.getAttribute("Nursing_home_zone").get().toString());
             } else {
-                pwh.print(hh.getAttribute("zone"));
+                pwh.print(hh.getAttribute("zone").get().toString());
                 //pwh.print(realEstateData.getDwelling(hh.getDwellingId()).getZoneId());
             }
             pwh.print(",");

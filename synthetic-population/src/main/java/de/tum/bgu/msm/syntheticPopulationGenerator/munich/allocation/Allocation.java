@@ -37,9 +37,9 @@ public class Allocation extends ModuleSynPop{
             assignSchools();
             validateTripLengths();
         }
-        if (PropertiesSynPop.get().main.runSeniorReallocation){
+        //if (PropertiesSynPop.get().main.runSeniorReallocation){
             reallocateSeniors();
-        }
+        //}
         logger.info("   Completed allocation model.");
 
     }
@@ -77,7 +77,7 @@ public class Allocation extends ModuleSynPop{
     }
 
     public void reallocateSeniors(){
-        new ReallocateSeniorsNursingHome(dataContainer, dataSetSynPop).run();
+        new ReallocateSeniorsNursingHomev2(dataContainer, dataSetSynPop).run();
     }
 
     public void validateTripLengths(){
