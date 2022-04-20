@@ -117,7 +117,7 @@ public class SiloMucTest {
     @Ignore
     @Test
     /**
-     * REplaces the reference files by the results of the test,
+     * Replaces the reference files by the results of the test,
      * so the test will be updated. Do not use if you are not sure.
      * The part of the code that makes this changes is commented
      * to prevent undesired uses.
