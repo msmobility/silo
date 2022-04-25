@@ -60,6 +60,7 @@ public class SwitchToElectricVehicleModelMuc extends AbstractModel implements Mo
         // return HashMap<Household, ArrayOfHouseholdAttributes>. These are the households eligible for switching
         // to autonomous cars. currently income is the only household attribute used but room is left for additional
         // attributes in the future
+        ///****
         for (Household hh : householdDataManager.getHouseholds()) {
             int numberOfElectric = (int) hh.getAttribute("EV").orElse(0);
             ev_counter += numberOfElectric;
