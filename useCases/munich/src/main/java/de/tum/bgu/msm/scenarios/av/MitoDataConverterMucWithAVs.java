@@ -42,7 +42,7 @@ public class MitoDataConverterMucWithAVs implements MitoDataConverter {
 
     private void convertZones(DataSet dataSet, DataContainer dataContainer) {
         for (Zone siloZone : dataContainer.getGeoData().getZones().values()) {
-            MitoZone zone = new MitoZone(siloZone.getZoneId(), ((ZoneMuc) siloZone).getAreaTypeSG());
+            MitoZone zone = new MitoZone(siloZone.getZoneId(),((ZoneMuc) siloZone).getPTDistance_m() / 1000., ((ZoneMuc) siloZone).getAreaTypeSG());
             zone.setGeometry((Geometry) siloZone.getZoneFeature().getDefaultGeometry());
             dataSet.addZone(zone);
         }
@@ -125,10 +125,12 @@ public class MitoDataConverterMucWithAVs implements MitoDataConverter {
         final MitoOccupationStatus mitoOccupationStatus = MitoOccupationStatus.valueOf(person.getOccupation().getCode());
 
         MitoOccupation mitoOccupation = null;
+        String jobType = null;
         switch (mitoOccupationStatus) {
             case WORKER:
                 if (person.getJobId() > 0) {
                     JobMuc job = (JobMuc) dataContainer.getJobDataManager().getJobFromId(person.getJobId());
+                    jobType = job.getType();
                     MitoZone zone = dataSet.getZones().get(job.getZoneId());
                     final Coordinate coordinate;
                     if (job instanceof MicroLocation) {
@@ -155,6 +157,7 @@ public class MitoDataConverterMucWithAVs implements MitoDataConverter {
                 household,
                 mitoOccupationStatus,
                 mitoOccupation,
+                jobType,
                 person.getAge(),
                 mitoGender,
                 person.hasDriverLicense());

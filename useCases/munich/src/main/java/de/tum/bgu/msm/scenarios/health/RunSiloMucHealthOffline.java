@@ -40,6 +40,7 @@ public class RunSiloMucHealthOffline {
         airPollutantModel.endSimulation();
         accidentModel.endYear(2011);
         healthModel.endYear(2011);
+        dataContainer.endSimulation();
 
         logger.info("Finished SILO.");
     }

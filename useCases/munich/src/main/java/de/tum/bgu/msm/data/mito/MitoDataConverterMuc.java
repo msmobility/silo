@@ -119,10 +119,12 @@ public class MitoDataConverterMuc implements MitoDataConverter {
         final MitoOccupationStatus mitoOccupationStatus = MitoOccupationStatus.valueOf(person.getOccupation().getCode());
 
         MitoOccupation mitoOccupation = null;
+        String jobType = null;
         switch (mitoOccupationStatus) {
             case WORKER:
                 if (person.getJobId() > 0) {
                     JobMuc job = (JobMuc) dataContainer.getJobDataManager().getJobFromId(person.getJobId());
+                    jobType = job.getType();
                     MitoZone zone = dataSet.getZones().get(job.getZoneId());
                     final Coordinate coordinate;
                     if (job instanceof MicroLocation) {
@@ -149,6 +151,7 @@ public class MitoDataConverterMuc implements MitoDataConverter {
                 household,
                 mitoOccupationStatus,
                 mitoOccupation,
+                jobType,
                 person.getAge(),
                 mitoGender,
                 person.hasDriverLicense());
