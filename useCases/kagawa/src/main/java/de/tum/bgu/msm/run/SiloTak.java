@@ -4,10 +4,7 @@ import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
-import de.tum.bgu.msm.io.output.DefaultResultsMonitor;
-import de.tum.bgu.msm.io.output.HouseholdSatisfactionMonitor;
-import de.tum.bgu.msm.io.output.MultiFileResultsMonitor;
-import de.tum.bgu.msm.io.output.ResultsMonitor;
+import de.tum.bgu.msm.io.output.*;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -42,8 +39,9 @@ public class SiloTak {
         model.addResultMonitor(new DefaultResultsMonitor(dataContainer, properties));
         model.addResultMonitor(new MultiFileResultsMonitor(dataContainer, properties));
         model.addResultMonitor(new HouseholdSatisfactionMonitor(dataContainer, properties, modelContainer));
-
+        model.addResultMonitor(new ModalSharesResultMonitor(dataContainer, properties));
         model.runModel();
+
         logger.info("Finished SILO.");
     }
 

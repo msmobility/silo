@@ -38,6 +38,6 @@ jobs:
       - name: Publish to Cloudsmith
         run: mvn deploy -DskipTests=true --fail-at-end --batch-mode -Dmatsim.preferLocalDtds=true
         env:
-          CLOUDSMITH_USERNAME: nico-kuhnel
+          CLOUDSMITH_USERNAME: carlos-llorca
           CLOUDSMITH_TOKEN: ${{ secrets.cloudsmithToken }}
           
