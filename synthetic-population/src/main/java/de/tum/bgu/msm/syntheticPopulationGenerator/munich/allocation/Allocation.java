@@ -38,7 +38,12 @@ public class Allocation extends ModuleSynPop{
             validateTripLengths();
         }
         //if (PropertiesSynPop.get().main.runSeniorReallocation){
+            //reallocateSeniors();
+        //}
+        //if (PropertiesSynPop.get().main.runSeniorReallocation){
             reallocateSeniors();
+            //readPopulationSeniors();
+            reallocateWorkersToNursingHome();
         //}
         logger.info("   Completed allocation model.");
 
@@ -76,8 +81,17 @@ public class Allocation extends ModuleSynPop{
         new ReadPopulation(dataContainer, educationalLevel).run();
     }
 
+    public void readPopulationSeniors(){
+        educationalLevel = new HashMap<>();
+        new ReadPopulationSeniors(dataContainer, educationalLevel).run();
+    }
+
     public void reallocateSeniors(){
         new ReallocateSeniorsNursingHomev2(dataContainer, dataSetSynPop).run();
+    }
+
+    public void reallocateWorkersToNursingHome(){
+        new ReallocateWorkersNursingHomev2(dataContainer, dataSetSynPop).run();
     }
 
     public void validateTripLengths(){

@@ -88,7 +88,7 @@ public class SyntheticPopDe implements SyntheticPopI {
                 + properties.householdData.householdFileName
                 + "_"
                 + properties.main.baseYear
-                + "gq.csv";
+                + "gqw.csv";
         HouseholdWriter hhwriter = new HouseholdWriterMucNursingHome(dataContainer.getHouseholdDataManager(),dataContainer.getRealEstateDataManager());
         hhwriter.writeHouseholds(filehh);
 
@@ -96,7 +96,7 @@ public class SyntheticPopDe implements SyntheticPopI {
                 + properties.householdData.personFileName
                 + "_"
                 + properties.main.baseYear
-                + "gq.csv";
+                + "gqw.csv";
         PersonWriter ppwriter = new PersonWriterMuc(dataContainer.getHouseholdDataManager());
         ppwriter.writePersons(filepp);
 
@@ -104,7 +104,7 @@ public class SyntheticPopDe implements SyntheticPopI {
                 + properties.realEstate.dwellingsFileName
                 + "_"
                 + properties.main.baseYear
-                + "gq.csv";
+                + "gqw.csv";
         DwellingWriter ddwriter = new DefaultDwellingWriter(dataContainer.getRealEstateDataManager().getDwellings());
         ddwriter.writeDwellings(filedd);
 
@@ -112,7 +112,7 @@ public class SyntheticPopDe implements SyntheticPopI {
                 + properties.jobData.jobsFileName
                 + "_"
                 + properties.main.baseYear
-                + "gq.csv";
+                + "gqw.csv";
         JobWriter jjwriter = new JobWriterMuc(dataContainer.getJobDataManager());
         jjwriter.writeJobs(filejj);
 
@@ -121,7 +121,7 @@ public class SyntheticPopDe implements SyntheticPopI {
                 + properties.schoolData.schoolsFileName
                 + "_"
                 + properties.main.baseYear
-                + "gq.csv";
+                + "gqw.csv";
         SchoolsWriter eewriter = new SchoolsWriter(dataContainer.getSchoolData());
         eewriter.writeSchools(fileee);
 

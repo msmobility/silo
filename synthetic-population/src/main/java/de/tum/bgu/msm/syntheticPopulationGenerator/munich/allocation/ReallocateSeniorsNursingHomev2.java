@@ -33,6 +33,7 @@ public class ReallocateSeniorsNursingHomev2 {
     private Map<Integer, Map<Integer, Integer>> seniorFemalesinHouseholdsByCounty;
     private Map<Integer, Map<Integer, Integer>> seniorFemalesinFemaleHouseholdsByCounty;
     private Map<Integer, ArrayList<Integer>> nursingHomesByCounty = new HashMap<>();
+    private Map<Integer, Map<Integer, Integer>> nursingHomesByCountyMap = new HashMap<>();
 
     private Map<Integer, Map<Integer, Person>> residentsByNursingHome = new HashMap<>();
     private Map<Integer, Integer> nursingHomeTAZ = new HashMap<>();
@@ -65,11 +66,11 @@ public class ReallocateSeniorsNursingHomev2 {
                 String columnName = "male"+age;
                 int count = (int) PropertiesSynPop.get().main.nursingHomeResidents.getIndexedValueAt(county, columnName);
                 count = count - personsAlreadySelected.get(county).get("male");
-                if (nursingHomesByCounty.get(county).size() > 0) {
+                if (nursingHomesByCountyMap.get(county).size() > 0) {
                     Map<Integer, Integer> hhSelection = selectMicroHouseholdWithReplacement(count,
                             seniorMalesinHouseholdsByCounty.get(county));
-                    int[] nursingHomeSelection = selectMultipleObjectsEqualProbability(count,
-                            nursingHomesByCounty.get(county).toArray(new Integer[0]));
+                    Map<Integer, Integer> nursingHomeSelection = selectNursingHomesWithoutReplacement(count,
+                            nursingHomesByCountyMap.get(county));
                     for (int draw = 1; draw <= hhSelection.size(); draw++) {
                         if (malesSelected < count) {
                             Household hhSelected = householdData.getHouseholdFromId(hhSelection.get(draw));
@@ -78,11 +79,11 @@ public class ReallocateSeniorsNursingHomev2 {
                             //}
                             hhSelected.setDwelling(-1);
                             hhSelected.setAttribute("Nursing_home", "yes");
-                            hhSelected.setAttribute("Nursing_home_id", nursingHomeSelection[draw - 1]);
-                            hhSelected.setAttribute("Nursing_home_zone", nursingHomeTAZ.get(nursingHomeSelection[draw - 1]));
+                            hhSelected.setAttribute("Nursing_home_id", nursingHomeSelection.get(draw));
+                            hhSelected.setAttribute("Nursing_home_zone", nursingHomeTAZ.get(nursingHomeSelection.get(draw)));
 
                             for (Person pp : hhSelected.getPersons().values()) {
-                                residentsByNursingHome.get(nursingHomeSelection[draw - 1]).put(pp.getId(), pp);
+                                residentsByNursingHome.get(nursingHomeSelection.get(draw)).put(pp.getId(), pp);
                                 int row = 0;
                                 while (pp.getAge() > PropertiesSynPop.get().main.ageBracketsPersonQuarter[row]) {
                                     row++;
@@ -106,16 +107,16 @@ public class ReallocateSeniorsNursingHomev2 {
                 int count2 = (int) PropertiesSynPop.get().main.nursingHomeResidents.getIndexedValueAt(county, columnName1);
                 count2 = count2 - femalesSelected - personsAlreadySelected.get(county).get("female");
                 if (count2 > 0) {
-                    if (nursingHomesByCounty.get(county).size() > 0) {
+                    if (nursingHomesByCountyMap.get(county).size() > 0) {
                         Map<Integer, Integer> hhSelection = selectMicroHouseholdWithReplacement(count2,
                                 seniorFemalesinFemaleHouseholdsByCounty.get(county));
-                        int[] nursingHomeSelection = selectMultipleObjectsEqualProbability(count2,
-                                nursingHomesByCounty.get(county).toArray(new Integer[0]));
+                        Map<Integer, Integer> nursingHomeSelection = selectNursingHomesWithoutReplacement(count2,
+                                nursingHomesByCountyMap.get(county));
                         int selected = 0;
                         for (int draw = 1; draw <= hhSelection.size(); draw++) {
                             if (selected < count2){
-                                /*if (county == 9373){
-                                    logger.info(draw);
+/*                                if (county == 9163){
+                                    logger.info("   Age "  + age + " draw "+ draw);
                                 }*/
                                 Household hhSelected = householdData.getHouseholdFromId(hhSelection.get(draw));
                                 //if (hhSelected.getDwellingId() != -1) {
@@ -123,10 +124,10 @@ public class ReallocateSeniorsNursingHomev2 {
                                 //}
                                 hhSelected.setDwelling(-1);
                                 hhSelected.setAttribute("Nursing_home", "yes");
-                                hhSelected.setAttribute("Nursing_home_id", nursingHomeSelection[draw - 1]);
-                                hhSelected.setAttribute("Nursing_home_zone", nursingHomeTAZ.get(nursingHomeSelection[draw - 1]));
+                                hhSelected.setAttribute("Nursing_home_id", nursingHomeSelection.get(draw));
+                                hhSelected.setAttribute("Nursing_home_zone", nursingHomeTAZ.get(nursingHomeSelection.get(draw)));
                                 for (Person pp : hhSelected.getPersons().values()) {
-                                    residentsByNursingHome.get(nursingHomeSelection[draw - 1]).put(pp.getId(), pp);
+                                    residentsByNursingHome.get(nursingHomeSelection.get(draw)).put(pp.getId(), pp);
                                     //check if there is another female that is older, and, in that case, remove that household from the list of "selectable"
                                     int row = 0;
                                     while (pp.getAge() > PropertiesSynPop.get().main.ageBracketsPersonQuarter[row]) {
@@ -222,17 +223,20 @@ public class ReallocateSeniorsNursingHomev2 {
 
         for (int counties : dataSetSynPop.getCounties()) {
             nursingHomesByCounty.putIfAbsent(counties, new ArrayList<>());
+            nursingHomesByCountyMap.putIfAbsent(counties, new HashMap<>());
         }
         for (int id : PropertiesSynPop.get().main.nursingHomes.getColumnAsInt("n_home_id")) {
             int zone = (int) PropertiesSynPop.get().main.nursingHomes.getIndexedValueAt(id, "ID_cell");
             int county = (int) PropertiesSynPop.get().main.cellsMatrix.getIndexedValueAt(zone,"ID_county");
             nursingHomesByCounty.get(county).add(id);
+            nursingHomesByCountyMap.get(county).put(id, 1);
             residentsByNursingHome.put(id, new HashMap<>());
             nursingHomeTAZ.put(id, zone);
         }
         for (Household hh : householdData.getHouseholds()) {
             hh.setAttribute("Nursing_home", "no");
             hh.setAttribute("Nursing_home_id", -1);
+            hh.setAttribute("Nursing_home_zone", realEstate.getDwelling(hh.getDwellingId()).getZoneId());
             boolean allSenior = verifyIfAllSenior(hh);
             if (allSenior) {
                 seniorHouseholds.putIfAbsent(hh.getId(), hh);
@@ -336,6 +340,17 @@ public class ReallocateSeniorsNursingHomev2 {
             if (households.size() < 1){
                 break;
             }
+        }
+
+        return selectedHouseholds;
+    }
+
+    private Map<Integer, Integer> selectNursingHomesWithoutReplacement(int selections, Map<Integer, Integer> households) {
+
+        Map<Integer, Integer> selectedHouseholds = new HashMap<>();
+        for (int i = 1; i <= selections; i++) {
+            Integer hhSelected = SiloUtil.select(households);
+            selectedHouseholds.putIfAbsent(i, hhSelected);
         }
 
         return selectedHouseholds;

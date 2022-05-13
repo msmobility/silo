@@ -33,6 +33,8 @@ public class JobWriterMuc implements JobWriter {
         pwj.print("startTime");
         pwj.print(",");
         pwj.print("duration");
+        pwj.print(",");
+        pwj.print("distance");
         pwj.println();
         for (Job jj : jobDataManager.getJobs()) {
             pwj.print(jj.getId());
@@ -54,6 +56,12 @@ public class JobWriterMuc implements JobWriter {
             pwj.print(jj.getStartTimeInSeconds().orElse(-1));
             pwj.print(",");
             pwj.print(jj.getWorkingTimeInSeconds().orElse(-1));
+            pwj.print(",");
+            if (jj.getWorkerId() < 0) {
+                pwj.print(0);
+            } else {
+                pwj.print(jj.getAttribute("distance").get().toString());
+            }
 
             pwj.println();
             if (jj.getId() == SiloUtil.trackJj) {

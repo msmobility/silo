@@ -1,8 +1,12 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.munich.allocation;
 
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.dwelling.*;
+import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypes;
+import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.dwelling.DwellingUtils;
+import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdData;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.job.JobDataManager;
@@ -10,6 +14,7 @@ import de.tum.bgu.msm.data.job.JobFactoryMuc;
 import de.tum.bgu.msm.data.job.JobMuc;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
@@ -18,14 +23,15 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
-public class ReadPopulation {
+public class ReadPopulationSeniors {
 
-    private static final Logger logger = Logger.getLogger(ReadPopulation.class);
+    private static final Logger logger = Logger.getLogger(ReadPopulationSeniors.class);
     private final DataContainer dataContainer;
     private HashMap<Person, Integer> educationalLevel;
 
-    public ReadPopulation(DataContainer dataContainer, HashMap<Person, Integer> educationalLevel){
+    public ReadPopulationSeniors(DataContainer dataContainer, HashMap<Person, Integer> educationalLevel){
         this.dataContainer = dataContainer;
         this.educationalLevel = educationalLevel;
     }
@@ -34,7 +40,7 @@ public class ReadPopulation {
         logger.info("   Running module: read population");
         readHouseholdData(Properties.get().main.startYear);
         readPersonData(Properties.get().main.startYear);
-        readDwellingData(Properties.get().main.startYear);
+        //readDwellingData(Properties.get().main.startYear);
         readJobData(Properties.get().main.startYear);
     }
 
@@ -45,7 +51,7 @@ public class ReadPopulation {
         HouseholdDataManager householdData = dataContainer.getHouseholdDataManager();
         HouseholdFactory householdFactory = householdData.getHouseholdFactory();
         String fileName = Properties.get().main.baseDirectory + Properties.get().householdData.householdFileName;
-        fileName += "_" + year + ".csv";
+        fileName += "_" + year + "gq.csv";
 
         String recString = "";
         int recCount = 0;
@@ -59,6 +65,7 @@ public class ReadPopulation {
             int posDwell = SiloUtil.findPositionInArray("dwelling",header);
             int posTaz   = SiloUtil.findPositionInArray("zone",header);
             int posAutos = SiloUtil.findPositionInArray("autos",header);
+            int posNursingHome = SiloUtil.findPositionInArray("nursingHome", header);
 
             // read line
             while ((recString = in.readLine()) != null) {
@@ -68,12 +75,16 @@ public class ReadPopulation {
                 int dwellingID = Integer.parseInt(lineElements[posDwell]);
                 int autos      = Integer.parseInt(lineElements[posAutos]);
                 int zone        = Integer.parseInt(lineElements[posTaz]);
+                int nursingHome = Integer.parseInt(lineElements[posNursingHome]);
                 Household household = householdFactory.createHousehold(id, dwellingID, autos);  // this automatically puts it in id->household map in Household class
                 household.setAttribute("zone", zone);
+                household.setAttribute("Nursing_home_id", nursingHome);
                 householdData.addHousehold(household);
                 if (id == SiloUtil.trackHh) {
                     SiloUtil.trackWriter.println("Read household with following attributes from " + fileName);
                 }
+
+
             }
         } catch (IOException e) {
             logger.fatal("IO Exception caught reading synpop household file: " + fileName);
@@ -88,7 +99,7 @@ public class ReadPopulation {
 
         HouseholdDataManager householdData = dataContainer.getHouseholdDataManager();
         String fileName = Properties.get().main.baseDirectory +  Properties.get().householdData.personFileName;
-        fileName += "_" + year + ".csv";
+        fileName += "_" + year + "gq.csv";
 
         String recString = "";
         int recCount = 0;
@@ -139,6 +150,7 @@ public class ReadPopulation {
                 }
                 pp.setNationality(nat);
                 pp.setDriverLicense(license);
+
                 if (id == SiloUtil.trackPp) {
                     SiloUtil.trackWriter.println("Read person with following attributes from " + fileName);
                 }
@@ -157,7 +169,7 @@ public class ReadPopulation {
         logger.info("Reading dwelling micro data from ascii file");
         RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
         String fileName = Properties.get().main.baseDirectory + Properties.get().realEstate.dwellingsFileName;
-        fileName += "_" + year + ".csv";
+        fileName += "_" + year + "gq.csv";
 
         String recString = "";
         int recCount = 0;
@@ -225,7 +237,10 @@ public class ReadPopulation {
         JobDataManager jobDataManager = dataContainer.getJobDataManager();
         JobFactoryMuc jobFactory = (JobFactoryMuc) dataContainer.getJobDataManager().getFactory();
         String fileName = Properties.get().main.baseDirectory + Properties.get().jobData.jobsFileName;
-        fileName += "_" + year + ".csv";
+        fileName += "_" + year + "gq.csv";
+
+        HouseholdDataManager householdData = dataContainer.getHouseholdDataManager();
+
 
         String recString = "";
         int recCount = 0;
@@ -265,7 +280,8 @@ public class ReadPopulation {
                 int duration = Integer.parseInt(lineElements[posDuration]);
                 jj.setJobWorkingTime(startTime, duration);
                 jobDataManager.addJob(jj);
-                jj.setAttribute("distance", 0);
+
+
                 if (id == SiloUtil.trackJj) {
                     SiloUtil.trackWriter.println("Read job with following attributes from " + fileName);
                 }
