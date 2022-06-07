@@ -1,6 +1,9 @@
 package de.tum.bgu.msm.scenarios.ev;
 
 import de.tum.bgu.msm.container.*;
+import de.tum.bgu.msm.data.AreaTypes;
+import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.data.geo.ZoneMuc;
 import de.tum.bgu.msm.data.household.*;
 import de.tum.bgu.msm.models.*;
 import de.tum.bgu.msm.models.carOwnership.*;
