@@ -80,7 +80,46 @@ public class EVResultMonitor implements ResultsMonitor {
 
         dataByZone.clear();
 
+        if (year % 5 == 0){
+            int counter = 0;
+            try {
+                PrintWriter annualMicroDataPw = new PrintWriter(properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/siloResults/vv_" + year + ".csv");
+                annualMicroDataPw.println("hh,zone,index,vehId,type");
 
+                for (Household household : dataContainer.getHouseholdDataManager().getHouseholds()) {
+                    int autos = household.getAutos();
+                    int electricAutos = (int) household.getAttribute("EV").orElse(0);
+                    int conventionalAutos = autos - electricAutos;
+
+
+                    int zoneId = dataContainer.getRealEstateDataManager().getDwelling(household.getDwellingId()).getZoneId();
+                    ZoneMuc zone = (ZoneMuc) dataContainer.getGeoData().getZones().get(zoneId);
+
+                    for (int i = 0; i < autos; i++){
+                        if (i < conventionalAutos){
+                            annualMicroDataPw.println(household.getId() + "," +
+                                    zone.getId() + "," +
+                                    i + "," +
+                                    counter + "," +
+                                    "conventional");
+                        } else {
+                            annualMicroDataPw.println(household.getId() + "," +
+                                    zone.getId() + "," +
+                                    i + "," +
+                                    counter + "," +
+                                    "electric");
+                        }
+                        counter++;
+                    }
+
+
+                }
+
+                annualMicroDataPw.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
