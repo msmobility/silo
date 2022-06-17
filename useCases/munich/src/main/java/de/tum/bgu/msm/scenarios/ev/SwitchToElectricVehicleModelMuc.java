@@ -3,6 +3,7 @@ package de.tum.bgu.msm.scenarios.ev;
 import de.tum.bgu.msm.container.*;
 import de.tum.bgu.msm.data.AreaTypes;
 import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.geo.ZoneMuc;
 import de.tum.bgu.msm.data.household.*;
 import de.tum.bgu.msm.models.*;
@@ -68,15 +69,51 @@ public class SwitchToElectricVehicleModelMuc extends AbstractModel implements Mo
             int numberOfElectric = (int) hh.getAttribute("EV").orElse(0);
             ev_counter += numberOfElectric;
             autos_counter += hh.getAutos();
+
             if (hh.getAutos() > numberOfElectric) {
                 int income = HouseholdUtil.getAnnualHhIncome(hh);
-                double prob = 0;
-                //todo implement a better utility equation
-                if (income > 30000){
-                    prob = 0.5;
-                } else {
-                    prob = 0.0;
+                double utility = -1.5;
+//                //todo implement a better utility equation
+//                if (income > 30000){
+//                    utility = 0.5;
+//                } else {
+//                    utility = 0.0;
+//                }
+
+                if (hh.getAutos() == 1){
+                    utility += -0.510;
                 }
+
+                int dwellingId = hh.getDwellingId();
+                Dwelling dwelling = dataContainer.getRealEstateDataManager().getDwelling(dwellingId);
+                int zoneId = dwelling.getZoneId();
+                ZoneMuc zone = (ZoneMuc)(dataContainer.getGeoData().getZones().get(zoneId));
+                switch (zone.getAreaTypeSG()){
+                    case CORE_CITY:
+                    case MEDIUM_SIZED_CITY:
+                        break;
+                    case TOWN:
+                        utility += 0.297;
+                        break;
+                    case RURAL:
+                        utility += 0.208;
+                        break;
+                }
+
+                int hhSize = hh.getHhSize();
+                if (hhSize == 2){
+                    utility += -0.578;
+                } else if (hhSize > 2){
+                    utility += -0.490;
+                }
+
+                int yearsFrom2011 = year - 2011;
+                utility += yearsFrom2011 * 0.05;
+
+                utility = Math.exp(utility);
+
+                double prob = utility / (1 + utility);
+
                 if (random.nextDouble() < prob){
                     hh.setAttribute("EV", numberOfElectric + 1);
                     event_counter++;

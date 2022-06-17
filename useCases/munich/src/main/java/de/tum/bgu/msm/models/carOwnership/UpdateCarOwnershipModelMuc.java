@@ -144,6 +144,10 @@ public class UpdateCarOwnershipModelMuc extends AbstractModel implements ModelUp
                         if (newHousehold.getAutonomous() > newHousehold.getAutos()) { // no. of AVs cannot exceed total no. of autos
                             newHousehold.setAutonomous(newHousehold.getAutos());
                         }
+                        if ((int) newHousehold.getAttribute("EV").orElse(0) > newHousehold.getAutos()) { // no. of AVs cannot exceed total no. of autos
+                            newHousehold.setAttribute("EV",newHousehold.getAutos());
+                        }
+
                     }
                 }
             }
