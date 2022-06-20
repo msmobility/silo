@@ -11,6 +11,7 @@ import de.tum.bgu.msm.models.demography.driversLicense.DriversLicenseModel;
 import de.tum.bgu.msm.models.demography.employment.EmploymentModel;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigration;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
+import de.tum.bgu.msm.models.relocation.moves.MovesModel;
 import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.DataContainerWithSchoolsImpl;
@@ -29,8 +30,8 @@ public class InOutMigrationMuc implements InOutMigration {
     private DataContainerWithSchoolsImpl dataContainerWithSchoolsImpl;
 
     public InOutMigrationMuc(DataContainer dataContainer, EmploymentModel employment,
-                              MovesModelImpl movesModel, CreateCarOwnershipModel carOwnership,
-                              DriversLicenseModel driversLicense, Properties properties) {
+                             MovesModel movesModel, CreateCarOwnershipModel carOwnership,
+                             DriversLicenseModel driversLicense, Properties properties) {
         delegate = new InOutMigrationImpl(dataContainer, employment, movesModel,
                 carOwnership, driversLicense, properties, SiloUtil.provideNewRandom());
         dataContainerWithSchoolsImpl = (DataContainerWithSchoolsImpl) dataContainer;

@@ -33,7 +33,7 @@ import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.demography.marriage.MarriageModel;
 import de.tum.bgu.msm.models.demography.marriage.MarriageStrategy;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigration;
-import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
+import de.tum.bgu.msm.models.relocation.moves.MovesModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -51,7 +51,7 @@ public class MarriageModelMuc extends AbstractModel implements MarriageModel {
     private final static Logger logger = Logger.getLogger(MarriageModelMuc.class);
 
     private final InOutMigration iomig;
-    private final MovesModelImpl movesModel;
+    private final MovesModel movesModel;
     private final CreateCarOwnershipModel carOwnership;
     private final HouseholdFactory hhFactory;
     private final MarriageStrategy strategy;
@@ -75,7 +75,7 @@ public class MarriageModelMuc extends AbstractModel implements MarriageModel {
     // capture if potential partner has celebrated BIRTHDAY already (i.e. turned 35). To improve
     // performance, the person type of this person in the marriage market is not updated.
 
-    public MarriageModelMuc(DataContainer dataContainer, MovesModelImpl movesModel,
+    public MarriageModelMuc(DataContainer dataContainer, MovesModel movesModel,
                             InOutMigration iomig, CreateCarOwnershipModel carOwnership,
                             HouseholdFactory hhFactory, Properties properties, MarriageStrategy strategy, Random rnd) {
         super(dataContainer, properties, rnd);
