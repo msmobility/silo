@@ -23,6 +23,7 @@
         <module>capeTown</module>
         <module>fabiland</module>
         <module>bangkok</module>
+        <module>portlandMe</module>
     </modules>
 
     <dependencies>
