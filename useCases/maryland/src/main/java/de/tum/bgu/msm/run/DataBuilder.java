@@ -20,6 +20,7 @@ import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.DwellingReaderMstm;
 import de.tum.bgu.msm.io.GeoDataReaderMstm;
+import de.tum.bgu.msm.io.MicroDataScaler;
 import de.tum.bgu.msm.io.PersonReaderMstm;
 import de.tum.bgu.msm.io.input.DefaultHouseholdReader;
 import de.tum.bgu.msm.io.input.DefaultJobReader;
@@ -109,6 +110,9 @@ public final class DataBuilder {
         JobReader jjReader = new DefaultJobReader(dataContainer.getJobDataManager());
         String jobsFile = properties.main.baseDirectory + properties.jobData.jobsFileName + "_" + year + ".csv";
         jjReader.readData(jobsFile);
+
+        MicroDataScaler scaler = new MicroDataScaler(dataContainer, properties);
+        scaler.scale();
     }
 
     private static void readDwellings(Properties properties, RealEstateDataManager realEstateManager, int year) {

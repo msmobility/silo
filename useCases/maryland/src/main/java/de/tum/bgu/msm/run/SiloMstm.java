@@ -4,6 +4,7 @@ import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.io.output.DefaultResultsMonitor;
+import de.tum.bgu.msm.io.output.MultiFileResultsMonitor;
 import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -39,6 +40,10 @@ public class SiloMstm {
         model.addResultMonitor(resultsMonitor);
         ResultsMonitor mstmMonitor = new MstmMonitor(dataContainer, properties);
         model.addResultMonitor(mstmMonitor);
+
+        MultiFileResultsMonitor monitor2 = new MultiFileResultsMonitor(dataContainer, properties);
+        model.addResultMonitor(monitor2);
+
         model.runModel();
         logger.info("Finished SILO.");
     }
