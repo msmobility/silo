@@ -27,8 +27,7 @@ public class HealthDataContainerImpl implements DataContainerWithSchools {
 
     private final DataContainerWithSchools delegate;
     private final Properties properties;
-    private Map<Integer, MitoTrip> mitoTrips = new HashMap<>();
-    private Map<Day, Map<Id<Link>, LinkInfo>> linkInfoByDay = new HashMap<>();
+    private Map<Id<Link>, LinkInfo> linkInfo = new HashMap<>();
     private Set<Pollutant> pollutantSet = new HashSet<>();
     private EnumMap<Mode, EnumMap<MitoGender,Map<Integer,Double>>> avgSpeeds;
 
@@ -109,17 +108,12 @@ public class HealthDataContainerImpl implements DataContainerWithSchools {
         new HealthPersonWriter(this).writePersons(filepp);
     }
 
-
-    public Map<Integer, MitoTrip> getMitoTrips() {
-        return mitoTrips;
+    public Map<Id<Link>, LinkInfo> getLinkInfo() {
+        return linkInfo;
     }
 
-    public void setMitoTrips(Map<Integer, MitoTrip> mitoTrips) {
-        this.mitoTrips = mitoTrips;
-    }
-
-    public Map<Day, Map<Id<Link>, LinkInfo>> getLinkInfoByDay() {
-        return linkInfoByDay;
+    public void setLinkInfo(Map<Id<Link>, LinkInfo> linkInfo) {
+        this.linkInfo = linkInfo;
     }
 
     public Set<Pollutant> getPollutantSet() {
@@ -136,5 +130,9 @@ public class HealthDataContainerImpl implements DataContainerWithSchools {
 
     public void setAvgSpeeds(EnumMap<Mode, EnumMap<MitoGender, Map<Integer, Double>>> avgSpeeds) {
         this.avgSpeeds = avgSpeeds;
+    }
+
+    public void reset(){
+        linkInfo.clear();
     }
 }

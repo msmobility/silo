@@ -17,7 +17,7 @@ public class DefaultSpeedReader implements SpeedReader {
 
     @Override
     public EnumMap<Mode,EnumMap<MitoGender,Map<Integer,Double>>> readData(String fileName) {
-        logger.info("Reading person micro data from ascii file");
+        logger.info("Reading avg mode speed data from ascii file");
 
         EnumMap<Mode,EnumMap<MitoGender,Map<Integer,Double>>> speedData = new EnumMap<>(Mode.class);
 
@@ -55,7 +55,7 @@ public class DefaultSpeedReader implements SpeedReader {
             logger.fatal("IO Exception caught reading synpop household file: " + fileName);
             logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
         }
-        logger.info("Finished reading " + recCount + " households.");
+        logger.info("Finished reading " + recCount + " avg mode speed.");
 
         return speedData;
     }

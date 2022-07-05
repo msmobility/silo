@@ -165,8 +165,8 @@ public class ModelBuilderMucHealth {
 
             modelContainer.registerModelUpdateListener(new UpdateCarOwnershipModelMuc(dataContainer, properties, SiloUtil.provideNewRandom()));
 
-            modelContainer.registerModelUpdateListener(accidentModel);
-            modelContainer.registerModelUpdateListener(airPollutantModel);
+            //modelContainer.registerModelUpdateListener(accidentModel);
+            //modelContainer.registerModelUpdateListener(airPollutantModel);
             modelContainer.registerModelUpdateListener(healthModel);
 
             return modelContainer;

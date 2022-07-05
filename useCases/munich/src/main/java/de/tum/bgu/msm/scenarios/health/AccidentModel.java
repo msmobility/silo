@@ -33,27 +33,24 @@ public class AccidentModel extends AbstractModel implements ModelUpdateListener 
     public void prepareYear(int year) {
     }
 
-    @Override
-    public void endYear(int year) {
+    public void endYear(int year, Day day) {
         logger.warn("Accident model end year:" + year);
         if(properties.main.startYear == year) {
             latestMatsimYear = year;
-            runAccidentRateModel(year);
+            runAccidentRateModel(year, day);
+            System.gc();
         } else if(properties.transportModel.transportModelYears.contains(year + 1)) {//why year +1
             latestMatsimYear = year + 1;
-            runAccidentRateModel(year + 1);
+            runAccidentRateModel(year + 1, day);
+            System.gc();
         }
     }
-
-
-
 
     @Override
     public void endSimulation() {
     }
 
-    private void runAccidentRateModel(int year) {
-        for(Day day : Day.values()) {
+    private void runAccidentRateModel(int year,Day day) {
             logger.info("Updating injury risk for year: " + year + "| day of week: " + day + ".");
 
             final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/"
@@ -72,11 +69,10 @@ public class AccidentModel extends AbstractModel implements ModelUpdateListener 
 //                ((HealthDataContainerImpl)dataContainer).getLinkInfoByDay().get(day).get(linkId).
 //                        setLightCasualityExposureByAccidentTypeByTime(model.getAccidentsContext().getLinkId2info().get(linkId).getLightCasualityExposureByAccidentTypeByTime());
 //
-                ((HealthDataContainerImpl)dataContainer).getLinkInfoByDay().get(day).get(linkId).
+                ((HealthDataContainerImpl)dataContainer).getLinkInfo().get(linkId).
                         setSevereFatalCasualityExposureByAccidentTypeByTime(model.getAccidentsContext().getLinkId2info().get(linkId).getSevereFatalCasualityExposureByAccidentTypeByTime());
             }
-
-        }
+            model.getAccidentsContext().reset();
     }
 
 }

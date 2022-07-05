@@ -12,13 +12,13 @@ import java.util.Map;
 // Dose-response functions for health exposures (simple for now but will become more complex)
 public class RelativeRisks {
 
-    public static Map<String, Double> calculate(PersonMuc personMuc) {
-        Map<String, Double> relativeRisks = new HashMap<>();
+    public static Map<String, Float> calculate(PersonMuc personMuc) {
+        Map<String, Float> relativeRisks = new HashMap<>();
 
-        relativeRisks.put("walk", walk(personMuc.getWeeklyMarginalMetHours(Mode.walk)));
-        relativeRisks.put("cycle", bike(personMuc.getWeeklyMarginalMetHours(Mode.bicycle)));
-        relativeRisks.put("pm2.5", pm25(personMuc.getWeeklyExposureByPollutantNormalised("pm2.5")));
-        relativeRisks.put("no2", no2(personMuc.getWeeklyExposureByPollutantNormalised("no2")));
+        relativeRisks.put("walk", (float) walk(personMuc.getWeeklyMarginalMetHours(Mode.walk)));
+        relativeRisks.put("cycle", (float) bike(personMuc.getWeeklyMarginalMetHours(Mode.bicycle)));
+        relativeRisks.put("pm2.5", (float) pm25(personMuc.getWeeklyExposureByPollutantNormalised("pm2.5")));
+        relativeRisks.put("no2", (float) no2(personMuc.getWeeklyExposureByPollutantNormalised("no2")));
 
         return relativeRisks;
     }

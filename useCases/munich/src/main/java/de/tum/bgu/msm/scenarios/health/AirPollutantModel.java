@@ -63,14 +63,12 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
     public void prepareYear(int year) {
     }
 
-    @Override
-    public void endYear(int year) {
+    public void endYear(int year, Day day) {
         logger.warn("Air pollutant exposure model end year:" + year);
         if(properties.main.startYear == year) {
             latestMatsimYear = year;
             final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/"
                     + properties.main.scenarioName + "/matsim/" + latestMatsimYear;
-            for(Day day : Day.values()){
                 scenario = ScenarioUtils.createMutableScenario(initialMatsimConfig);
                 scenario.getConfig().controler().setOutputDirectory(outputDirectoryRoot);
                 prepareConfig();
@@ -85,52 +83,51 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
                 scenario = ScenarioUtils.loadScenario(scenario.getConfig());
                 createEmissionEventsOffline(eventFileWithoutEmissions,eventFileWithEmissions);
                 runEmissionGridAnalyzer(year,day, eventFileWithEmissions);
-            }
         } else if(properties.transportModel.transportModelYears.contains(year + 1)) {//why year +1
             latestMatsimYear = year + 1;
             final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/"
                     + properties.main.scenarioName + "/matsim/" + latestMatsimYear;
-            for(Day day : Day.values()){
-                scenario = ScenarioUtils.createMutableScenario(initialMatsimConfig);
-                scenario.getConfig().controler().setOutputDirectory(outputDirectoryRoot);
-                prepareConfig();
-                String eventFileWithoutEmissions = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_events.xml.gz";
-                String eventFileWithEmissions = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_events_emission.xml.gz";
-                String vehicleFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_vehicles.xml.gz";
-                String vehicleFileWithEmissionType = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".vehicles_emission.xml.gz";
-                CreateVehicles createVehicles = new CreateVehicles(scenario);
-                createVehicles.runVehicleType();
-                createVehicles.runVehicle(vehicleFile, vehicleFileWithEmissionType);
-                updateConfig(day, vehicleFileWithEmissionType);
-                scenario = ScenarioUtils.loadScenario(scenario.getConfig());
-                createEmissionEventsOffline(eventFileWithoutEmissions,eventFileWithEmissions);
-                runEmissionGridAnalyzer(year,day, eventFileWithEmissions);
-            }
+            scenario = ScenarioUtils.createMutableScenario(initialMatsimConfig);
+            scenario.getConfig().controler().setOutputDirectory(outputDirectoryRoot);
+            prepareConfig();
+            String eventFileWithoutEmissions = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_events.xml.gz";
+            String eventFileWithEmissions = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_events_emission.xml.gz";
+            String vehicleFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_vehicles.xml.gz";
+            String vehicleFileWithEmissionType = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".vehicles_emission.xml.gz";
+            CreateVehicles createVehicles = new CreateVehicles(scenario);
+            createVehicles.runVehicleType();
+            createVehicles.runVehicle(vehicleFile, vehicleFileWithEmissionType);
+            updateConfig(day, vehicleFileWithEmissionType);
+            scenario = ScenarioUtils.loadScenario(scenario.getConfig());
+            createEmissionEventsOffline(eventFileWithoutEmissions,eventFileWithEmissions);
+            runEmissionGridAnalyzer(year,day, eventFileWithEmissions);
         }
+
+        final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/";
+        String filett = outputDirectory
+                + "linkExposure_"
+                + day
+                + ".csv";
+        writeLinkExposure(filett);
+
+        System.gc();
     }
 
 
     @Override
     public void endSimulation() {
-        final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/";
-        String filett = outputDirectory
-                + "linkExposure"
-                + ".csv";
-        writeLinkExposure(filett);
+
     }
 
     private void writeLinkExposure(String path) {
         logger.info("  Writing link exposure health indicators file");
         PrintWriter pwh = MitoUtil.openFileForSequentialWriting(path, false);
-        pwh.println("linkId,day,pollutant,timebin,value");
+        pwh.println("linkId,pollutant,timebin,value");
         //order of Set is not fixed
-        for (Day day : Day.values()) {
-            for (LinkInfo linkInfo : ((HealthDataContainerImpl) dataContainer).getLinkInfoByDay().get(day).values()) {
+            for (LinkInfo linkInfo : ((HealthDataContainerImpl) dataContainer).getLinkInfo().values()) {
                 for (Pollutant pollutant : linkInfo.getExposure2Pollutant2TimeBin().keySet()) {
                     for (int timebin : linkInfo.getExposure2Pollutant2TimeBin().get(pollutant).keys().elements()) {
                         pwh.print(linkInfo.getLinkId());
-                        pwh.print(",");
-                        pwh.print(day.name());
                         pwh.print(",");
                         pwh.print(pollutant.name());
                         pwh.print(",");
@@ -141,7 +138,6 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
                     }
                 }
             }
-        }
 
         pwh.close();
     }
@@ -203,6 +199,7 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
         logger.info("Creating grid cell air pollutant exposure for year " + year + ", day " + day);
 
         double scalingFactor = properties.main.scaleFactor * Double.parseDouble(Resources.instance.getString(de.tum.bgu.msm.resources.Properties.TRIP_SCALING_FACTOR));
+        System.out.println("current memory usage: " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
 
         EmissionGridAnalyzerMSM gridAnalyzer =	new	EmissionGridAnalyzerMSM.Builder()
                 .withNetwork(scenario.getNetwork())
@@ -212,20 +209,28 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
                 .withCountScaleFactor(1./scalingFactor)
                 .withGridType(EmissionGridAnalyzerMSM.GridType.Square)
                 .build();
+        System.out.println("current memory usage: " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
 
         gridAnalyzer.processTimeBinsWithEmissions(eventsFileWithEmission);
+        System.out.println("current memory usage: " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
 
         while(gridAnalyzer.hasNextTimeBin()){
             assembleLinkExposure(year, day, gridAnalyzer.processNextTimeBin());
         }
+        System.out.println("current memory usage: " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
+
     }
 
     private void assembleLinkExposure(int year, Day day, Tuple<Double, Grid<Map<Pollutant, Float>>>  gridEmissionMap) {
         logger.warn("Updating link air pollutant exposure for year: " + year + "| day of week: " + day + "| time of day: " + gridEmissionMap.getFirst() + ".");
         int startTime = (int) Math.floor(gridEmissionMap.getFirst());
+        System.out.println("current memory usage: " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
+
         Grid<Map<Pollutant,	Float>> grid =	gridEmissionMap.getSecond();
+        System.out.println("current memory usage: " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
+
         for(Link link : scenario.getNetwork().getLinks().values()){
-            Map<Pollutant, OpenIntFloatHashMap> exposure2Pollutant2TimeBin =  ((HealthDataContainerImpl)dataContainer).getLinkInfoByDay().get(day).get(link.getId()).getExposure2Pollutant2TimeBin();
+            Map<Pollutant, OpenIntFloatHashMap> exposure2Pollutant2TimeBin =  ((HealthDataContainerImpl)dataContainer).getLinkInfo().get(link.getId()).getExposure2Pollutant2TimeBin();
             Grid.Cell<Map<Pollutant,Float>> toNodeCell = grid.getCell(new Coordinate(link.getToNode().getCoord().getX(),link.getToNode().getCoord().getY()));
             Grid.Cell<Map<Pollutant,Float>> fromNodeCell = grid.getCell(new Coordinate(link.getFromNode().getCoord().getX(),link.getFromNode().getCoord().getY()));
             Grid.Cell<Map<Pollutant,Float>> middleNodeCell = grid.getCell(new Coordinate(link.getCoord().getX(),link.getCoord().getY()));
@@ -258,12 +263,15 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
                     exposure2Pollutant2TimeBin.get(pollutant).put(startTime, (float) avg);
                 }
             }
-            ((HealthDataContainerImpl)dataContainer).getLinkInfoByDay().get(day).get(link.getId()).setExposure2Pollutant2TimeBin(exposure2Pollutant2TimeBin);
+            ((HealthDataContainerImpl)dataContainer).getLinkInfo().get(link.getId()).setExposure2Pollutant2TimeBin(exposure2Pollutant2TimeBin);
         }
+
+        System.out.println("current memory usage: " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
+
         logger.warn("Updating link air pollutant exposure for year: " + year + "| day of week: " + day + " finished.");
     }
 
-    public void runOffineWithEmission(int year) {
+    public void runOffineWithEmission(int year, boolean createEmissionEvents) {
         logger.warn("Air pollutant exposure model end year:" + year);
         if(properties.main.startYear == year) {
             latestMatsimYear = year;
@@ -277,13 +285,21 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
                 String eventFileWithEmissions = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_events_emission.xml.gz";
                 String vehicleFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_vehicles.xml.gz";
                 String vehicleFileWithEmissionType = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".vehicles_emission.xml.gz";
-                CreateVehicles createVehicles = new CreateVehicles(scenario);
-                createVehicles.runVehicleType();
-                createVehicles.runVehicle(vehicleFile, vehicleFileWithEmissionType);
-                updateConfig(day, vehicleFileWithEmissionType);
-                scenario = ScenarioUtils.loadScenario(scenario.getConfig());
-                createEmissionEventsOffline(eventFileWithoutEmissions,eventFileWithEmissions);
-                runEmissionGridAnalyzer(year,day, eventFileWithEmissions);
+
+                if(createEmissionEvents){
+                    CreateVehicles createVehicles = new CreateVehicles(scenario);
+                    createVehicles.runVehicleType();
+                    createVehicles.runVehicle(vehicleFile, vehicleFileWithEmissionType);
+                    updateConfig(day, vehicleFileWithEmissionType);
+                    scenario = ScenarioUtils.loadScenario(scenario.getConfig());
+                    createEmissionEventsOffline(eventFileWithoutEmissions,eventFileWithEmissions);
+                    runEmissionGridAnalyzer(year,day, eventFileWithEmissions);
+                }else{
+                    updateConfig(day, vehicleFileWithEmissionType);
+                    scenario = ScenarioUtils.loadScenario(scenario.getConfig());
+                    runEmissionGridAnalyzer(year,day, eventFileWithEmissions);
+                }
+
             }
         } else if(properties.transportModel.transportModelYears.contains(year + 1)) {//why year +1
             latestMatsimYear = year + 1;
@@ -298,13 +314,20 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
                 String eventFileWithEmissions = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_events_emission.xml.gz";
                 String vehicleFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_vehicles.xml.gz";
                 String vehicleFileWithEmissionType = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".vehicles_emission.xml.gz";
-                CreateVehicles createVehicles = new CreateVehicles(scenario);
-                createVehicles.runVehicleType();
-                createVehicles.runVehicle(vehicleFile, vehicleFileWithEmissionType);
-                updateConfig(day, vehicleFileWithEmissionType);
-                scenario = ScenarioUtils.loadScenario(scenario.getConfig());
-                createEmissionEventsOffline(eventFileWithoutEmissions,eventFileWithEmissions);
-                runEmissionGridAnalyzer(year,day, eventFileWithEmissions);
+
+                if(createEmissionEvents){
+                    CreateVehicles createVehicles = new CreateVehicles(scenario);
+                    createVehicles.runVehicleType();
+                    createVehicles.runVehicle(vehicleFile, vehicleFileWithEmissionType);
+                    updateConfig(day, vehicleFileWithEmissionType);
+                    scenario = ScenarioUtils.loadScenario(scenario.getConfig());
+                    createEmissionEventsOffline(eventFileWithoutEmissions,eventFileWithEmissions);
+                    runEmissionGridAnalyzer(year,day, eventFileWithEmissions);
+                }else{
+                    updateConfig(day, vehicleFileWithEmissionType);
+                    scenario = ScenarioUtils.loadScenario(scenario.getConfig());
+                    runEmissionGridAnalyzer(year,day, eventFileWithEmissions);
+                }
             }
         }
 

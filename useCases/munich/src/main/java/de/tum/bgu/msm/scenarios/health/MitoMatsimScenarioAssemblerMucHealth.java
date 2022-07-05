@@ -87,6 +87,8 @@ public class MitoMatsimScenarioAssemblerMucHealth implements MatsimScenarioAssem
         mito.setRandomNumberGenerator(SiloUtil.getRandomObject());
         mito.run();
 
+        System.exit(1);
+
         logger.info("  Receiving demand from MITO");
         Map<Day, Scenario> scenarios = new HashMap<>();
 

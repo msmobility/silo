@@ -48,7 +48,7 @@ public class MitoDataConverterImpl implements MitoDataConverter {
 
     private void convertZones(DataSet dataSet, DataContainer dataContainer) {
         for (Zone siloZone : dataContainer.getGeoData().getZones().values()) {
-            MitoZone zone = new MitoZone(siloZone.getZoneId(), AreaTypes.SGType.CORE_CITY);
+            MitoZone zone = new MitoZone(siloZone.getZoneId(), 0,AreaTypes.SGType.CORE_CITY);
             zone.setGeometry((Geometry) siloZone.getZoneFeature().getDefaultGeometry());
             dataSet.addZone(zone);
         }
@@ -109,10 +109,12 @@ public class MitoDataConverterImpl implements MitoDataConverter {
         final MitoOccupationStatus mitoOccupationStatus = MitoOccupationStatus.valueOf(person.getOccupation().getCode());
 
         MitoOccupation mitoOccupation = null;
+        String jobType = null;
         switch (mitoOccupationStatus) {
             case WORKER:
                 if (person.getJobId() > 0) {
                     Job job = dataContainer.getJobDataManager().getJobFromId(person.getJobId());
+                    jobType = job.getType();
                     MitoZone zone = dataSet.getZones().get(job.getZoneId());
                     final Coordinate coordinate;
                     if (job instanceof MicroLocation) {
@@ -134,6 +136,7 @@ public class MitoDataConverterImpl implements MitoDataConverter {
                 household,
                 mitoOccupationStatus,
                 mitoOccupation,
+                jobType,
                 person.getAge(),
                 mitoGender,
                 person.hasDriverLicense());

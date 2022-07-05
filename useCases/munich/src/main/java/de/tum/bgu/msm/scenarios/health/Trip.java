@@ -34,9 +34,9 @@ public class Trip implements Id {
     private double matsimTravelTime = 0.;
     private double matsimTravelDistance = 0.;
 
-    private Map<String, Double> travelRiskMap = new HashMap<>();
-    private Map<String, Double> travelExposureMap = new HashMap<>();
-    private Map<String, Double> activityExposureMap = new HashMap<>();
+    private Map<String, Float> travelRiskMap = new HashMap<>();
+    private Map<String, Float> travelExposureMap = new HashMap<>();
+    private Map<String, Float> activityExposureMap = new HashMap<>();
 
     public Trip(int tripId, Purpose tripPurpose) {
         this.tripId = tripId;
@@ -111,21 +111,21 @@ public class Trip implements Id {
         this.marginalMetHours += mmetHours;
     }
 
-    public Map<String, Double> getTravelRiskMap() { return travelRiskMap; }
+    public Map<String, Float> getTravelRiskMap() { return travelRiskMap; }
 
-    public Map<String, Double> getTravelExposureMap() { return travelExposureMap; }
+    public Map<String, Float> getTravelExposureMap() { return travelExposureMap; }
 
-    public Map<String, Double> getActivityExposureMap() { return activityExposureMap; }
+    public Map<String, Float> getActivityExposureMap() { return activityExposureMap; }
 
-    public void updateTravelRiskMap(Map<String, Double> newRisks) {
+    public void updateTravelRiskMap(Map<String, Float> newRisks) {
         newRisks.forEach((k, v) -> travelRiskMap.merge(k, v, (v1, v2) -> v1 + v2 - v1*v2));
     }
 
-    public void updateTravelExposureMap(Map<String, Double> newExposures) {
-        newExposures.forEach((k, v) -> travelExposureMap.merge(k, v, Double::sum));
+    public void updateTravelExposureMap(Map<String, Float> newExposures) {
+        newExposures.forEach((k, v) -> travelExposureMap.merge(k, v, Float::sum));
     }
 
-    public void setActivityExposureMap(Map<String, Double> newExposures) {
+    public void setActivityExposureMap(Map<String, Float> newExposures) {
         this.activityExposureMap = newExposures;
     }
 
