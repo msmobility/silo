@@ -63,9 +63,9 @@ public class SyntheticPopUs implements SyntheticPopI {
     protected static final String PROPERTIES_PARTLY_COVERED_PUMAS = "partly.covered.pumas";
     protected static final String PROPERTIES_HOUSEHOLD_DISTRIBUTION = "household.distribution";
     protected static final String PROPERTIES_COUNTY_VACANCY_RATES = "county.vacancy.rates";
-    private static final String BLOCK_GROUPS_PATH = "Z:\\projects\\2019\\TraMPA\\San Francisco\\Data" +
+    private static final String BLOCK_GROUPS_PATH = "Z:\\projects\\2019\\TraMPA\\SanFrancisco\\Data" +
             "\\TAZ\\censusTractsNineCountiesTaz\\censusBlockGroupd_projected_7131.shp";
-    private static final String CENSUS_BLOCK_GROUP_CONTROL_TOTALS = "Z:\\projects\\2019\\TraMPA\\San Francisco\\Data" +
+    private static final String CENSUS_BLOCK_GROUP_CONTROL_TOTALS = "Z:\\projects\\2019\\TraMPA\\SanFrancisco\\Data" +
             "\\syntheticPopulation\\controlTotalsCensusBlockGroups.csv";
 
     protected transient Logger logger = Logger.getLogger(SyntheticPopUs.class);
