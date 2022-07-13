@@ -3,8 +3,10 @@ package de.tum.bgu.msm.data.household;
 import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.data.person.Nationality;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.vehicle.Vehicle;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -78,6 +80,11 @@ public class HouseholdMuc implements Household {
     @Override
     public void setAttribute(String key, Object value) {
         delegate.setAttribute(key, value);
+    }
+
+    @Override
+    public List<Vehicle> getVehicles() {
+        return null;
     }
 
     public void setAutonomous(int autonomous){

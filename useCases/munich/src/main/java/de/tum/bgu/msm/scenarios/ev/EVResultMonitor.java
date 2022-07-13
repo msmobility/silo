@@ -8,9 +8,11 @@ import de.tum.bgu.msm.data.household.*;
 import de.tum.bgu.msm.events.*;
 import de.tum.bgu.msm.io.output.*;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.*;
 
 import java.io.*;
+import java.nio.file.Path;
 import java.util.*;
 
 public class EVResultMonitor implements ResultsMonitor {
@@ -83,7 +85,10 @@ public class EVResultMonitor implements ResultsMonitor {
         if (year % 5 == 0){
             int counter = 0;
             try {
-                PrintWriter annualMicroDataPw = new PrintWriter(properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/siloResults/vv_" + year + ".csv");
+                String path = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/microData/vv_" + year + ".csv";
+                SiloUtil.openFileForSequentialWriting(path, false);
+
+                PrintWriter annualMicroDataPw = new PrintWriter(path);
                 annualMicroDataPw.println("hh,zone,index,vehId,type");
 
                 for (Household household : dataContainer.getHouseholdDataManager().getHouseholds()) {
