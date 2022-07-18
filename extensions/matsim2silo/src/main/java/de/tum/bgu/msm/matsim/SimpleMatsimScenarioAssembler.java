@@ -10,6 +10,7 @@ import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.data.vehicle.VehicleType;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -71,7 +72,7 @@ public class SimpleMatsimScenarioAssembler implements MatsimScenarioAssembler {
             Household household = siloPerson.getHousehold();
 
             int numberOfWorkers = HouseholdUtil.getNumberOfWorkers(household);
-            int numberOfAutos = household.getAutos();
+            int numberOfAutos =  (int) household.getVehicles().stream().filter(vv -> vv.getType().equals(VehicleType.CAR)).count();
             if (numberOfWorkers == 0) {
                 throw new RuntimeException("If there are no workers in the household, the loop must already"
                         + " have been continued by finding that the given person is not employed!");

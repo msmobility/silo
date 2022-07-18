@@ -17,6 +17,7 @@ import de.tum.bgu.msm.data.person.Nationality;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.data.vehicle.VehicleType;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoice;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoiceMapping;
 import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
@@ -133,7 +134,7 @@ public class LongCommutePenaltyHousingStrategyMuc implements HousingStrategy {
         //currently this is re-filtering persons to find workers (it was done previously in select region)
         // This way looks more flexible to account for other trips, such as education, though.
 
-        double carToWorkersRatio = Math.min(1., ((double) hh.getAutos() / HouseholdUtil.getNumberOfWorkers(hh)));
+        double carToWorkersRatio = Math.min(1., ((double) hh.getVehicles().stream().filter(vv -> vv.getType().equals(VehicleType.CAR)).count() / HouseholdUtil.getNumberOfWorkers(hh)));
 
         int penaltiesForThisDwelling = 0;
         double travelCostUtility = 1; //do not have effect at the moment;

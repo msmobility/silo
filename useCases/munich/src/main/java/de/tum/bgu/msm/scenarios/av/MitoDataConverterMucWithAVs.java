@@ -13,6 +13,7 @@ import de.tum.bgu.msm.data.job.JobMuc;
 import de.tum.bgu.msm.data.jobTypes.munich.MunichJobType;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonMuc;
+import de.tum.bgu.msm.data.vehicle.VehicleType;
 import de.tum.bgu.msm.mito.MitoDataConverter;
 import de.tum.bgu.msm.resources.Properties;
 import de.tum.bgu.msm.resources.Resources;
@@ -83,7 +84,7 @@ public class MitoDataConverterMucWithAVs implements MitoDataConverter {
             MitoHousehold household = new MitoHousehold(
                     siloHousehold.getId(),
                     HouseholdUtil.getAnnualHhIncome(siloHousehold) / 12,
-                    siloHousehold.getAutos());
+                    (int) siloHousehold.getVehicles().stream().filter(vv -> vv.getType().equals(VehicleType.CAR)).count());
             household.setHomeZone(zone);
 
 

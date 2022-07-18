@@ -24,7 +24,16 @@ public class Car implements Vehicle {
         return VehicleType.CAR;
     }
 
+    @Override
+    public int getAge() {
+        return age;
+    }
+
     public void increaseAgeByOne(){
         age++;
+    }
+
+    public CarType getCarType() {
+        return carType;
     }
 }

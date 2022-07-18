@@ -135,7 +135,7 @@ public final class MatsimTransportModel implements TransportModel {
             for (Person pp : household.getPersons().values()) {
                 PopulationFactory populationFactory = assembledScenario.getPopulation().getFactory();
 
-                org.matsim.api.core.v01.population.Person matsimAlterEgo = SiloMatsimUtils.createMatsimAlterEgo(populationFactory, pp, household.getAutos());
+                org.matsim.api.core.v01.population.Person matsimAlterEgo = SiloMatsimUtils.createMatsimAlterEgo(populationFactory, pp, (int) household.getVehicles().stream().filter(vv -> vv.getType().equals(de.tum.bgu.msm.data.vehicle.VehicleType.CAR)).count());
                 assembledScenario.getPopulation().addPerson(matsimAlterEgo);
             }
         }

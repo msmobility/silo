@@ -13,6 +13,9 @@ import de.tum.bgu.msm.data.person.Nationality;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.data.vehicle.Car;
+import de.tum.bgu.msm.data.vehicle.CarType;
+import de.tum.bgu.msm.data.vehicle.VehicleType;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoice;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoiceMapping;
 import de.tum.bgu.msm.models.relocation.DwellingUtilityStrategy;
@@ -181,10 +184,12 @@ public class ParkingBasedHousingStrategyMuc implements HousingStrategy {
         }
 
 
-        int lackOfParkingAtHome = hh.getAutos() - (int) (dd.getAttribute("PARKING_SPACES").get());
+        int lackOfParkingAtHome = (int) hh.getVehicles().stream().filter(vv -> vv.getType().equals(VehicleType.CAR)).count() - (int) (dd.getAttribute("PARKING_SPACES").get());
         double penaltyForParkingAtHome = 1.;
         if (lackOfParkingAtHome > 0){
-            if (((HouseholdMuc) hh).getAutonomous() > 0){
+            if (hh.getVehicles().stream().
+                    filter(vv -> vv.getType().equals(VehicleType.CAR)).
+                    filter(vv-> ((Car) vv).getCarType().equals(CarType.AUTONOMOUS)).count() > 0){
                 penaltyForParkingAtHome = 1 - 0.125 * lackOfParkingAtHome;
             } else {
                 penaltyForParkingAtHome = 1 - 0.25 * lackOfParkingAtHome;

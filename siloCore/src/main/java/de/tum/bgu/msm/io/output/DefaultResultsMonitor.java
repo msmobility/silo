@@ -16,6 +16,8 @@ import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobType;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.vehicle.Vehicle;
+import de.tum.bgu.msm.data.vehicle.VehicleType;
 import de.tum.bgu.msm.events.MicroEvent;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.log4j.Logger;
@@ -214,7 +216,7 @@ public class DefaultResultsMonitor implements ResultsMonitor {
     private void summarizeCarOwnership() {
         int[] carOwnership = new int[4];
         for (Household hh : dataContainer.getHouseholdDataManager().getHouseholds()) {
-            carOwnership[hh.getAutos()]++;
+            carOwnership[(int) hh.getVehicles().stream().filter(v-> v.getType().equals(VehicleType.CAR)).count()]++;
         }
         resultWriter.println("carOwnershipLevel,households");
         resultWriter.println("0cars," + carOwnership[0]);

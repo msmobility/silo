@@ -18,6 +18,7 @@ import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.data.vehicle.VehicleType;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import org.apache.log4j.Logger;
@@ -115,7 +116,7 @@ public class CarAndTransitHousingStrategyImpl implements HousingStrategy {
         double ddPriceUtility = convertPriceToUtility(dwelling.getPrice(), ht.getIncomeCategory());
 
 
-        double carToWorkersRatio = Math.min(1., ((double) hh.getAutos() / HouseholdUtil.getNumberOfWorkers(hh)));
+        double carToWorkersRatio = Math.min(1., ((double) (hh.getVehicles().stream().filter(v-> v.getType().equals(VehicleType.CAR)).count())  / HouseholdUtil.getNumberOfWorkers(hh)));
 
         //currently this is re-filtering persons to find workers (it was done previously in select region)
         // This way looks more flexible to account for other trips, such as education, though.
@@ -168,7 +169,7 @@ public class CarAndTransitHousingStrategyImpl implements HousingStrategy {
     public double calculateRegionalUtility(Household household, Region region) {
         JobDataManager jobDataManager = dataContainer.getJobDataManager();
 
-        double carToWorkersRatio = Math.min(1., ((double) household.getAutos() / HouseholdUtil.getNumberOfWorkers(household)));
+        double carToWorkersRatio = Math.min(1., ((double)(household.getVehicles().stream().filter(v-> v.getType().equals(VehicleType.CAR)).count())  / HouseholdUtil.getNumberOfWorkers(household)));
 
         double thisRegionFactor = 1;
         for (Person pp: household.getPersons().values()) {

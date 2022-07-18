@@ -5,6 +5,9 @@ import de.tum.bgu.msm.container.*;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.geo.ZoneMuc;
 import de.tum.bgu.msm.data.household.*;
+import de.tum.bgu.msm.data.vehicle.Car;
+import de.tum.bgu.msm.data.vehicle.CarType;
+import de.tum.bgu.msm.data.vehicle.Vehicle;
 import de.tum.bgu.msm.events.*;
 import de.tum.bgu.msm.io.output.*;
 import de.tum.bgu.msm.properties.Properties;
@@ -52,8 +55,16 @@ public class EVResultMonitor implements ResultsMonitor {
         Map<Integer, ZonalAttributes> dataByZone = new HashMap<>();
 
         for (Household hh : dataContainer.getHouseholdDataManager().getHouseholds()) {
-            nAutos += hh.getAutos();
-            nEVs += (int) hh.getAttribute("EV").orElse(0);
+
+            for (Vehicle vv : hh.getVehicles()) {
+                if (vv instanceof Car) {
+                    nAutos++;
+                    if (((Car) vv).getCarType().equals(CarType.ELECTRIC)) {
+                        nEVs++;
+                    }
+                }
+            }
+
 
             int zoneId = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId()).getZoneId();
             dataByZone.putIfAbsent(zoneId, new ZonalAttributes());
@@ -89,32 +100,28 @@ public class EVResultMonitor implements ResultsMonitor {
                 SiloUtil.openFileForSequentialWriting(path, false);
 
                 PrintWriter annualMicroDataPw = new PrintWriter(path);
-                annualMicroDataPw.println("hh,zone,index,vehId,type");
+                annualMicroDataPw.println("hh,zone,index,vehId,type,age");
 
                 for (Household household : dataContainer.getHouseholdDataManager().getHouseholds()) {
-                    int autos = household.getAutos();
-                    int electricAutos = (int) household.getAttribute("EV").orElse(0);
-                    int conventionalAutos = autos - electricAutos;
-
 
                     int zoneId = dataContainer.getRealEstateDataManager().getDwelling(household.getDwellingId()).getZoneId();
                     ZoneMuc zone = (ZoneMuc) dataContainer.getGeoData().getZones().get(zoneId);
 
-                    for (int i = 0; i < autos; i++){
-                        if (i < conventionalAutos){
+                    for (Vehicle vehicle : household.getVehicles()){
+
+                        if (vehicle instanceof Car){
+                            Car car = (Car) vehicle;
+
                             annualMicroDataPw.println(household.getId() + "," +
                                     zone.getId() + "," +
-                                    i + "," +
                                     counter + "," +
-                                    "conventional");
-                        } else {
-                            annualMicroDataPw.println(household.getId() + "," +
-                                    zone.getId() + "," +
-                                    i + "," +
-                                    counter + "," +
-                                    "electric");
+                                    car.getId() + "," +
+                                    car.getCarType() + "," +
+                                    car.getAge());
+
+                            counter++;
                         }
-                        counter++;
+
                     }
 
 
@@ -139,8 +146,16 @@ public class EVResultMonitor implements ResultsMonitor {
         int nHh = 0;
 
         void addHouseholdToThisZone(Household hh){
-            nAutos += hh.getAutos();
-            nEVs += (int) hh.getAttribute("EV").orElse(0);
+
+            for (Vehicle vv : hh.getVehicles()) {
+                if (vv instanceof Car) {
+                    nAutos++;
+                    if (((Car) vv).getCarType().equals(CarType.ELECTRIC)) {
+                        nEVs++;
+                    }
+                }
+            }
+
             nHh++;
         }
 

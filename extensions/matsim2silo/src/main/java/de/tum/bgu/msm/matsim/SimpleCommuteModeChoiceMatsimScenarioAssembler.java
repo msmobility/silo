@@ -9,6 +9,7 @@ import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.data.vehicle.VehicleType;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoice;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoiceMapping;
 import de.tum.bgu.msm.properties.Properties;
@@ -63,7 +64,7 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
 
                 PopulationFactory populationFactory = matsimPopulation.getFactory();
 
-                org.matsim.api.core.v01.population.Person matsimAlterEgo = SiloMatsimUtils.createMatsimAlterEgo(populationFactory, person, household.getAutos());
+                org.matsim.api.core.v01.population.Person matsimAlterEgo = SiloMatsimUtils.createMatsimAlterEgo(populationFactory, person,  (int) household.getVehicles().stream().filter(vv -> vv.getType().equals(VehicleType.CAR)).count());
                 matsimPopulation.addPerson(matsimAlterEgo);
 
                 Dwelling dwelling = realEstateDataManager.getDwelling(household.getDwellingId());

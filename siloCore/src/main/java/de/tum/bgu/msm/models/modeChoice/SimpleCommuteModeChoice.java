@@ -13,6 +13,7 @@ import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.data.vehicle.VehicleType;
 import de.tum.bgu.msm.properties.Properties;
 import org.matsim.api.core.v01.TransportMode;
 
@@ -76,7 +77,7 @@ public class SimpleCommuteModeChoice implements CommuteModeChoice {
                 double ptUtility = B_PT + B_TIME * commutingTimeProbabilityPt;
 
 
-                if (!pp.hasDriverLicense() || household.getAutos() == 0) {
+                if (!pp.hasDriverLicense() || (int) (household.getVehicles().stream().filter(v-> v.getType().equals(VehicleType.CAR)).count()) == 0) {
                     CommuteModeChoiceMapping.CommuteMode ptCommuteMode =
                             new CommuteModeChoiceMapping.CommuteMode(TransportMode.pt, Math.pow(commutingTimeProbabilityPt, B_EXP_HOUSING_UTILITY));
                     commuteModeChoiceMapping.assignMode(ptCommuteMode, pp);
@@ -108,7 +109,7 @@ public class SimpleCommuteModeChoice implements CommuteModeChoice {
             }
         }
 
-        int counter = household.getAutos();
+        int counter =(int) (household.getVehicles().stream().filter(v-> v.getType().equals(VehicleType.CAR)).count()) ;
 
         for (Map.Entry<Double, Person> personForProbability : personByProbability.descendingMap().entrySet()) {
             Person person = personForProbability.getValue();
@@ -153,7 +154,7 @@ public class SimpleCommuteModeChoice implements CommuteModeChoice {
                 double commutingTimeProbabilityPt = commutingTimeProbability.getCommutingTimeProbability(ptMinutes, TransportMode.pt);
                 double ptUtility = B_PT + B_TIME * commutingTimeProbabilityPt;
 
-                if (!pp.hasDriverLicense() || household.getAutos() == 0) {
+                if (!pp.hasDriverLicense() || (int) (household.getVehicles().stream().filter(v-> v.getType().equals(VehicleType.CAR)).count())  == 0) {
                     CommuteModeChoiceMapping.CommuteMode ptCommuteMode =
                             new CommuteModeChoiceMapping.CommuteMode(TransportMode.pt, Math.pow(commutingTimeProbabilityPt, B_EXP_HOUSING_UTILITY));
                     commuteModeChoiceMapping.assignMode(ptCommuteMode, pp);
@@ -183,7 +184,7 @@ public class SimpleCommuteModeChoice implements CommuteModeChoice {
             }
         }
 
-        int counter = household.getAutos();
+        int counter = (int) (household.getVehicles().stream().filter(v-> v.getType().equals(VehicleType.CAR)).count()) ;
 
         for (Map.Entry<Double, Person> personForProbability : personByProbability.descendingMap().entrySet()) {
             Person person = personForProbability.getValue();

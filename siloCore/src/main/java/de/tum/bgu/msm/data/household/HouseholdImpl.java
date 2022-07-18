@@ -17,10 +17,7 @@
 package de.tum.bgu.msm.data.household;
 
 import de.tum.bgu.msm.data.person.Person;
-import de.tum.bgu.msm.data.vehicle.Car;
-import de.tum.bgu.msm.data.vehicle.CarType;
-import de.tum.bgu.msm.data.vehicle.Vehicle;
-import de.tum.bgu.msm.data.vehicle.VehicleUtil;
+import de.tum.bgu.msm.data.vehicle.*;
 import org.matsim.utils.objectattributes.attributable.Attributes;
 
 import java.util.*;
@@ -72,7 +69,7 @@ public class HouseholdImpl implements Household {
 
     @Override
     public int getAutos() {
-        return autos;
+        return (int) this.vehicles.stream().filter(vv-> vv.getType().equals(VehicleType.CAR)).count();
     }
 
     @Override
@@ -111,7 +108,10 @@ public class HouseholdImpl implements Household {
 
     @Override
     public void setAutos(int autos) {
-        this.autos = autos;
+        vehicles.clear();
+        for (int i = 0; i< autos; i++){
+            vehicles.add(new Car(VehicleUtil.getHighestVehicleIdInHousehold(this), CarType.CONVENTIONAL, VehicleUtil.getVehicleAgeInBaseYear()));
+        }
     }
 
     @Override

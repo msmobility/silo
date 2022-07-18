@@ -5,6 +5,9 @@ import de.tum.bgu.msm.data.geo.DefaultGeoData;
 import de.tum.bgu.msm.data.geo.ZoneMuc;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
+import de.tum.bgu.msm.data.vehicle.Car;
+import de.tum.bgu.msm.data.vehicle.CarType;
+import de.tum.bgu.msm.data.vehicle.VehicleUtil;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipJSCalculatorMuc;
 import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipModelMuc;
@@ -53,7 +56,10 @@ public class OneCarCreateCarOwnershipModelMuc implements CreateCarOwnershipModel
         int areaType = zone.getAreaTypeSG().code();
 
         double[] prob = Calculator.getProbabilities(license, workers, income, logDistanceToTransit, areaType);
-        hh.setAutos(Math.min(1, SiloUtil.select(prob)));
+        final int numberOfCars = Math.min(1, SiloUtil.select(prob));
+        for (int i = 0; i< numberOfCars; i++){
+            hh.getVehicles().add(new Car(VehicleUtil.getHighestVehicleIdInHousehold(hh), CarType.CONVENTIONAL, VehicleUtil.getVehicleAgeInBaseYear()));
+        }
     }
 
 

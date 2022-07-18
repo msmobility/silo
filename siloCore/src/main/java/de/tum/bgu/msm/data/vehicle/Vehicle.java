@@ -6,5 +6,7 @@ public interface Vehicle {
 
     VehicleType getType();
 
+    int getAge();
+
 
 }

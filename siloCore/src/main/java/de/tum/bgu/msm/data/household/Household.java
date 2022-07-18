@@ -14,6 +14,7 @@ public interface Household extends Id {
 
     int getDwellingId();
 
+    @Deprecated
     int getAutos();
 
     Map<Integer, ? extends Person> getPersons();
@@ -28,6 +29,7 @@ public interface Household extends Id {
 
     void removePerson(int personId);
 
+    @Deprecated
     void setAutos(int autos);
 
     Optional<Object> getAttribute(String key);

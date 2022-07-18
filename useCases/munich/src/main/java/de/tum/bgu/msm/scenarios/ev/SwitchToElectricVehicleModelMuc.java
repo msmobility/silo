@@ -6,6 +6,7 @@ import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.geo.ZoneMuc;
 import de.tum.bgu.msm.data.household.*;
+import de.tum.bgu.msm.data.vehicle.*;
 import de.tum.bgu.msm.models.*;
 import de.tum.bgu.msm.models.carOwnership.*;
 import de.tum.bgu.msm.properties.Properties;
@@ -14,6 +15,7 @@ import org.apache.log4j.*;
 
 import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by matthewokrah on 26/06/2018.
@@ -66,11 +68,16 @@ public class SwitchToElectricVehicleModelMuc extends AbstractModel implements Mo
         // attributes in the future
         ///****
         for (Household hh : householdDataManager.getHouseholds()) {
-            int numberOfElectric = (int) hh.getAttribute("EV").orElse(0);
+            int numberOfElectric = (int) hh.getVehicles().stream().
+                    filter(vv -> vv.getType().equals(VehicleType.CAR)).
+                    filter(vv -> ((Car) vv).getCarType().equals(CarType.ELECTRIC)).count();
             ev_counter += numberOfElectric;
-            autos_counter += hh.getAutos();
 
-            if (hh.getAutos() > numberOfElectric) {
+            int numberOfAutosInThisHh = (int) hh.getVehicles().stream().
+                    filter(vv -> vv.getType().equals(VehicleType.CAR)).count();
+            autos_counter += numberOfAutosInThisHh;
+
+            if (numberOfAutosInThisHh > numberOfElectric) {
                 int income = HouseholdUtil.getAnnualHhIncome(hh);
                 double utility = -1.5;
 //                //todo implement a better utility equation
@@ -80,15 +87,15 @@ public class SwitchToElectricVehicleModelMuc extends AbstractModel implements Mo
 //                    utility = 0.0;
 //                }
 
-                if (hh.getAutos() == 1){
+                if (numberOfAutosInThisHh == 1) {
                     utility += -0.510;
                 }
 
                 int dwellingId = hh.getDwellingId();
                 Dwelling dwelling = dataContainer.getRealEstateDataManager().getDwelling(dwellingId);
                 int zoneId = dwelling.getZoneId();
-                ZoneMuc zone = (ZoneMuc)(dataContainer.getGeoData().getZones().get(zoneId));
-                switch (zone.getAreaTypeSG()){
+                ZoneMuc zone = (ZoneMuc) (dataContainer.getGeoData().getZones().get(zoneId));
+                switch (zone.getAreaTypeSG()) {
                     case CORE_CITY:
                     case MEDIUM_SIZED_CITY:
                         break;
@@ -101,9 +108,9 @@ public class SwitchToElectricVehicleModelMuc extends AbstractModel implements Mo
                 }
 
                 int hhSize = hh.getHhSize();
-                if (hhSize == 2){
+                if (hhSize == 2) {
                     utility += -0.578;
-                } else if (hhSize > 2){
+                } else if (hhSize > 2) {
                     utility += -0.490;
                 }
 
@@ -114,14 +121,28 @@ public class SwitchToElectricVehicleModelMuc extends AbstractModel implements Mo
 
                 double prob = utility / (1 + utility);
 
-                if (random.nextDouble() < prob){
-                    hh.setAttribute("EV", numberOfElectric + 1);
+                if (random.nextDouble() < prob) {
+                    Vehicle vehicleToRemove = hh.getVehicles().stream().filter(vv-> vv.getType().equals(VehicleType.CAR)).findAny().orElse(null);
+                    if (vehicleToRemove != null){
+                        for (Vehicle vehicle : hh.getVehicles().stream().filter(vv-> vv.getType().equals(VehicleType.CAR)).collect(Collectors.toSet())) {
+                            if (vehicle.getAge() > vehicleToRemove.getAge()){
+                                vehicleToRemove = vehicle;
+                            }
+                        }
+                    }
+
+                    boolean ok = hh.getVehicles().remove(vehicleToRemove);
+
+                    if (!ok){
+                        throw new RuntimeException();
+                    }
+
+                    hh.getVehicles().add(new Car(VehicleUtil.getHighestVehicleIdInHousehold(hh), CarType.ELECTRIC, VehicleUtil.getVehicleAgeInBaseYear()));
+
                     event_counter++;
                 }
             }
         }
-
-
 
 
         int hh = dataContainer.getHouseholdDataManager().getHouseholds().size(); // number of hh
