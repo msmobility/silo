@@ -16,6 +16,7 @@ import de.tum.bgu.msm.data.person.PersonFactoryImpl;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.GeoDataReaderTak;
+import de.tum.bgu.msm.io.MicroDataScaler;
 import de.tum.bgu.msm.io.input.*;
 import de.tum.bgu.msm.matsim.MatsimTravelTimesAndCosts;
 import de.tum.bgu.msm.properties.Properties;
@@ -102,6 +103,9 @@ public class DataBuilderTak {
         JobReader jjReader = new DefaultJobReader(dataContainer.getJobDataManager());
         String jobsFile = properties.main.baseDirectory + properties.jobData.jobsFileName + "_" + year + ".csv";
         jjReader.readData(jobsFile);
+
+        MicroDataScaler microDataScaler = new MicroDataScaler(dataContainer, properties);
+        microDataScaler.scale();
 
     }
 }

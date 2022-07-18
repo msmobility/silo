@@ -12,11 +12,15 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import junitx.framework.FileAssert;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Scanner;
 
 /**
@@ -32,6 +36,16 @@ public class SiloMucTest {
 
     @Test
     public final void testMain() {
+
+        runThisTest();
+
+        checkDwellings();
+        checkHouseholds();
+        checkJobs();
+        checkPersons();
+    }
+
+    private void runThisTest() {
         SiloTestUtils.cleanUpMicrodataFiles();
         SiloTestUtils.cleanUpOtherFiles();
 
@@ -47,11 +61,6 @@ public class SiloMucTest {
         SiloModel siloModel = new SiloModel(properties, dataContainer, modelContainer);
         siloModel.addResultMonitor(resultsMonitor);
         siloModel.runModel();
-
-        checkDwellings();
-        checkHouseholds();
-        checkJobs();
-        checkPersons();
     }
 
     private void checkPersons() {
@@ -104,4 +113,41 @@ public class SiloMucTest {
             actual.delete();
         }
     }
+
+    @Ignore
+    @Test
+    /**
+     * Replaces the reference files by the results of the test,
+     * so the test will be updated. Do not use if you are not sure.
+     * The part of the code that makes this changes is commented
+     * to prevent undesired uses.
+     */
+    public final void resetTestFiles() throws IOException {
+
+        runThisTest();
+
+        File ref = new File("./test/muc/refOutput/noTransportModel/dd_2013.csv");
+        File actual = new File("./test/muc/scenOutput/test/microData/dd_2013.csv");
+        //Files.copy(actual.toPath(), ref.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+        ref = new File("./test/muc/refOutput/noTransportModel/hh_2013.csv");
+        actual = new File("./test/muc/scenOutput/test/microData/hh_2013.csv");
+        //Files.copy(actual.toPath(), ref.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+        ref = new File("./test/muc/refOutput/noTransportModel/jj_2013.csv");
+        actual = new File("./test/muc/scenOutput/test/microData/jj_2013.csv");
+        //Files.copy(actual.toPath(), ref.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+        ref = new File("./test/muc/refOutput/noTransportModel/pp_2013.csv");
+        actual = new File("./test/muc/scenOutput/test/microData/pp_2013.csv");
+        //Files.copy(actual.toPath(), ref.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+        checkDwellings();
+        checkHouseholds();
+        checkJobs();
+        checkPersons();
+
+    }
+
+
 }

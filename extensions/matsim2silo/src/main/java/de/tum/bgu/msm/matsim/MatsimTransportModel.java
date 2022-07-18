@@ -204,6 +204,6 @@ public final class MatsimTransportModel implements TransportModel {
             }
             ((SkimTravelTimes) mainTravelTimes).updateRegionalTravelTimes(dataContainer.getGeoData().getRegions().values(),
                     dataContainer.getGeoData().getZones().values());
-        }
+    }
     }
 }
