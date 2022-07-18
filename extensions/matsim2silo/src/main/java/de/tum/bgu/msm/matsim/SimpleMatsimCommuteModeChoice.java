@@ -13,6 +13,7 @@ import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.data.vehicle.VehicleType;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoice;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoiceMapping;
 import de.tum.bgu.msm.properties.Properties;
@@ -61,7 +62,7 @@ public class SimpleMatsimCommuteModeChoice implements CommuteModeChoice {
                 int ptMinutes = (int) ((MatsimTravelTimesAndCosts) travelTimes).getTravelTime(from, job, job.getStartTimeInSeconds().orElse((int) properties.transportModel.peakHour_s), TransportMode.pt, pp);
                 double ptUtility = commutingTimeProbability.getCommutingTimeProbability(ptMinutes, TransportMode.pt);
 
-                if (!pp.hasDriverLicense() || household.getAutos() == 0) {
+                if (!pp.hasDriverLicense() ||  (int) household.getVehicles().stream().filter(vv -> vv.getType().equals(VehicleType.CAR)).count() == 0) {
                     CommuteModeChoiceMapping.CommuteMode ptCommuteMode = new CommuteModeChoiceMapping.CommuteMode(TransportMode.pt, ptUtility);
                     commuteModeChoiceMapping.assignMode(ptCommuteMode, pp);
                 } else {
@@ -87,7 +88,7 @@ public class SimpleMatsimCommuteModeChoice implements CommuteModeChoice {
             }
         }
 
-        int counter = household.getAutos();
+        int counter =  (int) household.getVehicles().stream().filter(vv -> vv.getType().equals(VehicleType.CAR)).count();
 
         for (Map.Entry<Double, Person> personForProbability : personByProbability.descendingMap().entrySet()) {
             Person person = personForProbability.getValue();
@@ -127,7 +128,7 @@ public class SimpleMatsimCommuteModeChoice implements CommuteModeChoice {
                 int ptMinutes = (int) travelTimes.getTravelTimeFromRegion(region, jobZone, job.getStartTimeInSeconds().orElse((int) properties.transportModel.peakHour_s), TransportMode.pt);
                 double ptUtility = commutingTimeProbability.getCommutingTimeProbability(ptMinutes, TransportMode.pt);
 
-                if (!pp.hasDriverLicense() || household.getAutos() == 0) {
+                if (!pp.hasDriverLicense() ||  (int) household.getVehicles().stream().filter(vv -> vv.getType().equals(VehicleType.CAR)).count() == 0) {
                     CommuteModeChoiceMapping.CommuteMode ptCommuteMode = new CommuteModeChoiceMapping.CommuteMode(TransportMode.pt, ptUtility);
                     commuteModeChoiceMapping.assignMode(ptCommuteMode, pp);
                 } else {
@@ -152,7 +153,7 @@ public class SimpleMatsimCommuteModeChoice implements CommuteModeChoice {
             }
         }
 
-        int counter = household.getAutos();
+        int counter =  (int) household.getVehicles().stream().filter(vv -> vv.getType().equals(VehicleType.CAR)).count();
 
         for (Map.Entry<Double, Person> personForProbability : personByProbability.descendingMap().entrySet()) {
             Person person = personForProbability.getValue();

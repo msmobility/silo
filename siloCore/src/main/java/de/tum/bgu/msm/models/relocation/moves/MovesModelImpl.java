@@ -10,6 +10,7 @@ import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdType;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
+import de.tum.bgu.msm.data.vehicle.VehicleType;
 import de.tum.bgu.msm.events.impls.household.MoveEvent;
 import de.tum.bgu.msm.io.output.YearByYearCsvModelTracker;
 import de.tum.bgu.msm.models.AbstractModel;
@@ -187,7 +188,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
                 .add(String.valueOf(newCoordinate.y))
                 .add(String.valueOf(oldZoneId))
                 .add(String.valueOf(newZoneId))
-                .add(String.valueOf(household.getAutos()))
+                .add(String.valueOf(household.getVehicles().stream().filter(vv -> vv.getType().equals(VehicleType.CAR)).count()))
                 .add(String.valueOf(HouseholdUtil.getHHLicenseHolders(household)))
                 .add(String.valueOf(HouseholdUtil.getNumberOfWorkers(household)))
                 .toString());
