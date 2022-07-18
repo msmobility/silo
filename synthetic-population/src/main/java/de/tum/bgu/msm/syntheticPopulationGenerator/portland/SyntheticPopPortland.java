@@ -31,7 +31,6 @@ import de.tum.bgu.msm.io.output.*;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.run.DataBuilder;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
-import de.tum.bgu.msm.syntheticPopulationGenerator.sanFrancisco.GeoDataReaderSanFran;
 import de.tum.bgu.msm.utils.SampleException;
 import de.tum.bgu.msm.utils.Sampler;
 import de.tum.bgu.msm.utils.SeededRandomPointsBuilder;
@@ -62,7 +61,7 @@ public class SyntheticPopPortland implements SyntheticPopI {
 
     protected static final String PROPERTIES_PUMS_FILES = "pums.records";
     protected static final String PROPERTIES_PARTLY_COVERED_PUMAS = "partly.covered.pumas";
-    protected static final String PROPERTIES_HOUSEHOLD_DISTRIBUTION = "household.distribution";
+    protected static final String PROPERTIES_HOUSEHOLD_DISTRIBUTION = "taz.totals";
     protected static final String PROPERTIES_COUNTY_VACANCY_RATES = "county.vacancy.rates";
     private static final String BLOCK_GROUPS_PATH = "Z:\\projects\\2019\\TraMPA\\SanFrancisco\\Data" +
             "\\TAZ\\censusTractsNineCountiesTaz\\censusBlockGroupd_projected_7131.shp";
@@ -82,7 +81,7 @@ public class SyntheticPopPortland implements SyntheticPopI {
     // For reasons that are not explained in the documentation, some of the PUMA work zones were aggregated to the
     // next higher level. Keep PUMA work zones separate from more detailed PUMA zones.
     protected Map<Integer, int[]> tazByWorkZonePuma;
-    protected TableDataSet hhDistribution;
+    protected TableDataSet tazPopulationAndEmployment;
     protected TableDataSet hhDistributionAtCensusBlockGroup;
     protected Map<Integer, List<Job>> vacantJobsByZone;
     protected Map<Integer, Integer> jobErrorCounter;
@@ -120,7 +119,7 @@ public class SyntheticPopPortland implements SyntheticPopI {
         geoDataReader.readZoneShapefile(pathShp);
 
         identifyUniquePUMAzones();
-        identifyCensusBlockGroups();
+        //identifyCensusBlockGroups();
         readControlTotals();
 
         realEstateData = dataContainer.getRealEstateDataManager();
@@ -129,6 +128,8 @@ public class SyntheticPopPortland implements SyntheticPopI {
 
         createJobs();
         logger.info("Created jobs.");
+
+        //todo seems to be working until here
 
         travelTimes = (SkimTravelTimes) dataContainer.getTravelTimes();
         final String carSkimFile = Properties.get().accessibility.autoSkimFile(Properties.get().main.startYear);
@@ -204,12 +205,12 @@ public class SyntheticPopPortland implements SyntheticPopI {
 
     private void readControlTotals() {
         logger.info("  Reading control total data for households and dwellings");
-        hhDistribution = SiloUtil.readCSVfile(Properties.get().main.baseDirectory +
+        tazPopulationAndEmployment = SiloUtil.readCSVfile(Properties.get().main.baseDirectory +
                 ResourceUtil.getProperty(rb, PROPERTIES_HOUSEHOLD_DISTRIBUTION));
-        hhDistribution.buildIndex(hhDistribution.getColumnPosition("Id"));
+        tazPopulationAndEmployment.buildIndex(tazPopulationAndEmployment.getColumnPosition("zone"));
 
-        hhDistributionAtCensusBlockGroup = SiloUtil.readCSVfile(CENSUS_BLOCK_GROUP_CONTROL_TOTALS);
-        hhDistributionAtCensusBlockGroup.buildStringIndex(hhDistributionAtCensusBlockGroup.getColumnPosition("id"));
+       // hhDistributionAtCensusBlockGroup = SiloUtil.readCSVfile(CENSUS_BLOCK_GROUP_CONTROL_TOTALS);
+        //hhDistributionAtCensusBlockGroup.buildStringIndex(hhDistributionAtCensusBlockGroup.getColumnPosition("zone"));
     }
 
 
@@ -217,7 +218,7 @@ public class SyntheticPopPortland implements SyntheticPopI {
         // method to generate synthetic jobs
 
         logger.info("  Generating base year jobs");
-        TableDataSet jobs = SiloUtil.readCSVfile(Properties.get().main.baseDirectory + Properties.get().jobData.jobControlTotalsFileName);
+        //TableDataSet jobs = SiloUtil.readCSVfile(Properties.get().main.baseDirectory + Properties.get().jobData.jobControlTotalsFileName);
         new JobType(Properties.get().jobData.jobTypes);
 
         // jobInventory by [industry][taz]
@@ -229,18 +230,18 @@ public class SyntheticPopPortland implements SyntheticPopI {
         // For reasons that are not explained in the documentation, some of the PUMA work zones were aggregated to the
         // next higher level. Keep this information.
 
-        for (int row = 1; row <= jobs.getRowCount(); row++) {
-            int taz = (int) jobs.getValueAt(row, "Id");
-            int pumaOfWorkZone = ((MstmZone) geoData.getZones().get(taz)).getSimplifiedPuma();
-            if (tazByWorkZonePuma.containsKey(pumaOfWorkZone)) {
-                int[] list = tazByWorkZonePuma.get(pumaOfWorkZone);
-                int[] newList = SiloUtil.expandArrayByOneElement(list, taz);
-                tazByWorkZonePuma.put(pumaOfWorkZone, newList);
-            } else {
-                tazByWorkZonePuma.put(pumaOfWorkZone, new int[]{taz});
-            }
+        for (int row = 1; row <= tazPopulationAndEmployment.getRowCount(); row++) {
+            int taz = (int) tazPopulationAndEmployment.getValueAt(row, "zone");
+            //int pumaOfWorkZone = ((MstmZone) geoData.getZones().get(taz)).getSimplifiedPuma();
+//            if (tazByWorkZonePuma.containsKey(pumaOfWorkZone)) {
+//                int[] list = tazByWorkZonePuma.get(pumaOfWorkZone);
+//                int[] newList = SiloUtil.expandArrayByOneElement(list, taz);
+//                tazByWorkZonePuma.put(pumaOfWorkZone, newList);
+//            } else {
+//                tazByWorkZonePuma.put(pumaOfWorkZone, new int[]{taz});
+//            }
             for (int jobTp = 0; jobTp < JobType.getNumberOfJobTypes(); jobTp++) {
-                jobInventory[jobTp][taz] = jobs.getValueAt(row, JobType.getJobType(jobTp));
+                jobInventory[jobTp][taz] = tazPopulationAndEmployment.getValueAt(row, JobType.getJobType(jobTp) + "_19");
             }
         }
 
@@ -723,7 +724,7 @@ public class SyntheticPopPortland implements SyntheticPopI {
         int[] zones = tazByPuma.get(pumaZone).stream().mapToInt(Location::getZoneId).toArray();
         float[] weights = new float[zones.length];
         for (int i = 0; i < zones.length; i++) {
-            weights[i] = hhDistribution.getIndexedValueAt(zones[i], "totalHh");
+            weights[i] = tazPopulationAndEmployment.getIndexedValueAt(zones[i], "totalHh");
         }
         if (SiloUtil.getSum(weights) == 0) {
             logger.error("No weights found to allocate dwelling in zone " + pumaZone + ". Check method " +
