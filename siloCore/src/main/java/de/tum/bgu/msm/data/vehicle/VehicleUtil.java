@@ -1,12 +1,11 @@
 package de.tum.bgu.msm.data.vehicle;
 
 import de.tum.bgu.msm.data.household.Household;
-import de.tum.bgu.msm.utils.SiloUtil;
 
 public class VehicleUtil {
 
     public static int getVehicleAgeInBaseYear() {
-        return SiloUtil.getRandomObject().nextInt(10);
+        return 0;
     }
 
 

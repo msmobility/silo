@@ -5,6 +5,7 @@ import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.household.*;
 import de.tum.bgu.msm.data.mito.*;
 import de.tum.bgu.msm.data.person.*;
+import de.tum.bgu.msm.events.impls.person.VehicleBirthdayEvent;
 import de.tum.bgu.msm.matsim.*;
 import de.tum.bgu.msm.mito.*;
 import de.tum.bgu.msm.models.*;
@@ -49,6 +50,7 @@ public class ModelBuilderMucWithEVModel {
         final BirthModelImpl birthModel = new BirthModelImpl(dataContainer, ppFactory, properties, new DefaultBirthStrategy(), SiloUtil.provideNewRandom());
 
         BirthdayModel birthdayModel = new BirthdayModelImpl(dataContainer, properties, SiloUtil.provideNewRandom());
+        VehicleBirthdayAndRenovationModelImpl vehicleBirthdayAndRenovationModel = new VehicleBirthdayAndRenovationModelImpl(dataContainer, properties, SiloUtil.provideNewRandom());
 
         DeathModel deathModel = new DeathModelImpl(dataContainer, properties, new DefaultDeathStrategy(), SiloUtil.provideNewRandom());
 
@@ -134,6 +136,8 @@ public class ModelBuilderMucWithEVModel {
                 leaveParentsModel, jobMarketUpdateModel,
                 construction, demolition, pricing, renovation,
                 constructionOverwrite, inOutMigration, movesModel, transportModel);
+
+        modelContainer.registerEventModel(VehicleBirthdayEvent.class, vehicleBirthdayAndRenovationModel);
 
         modelContainer.registerModelUpdateListener(new UpdateCarOwnershipModelMuc(dataContainer, properties, SiloUtil.provideNewRandom()));
 
