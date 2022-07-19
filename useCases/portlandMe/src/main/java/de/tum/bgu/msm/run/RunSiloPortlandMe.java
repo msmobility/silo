@@ -25,7 +25,7 @@ public class RunSiloPortlandMe {
             config = ConfigUtils.loadConfig(args[1]);
         }
         logger.info("Started SILO land use model for the Maryland Statewide Model Area");
-        DataContainer dataContainer = DataBuilder.buildDataContainer(properties, config);
+        DataContainer dataContainer = DataBuilder.buildDataContainerForPortland(properties, config);
         DataBuilder.readInput(properties, dataContainer);
 
         ModelContainer modelContainer = ModelBuilderMstm.getModelContainerForMstm(dataContainer, properties, config);
@@ -33,8 +33,6 @@ public class RunSiloPortlandMe {
         ResultsMonitor resultsMonitor = new DefaultResultsMonitor(dataContainer, properties);
         SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
         model.addResultMonitor(resultsMonitor);
-        ResultsMonitor mstmMonitor = new MstmMonitor(dataContainer, properties);
-        model.addResultMonitor(mstmMonitor);
 
         MultiFileResultsMonitor monitor2 = new MultiFileResultsMonitor(dataContainer, properties);
         model.addResultMonitor(monitor2);

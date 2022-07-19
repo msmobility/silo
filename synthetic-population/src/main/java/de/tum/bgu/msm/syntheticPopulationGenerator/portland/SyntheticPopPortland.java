@@ -29,8 +29,10 @@ import de.tum.bgu.msm.io.PersonWriterMstm;
 import de.tum.bgu.msm.io.input.GeoDataReader;
 import de.tum.bgu.msm.io.output.*;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.properties.PropertiesUtil;
 import de.tum.bgu.msm.run.DataBuilder;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
+import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SampleException;
 import de.tum.bgu.msm.utils.Sampler;
 import de.tum.bgu.msm.utils.SeededRandomPointsBuilder;
@@ -97,8 +99,8 @@ public class SyntheticPopPortland implements SyntheticPopI {
     private JobDataManager jobData;
     private SkimTravelTimes travelTimes;
     private PersonfactoryMstm personfactoryMstm = new PersonfactoryMstm();
-    public static final String PUMS_HH_FILE_NAME = "Z:\\projects\\2019\\TraMPA\\San Francisco\\Data\\syntheticPopulation\\input\\psam_h06.csv";
-    public static final String PUMS_PP_FILE_NAME = "Z:\\projects\\2019\\TraMPA\\San Francisco\\Data\\syntheticPopulation\\input\\psam_p06.csv";
+    public static final String PUMS_HH_FILE_NAME = "pums.hh.file";
+    public static final String PUMS_PP_FILE_NAME = "pums.pp.file";
 
     public SyntheticPopPortland(ResourceBundle rb, Properties properties) {
         this.rb = rb;
@@ -132,14 +134,19 @@ public class SyntheticPopPortland implements SyntheticPopI {
         //todo seems to be working until here
 
         travelTimes = (SkimTravelTimes) dataContainer.getTravelTimes();
-        final String carSkimFile = Properties.get().accessibility.autoSkimFile(Properties.get().main.startYear);
-        travelTimes.readSkim(TransportMode.car, carSkimFile,
-                Properties.get().accessibility.autoPeakSkim, Properties.get().accessibility.skimFileFactorCar);
 
+
+//      final String carSkimFile = Properties.get().accessibility.autoSkimFile(Properties.get().main.startYear);
+//        travelTimes.readSkim(TransportMode.car, carSkimFile,
+//              Properties.get().accessibility.autoPeakSkim, Properties.get().accessibility.skimFileFactorCar);
+
+
+        new QuickSkimMatrix(dataContainer).createSkim();
         accessibility = dataContainer.getAccessibility();
         accessibility.setup();
 
         commutingTimeProbability = dataContainer.getCommutingTimeProbability();
+
         commutingTimeProbability.setup();
 
         processPums();
@@ -170,7 +177,7 @@ public class SyntheticPopPortland implements SyntheticPopI {
         for (SimpleFeature feature : ShapeFileReader.getAllFeatures(BLOCK_GROUPS_PATH)) {
             int taz = Integer.parseInt(feature.getAttribute("TRACTCE").toString());
             String id = feature.getAttribute("GEOID").toString();
-            if(censusBlockGroupsByCensusTracts.containsKey(taz)) {
+            if (censusBlockGroupsByCensusTracts.containsKey(taz)) {
                 censusBlockGroupsByCensusTracts.get(taz).add(id);
             } else {
                 censusBlockGroupsByCensusTracts.put(taz, Sets.newHashSet(id));
@@ -209,7 +216,7 @@ public class SyntheticPopPortland implements SyntheticPopI {
                 ResourceUtil.getProperty(rb, PROPERTIES_HOUSEHOLD_DISTRIBUTION));
         tazPopulationAndEmployment.buildIndex(tazPopulationAndEmployment.getColumnPosition("zone"));
 
-       // hhDistributionAtCensusBlockGroup = SiloUtil.readCSVfile(CENSUS_BLOCK_GROUP_CONTROL_TOTALS);
+        // hhDistributionAtCensusBlockGroup = SiloUtil.readCSVfile(CENSUS_BLOCK_GROUP_CONTROL_TOTALS);
         //hhDistributionAtCensusBlockGroup.buildStringIndex(hhDistributionAtCensusBlockGroup.getColumnPosition("zone"));
     }
 
@@ -286,13 +293,15 @@ public class SyntheticPopPortland implements SyntheticPopI {
         logger.info("  Reading PUMS data");
         jobErrorCounter = new HashMap<>();
 
-            Map<Integer, Integer> relationsHipsByPerson = new HashMap<>();
-            Map<String, List<Household>> households = new HashMap<>();
+        Map<Integer, Integer> relationsHipsByPerson = new HashMap<>();
+        Map<String, List<Household>> households = new HashMap<>();
 
-            logger.info("  Creating synthetic population");
-            readHouseholds(households, PUMS_HH_FILE_NAME);
-            readPersons(households, PUMS_PP_FILE_NAME, relationsHipsByPerson);
-            definePersonRolesInHouseholds(households, relationsHipsByPerson);
+        logger.info("  Creating synthetic population");
+        readHouseholds(households, Properties.get().main.baseDirectory +
+                ResourceUtil.getProperty(rb, PUMS_HH_FILE_NAME));
+        readPersons(households, Properties.get().main.baseDirectory +
+                ResourceUtil.getProperty(rb, PUMS_PP_FILE_NAME), relationsHipsByPerson);
+        definePersonRolesInHouseholds(households, relationsHipsByPerson);
     }
 
     private void readHouseholds(Map<String, List<Household>> householdsBySerial, String pumsHhFileName) {
@@ -450,7 +459,7 @@ public class SyntheticPopPortland implements SyntheticPopI {
             int incomeIndex = SiloUtil.findPositionInArray("PINCP", header);
             int workStateIndex = SiloUtil.findPositionInArray("POWSP", header);
             int workPumaZoneIndex = SiloUtil.findPositionInArray("POWPUMA", header);
-            int relationshipIndex = SiloUtil.findPositionInArray("RELSHIPP", header);
+            int relationshipIndex = SiloUtil.findPositionInArray("RELP", header); //todo check
 
 
             String recString;
@@ -505,7 +514,7 @@ public class SyntheticPopPortland implements SyntheticPopI {
                         if (occ == Occupation.EMPLOYED) {
                             Dwelling dd = realEstateData.getDwelling(household.getDwellingId());
                             workplace = selectWorkplaceByTripLengthFrequencyDistribution(workPumaZone, workState, dd.getZoneId());
-                            if(workplace== null) {
+                            if (workplace == null) {
                                 workplaceId = -2;
                             }
                         }
@@ -724,7 +733,7 @@ public class SyntheticPopPortland implements SyntheticPopI {
         int[] zones = tazByPuma.get(pumaZone).stream().mapToInt(Location::getZoneId).toArray();
         float[] weights = new float[zones.length];
         for (int i = 0; i < zones.length; i++) {
-            weights[i] = tazPopulationAndEmployment.getIndexedValueAt(zones[i], "totalHh");
+            weights[i] = tazPopulationAndEmployment.getIndexedValueAt(zones[i], "pop_20");
         }
         if (SiloUtil.getSum(weights) == 0) {
             logger.error("No weights found to allocate dwelling in zone " + pumaZone + ". Check method " +
@@ -733,8 +742,9 @@ public class SyntheticPopPortland implements SyntheticPopI {
         int select = SiloUtil.select(weights);
         final int zone = zones[select];
 
+
         // select census block group within census tract/zone
-        if(!censusBlockGroupsByCensusTracts.containsKey(zone)) {
+       /* if (!censusBlockGroupsByCensusTracts.containsKey(zone)) {
             logger.debug("no census block group found for tract: " + zone + " will not generate micro location");
             return new MicroLocation() {
                 @Override
@@ -752,7 +762,7 @@ public class SyntheticPopPortland implements SyntheticPopI {
         float[] censusBlockGroupWeights = new float[censusBlockGroups.length];
         for (int i = 0; i < censusBlockGroups.length; i++) {
             try {
-                censusBlockGroupWeights[i] = hhDistributionAtCensusBlockGroup.getStringIndexedValueAt(censusBlockGroups[i], Math.min(7,hhSize) + "person");
+                censusBlockGroupWeights[i] = hhDistributionAtCensusBlockGroup.getStringIndexedValueAt(censusBlockGroups[i], Math.min(7, hhSize) + "person");
             } catch (IllegalArgumentException e) {
                 logger.debug("no census block group found for tract: " + zone + " will not generate micro location");
                 return new MicroLocation() {
@@ -793,11 +803,11 @@ public class SyntheticPopPortland implements SyntheticPopI {
         Coordinate coordinate = randomPointsBuilder.getGeometry().getCoordinates()[0];
         Point p = MGC.coordinate2Point(coordinate);
 
-        microLocCounter++;
+        microLocCounter++;*/
         return new MicroLocation() {
             @Override
             public Coordinate getCoordinate() {
-                return new Coordinate(p.getX(), p.getY());
+                return geoData.getZones().get(zone).getRandomCoordinate(SiloUtil.getRandomObject());
             }
 
             @Override
