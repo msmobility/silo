@@ -417,6 +417,29 @@ public class SyntheticPopPortland implements SyntheticPopI {
 
                 List<Household> households = new ArrayList<>();
 
+                //todo quick fix for now
+                if (pumaZone ==  600){
+                    weight =  (int) (0.038897485 * weight);
+                } else if (pumaZone == 700 ){
+                    weight =(int) (0.425864279 * weight);
+                } else if (pumaZone == 800 ){
+                    weight =(int) (0.240842608 * weight);
+                } else if (pumaZone == 900 ){
+                    weight = (int) (1.109085666 * weight);
+                } else if (pumaZone == 1000 ){
+                    weight = (int) (1.148463376 * weight);
+                } else {
+                    logger.warn("The puma zone is not in the study area but still the code entered here!");
+                }
+
+
+
+
+
+
+
+
+
                 for (int i = 0; i < weight; i++) {
                     //Only Create household if size >0
                     int newHhId;
@@ -845,9 +868,11 @@ public class SyntheticPopPortland implements SyntheticPopI {
         // - Nobody explicitly works from home, though a couple of people will select a job in their home zone. Should be controlled by number of workers working from home.
         // - School/University locations are not assigned as 'workplace' yet. Note that some worker have a job and go to school at the same time.
 
-        if (!simplifiedPumas.contains(workPumaZone) && workPumaZone != 0) {
-            return null;  // person does work in puma zone outside of study area
-        }
+
+        //todo assume for now that everyone works inside the study area but the work zone is not in pums
+//        if (!simplifiedPumas.contains(workPumaZone) && workPumaZone != 0) {
+//            return null;  // person does work in puma zone outside of study area
+//        }
 
         Map<Zone, Double> zoneProbabilities = new HashMap<>();
         Zone homeZone = geoData.getZones().get(homeTaz);

@@ -35,7 +35,7 @@ public class GeoDataReaderPortland implements GeoDataReader {
         int[] zoneIds = zonalData.getColumnAsInt(ZONE_ID_COLUMN);
         //int[] zoneMsa = zonalData.getColumnAsInt("msa");
         int[] puma = zonalData.getColumnAsInt("puma");
-        //int[] simplifiedPuma = zonalData.getColumnAsInt("simplifiedPUMA");
+        int[] simplifiedPuma = zonalData.getColumnAsInt("puma"); //todo check this
         int[] countyData = zonalData.getColumnAsInt(COUNTY_COLUMN_NAME);
         float[] zoneAreas = zonalData.getColumnAsFloat("area_acres");
         int[] regionData = zonalData.getColumnAsInt("region_id");
@@ -60,7 +60,7 @@ public class GeoDataReaderPortland implements GeoDataReader {
                 geoData.addRegion(region);
             }
 
-            Zone zone = new MstmZone(zoneIds[i], -1, zoneAreas[i], puma[i], -1, county, region);
+            Zone zone = new MstmZone(zoneIds[i], -1, zoneAreas[i], puma[i], simplifiedPuma[i], county, region);
             region.addZone(zone);
             geoData.addZone(zone);
         }
