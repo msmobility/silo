@@ -18,7 +18,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Created by matthewokrah on 26/06/2018.
+ * This class models households decisions of replacing one conventional car by one electric car.
  */
 public class SwitchToElectricVehicleModelMuc extends AbstractModel implements ModelUpdateListener {
 
@@ -64,9 +64,7 @@ public class SwitchToElectricVehicleModelMuc extends AbstractModel implements Mo
         HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
 
         // return HashMap<Household, ArrayOfHouseholdAttributes>. These are the households eligible for switching
-        // to autonomous cars. currently income is the only household attribute used but room is left for additional
-        // attributes in the future
-        ///****
+        // to electric cars
         for (Household hh : householdDataManager.getHouseholds()) {
             int numberOfElectric = (int) hh.getVehicles().stream().
                     filter(vv -> vv.getType().equals(VehicleType.CAR)).
@@ -80,17 +78,9 @@ public class SwitchToElectricVehicleModelMuc extends AbstractModel implements Mo
             if (numberOfAutosInThisHh > numberOfElectric) {
                 int income = HouseholdUtil.getAnnualHhIncome(hh);
                 double utility = -1.5;
-//                //todo implement a better utility equation
-//                if (income > 30000){
-//                    utility = 0.5;
-//                } else {
-//                    utility = 0.0;
-//                }
-
                 if (numberOfAutosInThisHh == 1) {
                     utility += -0.510;
                 }
-
                 int dwellingId = hh.getDwellingId();
                 Dwelling dwelling = dataContainer.getRealEstateDataManager().getDwelling(dwellingId);
                 int zoneId = dwelling.getZoneId();
@@ -114,8 +104,11 @@ public class SwitchToElectricVehicleModelMuc extends AbstractModel implements Mo
                     utility += -0.490;
                 }
 
-                int yearsFrom2011 = year - 2011;
-                utility += yearsFrom2011 * 0.05;
+                int yearAtZero = 2027;
+                final double beta = 3.5;
+                final double alpha = 1.;
+                double yearDependentVariable = beta * (1. - 1./(1. + Math.exp(alpha * (year - yearAtZero)))) - beta/2.;
+                utility += yearDependentVariable;
 
                 utility = Math.exp(utility);
 
@@ -137,8 +130,7 @@ public class SwitchToElectricVehicleModelMuc extends AbstractModel implements Mo
                         throw new RuntimeException();
                     }
 
-                    hh.getVehicles().add(new Car(VehicleUtil.getHighestVehicleIdInHousehold(hh), CarType.ELECTRIC, VehicleUtil.getVehicleAgeInBaseYear()));
-
+                    hh.getVehicles().add(new Car(VehicleUtil.getHighestVehicleIdInHousehold(hh), CarType.ELECTRIC, VehicleUtil.getVehicleAgeWhenReplaced()));
                     event_counter++;
                 }
             }

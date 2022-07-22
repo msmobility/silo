@@ -2,6 +2,7 @@ package de.tum.bgu.msm.scenarios.ev;
 
 import de.tum.bgu.msm.*;
 import de.tum.bgu.msm.container.*;
+import de.tum.bgu.msm.data.vehicle.VehicleUtil;
 import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.io.output.*;
 import de.tum.bgu.msm.properties.*;
@@ -23,6 +24,7 @@ public class SiloMucEV {
     public static void main(String[] args) {
 
         Properties properties = SiloUtil.siloInitialization(args[0]);
+        VehicleUtil.initializeVehicleUtils();
 
         Config config = null;
         if (args.length > 1 && args[1] != null) {

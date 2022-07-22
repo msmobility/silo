@@ -139,7 +139,8 @@ public class OneCarUpdateOwnershipModelMuc extends AbstractModel implements Mode
                     //add one car
                     if (newHousehold.getVehicles().stream().filter(vv-> vv.getType().equals(VehicleType.CAR)).count() == 0) {
                         //maximum number of cars is equal to 1
-                        newHousehold.getVehicles().add(new Car(VehicleUtil.getHighestVehicleIdInHousehold(newHousehold), CarType.CONVENTIONAL, VehicleUtil.getVehicleAgeInBaseYear()));
+                        newHousehold.getVehicles().add(new Car(VehicleUtil.getHighestVehicleIdInHousehold(newHousehold), CarType.CONVENTIONAL,
+                                VehicleUtil.getVehicleAgeWhenReplaced()));
                         counter[0]++;
                     }
                 } else if (action == 2) { //remove one car

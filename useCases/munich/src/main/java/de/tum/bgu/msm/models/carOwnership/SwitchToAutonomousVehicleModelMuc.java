@@ -98,7 +98,7 @@ public class SwitchToAutonomousVehicleModelMuc extends AbstractModel implements 
 
                     hh.getVehicles().remove(vehicleToRemove);
 
-                    hh.getVehicles().add(new Car(VehicleUtil.getHighestVehicleIdInHousehold(hh), CarType.AUTONOMOUS, VehicleUtil.getVehicleAgeInBaseYear()));
+                    hh.getVehicles().add(new Car(VehicleUtil.getHighestVehicleIdInHousehold(hh), CarType.AUTONOMOUS, VehicleUtil.getVehicleAgeWhenReplaced()));
 
 
                     event_counter++;
