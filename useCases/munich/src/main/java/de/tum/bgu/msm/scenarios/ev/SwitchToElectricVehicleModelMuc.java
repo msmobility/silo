@@ -3,7 +3,9 @@ package de.tum.bgu.msm.scenarios.ev;
 import de.tum.bgu.msm.container.*;
 import de.tum.bgu.msm.data.AreaTypes;
 import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypes;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.geo.ZoneMuc;
 import de.tum.bgu.msm.data.household.*;
 import de.tum.bgu.msm.data.vehicle.*;
@@ -83,9 +85,30 @@ public class SwitchToElectricVehicleModelMuc extends AbstractModel implements Mo
                 }
                 int dwellingId = hh.getDwellingId();
                 Dwelling dwelling = dataContainer.getRealEstateDataManager().getDwelling(dwellingId);
+                final DefaultDwellingTypes.DefaultDwellingTypeImpl type =
+                        (DefaultDwellingTypes.DefaultDwellingTypeImpl) dwelling.getType();
+
+                switch (type){
+                    case SFD:
+                        utility += 1.;
+                        break;
+                    case SFA:
+                        utility += 1.;
+                        break;
+                    case MF234:
+                        utility += 0.5;
+                        break;
+                    case MF5plus:
+                        utility += 0.;
+                        break;
+                    case MH:
+                        utility += 0.;
+                        break;
+                }
+
                 int zoneId = dwelling.getZoneId();
                 ZoneMuc zone = (ZoneMuc) (dataContainer.getGeoData().getZones().get(zoneId));
-                switch (zone.getAreaTypeSG()) {
+                /*switch (zone.getAreaTypeSG()) {
                     case CORE_CITY:
                     case MEDIUM_SIZED_CITY:
                         break;
@@ -95,7 +118,7 @@ public class SwitchToElectricVehicleModelMuc extends AbstractModel implements Mo
                     case RURAL:
                         utility += 0.208;
                         break;
-                }
+                }*/
 
                 int hhSize = hh.getHhSize();
                 if (hhSize == 2) {
@@ -105,9 +128,10 @@ public class SwitchToElectricVehicleModelMuc extends AbstractModel implements Mo
                 }
 
                 int yearAtZero = 2027;
-                final double beta = 3.5;
-                final double alpha = 1.;
-                double yearDependentVariable = beta * (1. - 1./(1. + Math.exp(alpha * (year - yearAtZero)))) - beta/2.;
+                final double beta = 5.;
+                final double alpha = 0.5;
+                final double gamma = 0.7;
+                double yearDependentVariable = beta * (1. - 1./(1. + Math.exp(alpha * (year - yearAtZero)))) - beta * gamma;
                 utility += yearDependentVariable;
 
                 utility = Math.exp(utility);
