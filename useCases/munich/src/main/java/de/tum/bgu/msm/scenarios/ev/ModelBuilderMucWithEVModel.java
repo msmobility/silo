@@ -50,7 +50,7 @@ public class ModelBuilderMucWithEVModel {
         final BirthModelImpl birthModel = new BirthModelImpl(dataContainer, ppFactory, properties, new DefaultBirthStrategy(), SiloUtil.provideNewRandom());
 
         BirthdayModel birthdayModel = new BirthdayModelImpl(dataContainer, properties, SiloUtil.provideNewRandom());
-        VehicleBirthdayAndRenovationModelImpl vehicleBirthdayAndRenovationModel = new VehicleBirthdayAndRenovationModelImpl(dataContainer, properties, SiloUtil.provideNewRandom());
+        VehicleBirthdayAndRenovationModel vehicleBirthdayAndRenovationModel = new EVScenarioBirthdayAndRenovationModelImpl(dataContainer, properties, SiloUtil.provideNewRandom());
 
         DeathModel deathModel = new DeathModelImpl(dataContainer, properties, new DefaultDeathStrategy(), SiloUtil.provideNewRandom());
 

@@ -3,7 +3,9 @@ package de.tum.bgu.msm.scenarios.ev;
 import de.tum.bgu.msm.container.*;
 import de.tum.bgu.msm.data.AreaTypes;
 import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypes;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.geo.ZoneMuc;
 import de.tum.bgu.msm.data.household.*;
 import de.tum.bgu.msm.data.vehicle.*;
@@ -18,7 +20,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Created by matthewokrah on 26/06/2018.
+ * This class models households decisions of replacing one conventional car by one electric car.
  */
 public class SwitchToElectricVehicleModelMuc extends AbstractModel implements ModelUpdateListener {
 
@@ -64,9 +66,7 @@ public class SwitchToElectricVehicleModelMuc extends AbstractModel implements Mo
         HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
 
         // return HashMap<Household, ArrayOfHouseholdAttributes>. These are the households eligible for switching
-        // to autonomous cars. currently income is the only household attribute used but room is left for additional
-        // attributes in the future
-        ///****
+        // to electric cars
         for (Household hh : householdDataManager.getHouseholds()) {
             int numberOfElectric = (int) hh.getVehicles().stream().
                     filter(vv -> vv.getType().equals(VehicleType.CAR)).
@@ -80,22 +80,35 @@ public class SwitchToElectricVehicleModelMuc extends AbstractModel implements Mo
             if (numberOfAutosInThisHh > numberOfElectric) {
                 int income = HouseholdUtil.getAnnualHhIncome(hh);
                 double utility = -1.5;
-//                //todo implement a better utility equation
-//                if (income > 30000){
-//                    utility = 0.5;
-//                } else {
-//                    utility = 0.0;
-//                }
-
                 if (numberOfAutosInThisHh == 1) {
                     utility += -0.510;
                 }
-
                 int dwellingId = hh.getDwellingId();
                 Dwelling dwelling = dataContainer.getRealEstateDataManager().getDwelling(dwellingId);
+                final DefaultDwellingTypes.DefaultDwellingTypeImpl type =
+                        (DefaultDwellingTypes.DefaultDwellingTypeImpl) dwelling.getType();
+
+                switch (type){
+                    case SFD:
+                        utility += 1.;
+                        break;
+                    case SFA:
+                        utility += 1.;
+                        break;
+                    case MF234:
+                        utility += 0.5;
+                        break;
+                    case MF5plus:
+                        utility += 0.;
+                        break;
+                    case MH:
+                        utility += 0.;
+                        break;
+                }
+
                 int zoneId = dwelling.getZoneId();
                 ZoneMuc zone = (ZoneMuc) (dataContainer.getGeoData().getZones().get(zoneId));
-                switch (zone.getAreaTypeSG()) {
+                /*switch (zone.getAreaTypeSG()) {
                     case CORE_CITY:
                     case MEDIUM_SIZED_CITY:
                         break;
@@ -105,7 +118,7 @@ public class SwitchToElectricVehicleModelMuc extends AbstractModel implements Mo
                     case RURAL:
                         utility += 0.208;
                         break;
-                }
+                }*/
 
                 int hhSize = hh.getHhSize();
                 if (hhSize == 2) {
@@ -114,8 +127,12 @@ public class SwitchToElectricVehicleModelMuc extends AbstractModel implements Mo
                     utility += -0.490;
                 }
 
-                int yearsFrom2011 = year - 2011;
-                utility += yearsFrom2011 * 0.05;
+                int yearAtZero = 2027;
+                final double beta = 5.;
+                final double alpha = 0.5;
+                final double gamma = 0.7;
+                double yearDependentVariable = beta * (1. - 1./(1. + Math.exp(alpha * (year - yearAtZero)))) - beta * gamma;
+                utility += yearDependentVariable;
 
                 utility = Math.exp(utility);
 
@@ -137,8 +154,7 @@ public class SwitchToElectricVehicleModelMuc extends AbstractModel implements Mo
                         throw new RuntimeException();
                     }
 
-                    hh.getVehicles().add(new Car(VehicleUtil.getHighestVehicleIdInHousehold(hh), CarType.ELECTRIC, VehicleUtil.getVehicleAgeInBaseYear()));
-
+                    hh.getVehicles().add(new Car(VehicleUtil.getHighestVehicleIdInHousehold(hh), CarType.ELECTRIC, VehicleUtil.getVehicleAgeWhenReplaced()));
                     event_counter++;
                 }
             }
