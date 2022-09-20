@@ -23,9 +23,9 @@ public class PersonMuc implements PersonWithSchool {
     private double weeklyHomeMinutes = 0.;
 
     //for health model
-    private Map<Mode, Double> weeklyMarginalMetHours = new HashMap<>();
-    private Map<String, Double> weeklyAccidentRisks = new HashMap<>();
-    private Map<String, Double> weeklyExposureByPollutant = new HashMap<>();
+    private final Map<Mode, Double> weeklyMarginalMetHours = new HashMap<>();
+    private final Map<String, Double> weeklyAccidentRisks = new HashMap<>();
+    private final Map<String, Double> weeklyExposureByPollutant = new HashMap<>();
     private Map<String, Double> relativeRisks;
     private double allCauseRR;
 
@@ -202,10 +202,9 @@ public class PersonMuc implements PersonWithSchool {
         return weeklyExposureByPollutant.get(pollutant);
     }
 
-    // todo: make not hardcoded...
-    // 1.49/3 is the "minimum" weekly ventilation rate (8hr sleep + 16hr rest per day)
+    // The "minimum" weekly ventilation over the week (56hr sleep + 112hr rest per week)
     public double getWeeklyExposureByPollutantNormalised(String pollutant) {
-        return weeklyExposureByPollutant.get(pollutant) / (168. * (1.49/3.));
+        return weeklyExposureByPollutant.get(pollutant) / (56*0.27 + 112*0.61);
     }
 
     public double getWeeklyAccidentRisk(String type) {

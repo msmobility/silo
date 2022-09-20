@@ -41,7 +41,7 @@ public class PhysicalActivity {
     private static double getWalkMet(double metres, double seconds) {
         // From ACSM's Guidelines for Exercise Testing and Prescription
         double speed = metres / seconds;
-        return (6. * speed + 108. * speed * GRADIENT + 3.5) / 3.5;
+        return (6. * speed + 54. * speed * GRADIENT + 3.5) / 3.5;
     }
 
     private static double getCycleMet(double metres, double seconds) {

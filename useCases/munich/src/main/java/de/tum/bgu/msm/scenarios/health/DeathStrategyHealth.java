@@ -25,7 +25,8 @@ public class DeathStrategyHealth implements DeathStrategy {
         final int personAge = Math.min(person.getAge(), 100);
         Gender personSex = person.getGender();
         double allCauseRR = ((PersonMuc)person).getAllCauseRR();
-        double fatalAccidentRisk = ((PersonMuc)person).getWeeklyAccidentRisk("fatality");
+        double weeklyFatalAccidentRisk = ((PersonMuc)person).getWeeklyAccidentRisk("fatality");
+        double yearlyFatalAccidentRisk = weeklyFatalAccidentRisk * 52.1429;
 
         var alpha = 0.;
 
@@ -40,6 +41,6 @@ public class DeathStrategyHealth implements DeathStrategy {
         }
 
         double adjustedAlpha = alpha * allCauseRR;
-        return adjustedAlpha + fatalAccidentRisk - adjustedAlpha * fatalAccidentRisk;
+        return adjustedAlpha + yearlyFatalAccidentRisk - adjustedAlpha * yearlyFatalAccidentRisk;
     }
 }
