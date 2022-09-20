@@ -9,8 +9,8 @@ import de.tum.bgu.msm.models.demography.death.DeathStrategy;
 public class DeathStrategyHealth implements DeathStrategy {
 
     // Lifetable filenames todo: define somewhere in properties
-    private static final String LIFETABLE_FILENAME_MALE = "input/health/lifetable_male";
-    private static final String LIFETABLE_FILENAME_FEMALE = "input/health/lifetable_female";
+    private static final String LIFETABLE_FILENAME_MALE = "input/health/lifetable_male.csv";
+    private static final String LIFETABLE_FILENAME_FEMALE = "input/health/lifetable_female.csv";
 
     final double[] mortalityRatesMale;
     final double[] mortalityRatesFemale;

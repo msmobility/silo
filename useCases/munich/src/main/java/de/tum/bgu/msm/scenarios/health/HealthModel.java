@@ -14,6 +14,7 @@ import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.moped.util.concurrent.ConcurrentExecutor;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.MitoUtil;
+import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
@@ -25,6 +26,7 @@ import org.matsim.core.controler.ControlerDefaults;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.router.FastAStarLandmarksFactory;
+import org.matsim.core.router.speedy.SpeedyALTFactory;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
@@ -44,48 +46,44 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
     private Map<Integer, Trip> mitoTrips;
     private final Config initialMatsimConfig;
 
-    private final int threads;
-    private final ZoneConnectorManager zoneConnectorManager;
     private MutableScenario scenario;
-
+    private AirPollutantModel airPollutantModel;
+    private AccidentModel accidentModel;
 
     public HealthModel(DataContainer dataContainer, Properties properties, Random random, Config config) {
         super(dataContainer, properties, random);
         this.initialMatsimConfig = config;
-        threads = properties.main.numberOfThreads;
-        final Collection<Zone> zones = dataContainer.getGeoData().getZones().values();
-        zoneConnectorManager = ZoneConnectorManagerImpl.createWeightedZoneConnectors(zones,
-                        dataContainer.getRealEstateDataManager(),
-                        dataContainer.getHouseholdDataManager());
+        airPollutantModel = new AirPollutantModel(dataContainer,properties, SiloUtil.provideNewRandom(),config);
+        accidentModel = new AccidentModel(dataContainer,properties,SiloUtil.provideNewRandom());
     }
 
     @Override
-    public void setup() {
-        logger.warn("Health model setup: ");
-        scenario = ScenarioUtils.createMutableScenario(initialMatsimConfig);
-        String networkFile = properties.main.baseDirectory + "/" + scenario.getConfig().network().getInputFile();
-        new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
-
-        for(Day day : Day.values()){
-            Map<Id<Link>, LinkInfo> linkInfoMap = new HashMap<>();
-            for(Link link : scenario.getNetwork().getLinks().values()){
-                linkInfoMap.put(link.getId(), new LinkInfo(link.getId()));
-            }
-            ((HealthDataContainerImpl)dataContainer).getLinkInfoByDay().put(day, linkInfoMap);
-        }
-    }
+    public void setup() { }
 
     @Override
-    public void prepareYear(int year) {
-    }
+    public void prepareYear(int year) {}
 
     @Override
     public void endYear(int year) {
         logger.warn("Health model end year:" + year);
-
         if(properties.main.startYear == year) {
             latestMatsimYear = year;
             for(Day day : Day.values()){
+                logger.warn("Health model setup for " + day);
+                scenario = ScenarioUtils.createMutableScenario(initialMatsimConfig);
+                String networkFile = properties.main.baseDirectory + "/" + scenario.getConfig().network().getInputFile();
+                new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
+                Map<Id<Link>, LinkInfo> linkInfoMap = new HashMap<>();
+                for(Link link : scenario.getNetwork().getLinks().values()){
+                    linkInfoMap.put(link.getId(), new LinkInfo(link.getId()));
+                }
+                ((HealthDataContainerImpl)dataContainer).setLinkInfo(linkInfoMap);
+
+                logger.warn("Run accident model for " + day);
+                accidentModel.endYear(2011, day);
+                logger.warn("Run air pollutant model for " + day);
+                airPollutantModel.endYear(2011, day);
+                logger.warn("Run health exposure model for " + day);
                 for(Mode mode : Mode.values()){
                     switch (mode){
                         case autoDriver:
@@ -100,11 +98,30 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
                         default:
                             logger.warn("No health model for mode: " + mode);
                     }
+                    mitoTrips.clear();
+                    System.gc();
                 }
+                ((HealthDataContainerImpl)dataContainer).reset();
+                System.gc();
             }
         } else if(properties.transportModel.transportModelYears.contains(year + 1)) {//why year +1
             latestMatsimYear = year + 1;
             for(Day day : Day.values()){
+                logger.warn("Health model setup for " + day);
+                scenario = ScenarioUtils.createMutableScenario(initialMatsimConfig);
+                String networkFile = properties.main.baseDirectory + "/" + scenario.getConfig().network().getInputFile();
+                new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
+                Map<Id<Link>, LinkInfo> linkInfoMap = new HashMap<>();
+                for(Link link : scenario.getNetwork().getLinks().values()){
+                    linkInfoMap.put(link.getId(), new LinkInfo(link.getId()));
+                }
+                ((HealthDataContainerImpl)dataContainer).setLinkInfo(linkInfoMap);
+
+                logger.warn("Run accident model for " + day);
+                accidentModel.endYear(2011, day);
+                logger.warn("Run air pollutant model for " + day);
+                airPollutantModel.endYear(2011, day);
+                logger.warn("Run health exposure model for " + day);
                 for(Mode mode : Mode.values()){
                     switch (mode){
                         case autoDriver:
@@ -115,12 +132,15 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
                                     + properties.main.scenarioName + "/" + latestMatsimYear + "/microData/trips_" + day + "_" + mode + ".csv");
                             healthDataAssembler(latestMatsimYear, day, mode);
                             calculatePersonHealthExposures();
-                            mitoTrips.clear();
                             break;
                         default:
                             logger.warn("No health model for mode: " + mode);
                     }
+                    mitoTrips.clear();
+                    System.gc();
                 }
+                ((HealthDataContainerImpl)dataContainer).reset();
+                System.gc();
             }
         }
         calculatePersonHealthExposuresAtHome();
@@ -177,6 +197,7 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
 
         final int partitionSize = (int) ((double) trips.size() / Runtime.getRuntime().availableProcessors()) + 1;
         Iterable<List<Trip>> partitions = Iterables.partition(trips, partitionSize);
+        System.out.println("current memory usage: " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
 
         TravelTime travelTime = TravelTimeUtils.createTravelTimesFromEvents(scenario, eventsFile);
         TravelDisutility travelDisutility = ControlerDefaults.createDefaultTravelDisutilityFactory(scenario).createTravelDisutility(travelTime);
@@ -187,9 +208,11 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
         logger.info("Partition Size: " + partitionSize);
 
         AtomicInteger NO_PATH_TRIP = new AtomicInteger();
+        System.out.println("current memory usage: " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
 
         for (final List<Trip> partition : partitions) {
-            LeastCostPathCalculator pathCalculator = new FastAStarLandmarksFactory(threads).createPathCalculator(scenario.getNetwork(), travelDisutility, travelTime);
+            LeastCostPathCalculator pathCalculator = new SpeedyALTFactory().createPathCalculator(scenario.getNetwork(),travelDisutility,travelTime);
+            //LeastCostPathCalculator pathCalculator = new FastAStarLandmarksFactory(threads).createPathCalculator(scenario.getNetwork(), travelDisutility, travelTime);
 
             executor.addTaskToQueue(() -> {
                 try {
@@ -291,7 +314,7 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
                 linkTime = travelTime.getLinkTravelTime(link, enterTimeInSecond, null, null);
             }
 
-            LinkInfo linkInfo = ((HealthDataContainerImpl)dataContainer).getLinkInfoByDay().get(day).get(link.getId());
+            LinkInfo linkInfo = ((HealthDataContainerImpl)dataContainer).getLinkInfo().get(link.getId());
             if(linkInfo!=null) {
                 // INJURY
                 //linkLightInjuryRisk = getLinkLightInjuryRisk(mode, (int) (enterTimeInSecond / 3600.), linkInfo);
@@ -326,14 +349,14 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
             pathExposureNo2 += linkExposureNo2;
         }
 
-        Map<String, Double> accidentRiskMap = new HashMap<>();
+        Map<String, Float> accidentRiskMap = new HashMap<>();
         //accidentRiskMap.put("lightInjury", pathLightInjuryRisk);
-        accidentRiskMap.put("severeInjury", pathSevereInjuryRisk);
-        accidentRiskMap.put("fatality", pathFatalityRisk);
+        accidentRiskMap.put("severeInjury", (float) pathSevereInjuryRisk);
+        accidentRiskMap.put("fatality", (float) pathFatalityRisk);
 
-        Map<String, Double> exposureMap = new HashMap<>();
-        exposureMap.put("pm2.5", pathExposurePm25);
-        exposureMap.put("no2", pathExposureNo2);
+        Map<String, Float> exposureMap = new HashMap<>();
+        exposureMap.put("pm2.5", (float) pathExposurePm25);
+        exposureMap.put("no2", (float) pathExposureNo2);
 
         trip.updateMatsimTravelDistance(pathLength);
         trip.updateMatsimTravelTime(pathTime);
@@ -354,9 +377,9 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
         }
 
         // todo: consider location-specific exposures & occupation-specific METs for work activities
-        Map<String, Double> exposureMap = new HashMap<>();
-        exposureMap.put("pm2.5", PollutionExposure.getActivityExposurePm25(activityDuration));
-        exposureMap.put("no2", PollutionExposure.getActivityExposureNo2(activityDuration));
+        Map<String, Float> exposureMap = new HashMap<>();
+        exposureMap.put("pm2.5", (float) PollutionExposure.getActivityExposurePm25(activityDuration));
+        exposureMap.put("no2", (float) PollutionExposure.getActivityExposureNo2(activityDuration));
 
         trip.setActivityDuration(activityDuration);
         trip.setActivityExposureMap(exposureMap);
@@ -429,13 +452,13 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
             }
 
             ((PersonMuc) siloPerson).updateWeeklyAccidentRisks(mitoTrip.getTravelRiskMap());
-            ((PersonMuc) siloPerson).updateWeeklyMarginalMetHours(mitoTrip.getTripMode(), mitoTrip.getMarginalMetHours());
+            ((PersonMuc) siloPerson).updateWeeklyMarginalMetHours(mitoTrip.getTripMode(), (float) mitoTrip.getMarginalMetHours());
             ((PersonMuc) siloPerson).updateWeeklyPollutionExposures(mitoTrip.getTravelExposureMap());
-            ((PersonMuc) siloPerson).updateWeeklyTravelSeconds(mitoTrip.getMatsimTravelTime());
+            ((PersonMuc) siloPerson).updateWeeklyTravelSeconds((float) mitoTrip.getMatsimTravelTime());
 
             // Activity details (home-based trips only)
             if(mitoTrip.isHomeBased()) {
-                ((PersonMuc) siloPerson).updateWeeklyActivityMinutes(mitoTrip.getActivityDuration());
+                ((PersonMuc) siloPerson).updateWeeklyActivityMinutes((float) mitoTrip.getActivityDuration());
                 ((PersonMuc) siloPerson).updateWeeklyPollutionExposures(mitoTrip.getActivityExposureMap());
 
             }
@@ -447,11 +470,11 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
         for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
             double minutesAtHome = Math.max(0., 10080. - (((PersonMuc) person).getWeeklyTravelSeconds() / 60.) - (((PersonMuc) person).getWeeklyActivityMinutes()));
 
-            Map<String, Double> exposureMap = new HashMap<>();
-            exposureMap.put("pm2.5", PollutionExposure.getHomeExposurePm25(minutesAtHome));
-            exposureMap.put("no2", PollutionExposure.getHomeExposureNo2(minutesAtHome));
+            Map<String, Float> exposureMap = new HashMap<>();
+            exposureMap.put("pm2.5", (float) PollutionExposure.getHomeExposurePm25(minutesAtHome));
+            exposureMap.put("no2", (float) PollutionExposure.getHomeExposureNo2(minutesAtHome));
 
-            ((PersonMuc) person).setWeeklyHomeMinutes(minutesAtHome);
+            ((PersonMuc) person).setWeeklyHomeMinutes((float) minutesAtHome);
             ((PersonMuc) person).updateWeeklyPollutionExposures(exposureMap);
         }
     }
@@ -459,9 +482,9 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
     private void calculateRelativeRisk() {
         for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
             PersonMuc personMuc = (PersonMuc)person;
-            Map<String, Double> relativeRisks = RelativeRisks.calculate(personMuc);
+            Map<String, Float> relativeRisks = RelativeRisks.calculate(personMuc);
             personMuc.setRelativeRisks(relativeRisks);
-            personMuc.setAllCauseRR(relativeRisks.values().stream().reduce(1., (a, b) -> a*b));
+            personMuc.setAllCauseRR(relativeRisks.values().stream().reduce(1.f, (a, b) -> a*b));
         }
     }
 

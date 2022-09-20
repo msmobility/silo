@@ -76,7 +76,7 @@ public class TripReaderMucHealth {
             logger.fatal("IO Exception caught reading mito trip file: " + path);
             logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
         }
-        logger.info("Finished reading " + recCount + " persons.");
+        logger.info("Finished reading " + recCount + " mito trips.");
         return mitoTrips;
     }
 }
