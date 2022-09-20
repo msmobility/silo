@@ -112,6 +112,9 @@ public class ReadZonalData {
             float primaryJobs = zoneAttributes.getValueAt(i, "pri");
             float secondaryJobs = zoneAttributes.getValueAt(i, "sec");
             float tertiaryJobs = zoneAttributes.getValueAt(i, "ter");
+            float primaryJobsKm2 = zoneAttributes.getValueAt(i, "pri_km2");
+            float secondaryJobsKm2 = zoneAttributes.getValueAt(i, "sec_km2");
+            float tertiaryJobsKm2 = zoneAttributes.getValueAt(i, "ter_km2");
             if (!tazs.contains(taz)) {
                 tazs.add(taz);
             }
@@ -141,10 +144,12 @@ public class ReadZonalData {
             //Attributes.put("income", averageIncome);
             Attributes.put("households", households);
             float totalJob = primaryJobs + secondaryJobs + tertiaryJobs;
+            float totalJobKm2 = primaryJobsKm2 + secondaryJobsKm2 + tertiaryJobsKm2;
             Attributes.put("pri", primaryJobs);
             Attributes.put("sec", secondaryJobs);
             Attributes.put("ter", tertiaryJobs);
             Attributes.put("tot",totalJob);
+            Attributes.put("totKm2",totalJobKm2);
             attributesZone.put(taz, Attributes);
         }
         dataSetSynPop.setAreas(SiloUtil.convertArrayListToFloatArray(areas));

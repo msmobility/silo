@@ -41,6 +41,7 @@ public class AssignJobs {
     private int[] tazIds;
 
     private HashMap<Person, Integer> educationalLevel;
+    private int missingJob;
 
     public AssignJobs(DataContainer dataContainer, DataSetSynPop dataSetSynPop, HashMap<Person, Integer> educationalLevel){
         this.dataSetSynPop = dataSetSynPop;
@@ -69,6 +70,8 @@ public class AssignJobs {
                 int jobID = idVacantJobsByZoneType.get(workplace[0])[numberVacantJobsByZoneByType.get(workplace[0]) - 1];
                 setWorkerAndJob(pp, jobID);
                 updateMaps(selectedJobType, workplace);
+            }else {
+                missingJob++;
             }
             if (LongMath.isPowerOfTwo(assignedJobs)){
                 logger.info("   Assigned " + assignedJobs + " jobs.");
@@ -76,6 +79,7 @@ public class AssignJobs {
             assignedJobs++;
         }
         logger.info("   Finished job allocation. Assigned " + assignedJobs + " jobs.");
+        logger.info(" Finished job allocation. Missed " + missingJob + "jobs. ");
     }
 
 
@@ -123,11 +127,15 @@ public class AssignJobs {
 
         int[] workplace = new int[2];
 
+        if(numberZonesByType.get(selectedJobType) > 0){
             double[] probs = new double[numberZonesByType.get(selectedJobType)];
             int[] ids = idZonesVacantJobsByType.get(selectedJobType);
             RowVector commuteFlow = dataSetSynPop.getCommuteFlowTazToTaz().getRow(homeTaz);
             IntStream.range(0, probs.length).parallel().forEach(id -> probs[id] = commuteFlow.getValueAt(ids[id]/100)* Math.pow(numberVacantJobsByZoneByType.get(ids[id]), 0.45));
             workplace = select(probs, ids);
+        }else {
+            workplace[0] = -2;
+        }
 
         return workplace;
     }

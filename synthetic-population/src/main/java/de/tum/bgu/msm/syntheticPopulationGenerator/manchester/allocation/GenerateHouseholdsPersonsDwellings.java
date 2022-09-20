@@ -155,8 +155,7 @@ public class GenerateHouseholdsPersonsDwellings {
         realEstate.addDwelling(dwell);
         dwell.setFloorSpace(floorSpace);
         dwell.setUsage(usage);
-        //TODO:price
-        guessPriceAndQuality(hhIncome, dwell);
+        guessPriceAndQuality(dwell);
     }
 
     public int guessDwellingQuality(int heatingType, int heatingEnergy, int additionalHeating, int yearBuilt){
@@ -201,6 +200,34 @@ public class GenerateHouseholdsPersonsDwellings {
             price = priceLowQuality;
         }
         dd.setPrice(price);
+        dd.setQuality(quality);
+
+    }
+
+    private void guessPriceAndQuality(Dwelling dd) {
+        double rentPrice = Math.exp(6.418 +
+                0.289 * dd.getBedrooms() +
+                (dd.getType().equals(ManchesterDwellingTypes.DwellingTypeManchester.SFA)?-0.207:0.)+
+                (dd.getType().equals(ManchesterDwellingTypes.DwellingTypeManchester.MF234)?-0.107:0.)+
+                (dd.getType().equals(ManchesterDwellingTypes.DwellingTypeManchester.MF5plus)?-0.107:0.)+
+                -0.022 * dataSetSynPop.getDistanceTazToTaz().getValueAt(dd.getZoneId(),1643)+
+                0.017 * Math.log(dataSetSynPop.getTazAttributes().get(dd.getZoneId()).get("totKm2")));
+
+
+        DwellingType ddType = dd.getType();
+        int sizeDwelling = ((ManchesterDwellingTypes.DwellingTypeManchester)ddType).getsizeOfDwelling();
+        int priceLowQuality = 8 * sizeDwelling;
+        int priceMediumQuality = 16 * sizeDwelling;
+        int priceHighQuality = 24 * sizeDwelling;
+        int quality = 0;
+        if (rentPrice >= priceHighQuality){
+            quality = 3;
+        } else if (rentPrice >= priceMediumQuality){
+            quality = 2;
+        } else {
+            quality = 1;
+        }
+        dd.setPrice((int) rentPrice);
         dd.setQuality(quality);
 
     }
