@@ -7,6 +7,7 @@ import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.common.matrix.Matrix;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import org.apache.log4j.Logger;
+import org.locationtech.jts.geom.Coordinate;
 import org.opengis.feature.simple.SimpleFeature;
 
 import java.util.ArrayList;
@@ -42,12 +43,14 @@ public class DataSetSynPop {
     private Map<Integer, Map<Integer, Float>> probabilityZone;
     private Map<Integer, Map<DwellingType, Integer>> dwellingPriceByTypeAndZone;
     private Table<Integer, Integer, Integer> schoolCapacity = HashBasedTable.create();
+    private Table<Integer, String, Integer> zoneCoordinates = HashBasedTable.create();
     private Table<Integer, String, Float> tripLengthDistribution;
     private ArrayList<Integer> municipalitiesWithZeroPopulation;
 
     private Matrix distanceTazToTaz;
     private Matrix commuteFlowTazToTaz;
     private float[] areas;
+    private Matrix distanceUtilityHBW;
 
     private HashMap<Integer, ArrayList> boroughsByCounty;
 
@@ -65,6 +68,16 @@ public class DataSetSynPop {
     private HashMap<Integer, Integer> municipalityCounty;
 
     private HashMap<Integer, HashMap<String, Float>> tazAttributes;
+
+    private Map<String, Map<Integer, Integer>> vacantJobsByTypeAndZone;
+    private Map<String, Map<Integer, Integer>> assignedJobsByTypeAndZone;
+    private Map<String, Map<Integer, Map<Integer, Coordinate>>> microlocationsJobsByTypeAndZone;
+    Map<String, Map<Integer, Map<Integer, Double>>> probabilityByTypeAndZone;
+    Map<Integer, Map<Integer,Map<Integer,Integer>>> zoneSchoolTypeSchoolLocationCapacity;
+    Map<Integer, Map<Integer, Integer>> zoneSchoolTypeSchoolLocationVacancy;
+    private Map<Integer, Integer> assignedUniversitiesByZone;
+    private Map<Integer, Map< Integer, Map<Integer, Coordinate>>> microlocationsSchools;
+    private int nextVacantJobId;
 
     public TableDataSet getWeights() {
         return weights;
@@ -353,5 +366,93 @@ public class DataSetSynPop {
 
     public void setCommuteFlowTazToTaz(Matrix commuteFlowTazToTaz) {
         this.commuteFlowTazToTaz = commuteFlowTazToTaz;
+    }
+
+    public Table<Integer, String, Integer> getZoneCoordinates() {
+        return zoneCoordinates;
+    }
+
+    public void setZoneCoordinates(Table<Integer, String, Integer> zoneCoordinates) {
+        this.zoneCoordinates = zoneCoordinates;
+    }
+
+    public Map<String, Map<Integer, Integer>> getVacantJobsByTypeAndZone() {
+        return vacantJobsByTypeAndZone;
+    }
+
+    public void setVacantJobsByTypeAndZone(Map<String, Map<Integer, Integer>> vacantJobsByTypeAndZone) {
+        this.vacantJobsByTypeAndZone = vacantJobsByTypeAndZone;
+    }
+
+    public Map<String, Map<Integer, Integer>> getAssignedJobsByTypeAndZone() {
+        return assignedJobsByTypeAndZone;
+    }
+
+    public void setAssignedJobsByTypeAndZone(Map<String, Map<Integer, Integer>> assignedJobsByTypeAndZone) {
+        this.assignedJobsByTypeAndZone = assignedJobsByTypeAndZone;
+    }
+
+    public Map<String, Map<Integer, Map<Integer, Coordinate>>> getMicrolocationsJobsByTypeAndZone() {
+        return microlocationsJobsByTypeAndZone;
+    }
+
+    public void setMicrolocationsJobsByTypeAndZone(Map<String, Map<Integer, Map<Integer, Coordinate>>> microlocationsJobsByTypeAndZone) {
+        this.microlocationsJobsByTypeAndZone = microlocationsJobsByTypeAndZone;
+    }
+
+    public Map<String, Map<Integer, Map<Integer, Double>>> getProbabilityByTypeAndZone() {
+        return probabilityByTypeAndZone;
+    }
+
+    public void setProbabilityByTypeAndZone(Map<String, Map<Integer, Map<Integer, Double>>> probabilityByTypeAndZone) {
+        this.probabilityByTypeAndZone = probabilityByTypeAndZone;
+    }
+
+    public Matrix getDistanceUtility() {
+        return distanceUtilityHBW;
+    }
+
+    public void setDistanceUtility(Matrix tripLengthProbabilityMatrix) {
+        this.distanceUtilityHBW = tripLengthProbabilityMatrix;
+    }
+
+    public Map<Integer, Map<Integer,Map<Integer,Integer>>> getZoneSchoolTypeSchoolLocationCapacity() {
+        return zoneSchoolTypeSchoolLocationCapacity;
+    }
+
+    public void setZoneSchoolTypeSchoolLocationCapacity(Map<Integer, Map<Integer,Map<Integer,Integer>>> vacantUniversitiesByZone) {
+        this.zoneSchoolTypeSchoolLocationCapacity = vacantUniversitiesByZone;
+    }
+
+    public Map<Integer, Map<Integer, Integer>> getZoneSchoolTypeSchoolLocationVacancy() {
+        return zoneSchoolTypeSchoolLocationVacancy;
+    }
+
+    public void setZoneSchoolTypeSchoolLocationVacancy(Map<Integer, Map<Integer, Integer>> zoneSchoolTypeSchoolLocationVacancy) {
+        this.zoneSchoolTypeSchoolLocationVacancy = zoneSchoolTypeSchoolLocationVacancy;
+    }
+
+    public Map<Integer, Integer> getAssignedUniversitiesByZone() {
+        return assignedUniversitiesByZone;
+    }
+
+    public void setAssignedUniversitiesByZone(Map<Integer, Integer> assignedUniversitiesByZone) {
+        this.assignedUniversitiesByZone = assignedUniversitiesByZone;
+    }
+
+    public Map<Integer, Map< Integer, Map<Integer, Coordinate>>> getMicrolocationsSchools() {
+        return microlocationsSchools;
+    }
+
+    public void setMicrolocationsSchools(Map<Integer, Map< Integer, Map<Integer, Coordinate>>> microlocationsSchools) {
+        this.microlocationsSchools = microlocationsSchools;
+    }
+
+    public int getNextVacantJobId() {
+        return nextVacantJobId++;
+    }
+
+    public void setNextVacantJobId(int nextVacantJobId) {
+        this.nextVacantJobId = nextVacantJobId;
     }
 }

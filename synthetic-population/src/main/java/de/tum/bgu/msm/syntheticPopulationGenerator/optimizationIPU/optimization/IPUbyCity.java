@@ -39,7 +39,7 @@ public class IPUbyCity {
             if (!dataSetSynPop.getMunicipalitiesWithZeroPopulation().contains(municipality)) {
                 logger.info("   Municipality " + municipality + ". IPU starts");
                 initializeErrorsandTotals(municipality);
-                while (finish == 0 & iteration < PropertiesSynPop.get().main.maxIterations) {
+                while (finish == 0 && iteration < PropertiesSynPop.get().main.maxIterations) {
                     calculateWeights(municipality);
                     averageError = calculateErrors(municipality);
                     finish = checkStoppingCriteria(municipality, averageError, iteration);

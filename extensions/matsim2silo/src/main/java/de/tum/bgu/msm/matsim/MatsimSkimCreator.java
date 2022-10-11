@@ -114,7 +114,7 @@ public class MatsimSkimCreator {
                         //calc tree from origin zone connector. note that it will search for multiple
                         //start stops accessible from the connector
                         final Map<Id<TransitStopFacility>, SwissRailRaptorCore.TravelInfo> idTravelInfoMap
-                                = raptor.calcTree(fromFacility, peakHour_s, null);
+                                = raptor.calcTree(fromFacility, peakHour_s, null, null);
                         for (de.tum.bgu.msm.data.Id destination : zones) {
                             if (origin.equals(destination)) {
                                 //Intrazonals will be assigned afterwards
@@ -180,7 +180,10 @@ public class MatsimSkimCreator {
                             ActivityFacilitiesFactoryImpl activityFacilitiesFactory = new ActivityFacilitiesFactoryImpl();
                             Facility fromFacility = ((ActivityFacilitiesFactory) activityFacilitiesFactory).createActivityFacility(Id.create(1, ActivityFacility.class), originCoord);
                             Facility toFacility = ((ActivityFacilitiesFactory) activityFacilitiesFactory).createActivityFacility(Id.create(2, ActivityFacility.class), destinationCoord);
-                            List<? extends PlanElement> planElements = teleportationRouter.calcRoute(fromFacility, toFacility, peakHour_s, null);
+
+                            RoutingRequest request = DefaultRoutingRequest.of(fromFacility, toFacility, peakHour_s, null, null);
+
+                            List<? extends PlanElement> planElements = teleportationRouter.calcRoute(request);
                             double arrivalTime = peakHour_s;
 
                             if (!planElements.isEmpty()) {

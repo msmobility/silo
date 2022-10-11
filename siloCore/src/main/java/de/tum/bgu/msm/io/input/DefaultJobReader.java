@@ -22,7 +22,7 @@ public class DefaultJobReader implements JobReader {
     public void readData(String fileName) {
 
         logger.info("Reading job micro data from ascii file");
-        JobFactory factory = JobUtils.getFactory();
+        JobFactory factory = jobData.getFactory();
         String recString = "";
         int recCount = 0;
         try {

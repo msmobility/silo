@@ -14,6 +14,9 @@ import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.data.vehicle.Car;
+import de.tum.bgu.msm.data.vehicle.CarType;
+import de.tum.bgu.msm.data.vehicle.VehicleType;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoice;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoiceMapping;
 import de.tum.bgu.msm.properties.Properties;
@@ -66,7 +69,7 @@ public class AvAndParkingSimpleModeChoice implements CommuteModeChoice {
     @Override
     public CommuteModeChoiceMapping assignCommuteModeChoice(Location from, TravelTimes travelTimes, Household household) {
 
-        if (((HouseholdMuc) household).getAutonomous() == 0) {
+        if ( household.getVehicles().stream().filter(vv-> vv.getType().equals(VehicleType.CAR)).filter(vv -> ((Car) vv).getCarType().equals(CarType.AUTONOMOUS)).count() == 0) {
             return conventionalVehicleParkingBasedCommuteModeChoice.assignCommuteModeChoice(from, travelTimes, household);
 
         } else {
@@ -109,7 +112,7 @@ public class AvAndParkingSimpleModeChoice implements CommuteModeChoice {
     @Override
     public CommuteModeChoiceMapping assignRegionalCommuteModeChoice(Region region, TravelTimes travelTimes, Household household) {
 
-        if (((HouseholdMuc) household).getAutonomous() == 0) {
+        if ( household.getVehicles().stream().filter(vv-> vv.getType().equals(VehicleType.CAR)).filter(vv -> ((Car) vv).getCarType().equals(CarType.AUTONOMOUS)).count() == 0){
             return conventionalVehicleParkingBasedCommuteModeChoice.assignRegionalCommuteModeChoice(region, travelTimes, household);
         } else {
             //as soon as there are avs in the household the workers use them and not convetional cars.

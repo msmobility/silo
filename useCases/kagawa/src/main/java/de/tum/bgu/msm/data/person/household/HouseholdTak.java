@@ -5,7 +5,9 @@ import de.tum.bgu.msm.data.household.HouseholdImpl;
 import de.tum.bgu.msm.data.household.HouseholdType;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonTak;
+import de.tum.bgu.msm.data.vehicle.Vehicle;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -77,6 +79,11 @@ public class HouseholdTak implements Household {
     @Override
     public void setAttribute(String key, Object value) {
         delegate.setAttribute(key, value);
+    }
+
+    @Override
+    public List<Vehicle> getVehicles() {
+        return delegate.getVehicles();
     }
 
     public void setAutonomous(int autonomous){

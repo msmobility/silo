@@ -9,6 +9,7 @@ public class ZoneMuc extends ZoneImpl {
     private final double ptDistance_m;
 
     public ZoneMuc(int id, float area, AreaTypes.SGType areaType, double initialPTDistance_m, Region region) {
+
         super(id, area, region);
         this.areaType = areaType;
         this.ptDistance_m = initialPTDistance_m;

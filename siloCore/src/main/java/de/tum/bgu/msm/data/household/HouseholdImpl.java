@@ -17,15 +17,15 @@
 package de.tum.bgu.msm.data.household;
 
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.vehicle.*;
 import org.matsim.utils.objectattributes.attributable.Attributes;
 
 import java.util.*;
 
 
 /**
- * @author Greg Erhardt 
+ * @author Greg Erhardt
  * Created on Dec 2, 2009
- *
  */
 public class HouseholdImpl implements Household {
 
@@ -40,11 +40,16 @@ public class HouseholdImpl implements Household {
 
     private final Attributes attributes = new Attributes();
 
+    private final List<Vehicle> vehicles = new ArrayList<>();
+
     public HouseholdImpl(int id, int dwellingID, int autos) {
         this.hhId = id;
         this.dwellingId = dwellingID;
         this.autos = autos;
         persons = new LinkedHashMap<>(10);
+        for (int i = 0; i < autos; i++) {
+            vehicles.add(new Car(i, CarType.CONVENTIONAL, VehicleUtil.getVehicleAgeInBaseYear()));
+        }
     }
 
     @Override
@@ -64,11 +69,11 @@ public class HouseholdImpl implements Household {
 
     @Override
     public int getAutos() {
-        return autos;
+        return (int) this.vehicles.stream().filter(vv-> vv.getType().equals(VehicleType.CAR)).count();
     }
 
     @Override
-    public Map<Integer, ? extends Person> getPersons(){
+    public Map<Integer, ? extends Person> getPersons() {
         return Collections.unmodifiableMap(persons);
     }
 
@@ -89,7 +94,7 @@ public class HouseholdImpl implements Household {
 
     @Override
     public void addPerson(Person person) {
-        if(person != null) {
+        if (person != null) {
             this.persons.put(person.getId(), person);
             updateHouseholdType();
         }
@@ -103,7 +108,10 @@ public class HouseholdImpl implements Household {
 
     @Override
     public void setAutos(int autos) {
-        this.autos = autos;
+        vehicles.clear();
+        for (int i = 0; i< autos; i++){
+            vehicles.add(new Car(VehicleUtil.getHighestVehicleIdInHousehold(this), CarType.CONVENTIONAL, VehicleUtil.getVehicleAgeInBaseYear()));
+        }
     }
 
     @Override
@@ -118,9 +126,9 @@ public class HouseholdImpl implements Household {
 
     @Override
     public String toString() {
-        return  "Attributes of household " + hhId
-            +"\nDwelling ID             " + dwellingId
-            +"\nHousehold size          " + persons.size();
+        return "Attributes of household " + hhId
+                + "\nDwelling ID             " + dwellingId
+                + "\nHousehold size          " + persons.size();
     }
 
     @Override
@@ -131,5 +139,10 @@ public class HouseholdImpl implements Household {
     @Override
     public boolean equals(Object o) {
         return o instanceof Household && ((Household) o).getId() == this.hhId;
+    }
+
+    @Override
+    public List<Vehicle> getVehicles() {
+        return vehicles;
     }
 }

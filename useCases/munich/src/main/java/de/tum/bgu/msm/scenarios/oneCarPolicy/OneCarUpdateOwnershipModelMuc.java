@@ -6,6 +6,7 @@ import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdMuc;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
+import de.tum.bgu.msm.data.vehicle.*;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.models.carOwnership.CarOwnershipJSCalculatorMuc;
@@ -18,6 +19,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 public class OneCarUpdateOwnershipModelMuc extends AbstractModel implements ModelUpdateListener {
 
@@ -37,7 +39,26 @@ public class OneCarUpdateOwnershipModelMuc extends AbstractModel implements Mode
         logger.warn("One car per househld policy! Removing cars from households that own more than one car" +
                 "in the base year.");
         for(Household household: dataContainer.getHouseholdDataManager().getHouseholds()) {
-            household.setAutos(Math.min(household.getAutos(), 1));
+
+            //remove all vehicles and keep the newest
+            Vehicle newestVehicle = household.getVehicles().stream().filter(vv-> vv.getType().equals(VehicleType.CAR)).findAny().orElse(null);
+
+            for (Vehicle vv : household.getVehicles()){
+                if (vv instanceof Car){
+                    if (vv.getAge() < newestVehicle.getAge()){
+                        newestVehicle = vv;
+                    }
+                }
+            }
+
+
+            for (Vehicle vv : household.getVehicles()){
+                if (vv instanceof Car){
+                    if (!vv.equals(newestVehicle)){
+                        household.getVehicles().remove(vv);
+                    }
+                }
+            }
         }
         CarOwnershipJSCalculatorMuc calculator = new CarOwnershipJSCalculatorMuc(reader);
         carUpdateProb = new double[4][2][2][2][2][2][2][3];
@@ -82,7 +103,7 @@ public class OneCarUpdateOwnershipModelMuc extends AbstractModel implements Mode
         for (Household oldHousehold : householdDataManager.getHouseholdMementos()) {
             HouseholdMuc newHousehold = (HouseholdMuc) householdDataManager.getHouseholdFromId(oldHousehold.getId());
             if (newHousehold != null) {
-                int previousCars = oldHousehold.getAutos();
+                int previousCars = (int) oldHousehold.getVehicles().stream().filter(vv-> vv.getType().equals(VehicleType.CAR)).count();
                 int hhSizePlus = 0;
                 int hhSizeMinus = 0;
                 int hhIncomePlus = 0;
@@ -113,22 +134,38 @@ public class OneCarUpdateOwnershipModelMuc extends AbstractModel implements Mode
 
                 int action = SiloUtil.select(prob, random);
 
-                if (action == 1){
+                final long autos = newHousehold.getVehicles().stream().filter(vv-> vv.getType().equals(VehicleType.CAR)).count();
+                if (action == 1){ //add one car
                     //add one car
-                    if (newHousehold.getAutos() == 0) {
+                    if (newHousehold.getVehicles().stream().filter(vv-> vv.getType().equals(VehicleType.CAR)).count() == 0) {
                         //maximum number of cars is equal to 1
-                        newHousehold.setAutos(1);
+                        newHousehold.getVehicles().add(new Car(VehicleUtil.getHighestVehicleIdInHousehold(newHousehold), CarType.CONVENTIONAL,
+                                VehicleUtil.getVehicleAgeWhenReplaced()));
                         counter[0]++;
                     }
-                } else if (action == 2) {
-                    //remove one car
-                    if (newHousehold.getAutos() > 0){ //cannot have less than zero cars
-                        newHousehold.setAutos(0);
+                } else if (action == 2) { //remove one car
+                    if (autos > 0){ //cannot have less than zero cars
+
+                        Vehicle vehicleToRemove = newHousehold.getVehicles().stream().filter(vv-> vv.getType().equals(VehicleType.CAR)).findAny().orElse(null);
+                        if (vehicleToRemove != null){
+                            for (Vehicle vehicle : newHousehold.getVehicles().stream().filter(vv-> vv.getType().equals(VehicleType.CAR)).collect(Collectors.toSet())) {
+                                if (vehicle.getAge() > vehicleToRemove.getAge()){
+                                    vehicleToRemove = vehicle;
+                                }
+                            }
+                        }
+
+                        newHousehold.getVehicles().remove(vehicleToRemove);
+
                         counter[1]++;
                         // update number of AVs if necessary after household relinquishes a car
-                        if (newHousehold.getAutonomous() > newHousehold.getAutos()) { // no. of AVs cannot exceed total no. of autos
-                            newHousehold.setAutonomous(newHousehold.getAutos());
-                        }
+//                        if (newHousehold.getAutonomous() > autos) { // no. of AVs cannot exceed total no. of autos
+//                            newHousehold.setAutonomous(autos);
+//                        }
+//                        if ((int) newHousehold.getAttribute("EV").orElse(0) > autos) { // no. of AVs cannot exceed total no. of autos
+//                            newHousehold.setAttribute("EV", autos);
+//                        }
+
                     }
                 }
             }

@@ -25,7 +25,7 @@ public class ReadPopulation {
     private final DataContainer dataContainer;
     private HashMap<Person, Integer> educationalLevel;
 
-    ReadPopulation(DataContainer dataContainer, HashMap<Person, Integer> educationalLevel){
+    public ReadPopulation(DataContainer dataContainer, HashMap<Person, Integer> educationalLevel){
         this.dataContainer = dataContainer;
         this.educationalLevel = educationalLevel;
     }

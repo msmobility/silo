@@ -7,6 +7,9 @@ import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdMuc;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.vehicle.Car;
+import de.tum.bgu.msm.data.vehicle.CarType;
+import de.tum.bgu.msm.data.vehicle.VehicleType;
 import de.tum.bgu.msm.events.MicroEvent;
 import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoice;
@@ -95,10 +98,12 @@ public class ModeChoiceResultsMonitor implements ResultsMonitor {
                         pw.print(",");
                         pw.print(mode.utility);
                         pw.print(",");
-                        pw.print(household.getAutos());
+                        pw.print(household.getVehicles().stream().filter(vv -> vv.getType().equals(VehicleType.CAR)).count());
                         pw.print(",");
                         try {
-                            pw.print(((HouseholdMuc) household).getAutonomous());
+                            pw.print(household.getVehicles().stream().
+                                    filter(vv -> vv.getType().equals(VehicleType.CAR)).
+                                    filter(vv-> ((Car) vv).getCarType().equals(CarType.AUTONOMOUS)).count());
                         } catch (ClassCastException e){
                             pw.print("no-avs");
                         }

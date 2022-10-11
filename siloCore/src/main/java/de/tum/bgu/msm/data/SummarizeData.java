@@ -13,6 +13,7 @@ import de.tum.bgu.msm.data.household.HouseholdData;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.vehicle.VehicleType;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -254,7 +255,7 @@ public final class SummarizeData {
                         pwh.print(",");
                         pwh.print(hh.getHhSize());
                         pwh.print(",");
-                        pwh.println(hh.getAutos());
+                        pwh.println((int) hh.getVehicles().stream().filter(v-> v.getType().equals(VehicleType.CAR)).count());
                         for (Person pp : hh.getPersons().values()) {
                             pwp.print(pp.getId());
                             pwp.print(",");
@@ -281,7 +282,7 @@ public final class SummarizeData {
                                 pwh.print(",");
                                 pwh.print(hh.getHhSize());
                                 pwh.print(",");
-                                pwh.println(hh.getAutos());
+                                pwh.println((int) hh.getVehicles().stream().filter(v-> v.getType().equals(VehicleType.CAR)).count());
                                 for (Person pp : hh.getPersons().values()) {
                                     pwp.print(artificialPpId);
                                     pwp.print(",");
@@ -311,7 +312,7 @@ public final class SummarizeData {
                             pwh.print(",");
                             pwh.print(hh.getHhSize());
                             pwh.print(",");
-                            pwh.println(hh.getAutos());
+                            pwh.println((int) hh.getVehicles().stream().filter(v-> v.getType().equals(VehicleType.CAR)).count());
                             for (Person pp : hh.getPersons().values()) {
                                 pwp.print(pp.getId());
                                 pwp.print(",");

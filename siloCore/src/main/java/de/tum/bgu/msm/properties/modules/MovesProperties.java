@@ -22,7 +22,7 @@ public final class MovesProperties {
     public final float B_EXP_HOUSING_UTILITY;
 
     public enum PopulationControlTotalMethod {
-        POPULATION, MIGRATION, RATE;
+        POPULATION, MIGRATION, RATE
     }
 
     public MovesProperties(ResourceBundle bundle) {

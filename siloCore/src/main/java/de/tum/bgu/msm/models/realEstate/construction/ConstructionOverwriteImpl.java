@@ -8,6 +8,7 @@ import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
+import de.tum.bgu.msm.data.vehicle.VehicleType;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -201,7 +202,7 @@ public class ConstructionOverwriteImpl extends AbstractModel implements Construc
                 householdId[row-1] = hh.getId();
                 householdSize[row-1] = hh.getHhSize();
                 householdInc[row-1] = HouseholdUtil.getAnnualHhIncome(hh);
-                householdAuto[row-1] = hh.getAutos();
+                householdAuto[row-1] = (int) hh.getVehicles().stream().filter(vv -> vv.getType().equals(VehicleType.CAR)).count();
             }
         }
         int yr = properties.main.endYear;

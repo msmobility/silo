@@ -3,7 +3,10 @@ package de.tum.bgu.msm.data.household;
 import de.tum.bgu.msm.data.person.PersonMstm;
 import de.tum.bgu.msm.data.person.Race;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.vehicle.*;
+import org.checkerframework.checker.units.qual.C;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -29,7 +32,7 @@ public class HouseholdMstm implements Household {
 
     @Override
     public int getAutos() {
-        return delegate.getAutos();
+        return (int) this.delegate.getVehicles().stream().filter(vv-> vv.getType().equals(VehicleType.CAR)).count();
     }
 
     @Override
@@ -78,6 +81,11 @@ public class HouseholdMstm implements Household {
     @Override
     public void setAttribute(String key, Object value) {
         delegate.setAttribute(key, value);
+    }
+
+    @Override
+    public List<Vehicle> getVehicles() {
+        return delegate.getVehicles();
     }
 
     @Override

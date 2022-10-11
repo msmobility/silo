@@ -14,6 +14,7 @@ import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.vehicle.VehicleType;
 import de.tum.bgu.msm.events.MicroEvent;
 import de.tum.bgu.msm.events.impls.household.MigrationEvent;
 import de.tum.bgu.msm.properties.Properties;
@@ -298,7 +299,7 @@ public class MultiFileResultsMonitor implements ResultsMonitor {
     private void summarizeCarOwnership(int year) {
         int[] carOwnership = new int[4];
         for (Household hh : dataContainer.getHouseholdDataManager().getHouseholds()) {
-            carOwnership[hh.getAutos()]++;
+            carOwnership[Math.min(3,(int) hh.getVehicles().stream().filter(vv-> vv.getType().equals(VehicleType.CAR)).count())]++;
         }
 
         if (year == properties.main.baseYear) {

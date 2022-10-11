@@ -135,7 +135,7 @@ public final class MatsimTransportModel implements TransportModel {
             for (Person pp : household.getPersons().values()) {
                 PopulationFactory populationFactory = assembledScenario.getPopulation().getFactory();
 
-                org.matsim.api.core.v01.population.Person matsimAlterEgo = SiloMatsimUtils.createMatsimAlterEgo(populationFactory, pp, household.getAutos());
+                org.matsim.api.core.v01.population.Person matsimAlterEgo = SiloMatsimUtils.createMatsimAlterEgo(populationFactory, pp, (int) household.getVehicles().stream().filter(vv -> vv.getType().equals(de.tum.bgu.msm.data.vehicle.VehicleType.CAR)).count());
                 assembledScenario.getPopulation().addPerson(matsimAlterEgo);
             }
         }
@@ -187,7 +187,7 @@ public final class MatsimTransportModel implements TransportModel {
      */
     private void replayFromEvents(String eventsFile) {
         Scenario scenario = ScenarioUtils.loadScenario(initialMatsimConfig);
-        TravelTime travelTime = TravelTimeUtils.createTravelTimesFromEvents(scenario, eventsFile);
+        TravelTime travelTime = TravelTimeUtils.createTravelTimesFromEvents(scenario.getNetwork(), scenario.getConfig(), eventsFile);
         TravelDisutility travelDisutility = ControlerDefaults.createDefaultTravelDisutilityFactory(scenario).createTravelDisutility(travelTime);
         updateTravelTimes(travelTime, travelDisutility);
     }
@@ -204,6 +204,6 @@ public final class MatsimTransportModel implements TransportModel {
             }
             ((SkimTravelTimes) mainTravelTimes).updateRegionalTravelTimes(dataContainer.getGeoData().getRegions().values(),
                     dataContainer.getGeoData().getZones().values());
-        }
+    }
     }
 }

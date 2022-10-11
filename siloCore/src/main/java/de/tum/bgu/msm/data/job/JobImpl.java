@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.data.job;
 
 import de.tum.bgu.msm.data.MicroLocation;
+import de.tum.bgu.msm.data.Zone;
 import org.locationtech.jts.geom.Coordinate;
 import org.matsim.utils.objectattributes.attributable.Attributes;
 
@@ -46,6 +47,12 @@ public class JobImpl implements Job, MicroLocation {
     @Override
     public void setWorkerID(int personID) {
         this.workerId = personID;
+    }
+
+    @Override
+    public void relocateJob(Zone newZone, Coordinate newCoordinate) {
+        this.zoneId = newZone.getZoneId();
+        this.coordinate = newCoordinate;
     }
 
     @Override

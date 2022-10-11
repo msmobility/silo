@@ -3,6 +3,7 @@ package de.tum.bgu.msm.io;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
+import de.tum.bgu.msm.data.vehicle.VehicleType;
 import de.tum.bgu.msm.io.output.DefaultHouseholdWriter;
 import de.tum.bgu.msm.io.output.HouseholdWriter;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -39,7 +40,7 @@ public class HouseholdWriterMucDisability implements HouseholdWriter {
             pwh.print(",");
             pwh.print(realEstateData.getDwelling(hh.getDwellingId()).getZoneId());
             pwh.print(",");
-            pwh.println(hh.getAutos());
+            pwh.println(hh.getVehicles().stream().filter(vv -> vv.getType().equals(VehicleType.CAR)).count());
         }
         pwh.close();
     }

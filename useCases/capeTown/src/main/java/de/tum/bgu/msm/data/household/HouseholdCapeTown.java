@@ -3,7 +3,9 @@ package de.tum.bgu.msm.data.household;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonCapeTown;
 import de.tum.bgu.msm.data.person.RaceCapeTown;
+import de.tum.bgu.msm.data.vehicle.Vehicle;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -77,6 +79,11 @@ public class HouseholdCapeTown implements Household {
     @Override
     public void setAttribute(String key, Object value) {
         delegate.setAttribute(key, value);
+    }
+
+    @Override
+    public List<Vehicle> getVehicles() {
+        return delegate.getVehicles();
     }
 
     @Override
