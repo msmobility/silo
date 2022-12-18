@@ -11,10 +11,7 @@ import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
-import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypes;
-import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.data.dwelling.DwellingUtils;
-import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
+import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.geo.GeoDataMstm;
 import de.tum.bgu.msm.data.geo.MstmZone;
 import de.tum.bgu.msm.data.household.Household;
@@ -52,6 +49,8 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Generates a simple synthetic population for the MSTM Study Area
@@ -136,12 +135,12 @@ public class SyntheticPopPortland implements SyntheticPopI {
         travelTimes = (SkimTravelTimes) dataContainer.getTravelTimes();
 
 
-//      final String carSkimFile = Properties.get().accessibility.autoSkimFile(Properties.get().main.startYear);
-//        travelTimes.readSkim(TransportMode.car, carSkimFile,
-//              Properties.get().accessibility.autoPeakSkim, Properties.get().accessibility.skimFileFactorCar);
+        final String carSkimFile = Properties.get().accessibility.autoSkimFile(Properties.get().main.startYear);
+        travelTimes.readSkim(TransportMode.car, carSkimFile,
+                Properties.get().accessibility.autoPeakSkim, Properties.get().accessibility.skimFileFactorCar);
 
 
-        new QuickSkimMatrix(dataContainer).createSkim();
+        //new QuickSkimMatrix(dataContainer).createSkim();
         accessibility = dataContainer.getAccessibility();
         accessibility.setup();
 
@@ -155,6 +154,10 @@ public class SyntheticPopPortland implements SyntheticPopI {
         logger.info("  Total number of persons created    " + householdData.getPersons().size());
         logger.info("  Total number of dwellings created  " + realEstateData.getDwellings().size());
         logger.info("  Total number of jobs created       " + jobData.getJobs().size());
+
+        addVacantDwellings();
+
+
         if (!jobErrorCounter.isEmpty()) {
             logger.warn("  Could not find sufficient number of jobs in these PUMA zones (note that most of these " +
                     "zones are outside the MSTM area):");
@@ -417,27 +420,20 @@ public class SyntheticPopPortland implements SyntheticPopI {
 
                 List<Household> households = new ArrayList<>();
 
-                //todo quick fix for now
-                if (pumaZone ==  600){
-                    weight =  (int) (0.038897485 * weight);
-                } else if (pumaZone == 700 ){
-                    weight =(int) (0.425864279 * weight);
-                } else if (pumaZone == 800 ){
-                    weight =(int) (0.240842608 * weight);
-                } else if (pumaZone == 900 ){
+                //todo quick fix for now - stop expanding when weights are zero and remove factors
+                if (pumaZone == 600) {
+                    weight = (int) (0.038897485 * weight * 1.5) ;
+                } else if (pumaZone == 700) {
+                    weight = (int) (0.425864279 * weight);
+                } else if (pumaZone == 800) {
+                    weight = (int) (0.240842608 * weight);
+                } else if (pumaZone == 900) {
                     weight = (int) (1.109085666 * weight);
-                } else if (pumaZone == 1000 ){
+                } else if (pumaZone == 1000) {
                     weight = (int) (1.148463376 * weight);
                 } else {
                     logger.warn("The puma zone is not in the study area but still the code entered here!");
                 }
-
-
-
-
-
-
-
 
 
                 for (int i = 0; i < weight; i++) {
@@ -447,14 +443,16 @@ public class SyntheticPopPortland implements SyntheticPopI {
                     if (hhSize > 0) {
                         newHhId = householdData.getNextHouseholdId();
                         Household hh = householdData.getHouseholdFactory().createHousehold(newHhId, newDddId, autos);
-                        households.add(hh);
-                        householdData.addHousehold(hh);
-                        hhCount++;
                         MicroLocation location = locateDwelling(pumaZone, hhSize);
-                        int selectedYear = selectYear(yearBuilt);
 
-                        Dwelling dwelling = DwellingUtils.getFactory().createDwelling(newDddId, location.getZoneId(), location.getCoordinate(), newHhId, ddType, bedRooms, quality, price, selectedYear);
-                        realEstateData.addDwelling(dwelling);
+                        if (location != null){
+                            households.add(hh);
+                            householdData.addHousehold(hh);
+                            hhCount++;
+                            int selectedYear = selectYear(yearBuilt);
+                            Dwelling dwelling = DwellingUtils.getFactory().createDwelling(newDddId, location.getZoneId(), location.getCoordinate(), newHhId, ddType, bedRooms, quality, price, selectedYear);
+                            realEstateData.addDwelling(dwelling);
+                        }
                     } else {
                         newHhId = -1;
                     }
@@ -752,19 +750,28 @@ public class SyntheticPopPortland implements SyntheticPopI {
 
 
     private MicroLocation locateDwelling(int pumaZone, int hhSize) {
+
         // select TAZ within PUMA zone
         int[] zones = tazByPuma.get(pumaZone).stream().mapToInt(Location::getZoneId).toArray();
         float[] weights = new float[zones.length];
         for (int i = 0; i < zones.length; i++) {
             weights[i] = tazPopulationAndEmployment.getIndexedValueAt(zones[i], "pop_20");
         }
+
+
         if (SiloUtil.getSum(weights) == 0) {
             logger.error("No weights found to allocate dwelling in zone " + pumaZone + ". Check method " +
                     "<locateDwelling> in <SyntheticPopUs.java>");
+            return null;
         }
         int select = SiloUtil.select(weights);
         final int zone = zones[select];
 
+        if (zone > 0){
+            //todo adjust the weights of the taz while populating them
+            double oldWeight = tazPopulationAndEmployment.getIndexedValueAt(zone, "pop_20");
+            tazPopulationAndEmployment.setIndexedValueAt(zone, "pop_20", (float) (Math.max(0,oldWeight - hhSize)));
+        }
 
         // select census block group within census tract/zone
        /* if (!censusBlockGroupsByCensusTracts.containsKey(zone)) {
@@ -945,7 +952,7 @@ public class SyntheticPopPortland implements SyntheticPopI {
 
     private void definePersonRolesInHouseholds(Map<String, List<Household>> households, Map<Integer, Integer> relationships) {
         // define roles as single, married or chil
-        for (List<Household> hhs : households.values()) {
+        for(List<Household> hhs: households.values()) {
             for (Household hh : hhs) {
                 Map<Integer, ? extends Person> persons = hh.getPersons();
                 Multiset<Integer> coupleCounter = HashMultiset.create();
@@ -956,12 +963,7 @@ public class SyntheticPopPortland implements SyntheticPopI {
                     //      Householder      husband/wife  unmarried Partner
                     if (relationships.containsKey(pp.getId())) {
                         int relShp = relationships.get(pp.getId());
-//                        20 .Reference person
-//                        21 .Opposite-sex husband/wife/spouse
-//                        22 .Opposite-sex unmarried partner
-//                        23 .Same-sex husband/wife/spouse
-//                        24 .Same-sex unmarried partner
-                        if (relShp == 20 || relShp == 21 || relShp == 22 || relShp == 23 || relShp == 24) {
+                        if (relShp == 0 || relShp == 1 || relShp == 13) {
                             coupleCounter.add(pp.getGender().ordinal() + 1);
                         }
                     } else {
@@ -974,15 +976,11 @@ public class SyntheticPopPortland implements SyntheticPopI {
                 for (Person pp : persons.values()) {
                     if (relationships.containsKey(pp.getId())) {
                         int relShp = relationships.get(pp.getId());
-                        if ((relShp == 20 || relShp == 21 || relShp == 22 || relShp == 23 || relShp == 24) && marriedPersons[pp.getGender().ordinal()] > 0) {
+                        if ((relShp == 1 || relShp == 13 || relShp==0) && marriedPersons[pp.getGender().ordinal()] > 0) {
                             pp.setRole(PersonRole.MARRIED);
                             marriedPersons[pp.getGender().ordinal()] -= 1;
-//                            25 .Biological son or daughter
-//                            26 .Adopted son or daughter
-//                            27 .Stepson or stepdaughter
-//                            30 .Grandchild
-//                            35 .Foster child
-                        } else if (relShp == 25 || relShp == 26 || relShp == 27 || relShp == 30 || relShp == 35) {
+                            //   natural child     adopted child        step child        grandchild       foster child
+                        } else if (relShp == 2 || relShp == 3 || relShp == 4 || relShp == 7 || relShp == 14) {
                             pp.setRole(PersonRole.CHILD);
                         } else {
                             pp.setRole(PersonRole.SINGLE);
@@ -1029,6 +1027,145 @@ public class SyntheticPopPortland implements SyntheticPopI {
         JobWriter jjwriter = new DefaultJobWriter(dataContainer.getJobDataManager().getJobs());
         jjwriter.writeJobs(filejj);
     }
+
+
+    private void addVacantDwellings() {
+        // PUMS generates too few vacant dwellings, add vacant dwellings to match vacancy rate
+
+        logger.info("  Adding empty dwellings to match vacancy rate");
+
+        double[] expectedVacancies = ResourceUtil.getDoubleArray(rb, "vacancy.rate.by.type");
+        //The vacancy rates for     SFD, SFA, MF234, MF5plus,  MH are given in this order
+        Map<DwellingType, Double> expectedVacanciesAsMap = new HashMap<>();
+        expectedVacanciesAsMap.put(DefaultDwellingTypes.DefaultDwellingTypeImpl.SFD, expectedVacancies[0]);
+        expectedVacanciesAsMap.put(DefaultDwellingTypes.DefaultDwellingTypeImpl.SFA, expectedVacancies[1]);
+        expectedVacanciesAsMap.put(DefaultDwellingTypes.DefaultDwellingTypeImpl.MF234, expectedVacancies[2]);
+        expectedVacanciesAsMap.put(DefaultDwellingTypes.DefaultDwellingTypeImpl.MF5plus, expectedVacancies[3]);
+        expectedVacanciesAsMap.put(DefaultDwellingTypes.DefaultDwellingTypeImpl.MH, expectedVacancies[4]);
+
+
+        List<DwellingType> dwellingTypes = realEstateData.getDwellingTypes().getTypes();
+
+        Map<DwellingType, Integer> vacantDwellingsByType = new HashMap<>();
+
+
+        for (DwellingType dwellingType : dwellingTypes) {
+            int countNonVacant = (int) realEstateData.getDwellings().stream().
+                    filter(d -> d.getType().equals(dwellingType)).count();
+            double vacancyRate = expectedVacanciesAsMap.get(dwellingType);
+            int vacants = (int) (countNonVacant * vacancyRate / (1 - vacancyRate));
+            //vacantDwellingsByType.put(dwellingType, vacants);
+            logger.info("Adding " + vacants + " vacant dwellings of type " + dwellingType + "to the already existing " +
+                    countNonVacant + " occupied ones");
+
+            int count = 0;
+
+            List<Dwelling> dwellingList = realEstateData.getDwellings().stream().
+                    filter(d -> d.getType().equals(dwellingType)).collect(Collectors.toList());
+            Collections.shuffle(dwellingList);
+            while (count < vacants) {
+                Dwelling dwelling = dwellingList.get(count);
+
+                Dwelling vacantDwelling = realEstateData.getDwellingFactory().
+                        createDwelling(realEstateData.getNextDwellingId(),
+                                dwelling.getZoneId(),
+                                dwelling.getCoordinate(),
+                                -1,
+                                dwelling.getType(),
+                                dwelling.getBedrooms(),
+                                dwelling.getQuality(),
+                                dwelling.getPrice(),
+                                dwelling.getYearBuilt());
+
+                realEstateData.addDwelling(vacantDwelling);
+
+
+                count++;
+            }
+
+
+        }
+
+
+//        List<DwellingType> dwellingTypes = realEstateData.getDwellingTypes().getTypes();
+//        HashMap<String, ArrayList<Integer>> ddPointer = new HashMap<>();
+//        // summarize vacancy
+//        final int highestZoneId = geoData.getZones().keySet().stream().max(Comparator.naturalOrder()).get();
+//        int[][][] ddCount = new int [highestZoneId + 1][DefaultDwellingTypes.DefaultDwellingTypeImpl.values().length][2];
+//        for (Dwelling dd: realEstateData.getDwellings()) {
+//            int taz = dd.getZoneId();
+//            int occ = dd.getResidentId();
+//            ddCount[taz][dwellingTypes.indexOf(dd.getType())][0]++;
+//            if (occ > 0) {
+//                ddCount[taz][dwellingTypes.indexOf(dd.getType())][1]++;
+//            }
+//            // set pointer to this dwelling
+//            String code = taz + "_" + dd.getType();
+//            if (ddPointer.containsKey(code)) {
+//                ArrayList<Integer> dList = ddPointer.get(code);
+//                dList.add(dd.getId());
+//                ddPointer.put(code, dList);
+//            } else {
+//                ArrayList<Integer> dList = new ArrayList<>();
+//                dList.add(dd.getId());
+//                ddPointer.put(code, dList);
+//            }
+//        }
+//
+//        TableDataSet countyLevelVacancies = SiloUtil.readCSVfile(Properties.get().main.baseDirectory + rb.getString(PROPERTIES_COUNTY_VACANCY_RATES));
+//        countyLevelVacancies.buildIndex(countyLevelVacancies.getColumnPosition("Fips"));
+//        double[] expectedVacancies = ResourceUtil.getDoubleArray(rb, "vacancy.rate.by.type");
+//
+//        for (Zone zone: geoData.getZones().values()) {
+//            int taz = zone.getZoneId();
+//            float vacRateCountyTarget;
+//            try {
+//                vacRateCountyTarget = countyLevelVacancies.getIndexedValueAt(((MstmZone) zone).getCounty().getId(), "VacancyRate");
+//            } catch (Exception e) {
+//                vacRateCountyTarget = countyLevelVacancies.getIndexedValueAt(99999, "VacancyRate");  // use average value
+//            }
+//            int ddInThisTaz = 0;
+//            for (DwellingType dt: DefaultDwellingTypes.DefaultDwellingTypeImpl.values()) {
+//                String code = taz + "_" + dt;
+//                if (!ddPointer.containsKey(code)) {
+//                    continue;
+//                }
+//                ddInThisTaz += ddPointer.get(code).size();
+//            }
+//            int targetVacantDdThisZone = (int) (ddInThisTaz * vacRateCountyTarget + 0.5);
+//            for (DefaultDwellingTypes.DefaultDwellingTypeImpl dt: DefaultDwellingTypes.DefaultDwellingTypeImpl.values()) {
+//                String code = taz + "_" + dt;
+//                if (!ddPointer.containsKey(code)) {
+//                    continue;
+//                }
+//                ArrayList<Integer> dList = ddPointer.get(code);
+//                if (ddCount[taz][dt.ordinal()][0] == 0) {
+//                    continue; // no values for this zone and dwelling type in modeled data
+//                }
+//                float vacRateTargetThisDwellingType = (float) expectedVacancies[dt.ordinal()];
+//                float targetThisTypeThisZoneAbs = (float) (vacRateTargetThisDwellingType /
+//                        SiloUtil.getSum(expectedVacancies) * targetVacantDdThisZone);
+//                float vacDwellingsModel = ((float) (ddCount[taz][dt.ordinal()][0] - ddCount[taz][dt.ordinal()][1]));
+//                Integer[] ids = dList.toArray(new Integer[dList.size()]);
+//                while (vacDwellingsModel < SiloUtil.rounder(targetThisTypeThisZoneAbs,0)) {
+//                    int selected = SiloUtil.select(ids.length) - 1;
+//                    Dwelling dd = realEstateData.getDwelling(ids[selected]);
+//                    int newDdId = realEstateData.getNextDwellingId();
+//                    Dwelling dwelling = DwellingUtils.getFactory().createDwelling(newDdId, zone.getZoneId(), null, -1, dd.getType(), dd.getBedrooms(), dd.getQuality(),
+//                            dd.getPrice(), dd.getYearBuilt());
+//                    realEstateData.addDwelling(dwelling);
+//                    ddCount[taz][dt.ordinal()][0]++;
+//                    vacDwellingsModel++;
+//                    if (newDdId == SiloUtil.trackDd) {
+//                        SiloUtil.trackWriter.println("Generated vacant dwelling with following attributes:");
+//                        SiloUtil.trackWriter.println(realEstateData.getDwelling(newDdId).toString());
+//                    }
+//                }
+//            }
+//        }
+    }
+
+
 //
 //
 //    private static class CensusBlockGroup {

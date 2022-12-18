@@ -136,12 +136,12 @@ public final class SiloModel {
             timeTracker.recordAndReset("scaleDataToForecast");
 
             dataContainer.prepareYear(year);
-            if (year == properties.main.baseYear || year != properties.main.startYear) {
-                SiloUtil.summarizeMicroData(year, modelContainer, dataContainer);
-            }
             simulator.simulate(year);
 			dataContainer.endYear(year);
 
+			if (year == properties.main.baseYear || year != properties.main.startYear) {
+				SiloUtil.summarizeMicroData(year, modelContainer, dataContainer);
+			}
 			logger.info("  Finished this simulation period with " + householdDataManager.getPersons().size() +
 					" persons, " + householdDataManager.getHouseholds().size() + " households and "  +
 					dataContainer.getRealEstateDataManager().getDwellings().size() + " dwellings in " +
