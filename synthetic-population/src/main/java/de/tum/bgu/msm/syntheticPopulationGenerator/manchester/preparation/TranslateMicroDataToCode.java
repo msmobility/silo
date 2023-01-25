@@ -155,37 +155,37 @@ public class TranslateMicroDataToCode {
             case 0: //Household head (hHH)
                 valueCode = 1;
                 break;
-            case 1://Partner of hHH
+            case 1:
+            case 2: //Partner of hHH
+            case 20: // civil Partner of hHH
                 valueCode = 2;
                 break;
+            case 3:
             case 4:
             case 5:
-            case 6:
-            case 7://kid of hHH
+            case 6://kid of hHH
                 valueCode = 3;
                 break;
-            case 16: //grandchild of hHH
+            case 15: //grandchild of hHH
                 valueCode = 3;
                 break;
+            case 7:
             case 8:
             case 9:
-            case 10:
-            case 11://mother or father of hHH
+            case 10://mother or father of hHH
                 valueCode = 4;
                 break;
-            case 17: //grandfather or grandmother of hHH,
+            case 16: //grandfather or grandmother of hHH,
                 valueCode = 4;
                 break;
+            case 11:
             case 12:
             case 13:
-            case 14:
-            case 15://sibling of hHH
+            case 14://sibling of hHH
                 valueCode = 4;
                 break;
-            case 2:
-            case 3:
-            case 18: //other relationship with hHH
-            case 19: //not related with hHH
+            case 17: //other relationship with hHH
+            case 18: //not related with hHH
                 if ((int) dataSetSynPop.getPersonDataSet().getValueAt(personCount,"age") < 16) {
                     valueCode = 3;
                 } else {
@@ -201,26 +201,25 @@ public class TranslateMicroDataToCode {
 //    Pos. = 29	Variable = reltohrp	Variable label = Relationship to hrp
 //            Value = 0.0	Label = HRP
 //            Value = 1.0	Label = spouse
-//            Value = 2.0	Label = civil partner
-//            Value = 3.0	Label = cohabitee
-//            Value = 4.0	Label = son/daughter
-//            Value = 5.0	Label = step-son/daughter
-//            Value = 6.0	Label = foster child
-//            Value = 7.0	Label = son/daughter-in-law
-//            Value = 8.0	Label = parent/guardian
-//            Value = 9.0	Label = step-parent
-//            Value = 10.0	Label = foster parent
-//            Value = 11.0	Label = parent-in-law
-//            Value = 12.0	Label = brother/sister
-//            Value = 13.0	Label = step brother/sister
-//            Value = 14.0	Label = foster brother/sister
-//            Value = 15.0	Label = brother/sister-in-law
-//            Value = 16.0	Label = grandchild
-//            Value = 17.0	Label = grandparent
-//            Value = 18.0	Label = other relative
-//            Value = 19.0	Label = other non-relative
-//            Value = -9.0	Label = does not apply
-//            Value = -8.0	Label = no answer
+//            Value = 2.0	Label = cohabitee
+//            Value = 3.0	Label = son/daughter
+//            Value = 4.0	Label = step-son/daughter
+//            Value = 5.0	Label = foster child
+//            Value = 6.0	Label = son/daughter-in-law
+//            Value = 7.0	Label = parent/guardian
+//            Value = 8.0	Label = step-parent
+//            Value = 9.0	Label = foster parent
+//            Value = 10.0	Label = parent-in-law
+//            Value = 11.0	Label = brother/sister
+//            Value = 12.0	Label = step brother/sister
+//            Value = 13.0	Label = foster brother/sister
+//            Value = 14.0	Label = brother/sister-in-law
+//            Value = 15.0	Label = grandchild
+//            Value = 16.0	Label = grandparent
+//            Value = 17.0	Label = other relative
+//            Value = 18.0	Label = other non-relative
+//             Value = 20.0	Label = civil partner
+
 
 
     private void translateDwellingType(int hhCount){

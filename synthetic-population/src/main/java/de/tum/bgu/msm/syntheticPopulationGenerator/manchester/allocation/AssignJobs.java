@@ -64,6 +64,9 @@ public class AssignJobs {
             int origin = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
             //int selectedJobType = guessjobType(pp.getGender(),educationalLevel.get(pp));
             int selectedJobType = guessjobType(origin);
+            if(numberZonesByType.get(selectedJobType)==0){
+                selectedJobType = 2; //set to ter.
+            }
             int[] workplace = selectWorkplaceByCommuteFlow(origin, selectedJobType);
             //int[] workplace = selectWorkplace(origin, selectedJobType);
             if (workplace[0] > 0) {

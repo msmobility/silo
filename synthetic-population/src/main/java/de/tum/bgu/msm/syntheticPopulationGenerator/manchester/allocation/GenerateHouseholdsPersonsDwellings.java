@@ -155,7 +155,44 @@ public class GenerateHouseholdsPersonsDwellings {
         realEstate.addDwelling(dwell);
         dwell.setFloorSpace(floorSpace);
         dwell.setUsage(usage);
-        guessPriceAndQuality(dwell);
+        priceRegression(dwell);
+        guessDwellingQuality(dwell);
+        //guessPriceAndQuality(hhIncome, dwell);
+    }
+
+    private void priceRegression(Dwelling dwell) {
+       if(dwell.getZoneId()==1634){
+           System.out.println("!");
+       }
+
+        double logPrice = 6.418 + 0.289 * dwell.getBedrooms();
+
+        switch ((ManchesterDwellingTypes.DwellingTypeManchester)dwell.getType()){
+            case SFD:
+                logPrice += 0;
+                break;
+            case SFA:
+                logPrice += -0.194;
+                break;
+            case MF234:
+            case MF5plus:
+                logPrice += -0.107;
+                break;
+            default:
+                logger.warn("Dwelling type doesn't exist!");
+        }
+
+
+        //dist to center TAZ (E01033658 zone 1643)
+        logPrice += -0.022 * dataSetSynPop.getDistanceTazToTaz().getValueAt(dwell.getZoneId(),1643);
+
+        //job density
+        if(dataSetSynPop.getTazAttributes().get(dwell.getZoneId()).get("tot")>0){
+            logPrice += 0.017 * Math.log(dataSetSynPop.getTazAttributes().get(dwell.getZoneId()).get("tot"));
+        }
+
+        double ddPrice = Math.exp(logPrice);
+        dwell.setPrice((int) ddPrice);
     }
 
     public int guessDwellingQuality(int heatingType, int heatingEnergy, int additionalHeating, int yearBuilt){
@@ -178,7 +215,18 @@ public class GenerateHouseholdsPersonsDwellings {
         return quality;
     }
 
-
+    public void guessDwellingQuality(Dwelling dd){
+        double unitPrice = dd.getPrice()/(double)dd.getBedrooms();
+        if (unitPrice<=240){
+            dd.setQuality(1);
+        }else if(unitPrice<=320){
+            dd.setQuality(2);
+        }else if(unitPrice<=400){
+            dd.setQuality(3);
+        }else {
+            dd.setQuality(4);
+        }
+    }
 
     private void guessPriceAndQuality(int hhIncome, Dwelling dd) {
         int targetPrice =  (int)Math.round(hhIncome * 0.15 / 12);
@@ -203,35 +251,6 @@ public class GenerateHouseholdsPersonsDwellings {
         dd.setQuality(quality);
 
     }
-
-    private void guessPriceAndQuality(Dwelling dd) {
-        double rentPrice = Math.exp(6.418 +
-                0.289 * dd.getBedrooms() +
-                (dd.getType().equals(ManchesterDwellingTypes.DwellingTypeManchester.SFA)?-0.207:0.)+
-                (dd.getType().equals(ManchesterDwellingTypes.DwellingTypeManchester.MF234)?-0.107:0.)+
-                (dd.getType().equals(ManchesterDwellingTypes.DwellingTypeManchester.MF5plus)?-0.107:0.)+
-                -0.022 * dataSetSynPop.getDistanceTazToTaz().getValueAt(dd.getZoneId(),1643)+
-                0.017 * Math.log(dataSetSynPop.getTazAttributes().get(dd.getZoneId()).get("totKm2")));
-
-
-        DwellingType ddType = dd.getType();
-        int sizeDwelling = ((ManchesterDwellingTypes.DwellingTypeManchester)ddType).getsizeOfDwelling();
-        int priceLowQuality = 8 * sizeDwelling;
-        int priceMediumQuality = 16 * sizeDwelling;
-        int priceHighQuality = 24 * sizeDwelling;
-        int quality = 0;
-        if (rentPrice >= priceHighQuality){
-            quality = 3;
-        } else if (rentPrice >= priceMediumQuality){
-            quality = 2;
-        } else {
-            quality = 1;
-        }
-        dd.setPrice((int) rentPrice);
-        dd.setQuality(quality);
-
-    }
-
 
     private int selectMicroHouseholdWithReplacement() {
 
@@ -268,9 +287,15 @@ public class GenerateHouseholdsPersonsDwellings {
         probabilityTAZ = new double[dataSetSynPop.getProbabilityZone().get(municipality).keySet().size()];
         sumTAZs = 0;
         probabilityTAZ = dataSetSynPop.getProbabilityZone().get(municipality).values().stream().mapToDouble(Number::doubleValue).toArray();
-        for (int i = 1; i < probabilityTAZ.length; i++){
-            probabilityTAZ[i] = probabilityTAZ[i] + probabilityTAZ[i-1];
+        double sum = 0.;
+        for (int i = 0; i < probabilityTAZ.length; i++){
+            sum += probabilityTAZ[i];
         }
+
+        for (int i = 0; i < probabilityTAZ.length; i++){
+            probabilityTAZ[i] = probabilityTAZ[i]/sum;
+        }
+
         idTAZs = dataSetSynPop.getProbabilityZone().get(municipality).keySet().stream().mapToInt(Number::intValue).toArray();
         sumTAZs = dataSetSynPop.getProbabilityZone().get(municipality).values().stream().mapToDouble(Number::doubleValue).sum();
 
@@ -439,56 +464,6 @@ public class GenerateHouseholdsPersonsDwellings {
             pw1.println(zoneStr1);
         }
         pw1.close();
-    }
-
-    private void guessAndSetPriceAndQuality(int hhIncome, Dwelling dd) {
-        int targetPrice =  (int)Math.round(hhIncome * 0.15);
-        DwellingType ddType = dd.getType();
-        int sizeDwelling = ((BangkokDwellingTypes.DwellingTypeBangkok)ddType).getsizeOfDwelling();
-        String ddTypeStr = dwellingTypeString(ddType);
-        float priceSqmLowQuality = PropertiesSynPop.get().main.cellsMatrix.getIndexedValueAt(dd.getZoneId(), ddTypeStr + ".1");
-        float priceLowQuality = priceSqmLowQuality * sizeDwelling;
-        float priceSqmMediumQuality = PropertiesSynPop.get().main.cellsMatrix.getIndexedValueAt(dd.getZoneId(), ddTypeStr + ".2");
-        float priceMediumQuality = priceSqmMediumQuality * sizeDwelling;
-        float priceSqmHighQuality = PropertiesSynPop.get().main.cellsMatrix.getIndexedValueAt(dd.getZoneId(), ddTypeStr + ".3");
-        float priceHighQuality = priceSqmHighQuality * sizeDwelling;
-        float minDif = Math.abs(targetPrice - priceLowQuality);
-        int quality = 1;
-        float price = priceLowQuality;
-        if (Math.abs(targetPrice - priceMediumQuality) < minDif){
-            quality = 2;
-            price = priceMediumQuality;
-            minDif = Math.abs(targetPrice - priceMediumQuality);
-            if ((Math.abs(targetPrice - priceHighQuality) < minDif)){
-                quality = 3;
-                price = priceHighQuality;
-            }
-        } else {
-            if ((Math.abs(targetPrice - priceHighQuality) < minDif)){
-                quality = 3;
-                price = priceHighQuality;
-            }
-        }
-        dd.setPrice( (int) price);
-        dd.setQuality(quality);
-
-    }
-
-    private String dwellingTypeString (DwellingType ddType){
-        if (ddType.equals(BangkokDwellingTypes.DwellingTypeBangkok.HIGH_RISE_CONDOMINIUM_30)){
-            return "high_rise";
-        } else if (ddType.equals(BangkokDwellingTypes.DwellingTypeBangkok.HIGH_RISE_CONDOMINIUM_50)){
-            return "high_rise";
-        } else if (ddType.equals(BangkokDwellingTypes.DwellingTypeBangkok.LOW_RISE_CONDOMINIUM_30)){
-            return"low_rise";
-        } else if (ddType.equals(BangkokDwellingTypes.DwellingTypeBangkok.LOW_RISE_CONDOMINIUM_50)) {
-            return "low_rise";
-        } else if (ddType.equals(BangkokDwellingTypes.DwellingTypeBangkok.DETATCHED_HOUSE_120)) {
-            return "detached_house";
-        } else {
-            return "detached_house";
-        }
-
     }
 
     private int[] selectMultipleTAZ(int selections){

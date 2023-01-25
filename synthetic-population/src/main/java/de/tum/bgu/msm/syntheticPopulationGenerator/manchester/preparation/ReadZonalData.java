@@ -140,7 +140,7 @@ public class ReadZonalData {
             *///schoolCapacity.put(taz,1,capacitySchool);
 
             HashMap<String, Float> Attributes = new HashMap<>();
-            Attributes.put("percentageVacantDwelings", percentageVacantDwellings);
+            Attributes.put("percentageVacantDwellings", percentageVacantDwellings);
             //Attributes.put("income", averageIncome);
             Attributes.put("households", households);
             float totalJob = primaryJobs + secondaryJobs + tertiaryJobs;

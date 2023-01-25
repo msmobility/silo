@@ -63,7 +63,7 @@ public class ModelBuilderMCR {
         HouseholdFactory hhFactory = dataContainer.getHouseholdDataManager().getHouseholdFactory();
         DwellingFactory ddFactory = dataContainer.getRealEstateDataManager().getDwellingFactory();
 
-        final BirthModelImpl birthModel = new BirthModelImpl(dataContainer, ppFactory, properties, new DefaultBirthStrategy(), SiloUtil.provideNewRandom());
+        final BirthModelImpl birthModel = new BirthModelImpl(dataContainer, ppFactory, properties, new BirthStrategyMCR(), SiloUtil.provideNewRandom());
 
         BirthdayModel birthdayModel = new BirthdayModelImpl(dataContainer, properties, SiloUtil.provideNewRandom());
 
@@ -96,13 +96,13 @@ public class ModelBuilderMCR {
         JobMarketUpdate jobMarketUpdateModel = new JobMarketUpdateImpl(dataContainer, properties, SiloUtil.provideNewRandom());
 
         ConstructionModel construction = new ConstructionModelImpl(dataContainer, ddFactory,
-                properties, new ConstructionLocationStrategyMCR(), new DefaultConstructionDemandStrategy(), SiloUtil.provideNewRandom());
+                properties, new ConstructionLocationStrategyMCR(), new ConstructionDemandStrategyMCR(), SiloUtil.provideNewRandom());
 
         PricingModel pricing = new PricingModelImpl(dataContainer, properties, new DefaultPricingStrategy(), SiloUtil.provideNewRandom());
 
         RenovationModel renovation = new RenovationModelImpl(dataContainer, properties, new DefaultRenovationStrategy(), SiloUtil.provideNewRandom());
 
-        ConstructionOverwrite constructionOverwrite = new ConstructionOverwriteImpl(dataContainer, ddFactory, properties, SiloUtil.provideNewRandom());
+        ConstructionOverwrite constructionOverwrite = new ConstructionOverwriteMCRImpl(dataContainer, ddFactory, properties, SiloUtil.provideNewRandom());
 
         InOutMigration inOutMigration = new InOutMigrationImpl(dataContainer, employmentModel, movesModel,
                 carOwnershipModel, driversLicenseModel, properties, SiloUtil.provideNewRandom());

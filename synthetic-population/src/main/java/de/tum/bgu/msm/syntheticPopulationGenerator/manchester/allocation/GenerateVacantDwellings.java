@@ -72,8 +72,8 @@ public class GenerateVacantDwellings {
 
         //for (int municipality = 1; municipality < 3; municipality++){
         for (int municipality : dataSetSynPop.getMunicipalities()){
-            float percentageVacantDwellings = dataSetSynPop.getTazAttributes().get(municipality).get("percentageVacantDwelings");
-            int vacantDwellings = (int) (percentageVacantDwellings * dataSetSynPop.getTazAttributes().get(municipality).get("households") / 100);
+            float percentageVacantDwellings = dataSetSynPop.getTazAttributes().get(municipality).get("percentageVacantDwellings");
+            int vacantDwellings = (int) (percentageVacantDwellings * dataSetSynPop.getTazAttributes().get(municipality).get("households"));
             List<Dwelling> dwellingForCopy = occupiedDwellings.get(municipality);
             int vacantCounter = 0;
             if (dwellingForCopy != null){

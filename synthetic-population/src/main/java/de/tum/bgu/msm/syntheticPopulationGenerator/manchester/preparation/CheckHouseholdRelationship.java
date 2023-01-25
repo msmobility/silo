@@ -54,58 +54,26 @@ public class CheckHouseholdRelationship {
     private void obtainRolesInHousehold(int firstMember, int hhSize){
         for (int person = 0; person < hhSize; person++){
             int row = firstMember + person;
+            int livingArrangement = (int) dataSetSynPop.getPersonDataSet().getValueAt(row, "livingArrangement");
             int spouseInHousehold = (int) dataSetSynPop.getPersonDataSet().getValueAt(row, "spouseInHousehold");
             int relationToHead = (int) dataSetSynPop.getPersonDataSet().getValueAt(row, "relationshipCode");
             int maritalStatus = (int) dataSetSynPop.getPersonDataSet().getValueAt(row, "marriage");
             int age = (int) dataSetSynPop.getPersonDataSet().getValueAt(row, "age");
             int gender = (int) dataSetSynPop.getPersonDataSet().getValueAt(row, "gender");
-            /*if (maritalStatus == 2) {
-                married = updateInnerMap(married, gender, age, row); //married and spouse in household -> married
 
+
+            if (relationToHead == 3||age<16) {
+                childrenInHousehold.put(row, age); //children -> children
+
+            } else if (maritalStatus == 2) {
                 if (spouseInHousehold == 1) {
                     married = updateInnerMap(married, gender, age, row); //married and spouse in household -> married
                 } else if (spouseInHousehold == 2) {
-                    noClass = updateInnerMap(noClass, gender, age, row); //married and spouse not in household -> single
-                } else {
-                    noClass = updateInnerMap(noClass, gender, age, row); //need further classification at the household level. Look for cohabitation
+                    singles = updateInnerMap(singles, gender, age, row); //married and spouse not in household -> single
                 }
-            } else if (relationToHead == 3) {
-                childrenInHousehold.put(row, age); //children -> children
+            } else if ( livingArrangement==1) {
+                married = updateInnerMap(married, gender, age, row); //cohabitation --> married
             } else if (maritalStatus == 1 || maritalStatus == 3 || maritalStatus == 4||maritalStatus >= 5) {
-                singles = updateInnerMap(singles, gender, age, row); //same gender married, divorced or widow -> single
-            } else {
-                noClass = updateInnerMap(noClass, gender, age, row); //need further classification at the household level. Look for cohabitation
-            }*/
-
-            //algorithm 2
-           /* if (maritalStatus == 2) {
-                if (spouseInHousehold == 1) {
-                    married = updateInnerMap(married, gender, age, row); //married and spouse in household -> married
-                } else if (spouseInHousehold == 2) {
-                    singles = updateInnerMap(noClass, gender, age, row); //married and spouse not in household -> single
-                } else {
-                    noClass = updateInnerMap(noClass, gender, age, row); //need further classification at the household level. Look for cohabitation
-                }
-            } else if (relationToHead == 3||age<16) {
-                childrenInHousehold.put(row, age); //children -> children
-            } else if (maritalStatus == 1 || maritalStatus == 3 || maritalStatus == 4||maritalStatus >= 5) {
-                singles = updateInnerMap(singles, gender, age, row); //same gender married, divorced or widow -> single
-            } else {
-                noClass = updateInnerMap(noClass, gender, age, row); //need further classification at the household level. Look for cohabitation
-            }*/
-
-            //algorithm 3
-            if (maritalStatus == 2) {
-                if (spouseInHousehold == 1) {
-                    married = updateInnerMap(married, gender, age, row); //married and spouse in household -> married
-                } else if (spouseInHousehold == 2) {
-                    singles = updateInnerMap(noClass, gender, age, row); //married and spouse not in household -> single
-                } else {
-                    noClass = updateInnerMap(noClass, gender, age, row); //need further classification at the household level. Look for cohabitation
-                }
-            } else if (relationToHead == 3||age<16) {
-                childrenInHousehold.put(row, age); //children -> children
-            } else if ( maritalStatus == 3 || maritalStatus == 4||maritalStatus >= 5) {
                 singles = updateInnerMap(singles, gender, age, row); //same gender married, divorced or widow -> single
             } else {
                 noClass = updateInnerMap(noClass, gender, age, row); //need further classification at the household level. Look for cohabitation
