@@ -69,17 +69,16 @@ public class GenerateVacantDwellings {
     }
 
     private void generateVacantDwellings(){
-
         //for (int municipality = 1; municipality < 3; municipality++){
-        for (int municipality : dataSetSynPop.getMunicipalities()){
-            float percentageVacantDwellings = dataSetSynPop.getTazAttributes().get(municipality).get("percentageVacantDwellings");
-            int vacantDwellings = (int) (percentageVacantDwellings * dataSetSynPop.getTazAttributes().get(municipality).get("households"));
-            List<Dwelling> dwellingForCopy = occupiedDwellings.get(municipality);
+        for (int taz : dataSetSynPop.getTazs()){
+            float percentageVacantDwellings = dataSetSynPop.getTazAttributes().get(taz).get("percentageVacantDwellings");
+            int vacantDwellings = (int) (percentageVacantDwellings * dataSetSynPop.getTazAttributes().get(taz).get("households"));
+            List<Dwelling> dwellingForCopy = occupiedDwellings.get(taz);
             int vacantCounter = 0;
             if (dwellingForCopy != null){
                 Collections.shuffle(dwellingForCopy);
                 for (int draw = 0; draw < vacantDwellings; draw++){
-                    int tazSelected = municipality;
+                    int tazSelected = taz;
                     int newDdId = highestDwellingIdInUse++;
                     Dwelling idDwellingToCopy = dwellingForCopy.get(draw);
                     int floorSpace = idDwellingToCopy.getFloorSpace();
@@ -95,7 +94,7 @@ public class GenerateVacantDwellings {
                     vacantCounter++;
                 }
             }
-            logger.info("Municipality " + municipality + ". Generated vacant dwellings: " + vacantCounter);
+            logger.info("Zone " + taz + ". Generated vacant dwellings: " + vacantCounter);
         }
     }
 

@@ -161,9 +161,6 @@ public class GenerateHouseholdsPersonsDwellings {
     }
 
     private void priceRegression(Dwelling dwell) {
-       if(dwell.getZoneId()==1634){
-           System.out.println("!");
-       }
 
         double logPrice = 6.418 + 0.289 * dwell.getBedrooms();
 
