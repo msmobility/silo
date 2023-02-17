@@ -133,6 +133,7 @@ public class SyntheticPopSH implements SyntheticPopI {
     private DataContainer dataContainer;
 
     private HashMap<Person, Integer> jobTypeByWorker= new HashMap<>();
+    private HashMap<Person, Integer> schoolTypeByStudent= new HashMap<>();
 
     static Logger logger = Logger.getLogger(String.valueOf(SyntheticPopSH.class));
     private Properties properties;
@@ -247,7 +248,7 @@ public class SyntheticPopSH implements SyntheticPopI {
         cellsMatrix.buildIndex(cellsMatrix.getColumnPosition("id"));
         cityTAZ = new HashMap<>();
         for (int i = 1; i <= cellsMatrix.getRowCount(); i++){
-            int city = (int) cellsMatrix.getValueAt(i,"id");
+            int city = (int) cellsMatrix.getValueAt(i,"zone_aggregate_id");
             int taz = (int) cellsMatrix.getValueAt(i,"id");
             if (cityTAZ.containsKey(city)){
                 int[] previousTaz = cityTAZ.get(city);
@@ -618,21 +619,21 @@ public class SyntheticPopSH implements SyntheticPopI {
 
             //generate jobs
             for (String type : jobStringTypes) {
-                for (String gen : gender) {
-                    String jobTypeGender = gen + type;
+                //for (String gen : gender) {
+                    //String jobTypeGender = gen + type;
                     int totalJobs = 0;
                     //if (totalJobs > 0.1) {
                     //Obtain the number of jobs of that type in each TAZ of the municipality
                     for (int i = 0; i < tazInCity.length; i++) {
-                        int jobsInTaz = (int) rasterCellsMatrix.getIndexedValueAt(tazInCity[i], jobTypeGender);
+                        int jobsInTaz = (int) rasterCellsMatrix.getIndexedValueAt(tazInCity[i], "job_total");
                         //Create already allocated jobs to TAZs (with replacement)
                         for (int job = 0; job < jobsInTaz; job++) {
                             int id = jobData.getNextJobId();
                             jobData.addJob(JobUtils.getFactory().createJob(id, tazInCity[i], null, -1, type));
                         }
-                }
+                    }
                     //}
-                }
+                //}
             }
         }
     }
@@ -691,7 +692,8 @@ public class SyntheticPopSH implements SyntheticPopI {
         for (Person pp : workerArrayList){
 
             //Select the zones with vacant jobs for that person, given the job type
-            int selectedJobType = jobTypeByWorker.get(pp) - 1; //1 Agr, 2 Ind; 3 Srv
+            //int selectedJobType = jobTypeByWorker.get(pp) - 1; //1 Agr, 2 Ind; 3 Srv
+            int selectedJobType = 0; //no job type, total
 
             int[] keys = idZonesVacantJobsByType.get(selectedJobType);
             int lengthKeys = numberZonesByType.get(selectedJobType);
@@ -824,7 +826,16 @@ public class SyntheticPopSH implements SyntheticPopI {
         for (Person pp : studentArrayList) {
 
             //Select the zones with vacant schools for that person, given the school type
-            int schoolType = ((PersonTak) pp).getSchoolType();
+            int schoolType = schoolTypeByStudent.get(pp);
+            if(schoolType == 0 ){
+                continue;
+            }
+
+            if(schoolType == 4 ){
+                ((PersonTak) pp).setSchoolId(-2);//no university in shodoshima
+                continue;
+            }
+
             studentsByType[schoolType - 1] = studentsByType[schoolType - 1] + 1;
             int[] keys = idZonesVacantSchoolsByType.get(schoolType);
             int lengthKeys = numberZonesWithVacantSchoolsByType.get(schoolType);
@@ -849,7 +860,7 @@ public class SyntheticPopSH implements SyntheticPopI {
                 }
 
                 //Assign values to job and person
-                ((PersonTak) pp).setSchoolPlace(schoolPlace[0] / 100);
+                ((PersonTak) pp).setSchoolId(schoolPlace[0] / 100);
                 //pp.setTravelTime(distanceMatrix.getValueAt(pp.getZone(), pp.getSchoolPlace()));
 
                /* //For validation OD TableDataSet
@@ -871,7 +882,7 @@ public class SyntheticPopSH implements SyntheticPopI {
                 }
                 assignedSchools++;
             } else {//No more school capacity in the study area. This person will study outside the area
-                ((PersonTak) pp).setSchoolPlace(-2); //they attend one school out of the area
+                ((PersonTak) pp).setSchoolId(-2); //they attend one school out of the area
                 studentsOutside[schoolType - 1] = studentsOutside[schoolType - 1] + 1;
             }
         }
@@ -1189,14 +1200,20 @@ public class SyntheticPopSH implements SyntheticPopI {
                         Gender gender = Gender.valueOf((int) microDataPerson.getValueAt(personCounter, "gender"));
                         Occupation occupation = Occupation.UNEMPLOYED;
                         int jobType = 1;
+                        int schoolType = 0;
                         if ((int) microDataPerson.getValueAt(personCounter, "occupation") == 1) {
                             occupation = Occupation.EMPLOYED;
-                            if ((int) microDataPerson.getValueAt(personCounter, "jobType") == 1){
-                                jobType = 1;
-                            } else if ((int) microDataPerson.getValueAt(personCounter, "jobType") == 2){
-                                jobType = 2;
-                            } else {
-                                jobType = 3;
+                            jobType = 0;//total
+                        }else if((int) microDataPerson.getValueAt(personCounter, "occupation") == 3){
+                            occupation = Occupation.STUDENT;
+                            if(age <= 12){
+                                schoolType = 1;
+                            }else if(age <= 15){
+                                schoolType = 2;
+                            }else if (age <= 18){
+                                schoolType =3;
+                            }else {
+                                schoolType=4;
                             }
                         }
                         int income = 0;
@@ -1212,6 +1229,7 @@ public class SyntheticPopSH implements SyntheticPopI {
                         householdData.addPerson(pers);
                         householdData.addPersonToHousehold(pers, household);
                         jobTypeByWorker.put(pers, jobType);
+                        schoolTypeByStudent.put(pers, schoolType);
                         PersonRole role = PersonRole.CHILD; //default value = child
                         if ((int)microPersons.getValueAt(personCounter, "personRole") == 1) { //the person is single
                            role = PersonRole.SINGLE;
@@ -1322,9 +1340,10 @@ public class SyntheticPopSH implements SyntheticPopI {
                 int year = ddToCopy.getYearBuilt();
                 DwellingType type = ddToCopy.getType(); //using always type MF234
                 int floorSpaceDwelling = ddToCopy.getFloorSpace();
-                Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, ddTAZ, null, -1, DefaultDwellingTypes.DefaultDwellingTypeImpl.MF234, bedRooms, quality, price, year);
+                Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, ddTAZ, null, -1, type, bedRooms, quality, price, year);
                 dwell.setUsage(DwellingUsage.VACANT); //vacant dwelling = 3; and hhID is equal to -1
                 dwell.setFloorSpace(floorSpaceDwelling);
+                realEstate.addDwelling(dwell);
                 vacantCounter++;
             }
             logger.info("   The number of vacant dwellings is: " + vacantCounter);
@@ -1684,7 +1703,7 @@ public class SyntheticPopSH implements SyntheticPopI {
         for (int i = 0; i < jobStringTypes.length; i++) {
             jobIntTypes.put(jobStringTypes[i], i);
         }
-        int[] cellsID = cellsMatrix.getColumnAsInt("ID_cell");
+        int[] cellsID = cellsMatrix.getColumnAsInt("id");
 
         //create the counter hashmaps
         for (int i = 0; i < jobStringTypes.length; i++){
@@ -1753,7 +1772,7 @@ public class SyntheticPopSH implements SyntheticPopI {
         idZonesVacantSchoolsByType = new HashMap<>();
         schoolCapacityByType = new HashMap<>();
         schoolTypes = ResourceUtil.getIntegerArray(rb, PROPERTIES_SCHOOL_TYPES_DE);
-        int[] cellsID = cellsMatrix.getColumnAsInt("ID_cell");
+        int[] cellsID = cellsMatrix.getColumnAsInt("id");
 
 
         //create the counter hashmaps

@@ -340,17 +340,7 @@ public class ExtractMicroDataSH {
 
     private void updateHhWorkerGender(int gender, int occupation, int i) {
         //Method to update the number of workers by gender and job type on the frequency matrix
-        if (occupation > 0 & occupation < 4) {
-            String jobTypeString = ppJobDictionary.getIndexedStringValueAt(occupation,"controlTotalLabel");
-            int occupationSILO = (int) ppJobDictionary.getIndexedValueAt(occupation, "occupation");
 
-//            int value = 1 + (int) frequencyMatrix.getValueAt(i, "job_total");
-//            frequencyMatrix.setValueAt(i, "job_total", value);
-
-            int jobType = (int) ppJobDictionary.getIndexedValueAt(occupation, "jobType");
-            microPersons.setValueAt(i, "jobType", jobType);
-            microPersons.setValueAt(i, "occupation", occupationSILO);
-        }
     }
 
 
