@@ -375,7 +375,7 @@ public class HousingStrategyMstm implements HousingStrategy<DwellingMstm> {
                             util *= hhByRegion.getIndexed(region.getId());
                             break;
                         case POWER_OF_POPULATION:
-                            util *= Math.pow(hhByRegion.getIndexed(region.getId()), 0.5);
+                            util *= Math.pow(hhByRegion.getIndexed(region.getId()), 0.25);
                             break;
                         default:
                             //do nothing.
