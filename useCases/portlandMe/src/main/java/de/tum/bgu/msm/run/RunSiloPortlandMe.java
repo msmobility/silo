@@ -28,7 +28,7 @@ public class RunSiloPortlandMe {
         DataContainer dataContainer = DataBuilder.buildDataContainerForPortland(properties, config);
         DataBuilder.readInput(properties, dataContainer);
 
-        ModelContainer modelContainer = ModelBuilderMstm.getModelContainerForMstm(dataContainer, properties, config);
+        ModelContainer modelContainer = ModelBuilderPortland.getModelContainerForPortland(dataContainer, properties, config);
 
         ResultsMonitor resultsMonitor = new DefaultResultsMonitor(dataContainer, properties);
         SiloModel model = new SiloModel(properties, dataContainer, modelContainer);

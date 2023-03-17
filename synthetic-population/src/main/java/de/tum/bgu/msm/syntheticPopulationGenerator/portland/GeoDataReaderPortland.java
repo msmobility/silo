@@ -40,6 +40,8 @@ public class GeoDataReaderPortland implements GeoDataReader {
         float[] zoneAreas = zonalData.getColumnAsFloat("area_acres");
         int[] regionData = zonalData.getColumnAsInt("region_id");
 
+        double[] niches = zonalData.getColumnAsDouble("niche_num");
+
         final Map<Integer, County> counties = geoData.getCounties();
         final Map<Integer, Region> regions = geoData.getRegions();
         for(int i = 0; i < zoneIds.length; i++) {
@@ -57,6 +59,7 @@ public class GeoDataReaderPortland implements GeoDataReader {
                 region = regions.get(regionId);
             } else {
                 region = new MstmRegion(regionId);
+                region.getAttributes().put("NICHE", niches[i]);
                 geoData.addRegion(region);
             }
 
