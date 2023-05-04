@@ -29,8 +29,10 @@ public class Allocation extends ModuleSynPop{
             generateHouseholdsPersonsDwellings();
             generateVacantDwellings();
             generateJobs();
+            assignProperties();
         } else {
             readPopulation();
+            assignProperties();
         }
         if (PropertiesSynPop.get().main.runJobAllocation) {
             assignJobs();
@@ -39,6 +41,10 @@ public class Allocation extends ModuleSynPop{
         }
         logger.info("   Completed allocation model.");
 
+    }
+
+    private void assignProperties() {
+        new AssignPropertiesToJobs(dataContainer, dataSetSynPop).run();
     }
 
     public void generateHouseholdsPersonsDwellings(){

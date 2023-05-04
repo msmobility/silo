@@ -60,12 +60,12 @@ public class DisabilityBase extends ModuleSynPop {
         if (SiloUtil.getRandomNumberAsDouble() < disabilityProb){
             double disabilityTypeProb = calculator.calculateDisabilityTypeProbability(person, person.getGender().getCode());
             if (SiloUtil.getRandomNumberAsDouble() < disabilityTypeProb){
-                ((PersonMucDisability)person).setDisability(Disability.PHYSICAL);
+                person.setAttribute("disability",Disability.PHYSICAL);
             } else {
-                ((PersonMucDisability)person).setDisability(Disability.MENTAL);
+                person.setAttribute("disability",Disability.MENTAL);
             }
         } else {
-            ((PersonMucDisability)person).setDisability(Disability.WITHOUT);
+            person.setAttribute("disability",Disability.WITHOUT);
         }
 
     }

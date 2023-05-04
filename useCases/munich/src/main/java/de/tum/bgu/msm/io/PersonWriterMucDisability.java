@@ -31,6 +31,14 @@ public class PersonWriterMucDisability implements PersonWriter {
         pwp.print("disability");
         pwp.print(",");
         pwp.print("schoolId");
+        pwp.print(",");
+        pwp.print("jobType");
+        pwp.print(",");
+        pwp.print("jobDuration");
+        pwp.print(",");
+        pwp.print("jobStartTimeWorkdays");
+        pwp.print(",");
+        pwp.print("jobStartTimeWeekends");
 
         pwp.println();
         for (Person pp : householdData.getPersons()) {
@@ -53,11 +61,19 @@ public class PersonWriterMucDisability implements PersonWriter {
             pwp.print(",");
             pwp.print(pp.getAnnualIncome());
             pwp.print(",");
-            pwp.print(((PersonMucDisability)pp).getNationality().toString());
+            pwp.print("0");
             pwp.print(",");
-            pwp.print(((PersonMucDisability) pp).getDisability().toString());
+            pwp.print(pp.getAttribute("disability").get().toString());
             pwp.print(",");
-            pwp.print(((PersonMucDisability)pp).getSchoolId());
+            pwp.print("0");
+            pwp.print(",");
+            pwp.print(pp.getAttribute("jobDurationType").get().toString());
+            pwp.print(",");
+            pwp.print(pp.getAttribute("jobDuration").get().toString());
+            pwp.print(",");
+            pwp.print(pp.getAttribute("jobStartTimeWorkday").get().toString());
+            pwp.print(",");
+            pwp.print(pp.getAttribute("jobStartTimeWeekend").get().toString());
             pwp.println();
             if (pp.getId() == SiloUtil.trackPp) {
                 SiloUtil.trackingFile("Writing pp " + pp.getId() + " to micro data file.");

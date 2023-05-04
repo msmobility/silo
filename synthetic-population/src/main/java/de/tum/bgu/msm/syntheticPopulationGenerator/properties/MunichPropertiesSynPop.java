@@ -94,6 +94,10 @@ public class MunichPropertiesSynPop extends AbstractPropertiesSynPop {
         }
         zonalDataIPU = null;
         runDisability = PropertiesUtil.getBooleanProperty(bundle, "run.disability", false);
+        fullTimeProbabilityTable = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle, "fullTime.coefficient.table","input/syntheticPopulation/proportionFullTime.csv"));
+        fullTimeFileName = PropertiesUtil.getStringProperty(bundle, "fullTime.coefficient.table","input/syntheticPopulation/proportionFullTime.csv");
+        durationFileName = PropertiesUtil.getStringProperty(bundle, "duration.coefficient.table","input/syntheticPopulation/mandActDurationDistributionTable.csv");
+        startTimeFileName = PropertiesUtil.getStringProperty(bundle, "duration.coefficient.table","input/syntheticPopulation/mandActsStartTimeDistributionByDurationSegmentTable.csv");
     }
 
 }
