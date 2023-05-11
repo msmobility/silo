@@ -33,12 +33,12 @@ public class DefaultConstructionDemandStrategy implements ConstructionDemandStra
             //this checks that very large vacancy rates (generally in tests with subsamples of sp) do not result in  infinity
         }
 
-        if (vacancyByRegion <= alpha) {
-            return gamma + -1 * vacancyByRegion;
-        } else {
-            return gamma / Math.exp(slope * vacancyByRegion);
-        }
+//        if (vacancyByRegion <= alpha) {
+//            return gamma + -1 * vacancyByRegion;
+//        } else {
+//            return gamma / Math.exp(slope * vacancyByRegion);
+//        }
 
-        //return Math.exp(-2. * vacancyByRegion / alpha) / 20.;
+        return Math.exp(-2. * vacancyByRegion / alpha) / 20.;
     }
 }

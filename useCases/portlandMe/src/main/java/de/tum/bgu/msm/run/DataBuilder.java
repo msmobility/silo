@@ -58,7 +58,7 @@ public final class DataBuilder {
         }
 
         //CommutingTimeProbability commutingTimeProbability = new CommutingTimeProbabilityExponential(-0.07f, -0.07f); //for v3
-        CommutingTimeProbability commutingTimeProbability = new CommutingTimeProbabilityExponential(-0.025f, -0.025f); //for v4
+        CommutingTimeProbability commutingTimeProbability = new CommutingTimeProbabilityExponential(-0.025f, -0.025f); //for v5
 
         //TODO: revise this!
         new JobType(properties.jobData.jobTypes);
