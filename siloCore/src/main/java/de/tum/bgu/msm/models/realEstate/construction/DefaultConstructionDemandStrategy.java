@@ -38,5 +38,7 @@ public class DefaultConstructionDemandStrategy implements ConstructionDemandStra
         } else {
             return gamma / Math.exp(slope * vacancyByRegion);
         }
+
+        //return Math.exp(-2. * vacancyByRegion / alpha) / 20.;
     }
 }

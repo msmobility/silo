@@ -106,7 +106,7 @@ public class ModelBuilderPortland {
                 properties, new DefaultConstructionLocationStrategy(), new DefaultConstructionDemandStrategy(), SiloUtil.provideNewRandom());
 
 
-        PricingModel pricing = new PricingModelImpl(dataContainer, properties, new DefaultPricingStrategy(), SiloUtil.provideNewRandom());
+        PricingModel pricing = new PricingModelImpl(dataContainer, properties, new PricingStrategyPortland(), SiloUtil.provideNewRandom());
 
         RenovationModel renovation = new RenovationModelImpl(dataContainer, properties, new DefaultRenovationStrategy(), SiloUtil.provideNewRandom());
 
