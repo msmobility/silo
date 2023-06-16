@@ -59,13 +59,14 @@ import java.util.*;
  */
 public class SyntheticPopUs implements SyntheticPopI {
 
+    protected static final String PROPERTIES_PUMS_FILES = "pums.records";
+    protected static final String PROPERTIES_PARTLY_COVERED_PUMAS = "partly.covered.pumas";
     protected static final String PROPERTIES_HOUSEHOLD_DISTRIBUTION = "household.distribution";
-    private static final String PROPERTIES_BLOCK_GROUPS_PATH = "census.block.shapefile";
-    private static final String PROPERTIES_CENSUS_BLOCK_GROUP_CONTROL_TOTALS = "census.block.control.total";
-
-    public static final String PROPERTIES_PUMS_HH_FILE_NAME = "pums.hh";
-    public static final String PROPERTIES_PUMS_PP_FILE_NAME = "pums.pp";
-
+    protected static final String PROPERTIES_COUNTY_VACANCY_RATES = "county.vacancy.rates";
+    private static final String BLOCK_GROUPS_PATH = "Z:\\projects\\2019\\TraMPA\\San Francisco\\Data" +
+            "\\TAZ\\censusTractsNineCountiesTaz\\censusBlockGroupd_projected_7131.shp";
+    private static final String CENSUS_BLOCK_GROUP_CONTROL_TOTALS = "Z:\\projects\\2019\\TraMPA\\San Francisco\\Data" +
+            "\\syntheticPopulation\\controlTotalsCensusBlockGroups.csv";
 
     protected transient Logger logger = Logger.getLogger(SyntheticPopUs.class);
 
@@ -96,6 +97,8 @@ public class SyntheticPopUs implements SyntheticPopI {
     private JobDataManager jobData;
     private SkimTravelTimes travelTimes;
     private PersonfactoryMstm personfactoryMstm = new PersonfactoryMstm();
+    public static final String PUMS_HH_FILE_NAME = "Z:\\projects\\2019\\TraMPA\\San Francisco\\Data\\syntheticPopulation\\input\\psam_h06.csv";
+    public static final String PUMS_PP_FILE_NAME = "Z:\\projects\\2019\\TraMPA\\San Francisco\\Data\\syntheticPopulation\\input\\psam_p06.csv";
 
     public SyntheticPopUs(ResourceBundle rb, Properties properties) {
         this.rb = rb;
@@ -162,8 +165,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         censusBlockGroupsByCensusTracts = new HashMap<>();
         geometryByCensusBlockGroup = new HashMap<>();
 
-        String filePath =Properties.get().main.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_BLOCK_GROUPS_PATH);
-        for (SimpleFeature feature : ShapeFileReader.getAllFeatures(filePath)) {
+        for (SimpleFeature feature : ShapeFileReader.getAllFeatures(BLOCK_GROUPS_PATH)) {
             int taz = Integer.parseInt(feature.getAttribute("TRACTCE").toString());
             String id = feature.getAttribute("GEOID").toString();
             if(censusBlockGroupsByCensusTracts.containsKey(taz)) {
@@ -205,9 +207,7 @@ public class SyntheticPopUs implements SyntheticPopI {
                 ResourceUtil.getProperty(rb, PROPERTIES_HOUSEHOLD_DISTRIBUTION));
         hhDistribution.buildIndex(hhDistribution.getColumnPosition("Id"));
 
-        String filePath =Properties.get().main.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_CENSUS_BLOCK_GROUP_CONTROL_TOTALS);
-
-        hhDistributionAtCensusBlockGroup = SiloUtil.readCSVfile(filePath);
+        hhDistributionAtCensusBlockGroup = SiloUtil.readCSVfile(CENSUS_BLOCK_GROUP_CONTROL_TOTALS);
         hhDistributionAtCensusBlockGroup.buildStringIndex(hhDistributionAtCensusBlockGroup.getColumnPosition("id"));
     }
 
@@ -288,11 +288,8 @@ public class SyntheticPopUs implements SyntheticPopI {
             Map<String, List<Household>> households = new HashMap<>();
 
             logger.info("  Creating synthetic population");
-            String hhFilePath =Properties.get().main.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_PUMS_HH_FILE_NAME);
-            String ppFilePath =Properties.get().main.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_PUMS_PP_FILE_NAME);
-
-            readHouseholds(households, hhFilePath);
-            readPersons(households, ppFilePath, relationsHipsByPerson);
+            readHouseholds(households, PUMS_HH_FILE_NAME);
+            readPersons(households, PUMS_PP_FILE_NAME, relationsHipsByPerson);
             definePersonRolesInHouseholds(households, relationsHipsByPerson);
     }
 
