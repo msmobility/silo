@@ -55,6 +55,46 @@ public class RunFabilandTest{
 			log.info("############################################");
 			log.info("############################################");
 
+			{
+				Population expected = PopulationUtils.createPopulation( ConfigUtils.createConfig() ) ;
+				PopulationUtils.readPopulation( expected,  utils.getInputDirectory() + "1.0.plans.xml.gz" );
+
+				Population actual = PopulationUtils.createPopulation( ConfigUtils.createConfig() ) ;
+				PopulationUtils.readPopulation( actual, "scenario/scenOutput/base/matsim/1/ITERS/it.0/1.0.plans.xml.gz" );
+
+				boolean result = PopulationUtils.comparePopulations( expected, actual );
+				Assert.assertTrue( result );
+			}
+			{
+				String expected = utils.getInputDirectory() + "/1.0.events.xml.gz" ;
+				String actual = "scenario/scenOutput/base/matsim/1/ITERS/it.0/1.0.events.xml.gz" ;
+				EventsFileComparator.Result result = EventsUtils.compareEventsFiles( expected, actual );
+				Assert.assertEquals( EventsFileComparator.Result.FILES_ARE_EQUAL, result );
+			}
+
+			log.info("############################################");
+			log.info("############################################");
+
+			{
+				Population expected = PopulationUtils.createPopulation( ConfigUtils.createConfig() ) ;
+				PopulationUtils.readPopulation( expected,  utils.getInputDirectory() + "1.output_plans.xml.gz" );
+
+				Population actual = PopulationUtils.createPopulation( ConfigUtils.createConfig() ) ;
+				PopulationUtils.readPopulation( actual, "scenario/scenOutput/base/matsim/1/1.output_plans.xml.gz" );
+
+				boolean result = PopulationUtils.comparePopulations( expected, actual );
+				Assert.assertTrue( result );
+			}
+			{
+				String expected = utils.getInputDirectory() + "/1.output_events.xml.gz" ;
+				String actual = "scenario/scenOutput/base/matsim/1/1.output_events.xml.gz" ;
+				EventsFileComparator.Result result = EventsUtils.compareEventsFiles( expected, actual );
+				Assert.assertEquals( EventsFileComparator.Result.FILES_ARE_EQUAL, result );
+			}
+
+			log.info("############################################");
+			log.info("############################################");
+
 //			{
 //				Population expected = PopulationUtils.createPopulation( ConfigUtils.createConfig() ) ;
 //				PopulationUtils.readPopulation( expected,  utils.getInputDirectory() + "10.output_plans.xml.gz" );
