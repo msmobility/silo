@@ -21,7 +21,6 @@ public class RunFabilandTest{
 	@Rule public MatsimTestUtils utils = new MatsimTestUtils();
 
 	@Test
-	@Ignore
 	public void testMain(){
 		try {
 			String [] args = {"./scenario/test.properties",

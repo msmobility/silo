@@ -24,6 +24,7 @@ import org.matsim.api.core.v01.population.Plan;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.api.core.v01.population.PopulationFactory;
 import org.matsim.core.config.Config;
+import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.scenario.ScenarioUtils;
 
 import java.util.Collection;
@@ -48,13 +49,14 @@ public class SimpleMatsimScenarioAssembler implements MatsimScenarioAssembler {
 
         Scenario scenario = ScenarioUtils.loadScenario(matsimConfig);
         Population matsimPopulation = scenario.getPopulation();
-        PopulationFactory matsimPopulationFactory = matsimPopulation.getFactory();
+        PopulationFactory pf = matsimPopulation.getFactory();
 
         Collection<Person> siloPersons = dataContainer.getHouseholdDataManager().getPersons();
         JobDataManager jobDataManager = dataContainer.getJobDataManager();
 
         for (Person siloPerson : siloPersons) {
-            if (SiloUtil.getRandomNumberAsDouble() > populationScalingFactor) {
+//            if (SiloUtil.getRandomNumberAsDouble() > populationScalingFactor) {
+            if ( MatsimRandom.getRandom().nextDouble() > populationScalingFactor ) {
                 // e.g. if scalingFactor = 0.01, there will be a 1% chance that the loop is not
                 // continued in the next step, i.e. that the person is added to the population
                 continue;
@@ -103,23 +105,23 @@ public class SimpleMatsimScenarioAssembler implements MatsimScenarioAssembler {
             }
             Coord jobCoord = new Coord(jobCoordinate.x, jobCoordinate.y);
 
-            org.matsim.api.core.v01.population.Person matsimPerson = matsimPopulationFactory.createPerson(Id.createPersonId(siloPerson.getId()));
+            org.matsim.api.core.v01.population.Person matsimPerson = pf.createPerson(Id.createPersonId(siloPerson.getId()));
             matsimPopulation.addPerson(matsimPerson);
 
-            Plan matsimPlan = matsimPopulationFactory.createPlan();
+            Plan matsimPlan = pf.createPlan();
             matsimPerson.addPlan(matsimPlan);
 
-            Activity homeActivityMorning = matsimPopulationFactory.createActivityFromCoord("home", dwellingCoord);
+            Activity homeActivityMorning = pf.createActivityFromCoord("home", dwellingCoord);
             homeActivityMorning.setEndTime(6 * 3600 + 3 * SiloUtil.getRandomNumberAsDouble() * 3600); // TODO Potentially change later
             matsimPlan.addActivity(homeActivityMorning);
-            matsimPlan.addLeg(matsimPopulationFactory.createLeg(TransportMode.car)); // TODO Potentially change later
+            matsimPlan.addLeg(pf.createLeg(TransportMode.car)); // TODO Potentially change later
 
-            Activity workActivity = matsimPopulationFactory.createActivityFromCoord("work", jobCoord);
+            Activity workActivity = pf.createActivityFromCoord("work", jobCoord);
             workActivity.setEndTime(15 * 3600 + 3 * SiloUtil.getRandomNumberAsDouble() * 3600); // TODO Potentially change later
             matsimPlan.addActivity(workActivity);
-            matsimPlan.addLeg(matsimPopulationFactory.createLeg(TransportMode.car)); // TODO Potentially change later
+            matsimPlan.addLeg(pf.createLeg(TransportMode.car)); // TODO Potentially change later
 
-            Activity homeActvitiyEvening = matsimPopulationFactory.createActivityFromCoord("home", dwellingCoord);
+            Activity homeActvitiyEvening = pf.createActivityFromCoord("home", dwellingCoord);
             matsimPlan.addActivity(homeActvitiyEvening);
         }
         logger.info("Finished creating MATSim scenario.");
