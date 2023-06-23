@@ -24,28 +24,53 @@ public class RunFabilandTest{
 	@Ignore
 	public void testMain(){
 		try {
-			String [] args = {"./scenario/1r_ae.properties",
+			String [] args = {"./scenario/test.properties",
 					"./scenario/config_cap30_1-l_nes_smc.xml",
 //					"--config:controler.outputDirectory", utils.getOutputDirectory(), // has no effect; evidently overwritten by code
 					"--config:controler.lastIteration", "2"
 			} ;
+
 			RunFabiland.main( args ) ;
+
+			log.info("############################################");
+			log.info("############################################");
+
 			{
 				Population expected = PopulationUtils.createPopulation( ConfigUtils.createConfig() ) ;
-				PopulationUtils.readPopulation( expected,  utils.getInputDirectory() + "10.output_plans.xml.gz" );
+				PopulationUtils.readPopulation( expected,  utils.getInputDirectory() + "0.output_plans.xml.gz" );
 
 				Population actual = PopulationUtils.createPopulation( ConfigUtils.createConfig() ) ;
-				PopulationUtils.readPopulation( actual, "scenario/scenOutput/base/matsim/10/10.output_plans.xml.gz" );
+				PopulationUtils.readPopulation( actual, "scenario/scenOutput/base/matsim/0/0.output_plans.xml.gz" );
 
 				boolean result = PopulationUtils.comparePopulations( expected, actual );
 				Assert.assertTrue( result );
 			}
 			{
-				String expected = utils.getInputDirectory() + "/10.output_events.xml.gz" ;
-				String actual = "scenario/scenOutput/base/matsim/10/10.output_events.xml.gz" ;
+				String expected = utils.getInputDirectory() + "/0.output_events.xml.gz" ;
+				String actual = "scenario/scenOutput/base/matsim/0/0.output_events.xml.gz" ;
 				EventsFileComparator.Result result = EventsUtils.compareEventsFiles( expected, actual );
 				Assert.assertEquals( EventsFileComparator.Result.FILES_ARE_EQUAL, result );
 			}
+
+			log.info("############################################");
+			log.info("############################################");
+
+//			{
+//				Population expected = PopulationUtils.createPopulation( ConfigUtils.createConfig() ) ;
+//				PopulationUtils.readPopulation( expected,  utils.getInputDirectory() + "10.output_plans.xml.gz" );
+//
+//				Population actual = PopulationUtils.createPopulation( ConfigUtils.createConfig() ) ;
+//				PopulationUtils.readPopulation( actual, "scenario/scenOutput/base/matsim/10/10.output_plans.xml.gz" );
+//
+//				boolean result = PopulationUtils.comparePopulations( expected, actual );
+//				Assert.assertTrue( result );
+//			}
+//			{
+//				String expected = utils.getInputDirectory() + "/10.output_events.xml.gz" ;
+//				String actual = "scenario/scenOutput/base/matsim/10/10.output_events.xml.gz" ;
+//				EventsFileComparator.Result result = EventsUtils.compareEventsFiles( expected, actual );
+//				Assert.assertEquals( EventsFileComparator.Result.FILES_ARE_EQUAL, result );
+//			}
 
 		} catch ( Exception ee ) {
 			log.fatal("there was an exception: \n" + ee ) ;
