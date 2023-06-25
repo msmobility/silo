@@ -100,7 +100,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         if (threaded) {
             final int threads = Math.max(properties.main.numberOfThreads - 1, 1);
             UtilityUtils.startThreads(housingStrategy, threads);
-            logger.info("Started " + threads + " background threads for dwelling utility evaluation");
+            logger.info("=========> Started " + threads + " background threads for dwelling utility evaluation");
         }
 
         return events;
@@ -306,7 +306,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         Iterable<List<Household>> partitions = Iterables.partition(households, partitionSize);
         ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Properties.get().main.numberOfThreads);
 
-        logger.info("Using " + numberOfTasks + " thread(s)" +
+        logger.info("=========> Using " + numberOfTasks + " thread(s)" +
                 " with partitions of size " + partitionSize);
 
         for (final List<Household> partition : partitions) {

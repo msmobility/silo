@@ -21,28 +21,95 @@ public class RunFabilandTest{
 	@Rule public MatsimTestUtils utils = new MatsimTestUtils();
 
 	@Test
-	@Ignore
 	public void testMain(){
 		try {
-			String [] args = {"./scenario/1r_ae.properties",
+			String [] args = {"./scenario/test.properties",
 					"./scenario/config_cap30_1-l_nes_smc.xml",
-//					"--config:controler.outputDirectory", utils.getOutputDirectory(),
-					"--config:controler.lastIteration", "1"
+//					"--config:controler.outputDirectory", utils.getOutputDirectory(), // has no effect; evidently overwritten by code
+					"--config:controler.lastIteration", "2"
+					// (I made this "2" because with "1" it failed quite often with a failing binary search.  Seems to be fixed
+					// with the changed random number generator (see comments in SimpleCommuteModeChoiceMatsimScenarioAssembler),
+					// but I do not want to commit again new regression test files.  So leaving it at "2".  kai, jun'23
 			} ;
+
 			RunFabiland.main( args ) ;
+
+			log.info("############################################");
+			log.info("############################################");
+
+			{
+				Population expected = PopulationUtils.createPopulation( ConfigUtils.createConfig() ) ;
+				PopulationUtils.readPopulation( expected,  utils.getInputDirectory() + "0.output_plans.xml.gz" );
+
+				Population actual = PopulationUtils.createPopulation( ConfigUtils.createConfig() ) ;
+				PopulationUtils.readPopulation( actual, "scenario/scenOutput/base/matsim/0/0.output_plans.xml.gz" );
+
+				boolean result = PopulationUtils.comparePopulations( expected, actual );
+				Assert.assertTrue( result );
+			}
+			{
+				String expected = utils.getInputDirectory() + "/0.output_events.xml.gz" ;
+				String actual = "scenario/scenOutput/base/matsim/0/0.output_events.xml.gz" ;
+				EventsFileComparator.Result result = EventsUtils.compareEventsFiles( expected, actual );
+				Assert.assertEquals( EventsFileComparator.Result.FILES_ARE_EQUAL, result );
+			}
+
+			log.info("############################################");
+			log.info("############################################");
+
+			{
+				Population expected = PopulationUtils.createPopulation( ConfigUtils.createConfig() ) ;
+				PopulationUtils.readPopulation( expected,  utils.getInputDirectory() + "1.0.plans.xml.gz" );
+
+				Population actual = PopulationUtils.createPopulation( ConfigUtils.createConfig() ) ;
+				PopulationUtils.readPopulation( actual, "scenario/scenOutput/base/matsim/1/ITERS/it.0/1.0.plans.xml.gz" );
+
+				boolean result = PopulationUtils.comparePopulations( expected, actual );
+				Assert.assertTrue( result );
+			}
+			{
+				String expected = utils.getInputDirectory() + "/1.0.events.xml.gz" ;
+				String actual = "scenario/scenOutput/base/matsim/1/ITERS/it.0/1.0.events.xml.gz" ;
+				EventsFileComparator.Result result = EventsUtils.compareEventsFiles( expected, actual );
+				Assert.assertEquals( EventsFileComparator.Result.FILES_ARE_EQUAL, result );
+			}
+
+			log.info("############################################");
+			log.info("############################################");
+
+			{
+				Population expected = PopulationUtils.createPopulation( ConfigUtils.createConfig() ) ;
+				PopulationUtils.readPopulation( expected,  utils.getInputDirectory() + "1.output_plans.xml.gz" );
+
+				Population actual = PopulationUtils.createPopulation( ConfigUtils.createConfig() ) ;
+				PopulationUtils.readPopulation( actual, "scenario/scenOutput/base/matsim/1/1.output_plans.xml.gz" );
+
+				boolean result = PopulationUtils.comparePopulations( expected, actual );
+				Assert.assertTrue( result );
+			}
+			{
+				String expected = utils.getInputDirectory() + "/1.output_events.xml.gz" ;
+				String actual = "scenario/scenOutput/base/matsim/1/1.output_events.xml.gz" ;
+				EventsFileComparator.Result result = EventsUtils.compareEventsFiles( expected, actual );
+				Assert.assertEquals( EventsFileComparator.Result.FILES_ARE_EQUAL, result );
+			}
+
+			log.info("############################################");
+			log.info("############################################");
+
 //			{
 //				Population expected = PopulationUtils.createPopulation( ConfigUtils.createConfig() ) ;
-//				PopulationUtils.readPopulation( expected, utils.getInputDirectory() + "/output_plans.xml.gz" );
+//				PopulationUtils.readPopulation( expected,  utils.getInputDirectory() + "10.output_plans.xml.gz" );
 //
 //				Population actual = PopulationUtils.createPopulation( ConfigUtils.createConfig() ) ;
-//				PopulationUtils.readPopulation( actual, utils.getOutputDirectory() + "/output_plans.xml.gz" );
+//				PopulationUtils.readPopulation( actual, "scenario/scenOutput/base/matsim/10/10.output_plans.xml.gz" );
 //
 //				boolean result = PopulationUtils.comparePopulations( expected, actual );
 //				Assert.assertTrue( result );
 //			}
 //			{
-//				String expected = utils.getInputDirectory() + "/output_events.xml.gz" ;
-//				String actual = utils.getOutputDirectory() + "/output_events.xml.gz" ;
+//				String expected = utils.getInputDirectory() + "/10.output_events.xml.gz" ;
+//				String actual = "scenario/scenOutput/base/matsim/10/10.output_events.xml.gz" ;
 //				EventsFileComparator.Result result = EventsUtils.compareEventsFiles( expected, actual );
 //				Assert.assertEquals( EventsFileComparator.Result.FILES_ARE_EQUAL, result );
 //			}
