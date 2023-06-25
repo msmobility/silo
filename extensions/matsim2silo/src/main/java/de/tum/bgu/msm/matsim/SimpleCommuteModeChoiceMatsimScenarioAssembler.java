@@ -35,36 +35,60 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
 
     private final DataContainer dataContainer;
     private final Properties properties;
+    private final HandlingOfRandomObject handlingOfRandomObject;
     private CommuteModeChoice commuteModeChoice;
-
     private final Random random;
     // yyyy I found this using the regular silo random number sequence.  In consequence, it was using different random numbers every time it was
     // called, in consequence picking different agents from silo.  This is not what we want.  --  It also picked different agents every time it ran.
     // No idea why; by design, the silo rnd number sequence should be deterministic.  However, we also have a randomly occuring binarySearch error, so
     // there must be something random in the code, possibly race conditions in the multithreading.  kai, jun'23
+    public enum HandlingOfRandomObject {fromSilo, localInstanceFromMatsimWithAlwaysSameSeed }
+    // (See above.  I cannot say what of this is truly needed.  kai, jun'23)
 
-    private final boolean newRandomSeed = false;
-
-    public SimpleCommuteModeChoiceMatsimScenarioAssembler(DataContainer dataContainer, Properties properties, CommuteModeChoice commuteModeChoice) {
+    public SimpleCommuteModeChoiceMatsimScenarioAssembler(DataContainer dataContainer, Properties properties, CommuteModeChoice commuteModeChoice){
+        this( dataContainer, properties, commuteModeChoice, HandlingOfRandomObject.fromSilo );
+    }
+    public SimpleCommuteModeChoiceMatsimScenarioAssembler(DataContainer dataContainer, Properties properties, CommuteModeChoice commuteModeChoice,
+                                                          HandlingOfRandomObject handlingOfRandomObject){
         this.dataContainer = dataContainer;
         this.properties = properties;
         this.commuteModeChoice = commuteModeChoice;
 
-        if ( newRandomSeed ){
-            this.random = MatsimRandom.getLocalInstance();
-        } else{
-            this.random = SiloUtil.getRandomObject();
+        this.handlingOfRandomObject = handlingOfRandomObject;
+
+        switch( handlingOfRandomObject ) {
+            case fromSilo:
+                this.random = SiloUtil.getRandomObject();
+                break;
+            case localInstanceFromMatsimWithAlwaysSameSeed:
+                this.random = MatsimRandom.getLocalInstance();
+                break;
+            default:
+                throw new IllegalStateException( "Unexpected value: " + handlingOfRandomObject );
         }
+
     }
 
     @Override
     public Scenario assembleScenario(Config matsimConfig, int year, TravelTimes travelTimes) {
         logger.info("Starting creating (mode-respecting, home-work-home) MATSim scenario.");
 
-        if ( newRandomSeed ){
-            random.setSeed( 4711 );
-            // (note that we WANT this with the same random seed for every year when matsim is called.  Could, however, be made dependent on the silo
-            // seed, so that with a change of the silo seed it also changes the random seed here.  kai' jun'23)
+        switch( handlingOfRandomObject ){
+            case fromSilo:
+                break;
+            case localInstanceFromMatsimWithAlwaysSameSeed:
+                random.setSeed( 4711 );
+                // (note that we WANT this with the same random seed for every year when matsim is called.  Could, however, be made dependent on the silo
+                // seed, so that with a change of the silo seed it also changes the random seed here.  kai' jun'23)
+
+                // yyyy this will probably not work.  A person at a certain position will not be the same person some silo years later, since
+                // intermediate persons may have been deleted and/or added.  In matsim4urbansim, I therefore went through the remembered matsim
+                // population, and pulled the corresponding persons from the land use population.  And then added randomly drawn additional persons
+                // until the right amount was found (not necessarily the same as in the 1st iteration).  kai, jun'23
+
+                break;
+            default:
+                throw new IllegalStateException( "Unexpected value: " + handlingOfRandomObject );
         }
 
         double populationScalingFactor = properties.transportModel.matsimScaleFactor;

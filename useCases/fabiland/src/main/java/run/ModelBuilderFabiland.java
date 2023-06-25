@@ -57,6 +57,8 @@ import org.matsim.core.scenario.ScenarioUtils;
 
 import java.util.Random;
 
+import static de.tum.bgu.msm.matsim.SimpleCommuteModeChoiceMatsimScenarioAssembler.*;
+
 public class ModelBuilderFabiland {
 
     public static ModelContainer getModelContainer(DataContainer dataContainer, Properties properties, Config config) {
@@ -131,7 +133,7 @@ public class ModelBuilderFabiland {
             case MATSIM:
 //                SimpleCommuteModeChoice commuteModeChoice = new SimpleCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom());
                 SimpleMatsimCommuteModeChoice commuteModeChoice = new SimpleMatsimCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom());
-                scenarioAssembler = new SimpleCommuteModeChoiceMatsimScenarioAssembler(dataContainer, properties, commuteModeChoice);
+                scenarioAssembler = new SimpleCommuteModeChoiceMatsimScenarioAssembler(dataContainer, properties, commuteModeChoice, HandlingOfRandomObject.localInstanceFromMatsimWithAlwaysSameSeed);
                 transportModel = new MatsimTransportModel(dataContainer, config, properties, scenarioAssembler, matsimData);
                 break;
             case NONE:

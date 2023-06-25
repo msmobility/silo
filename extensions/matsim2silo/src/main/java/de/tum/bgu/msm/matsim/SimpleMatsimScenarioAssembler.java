@@ -24,7 +24,7 @@ import org.matsim.api.core.v01.population.Plan;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.api.core.v01.population.PopulationFactory;
 import org.matsim.core.config.Config;
-import org.matsim.core.gbl.MatsimRandom;
+//import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.scenario.ScenarioUtils;
 
 import java.util.Collection;
@@ -34,31 +34,31 @@ public class SimpleMatsimScenarioAssembler implements MatsimScenarioAssembler {
     private final static Logger logger = Logger.getLogger(SimpleMatsimScenarioAssembler.class);
     private final DataContainer dataContainer;
     private final Properties properties;
-    private final boolean newRandomSeed = false;
+//    private final boolean newRandomSeed = false;
     private final Random random;
 
     public SimpleMatsimScenarioAssembler(DataContainer dataContainer, Properties properties) {
         this.dataContainer = dataContainer;
         this.properties = properties;
 
-        if ( newRandomSeed ){
-            this.random = MatsimRandom.getLocalInstance();
-        } else{
+//        if ( newRandomSeed ){
+//            this.random = MatsimRandom.getLocalInstance();
+//        } else{
             this.random = SiloUtil.getRandomObject();
             logger.warn("using random number sequence from silo.  for fabiland, this made regression tests non-deterministic.  Here, it seems to work, " +
                                         "thus leaving it the way it is.  kai, jun'23");
-        }
+//        }
     }
 
     @Override
     public Scenario assembleScenario(Config matsimConfig, int year, TravelTimes travelTimes) {
         logger.info("Starting creating (simple home-work-home) MATSim scenario.");
 
-        if ( newRandomSeed ){
-            random.setSeed( 4711 );
-            // (note that we WANT this with the same random seed for every year when matsim is called.  Could, however, be made dependent on the silo
-            // seed, so that with a change of the silo seed it also changes the random seed here.  kai' jun'23)
-        }
+//        if ( newRandomSeed ){
+//            random.setSeed( 4711 );
+//            // (note that we WANT this with the same random seed for every year when matsim is called.  Could, however, be made dependent on the silo
+//            // seed, so that with a change of the silo seed it also changes the random seed here.  kai' jun'23)
+//        }
 
         double populationScalingFactor = properties.transportModel.matsimScaleFactor;
         SiloMatsimUtils.checkSiloPropertiesAndMatsimConfigConsistency(matsimConfig, properties);
@@ -72,7 +72,7 @@ public class SimpleMatsimScenarioAssembler implements MatsimScenarioAssembler {
 
         for (Person siloPerson : siloPersons) {
 //            if (SiloUtil.getRandomNumberAsDouble() > populationScalingFactor) {
-            if ( MatsimRandom.getRandom().nextDouble() > populationScalingFactor ) {
+            if ( random.nextDouble() > populationScalingFactor ) {
                 // e.g. if scalingFactor = 0.01, there will be a 1% chance that the loop is not
                 // continued in the next step, i.e. that the person is added to the population
                 continue;
