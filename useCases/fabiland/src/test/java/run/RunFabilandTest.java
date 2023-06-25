@@ -27,6 +27,9 @@ public class RunFabilandTest{
 					"./scenario/config_cap30_1-l_nes_smc.xml",
 //					"--config:controler.outputDirectory", utils.getOutputDirectory(), // has no effect; evidently overwritten by code
 					"--config:controler.lastIteration", "2"
+					// (I made this "2" because with "1" it failed quite often with a failing binary search.  Seems to be fixed
+					// with the changed random number generator (see comments in SimpleCommuteModeChoiceMatsimScenarioAssembler),
+					// but I do not want to commit again new regression test files.  So leaving it at "2".  kai, jun'23
 			} ;
 
 			RunFabiland.main( args ) ;

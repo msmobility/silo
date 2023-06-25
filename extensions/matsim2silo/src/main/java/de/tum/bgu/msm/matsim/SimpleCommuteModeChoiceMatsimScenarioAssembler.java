@@ -24,6 +24,7 @@ import org.matsim.api.core.v01.population.Plan;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.api.core.v01.population.PopulationFactory;
 import org.matsim.core.config.Config;
+import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.scenario.ScenarioUtils;
 
 import java.util.Random;
@@ -36,23 +37,35 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
     private final Properties properties;
     private CommuteModeChoice commuteModeChoice;
 
-    private Random random;
+    private final Random random;
     // yyyy I found this using the regular silo random number sequence.  In consequence, it was using different random numbers every time it was
     // called, in consequence picking different agents from silo.  This is not what we want.  --  It also picked different agents every time it ran.
     // No idea why; by design, the silo rnd number sequence should be deterministic.  However, we also have a randomly occuring binarySearch error, so
     // there must be something random in the code, possibly race conditions in the multithreading.  kai, jun'23
 
+    private final boolean newRandomSeed = true;
+
     public SimpleCommuteModeChoiceMatsimScenarioAssembler(DataContainer dataContainer, Properties properties, CommuteModeChoice commuteModeChoice) {
         this.dataContainer = dataContainer;
         this.properties = properties;
         this.commuteModeChoice = commuteModeChoice;
+
+        if ( newRandomSeed ){
+            this.random = MatsimRandom.getLocalInstance();
+        } else{
+            this.random = SiloUtil.getRandomObject();
+        }
     }
 
     @Override
     public Scenario assembleScenario(Config matsimConfig, int year, TravelTimes travelTimes) {
         logger.info("Starting creating (mode-respecting, home-work-home) MATSim scenario.");
 
-        random = new Random(4711);
+        if ( newRandomSeed ){
+            random.setSeed( 4711 );
+            // (note that we WANT this with the same random seed for every year when matsim is called.  Could, however, be made dependent on the silo
+            // seed, so that with a change of the silo seed it also changes the random seed here.  kai' jun'23)
+        }
 
         double populationScalingFactor = properties.transportModel.matsimScaleFactor;
         SiloMatsimUtils.checkSiloPropertiesAndMatsimConfigConsistency(matsimConfig, properties);
