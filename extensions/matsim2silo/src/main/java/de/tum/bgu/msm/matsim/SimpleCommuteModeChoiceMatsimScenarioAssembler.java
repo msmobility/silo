@@ -35,21 +35,21 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
 
     private final DataContainer dataContainer;
     private final Properties properties;
-    private final HandlingOfRandomObject handlingOfRandomObject;
+    private final HandlingOfRandomness handlingOfRandomObject;
     private CommuteModeChoice commuteModeChoice;
     private final Random random;
     // yyyy I found this using the regular silo random number sequence.  In consequence, it was using different random numbers every time it was
     // called, in consequence picking different agents from silo.  This is not what we want.  --  It also picked different agents every time it ran.
     // No idea why; by design, the silo rnd number sequence should be deterministic.  However, we also have a randomly occuring binarySearch error, so
     // there must be something random in the code, possibly race conditions in the multithreading.  kai, jun'23
-    public enum HandlingOfRandomObject {fromSilo, localInstanceFromMatsimWithAlwaysSameSeed }
+    public enum HandlingOfRandomness{fromSilo, localInstanceFromMatsimWithAlwaysSameSeed }
     // (See above.  I cannot say what of this is truly needed.  kai, jun'23)
 
     public SimpleCommuteModeChoiceMatsimScenarioAssembler(DataContainer dataContainer, Properties properties, CommuteModeChoice commuteModeChoice){
-        this( dataContainer, properties, commuteModeChoice, HandlingOfRandomObject.fromSilo );
+        this( dataContainer, properties, commuteModeChoice, HandlingOfRandomness.fromSilo );
     }
     public SimpleCommuteModeChoiceMatsimScenarioAssembler(DataContainer dataContainer, Properties properties, CommuteModeChoice commuteModeChoice,
-                                                          HandlingOfRandomObject handlingOfRandomObject){
+                                                          HandlingOfRandomness handlingOfRandomObject ){
         this.dataContainer = dataContainer;
         this.properties = properties;
         this.commuteModeChoice = commuteModeChoice;
