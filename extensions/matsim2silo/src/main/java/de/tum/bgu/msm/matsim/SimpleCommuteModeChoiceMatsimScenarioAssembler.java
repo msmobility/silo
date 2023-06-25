@@ -43,7 +43,7 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
     // No idea why; by design, the silo rnd number sequence should be deterministic.  However, we also have a randomly occuring binarySearch error, so
     // there must be something random in the code, possibly race conditions in the multithreading.  kai, jun'23
 
-    private final boolean newRandomSeed = true;
+    private final boolean newRandomSeed = false;
 
     public SimpleCommuteModeChoiceMatsimScenarioAssembler(DataContainer dataContainer, Properties properties, CommuteModeChoice commuteModeChoice) {
         this.dataContainer = dataContainer;
