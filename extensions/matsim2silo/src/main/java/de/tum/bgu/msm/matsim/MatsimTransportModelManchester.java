@@ -169,7 +169,7 @@ public final class MatsimTransportModelManchester implements TransportModel {
 
         assembledScenario = scenarioAssembler.assembleScenario(assembledScenario.getConfig(), year, travelTimes);
 
-        //finalizeConfig(assembledScenario.getConfig(), year);
+        finalizeConfig(assembledScenario.getConfig(), year);
         logger.warn("Population: " + assembledScenario.getPopulation().getPersons().size());
         logger.warn("Iteration: " + assembledScenario.getConfig().controler().getLastIteration());
 
@@ -185,7 +185,7 @@ public final class MatsimTransportModelManchester implements TransportModel {
 
             // To use the deterministic pt simulation (Part 2 of 2):
             controler.configureQSimComponents(components -> {
-                SBBTransitEngineQSimModule.configure(components);
+                new SBBTransitEngineQSimModule().configure(components);
 
                 // if you have other extensions that provide QSim components, call their configure-method here
             });
