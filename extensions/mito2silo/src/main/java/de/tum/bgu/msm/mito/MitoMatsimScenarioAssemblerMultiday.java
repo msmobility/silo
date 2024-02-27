@@ -1,12 +1,10 @@
 package de.tum.bgu.msm.mito;
 
-
 import de.tum.bgu.msm.MitoModel2017;
 import de.tum.bgu.msm.MitoModel2017withMoped;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.DataSet;
 import de.tum.bgu.msm.data.Day;
-import de.tum.bgu.msm.data.MitoTrip;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.matsim.MatsimScenarioAssembler;
@@ -28,11 +26,10 @@ import org.matsim.core.scenario.ScenarioUtils;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
-public class MitoMatsimScenarioAssembler implements MatsimScenarioAssembler {
+public class MitoMatsimScenarioAssemblerMultiday implements MatsimScenarioAssembler {
 
-    private static final Logger logger = Logger.getLogger(MitoMatsimScenarioAssembler.class);
+    private static final Logger logger = Logger.getLogger(MitoMatsimScenarioAssemblerMultiday.class);
 
     private final String propertiesPath;
 
@@ -42,9 +39,11 @@ public class MitoMatsimScenarioAssembler implements MatsimScenarioAssembler {
 
     private SkimTravelTimes mitoInputTravelTime;
 
-    public MitoMatsimScenarioAssembler(DataContainer dataContainer,
-                                       Properties properties,
-                                       MitoDataConverter dataConverter) {
+
+
+    public MitoMatsimScenarioAssemblerMultiday(DataContainer dataContainer,
+                                               Properties properties,
+                                               MitoDataConverter dataConverter) {
         this.dataContainer = dataContainer;
         this.properties = properties;
         this.dataConverter = dataConverter;
@@ -161,4 +160,5 @@ public class MitoMatsimScenarioAssembler implements MatsimScenarioAssembler {
         dataSet.setYear(year);
         return dataSet;
     }
+
 }

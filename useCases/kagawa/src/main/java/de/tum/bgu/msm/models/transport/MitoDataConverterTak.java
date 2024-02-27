@@ -40,7 +40,7 @@ public class MitoDataConverterTak implements MitoDataConverter {
     //TODO: area type
     private void convertZones(DataSet dataSet, DataContainer dataContainer) {
         for (Zone siloZone : dataContainer.getGeoData().getZones().values()) {
-            MitoZone zone = new MitoZone(siloZone.getZoneId(), AreaTypes.SGType.CORE_CITY);
+            MitoZone zone = new MitoZone(siloZone.getZoneId(), 0, AreaTypes.SGType.CORE_CITY);
             zone.setGeometry((Geometry) siloZone.getZoneFeature().getDefaultGeometry());
             dataSet.addZone(zone);
         }
@@ -146,6 +146,7 @@ public class MitoDataConverterTak implements MitoDataConverter {
                 household,
                 mitoOccupationStatus,
                 mitoOccupation,
+                null,
                 person.getAge(),
                 mitoGender,
                 person.hasDriverLicense());

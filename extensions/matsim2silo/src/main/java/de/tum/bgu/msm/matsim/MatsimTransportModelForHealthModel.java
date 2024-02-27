@@ -194,7 +194,8 @@ public final class MatsimTransportModelForHealthModel implements TransportModel 
             Config carTruckConfig = ConfigUtils.loadConfig(initialMatsimConfig.getContext());
             MutableScenario scenarioCar = (MutableScenario) ScenarioUtils.loadScenario(carTruckConfig);
             scenarioCar.setPopulation(populationCarTruck);
-            finalizeCarTruckConfig(scenarioCar.getConfig(), year, day);
+            prepCarTruckConfig(scenarioCar.getConfig());
+            finalizeCarTruckConfig(scenarioCar.getConfig(), Integer.toString(year),year + "/" + day + "/car/");
             final Controler controlerCar = new Controler(scenarioCar);
             controlerCar.run();
             logger.warn("Running MATSim transport model for " + day + " car scenario " + year + " finished.");
@@ -332,7 +333,7 @@ public final class MatsimTransportModelForHealthModel implements TransportModel 
         bikePedConfig.planCalcScore().addModeParams(walkParams);
     }
 
-    private void finalizeCarTruckConfig(Config config, int year, Day day) {
+    private void prepCarTruckConfig(Config config) {
         config.qsim().setFlowCapFactor(properties.main.scaleFactor * Double.parseDouble(Resources.instance.getString(de.tum.bgu.msm.resources.Properties.TRIP_SCALING_FACTOR)));
         config.qsim().setStorageCapFactor(properties.main.scaleFactor * Double.parseDouble(Resources.instance.getString(de.tum.bgu.msm.resources.Properties.TRIP_SCALING_FACTOR)));
 
@@ -366,13 +367,6 @@ public final class MatsimTransportModelForHealthModel implements TransportModel 
         ActivityParams airportActivity = new ActivityParams("airport").setTypicalDuration(1 * 60 * 60);
         config.planCalcScore().addActivityParams(airportActivity);
 
-        final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
-        String outputDirectory = outputDirectoryRoot + "/matsim/" + year + "/" + day + "/car/";
-        config.controler().setRunId(String.valueOf(year));
-        config.controler().setOutputDirectory(outputDirectory);
-        config.controler().setWritePlansInterval(Math.max(config.controler().getLastIteration(), 1));
-        config.controler().setWriteEventsInterval(Math.max(config.controler().getLastIteration(), 1));
-        config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
         if (properties.transportModel.includeAccessEgress) {
             config.plansCalcRoute().setAccessEgressType(PlansCalcRouteConfigGroup.AccessEgressType.walkConstantTimeToLink);
         }
@@ -393,6 +387,16 @@ public final class MatsimTransportModelForHealthModel implements TransportModel 
         truckParams.setDailyUtilityConstant(carParams.getDailyUtilityConstant());
         truckParams.setMonetaryDistanceRate(carParams.getMonetaryDistanceRate());
         config.planCalcScore().addModeParams(truckParams);
+    }
+
+    private void finalizeCarTruckConfig(Config config, String runId, String dir) {
+        final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
+        String outputDirectory = outputDirectoryRoot + "/matsim/" + dir + "/car/";
+        config.controler().setRunId(runId);
+        config.controler().setOutputDirectory(outputDirectory);
+        config.controler().setWritePlansInterval(Math.max(config.controler().getLastIteration(), 1));
+        config.controler().setWriteEventsInterval(Math.max(config.controler().getLastIteration(), 1));
+        config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
     }
 
     /**

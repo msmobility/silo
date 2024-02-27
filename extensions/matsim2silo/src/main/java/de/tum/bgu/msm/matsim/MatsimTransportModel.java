@@ -157,7 +157,7 @@ public final class MatsimTransportModel implements TransportModel {
         // TODO remove config argument as it is duplicate (cf. above)
         assembledScenario = scenarioAssembler.assembleScenario(initialMatsimConfig, year, travelTimes);
 
-        finalizeConfig(assembledScenario.getConfig(), year);
+        finalizeConfig(assembledScenario.getConfig(), year, Integer.toString(year));
 
         final Controler controler = new Controler(assembledScenario);
 
@@ -171,10 +171,10 @@ public final class MatsimTransportModel implements TransportModel {
         updateTravelTimes(travelTime, travelDisutility);
     }
 
-    private void finalizeConfig(Config config, int year) {
+    private void finalizeConfig(Config config, int runId, String dir) {
         final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
-        String outputDirectory = outputDirectoryRoot + "/matsim/" + year + "/";
-        config.controler().setRunId(String.valueOf(year));
+        String outputDirectory = outputDirectoryRoot + "/matsim/" + dir + "/";
+        config.controler().setRunId(String.valueOf(runId));
         config.controler().setOutputDirectory(outputDirectory);
         config.controler().setWritePlansInterval(Math.max(config.controler().getLastIteration(), 1));
         config.controler().setWriteEventsInterval(Math.max(config.controler().getLastIteration(), 1));

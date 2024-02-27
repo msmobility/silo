@@ -17,6 +17,7 @@
         <module>matsim2silo</module>
         <module>mito2silo</module>
         <module>schools</module>
+        <module>health</module>
     </modules>
 
     <dependencies>

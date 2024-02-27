@@ -22,6 +22,11 @@
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
+            <groupId>de.tum.bgu.msm</groupId>
+            <artifactId>health</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
             <groupId>com.github.kevinstern</groupId>
             <artifactId>software-and-algorithms</artifactId>
             <version>1.0</version>
@@ -37,14 +42,18 @@
             <version>6.7.2</version>
         </dependency>
         <dependency>
-            <groupId>org.matsim.contrib</groupId>
-            <artifactId>accidents</artifactId>
-            <version>14.0-SNAPSHOT</version>
+            <groupId>de.tum.bgu.msm</groupId>
+            <artifactId>matsim2silo</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.matsim.contrib</groupId>
-            <artifactId>analysis</artifactId>
-            <version>14.0-SNAPSHOT</version>
+            <!--MATSim test infrastructure.  Not transitive.-->
+            <groupId>org.matsim</groupId>
+            <artifactId>matsim</artifactId>
+            <type>test-jar</type>
+            <version>${matsimVersion}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.matsim.contrib</groupId>
@@ -62,20 +71,6 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>de.tum.bgu.msm</groupId>
-            <artifactId>matsim2silo</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <!--MATSim test infrastructure.  Not transitive.-->
-            <groupId>org.matsim</groupId>
-            <artifactId>matsim</artifactId>
-            <type>test-jar</type>
-            <version>${matsimVersion}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.13.2</version>
@@ -85,6 +80,12 @@
             <groupId>de.tum.bgu.msm</groupId>
             <artifactId>siloCore</artifactId>
             <version>0.1.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.matsim.contrib</groupId>
+            <artifactId>emissions</artifactId>
+            <version>14.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
         <!--        <dependency>-->
