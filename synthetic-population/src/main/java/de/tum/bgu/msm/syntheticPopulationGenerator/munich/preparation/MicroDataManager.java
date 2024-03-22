@@ -25,8 +25,7 @@ public class MicroDataManager {
 
     public MicroDataManager(DataSetSynPop dataSetSynPop){this.dataSetSynPop = dataSetSynPop;}
 
-
-    public HashMap<String, String[]> attributesMicroData(){
+    public HashMap<String, String[]> attributesMicroData() {
 
         HashMap<String, String[]> attributesMicroData = new HashMap<>();
         String[] attributesPerson = {"age", "gender", "occupation", "income", "nationality", "telework", "ppPrivate", "educationDegree", "personStatus", "spouseInHousehold", "marriage", "relationship", "school"};
@@ -37,7 +36,6 @@ public class MicroDataManager {
         attributesMicroData.put("dwelling", attributesDwelling);
         return attributesMicroData;
     }
-
 
     public Map<String, Map<String, Integer>> attributesPersonMicroData(){
 

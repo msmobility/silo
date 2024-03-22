@@ -5,14 +5,14 @@ public enum DwellingUsage {
 
     public static DwellingUsage valueOf(int code) {
         switch (code) {
-            case 0:
-                return GROUP_QUARTER_OR_DEFAULT;
             case 1:
-                return OWNED;
             case 2:
-                return RENTED;
+                return OWNED;
             case 3:
-                return VACANT;
+            case 4:
+                return RENTED;
+            case 5:
+                return GROUP_QUARTER_OR_DEFAULT;
             default:
                 throw new RuntimeException("Undefined dwelling usage code " + code);
         }
