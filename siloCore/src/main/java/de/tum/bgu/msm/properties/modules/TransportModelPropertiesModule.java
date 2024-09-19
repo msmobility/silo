@@ -59,6 +59,13 @@ public class TransportModelPropertiesModule {
         MATSIM, SKIM;
     }
 
+    /**
+     * Scale factor for MATSim transport model.
+     */
+    public final int matsimIteration;
+
+    public final String[] matsimNetworkModes;
+
     public TransportModelPropertiesModule(ResourceBundle bundle) {
         PropertiesUtil.newPropertySubmodule("Transport model properties");
         transportModelYears = Arrays.stream(PropertiesUtil.getIntPropertyArray(bundle, "transport.model.years", new int[]{2024,2037,2050}))
@@ -84,6 +91,11 @@ public class TransportModelPropertiesModule {
         // 1.0 is also the default for flow and storage cap scaling in MATSim; setting the default to 1.0 here is more consistent. dz, dec'19
         PropertiesUtil.newPropertySubmodule("MATSim -- Scale factor for simulated MATSim populations");
         matsimScaleFactor = PropertiesUtil.getDoubleProperty(bundle, "matsim.scale.factor", 1.);
+
+        PropertiesUtil.newPropertySubmodule("MATSim -- Iteration for simulated MATSim populations");
+        matsimIteration = PropertiesUtil.getIntProperty(bundle, "matsim.iterations", 50);
+        PropertiesUtil.newPropertySubmodule("MATSim -- network modes");
+        matsimNetworkModes = PropertiesUtil.getStringPropertyArray(bundle, "matsim.network.modes", new String[]{"autoDriver"});
 
         PropertiesUtil.newPropertySubmodule("MATSim - Only simulate car trips");
         onlySimulateCarTrips = PropertiesUtil.getBooleanProperty(bundle, "matsim.simulate.car.trips.only", true);

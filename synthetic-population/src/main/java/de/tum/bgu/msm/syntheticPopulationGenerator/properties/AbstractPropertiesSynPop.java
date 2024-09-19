@@ -89,6 +89,7 @@ public abstract class AbstractPropertiesSynPop {
     //public TableDataSet cellsMicrolocations;
     public int firstVacantJob;
 
+    public String commuteFlowFile;
     public TableDataSet fullTimeProbabilityTable;
 
     public String fullTimeFileName;

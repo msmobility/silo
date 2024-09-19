@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.syntheticPopulationGenerator;
+package de.tum.bgu.msm.syntheticPopulationGenerator.manchester;
 
 
 import com.google.common.collect.HashBasedTable;
@@ -6,6 +6,7 @@ import com.google.common.collect.Table;
 import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.common.matrix.Matrix;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
+import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.opengis.feature.simple.SimpleFeature;
@@ -19,9 +20,9 @@ import java.util.Map;
  */
 
 
-public class DataSetSynPop {
+public class DataSetSynPopMCR extends DataSetSynPop {
 
-    private static final Logger logger = Logger.getLogger(DataSetSynPop.class);
+    private static final Logger logger = Logger.getLogger(DataSetSynPopMCR.class);
 
     private TableDataSet weights;
     private TableDataSet frequencyMatrix;
@@ -47,6 +48,7 @@ public class DataSetSynPop {
     private Table<Integer, String, Float> tripLengthDistribution;
     private ArrayList<Integer> municipalitiesWithZeroPopulation;
 
+    private Matrix distanceLSOAToLSOA;
     private Matrix distanceTazToTaz;
     private Matrix commuteFlowTazToTaz;
     private float[] areas;
@@ -66,9 +68,12 @@ public class DataSetSynPop {
     private TableDataSet regionsforFrequencyMatrix;
     private HashMap<Integer, HashMap<Integer, Integer>> householdsForFrequencyMatrix;
     private HashMap<Integer, Integer> municipalityCounty;
+    private HashMap<Integer, Integer> tazMunicipality;
 
+    private HashMap<Integer, HashMap<String, Float>> lsoaAttributes;
     private HashMap<Integer, HashMap<String, Float>> tazAttributes;
 
+    private Map<Integer, Map<Integer, Map<Integer,Float>>> carOwnershipProbabilityByHhsizeAndLSOA;
     private Map<String, Map<Integer, Integer>> vacantJobsByTypeAndZone;
     private Map<String, Map<Integer, Integer>> assignedJobsByTypeAndZone;
     private Map<String, Map<Integer, Map<Integer, Coordinate>>> microlocationsJobsByTypeAndZone;
@@ -454,5 +459,37 @@ public class DataSetSynPop {
 
     public void setNextVacantJobId(int nextVacantJobId) {
         this.nextVacantJobId = nextVacantJobId;
+    }
+
+    public Matrix getDistanceLSOAToLSOA() {
+        return distanceLSOAToLSOA;
+    }
+
+    public void setDistanceLSOAToLSOA(Matrix distanceLSOAToLSOA) {
+        this.distanceLSOAToLSOA = distanceLSOAToLSOA;
+    }
+
+    public HashMap<Integer, HashMap<String, Float>> getLsoaAttributes() {
+        return lsoaAttributes;
+    }
+
+    public void setLsoaAttributes(HashMap<Integer, HashMap<String, Float>> lsoaAttributes) {
+        this.lsoaAttributes = lsoaAttributes;
+    }
+
+    public HashMap<Integer, Integer> getTazMunicipality() {
+        return tazMunicipality;
+    }
+
+    public void setTazMunicipality(HashMap<Integer, Integer> tazMunicipality) {
+        this.tazMunicipality = tazMunicipality;
+    }
+
+    public Map<Integer, Map<Integer, Map<Integer,Float>>> getCarOwnershipProbabilityByHhsizeAndLSOA() {
+        return carOwnershipProbabilityByHhsizeAndLSOA;
+    }
+
+    public void setCarOwnershipProbabilityByHhsizeAndLSOA(Map<Integer, Map<Integer, Map<Integer,Float>>> carOwnershipProbabilityByHhsizeAndLSOA) {
+        this.carOwnershipProbabilityByHhsizeAndLSOA = carOwnershipProbabilityByHhsizeAndLSOA;
     }
 }
