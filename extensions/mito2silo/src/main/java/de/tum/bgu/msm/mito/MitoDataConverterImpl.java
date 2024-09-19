@@ -73,7 +73,7 @@ public class MitoDataConverterImpl implements MitoDataConverter {
             MitoHousehold household = new MitoHousehold(
                     siloHousehold.getId(),
                     HouseholdUtil.getAnnualHhIncome(siloHousehold) / 12,
-                    (int) siloHousehold.getVehicles().stream().filter(vv -> vv.getType().equals(VehicleType.CAR)).count());
+                    (int) siloHousehold.getVehicles().stream().filter(vv -> vv.getType().equals(VehicleType.CAR)).count(),Boolean.TRUE);
             household.setHomeZone(zone);
 
             Coordinate coordinate;
