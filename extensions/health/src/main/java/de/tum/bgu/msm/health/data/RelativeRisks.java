@@ -1,6 +1,7 @@
-package de.tum.bgu.msm.health;
+package de.tum.bgu.msm.health.data;
 
 import de.tum.bgu.msm.data.Mode;
+
 import java.util.HashMap;
 import java.util.Map;
 

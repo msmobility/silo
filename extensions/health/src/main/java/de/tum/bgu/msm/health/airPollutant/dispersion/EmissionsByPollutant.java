@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.health;
+package de.tum.bgu.msm.health.airPollutant.dispersion;
 
 import org.matsim.contrib.emissions.Pollutant;
 

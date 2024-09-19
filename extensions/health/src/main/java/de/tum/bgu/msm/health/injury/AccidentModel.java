@@ -1,7 +1,8 @@
-package de.tum.bgu.msm.health;
+package de.tum.bgu.msm.health.injury;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Day;
+import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;

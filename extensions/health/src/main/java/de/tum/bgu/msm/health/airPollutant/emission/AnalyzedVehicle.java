@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.health;
+package de.tum.bgu.msm.health.airPollutant.emission;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.vehicles.Vehicle;

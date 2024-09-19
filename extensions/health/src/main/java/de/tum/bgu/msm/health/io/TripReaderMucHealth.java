@@ -1,7 +1,8 @@
-package de.tum.bgu.msm.health;
+package de.tum.bgu.msm.health.io;
 
 import de.tum.bgu.msm.data.Mode;
 import de.tum.bgu.msm.data.Purpose;
+import de.tum.bgu.msm.health.data.Trip;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.matsim.core.utils.geometry.CoordUtils;

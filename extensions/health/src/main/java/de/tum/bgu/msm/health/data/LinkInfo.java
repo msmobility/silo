@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.health;
+package de.tum.bgu.msm.health.data;
 
 import cern.colt.map.tfloat.OpenIntFloatHashMap;
 import org.matsim.api.core.v01.Id;

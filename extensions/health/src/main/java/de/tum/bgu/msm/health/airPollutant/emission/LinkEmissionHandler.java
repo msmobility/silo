@@ -1,5 +1,7 @@
-package de.tum.bgu.msm.health;
+package de.tum.bgu.msm.health.airPollutant.emission;
 
+import de.tum.bgu.msm.health.airPollutant.emission.AnalyzedLink;
+import de.tum.bgu.msm.health.airPollutant.emission.AnalyzedVehicle;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;

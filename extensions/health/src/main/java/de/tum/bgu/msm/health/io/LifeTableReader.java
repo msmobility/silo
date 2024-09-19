@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.health;
+package de.tum.bgu.msm.health.io;
 
 // Reads life tables in .csv format from www.destatis.de
 

@@ -2,6 +2,8 @@ package de.tum.bgu.msm.health;
 
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.health.data.PersonHealth;
+import de.tum.bgu.msm.health.io.LifeTableReader;
 import de.tum.bgu.msm.models.demography.death.DeathStrategy;
 
 public class DeathStrategyHealth implements DeathStrategy {

@@ -1,7 +1,8 @@
-package de.tum.bgu.msm.health;
+package de.tum.bgu.msm.health.data;
 
 import de.tum.bgu.msm.data.MitoGender;
 import de.tum.bgu.msm.data.Mode;
+import de.tum.bgu.msm.health.data.LinkInfo;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.emissions.Pollutant;

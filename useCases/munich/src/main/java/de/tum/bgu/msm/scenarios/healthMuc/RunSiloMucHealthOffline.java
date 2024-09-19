@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.scenarios.healthMuc;
 
-import de.tum.bgu.msm.health.AccidentModel;
-import de.tum.bgu.msm.health.AirPollutantModel;
+import de.tum.bgu.msm.health.injury.AccidentModel;
+import de.tum.bgu.msm.health.airPollutant.AirPollutantModel;
 import de.tum.bgu.msm.health.HealthModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.resources.Resources;

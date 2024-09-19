@@ -1,5 +1,6 @@
-package de.tum.bgu.msm.health;
+package de.tum.bgu.msm.health.airPollutant.dispersion;
 
+import de.tum.bgu.msm.health.airPollutant.dispersion.EmissionsByPollutant;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.analysis.time.TimeBinMap;

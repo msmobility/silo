@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.health;
+package de.tum.bgu.msm.health.airPollutant.emission;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
