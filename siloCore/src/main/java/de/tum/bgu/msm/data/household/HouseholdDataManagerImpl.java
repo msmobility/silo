@@ -208,6 +208,7 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
             Dwelling dd = dwellingData.getDwelling(dwellingId);
             dd.setResidentID(-1);
             realEstateDataManager.addDwellingToVacancyList(dd);
+
         }
         for (Person pp : household.getPersons().values()) {
             pp.setHousehold(null);
@@ -215,7 +216,7 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
             householdData.removePerson(pp.getId());
         }
         householdData.removeHousehold(householdId);
-        householdMementos.remove(household);
+        householdMementos.remove(householdId);
         if (householdId == SiloUtil.trackHh) {
             SiloUtil.trackWriter.println("Households " + householdId + " was removed");
         }

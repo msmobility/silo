@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.io.output;
 
 import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.vehicle.VehicleType;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
@@ -31,7 +32,7 @@ public class DefaultHouseholdWriter implements HouseholdWriter {
             pwh.print(",");
             pwh.print(hh.getHhSize());
             pwh.print(",");
-            pwh.println(hh.getAutos());
+            pwh.println((int) hh.getVehicles().stream().filter(v-> v.getType().equals(VehicleType.CAR)).count());
         }
         pwh.close();
     }

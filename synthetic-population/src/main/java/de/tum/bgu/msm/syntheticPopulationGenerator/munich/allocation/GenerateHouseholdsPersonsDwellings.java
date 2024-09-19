@@ -96,7 +96,7 @@ public class GenerateHouseholdsPersonsDwellings {
     private void generatePersons(int hhSelected, Household hh){
 
         int hhSize = dataSetSynPop.getHouseholdTable().get(hhSelected, "hhSize");
-        PersonFactory factory = PersonUtils.getFactory();
+        PersonFactory factory = householdData.getPersonFactory();
         for (int person = 0; person < hhSize; person++) {
             int id = householdData.getNextPersonId();
             int personSelected = dataSetSynPop.getHouseholdTable().get(hhSelected, "personCount") + person;

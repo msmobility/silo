@@ -227,7 +227,7 @@ public final class MatsimTravelTimesAndCosts implements TravelTimes {
         if (siloPerson != null) {
             matsimPerson = matsimData.getMatsimPopulation().getPersons().get(Id.createPersonId(siloPerson.getId()));
         }
-        return tripRouter.calcRoute(mode, fromFacility, toFacility, timeOfDay_s, matsimPerson);
+        return tripRouter.calcRoute(mode, fromFacility, toFacility, timeOfDay_s, matsimPerson, null);
     }
 
     @Override

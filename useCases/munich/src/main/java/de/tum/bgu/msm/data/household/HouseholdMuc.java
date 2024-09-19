@@ -3,7 +3,11 @@ package de.tum.bgu.msm.data.household;
 import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.data.person.Nationality;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.vehicle.Vehicle;
+import de.tum.bgu.msm.data.vehicle.VehicleType;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -29,7 +33,7 @@ public class HouseholdMuc implements Household {
 
     @Override
     public int getAutos() {
-        return delegate.getAutos();
+        return (int) this.delegate.getVehicles().stream().filter(vv-> vv.getType().equals(VehicleType.CAR)).count();
     }
 
     @Override
@@ -79,13 +83,20 @@ public class HouseholdMuc implements Household {
         delegate.setAttribute(key, value);
     }
 
-    public void setAutonomous(int autonomous){
-        this.autonomous = autonomous;
+    @Override
+    public List<Vehicle> getVehicles() {
+
+
+        return delegate.getVehicles();
     }
 
-    public int getAutonomous(){
-        return autonomous;
-    }
+//    public void setAutonomous(int autonomous){
+//        this.autonomous = autonomous;
+//    }
+
+//    public int getAutonomous(){
+//        return autonomous;
+//    }
 
     @Override
     public int getId() {
@@ -108,4 +119,5 @@ public class HouseholdMuc implements Household {
         //}
         nationality = Nationality.OTHER;
     }
+
 }

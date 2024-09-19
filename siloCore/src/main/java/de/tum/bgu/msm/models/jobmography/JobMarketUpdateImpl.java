@@ -23,7 +23,7 @@ public class JobMarketUpdateImpl extends AbstractModel implements JobMarketUpdat
 
     public JobMarketUpdateImpl(DataContainer dataContainer, Properties properties, Random rnd) {
         super(dataContainer, properties, rnd);
-        factory = JobUtils.getFactory();
+        this.factory = dataContainer.getJobDataManager().getFactory();
     }
 
     @Override

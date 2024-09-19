@@ -42,17 +42,25 @@ public class GenerateSchoolMicrolocation {
                 int schoolType = pp.getSchoolType();
                 Zone zone = dataContainer.getGeoData().getZones().get(zoneID);
 
-                if (zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType) == null){
+                if (zoneSchoolTypeSchoolLocationCapacity.get(zoneID) == null ||
+                        zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType) == null ||
+                zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType).isEmpty() ||
+                        SiloUtil.getSum(zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType).values()) == 0) {
                 	School school = dataContainer.getSchoolData().getClosestSchool(pp,pp.getSchoolType());
                     pp.setSchoolId(school.getId());
                 	errorSchool++;
                     continue;
                 }
-                int selectedSchoolID = SiloUtil.select(zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType));
-                School school = dataContainer.getSchoolData().getSchoolFromId(selectedSchoolID);
-                int remainingCapacity = zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType).get(selectedSchoolID) - 1;
-                zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType).put(selectedSchoolID, remainingCapacity);
-                pp.setSchoolId(school.getId());
+                int selectedSchoolID;
+                try {
+                    selectedSchoolID = SiloUtil.select(zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType));
+                    School school = dataContainer.getSchoolData().getSchoolFromId(selectedSchoolID);
+                    int remainingCapacity = zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType).get(selectedSchoolID) - 1;
+                    zoneSchoolTypeSchoolLocationCapacity.get(zoneID).get(schoolType).put(selectedSchoolID, remainingCapacity);
+                    pp.setSchoolId(school.getId());
+                } catch (Exception e) {
+                    System.out.println("jo");
+                }
             }
         }
 
@@ -99,5 +107,6 @@ public class GenerateSchoolMicrolocation {
             }
 
         }
+        schoolData.setup();
     }
 }

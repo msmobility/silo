@@ -4,6 +4,7 @@ import de.tum.bgu.msm.DataBuilder;
 import de.tum.bgu.msm.io.GeoDataReaderMuc;
 import de.tum.bgu.msm.io.JobWriterMuc;
 import de.tum.bgu.msm.io.PersonWriterMuc;
+import de.tum.bgu.msm.io.PersonWriterMucDisability;
 import de.tum.bgu.msm.io.input.GeoDataReader;
 import de.tum.bgu.msm.io.output.*;
 import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipModelMuc;
@@ -67,7 +68,7 @@ public class SyntheticPopDe implements SyntheticPopI {
         new Microlocation(dataSetSynPop,dataContainer).run();
 
         logger.info("Running Module: Car ownership");
-        new CreateCarOwnershipModelMuc(dataContainer).run();
+        //new CreateCarOwnershipModelMuc(dataContainer).run();
 
         logger.info("Running Module: Disability");
         new DisabilityBase(dataSetSynPop, dataContainer).run();
@@ -90,7 +91,7 @@ public class SyntheticPopDe implements SyntheticPopI {
                 + properties.householdData.householdFileName
                 + "_"
                 + properties.main.baseYear
-                + ".csv";
+                + "P.csv";
         HouseholdWriter hhwriter = new DefaultHouseholdWriter(dataContainer.getHouseholdDataManager().getHouseholds());
         hhwriter.writeHouseholds(filehh);
 
@@ -98,15 +99,15 @@ public class SyntheticPopDe implements SyntheticPopI {
                 + properties.householdData.personFileName
                 + "_"
                 + properties.main.baseYear
-                + ".csv";
-        PersonWriter ppwriter = new PersonWriterMuc(dataContainer.getHouseholdDataManager());
+                + "P.csv";
+        PersonWriter ppwriter = new PersonWriterMucDisability(dataContainer.getHouseholdDataManager());
         ppwriter.writePersons(filepp);
 
         String filedd = properties.main.baseDirectory
                 + properties.realEstate.dwellingsFileName
                 + "_"
                 + properties.main.baseYear
-                + ".csv";
+                + "P.csv";
         DwellingWriter ddwriter = new DefaultDwellingWriter(dataContainer.getRealEstateDataManager().getDwellings());
         ddwriter.writeDwellings(filedd);
 
@@ -114,7 +115,7 @@ public class SyntheticPopDe implements SyntheticPopI {
                 + properties.jobData.jobsFileName
                 + "_"
                 + properties.main.baseYear
-                + ".csv";
+                + "P.csv";
         JobWriter jjwriter = new JobWriterMuc(dataContainer.getJobDataManager());
         jjwriter.writeJobs(filejj);
 
@@ -123,7 +124,7 @@ public class SyntheticPopDe implements SyntheticPopI {
                 + properties.schoolData.schoolsFileName
                 + "_"
                 + properties.main.baseYear
-                + ".csv";
+                + "P.csv";
         SchoolsWriter eewriter = new SchoolsWriter(dataContainer.getSchoolData());
         eewriter.writeSchools(fileee);
 

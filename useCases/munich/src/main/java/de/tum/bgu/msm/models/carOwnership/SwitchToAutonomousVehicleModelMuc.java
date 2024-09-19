@@ -5,6 +5,7 @@ import de.tum.bgu.msm.data.household.HouseholdMuc;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
+import de.tum.bgu.msm.data.vehicle.*;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
@@ -17,6 +18,7 @@ import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 /**
  * Created by matthewokrah on 26/06/2018.
@@ -72,15 +74,33 @@ public class SwitchToAutonomousVehicleModelMuc extends AbstractModel implements 
         // to autonomous cars. currently income is the only household attribute used but room is left for additional
         // attributes in the future
         for (Household hh : householdDataManager.getHouseholds()) {
-            int autonomous = ((HouseholdMuc) hh).getAutonomous();
+            int autonomous = (int) hh.getVehicles().stream().
+                    filter(vv -> vv.getType().equals(VehicleType.CAR)).
+                    filter(vv-> ((Car) vv).getCarType().equals(CarType.AUTONOMOUS)).count();
             av_counter += autonomous;
-            autos_counter += hh.getAutos();
-            if (hh.getAutos() > autonomous) {
+            int numberOfAutosInThisHh = (int) hh.getVehicles().stream().
+                    filter(vv -> vv.getType().equals(VehicleType.CAR)).count();
+            autos_counter += numberOfAutosInThisHh;;
+            if (numberOfAutosInThisHh > autonomous) {
                 int income = HouseholdUtil.getAnnualHhIncome(hh);
                 double[] prob = calculator.calculate(income, year);
                 int action = SiloUtil.select(prob, random);
                 if (action == 1) {
-                    ((HouseholdMuc)hh).setAutonomous(autonomous + 1);
+                    //replace a conventional by an autonomous car
+                    Vehicle vehicleToRemove = hh.getVehicles().stream().filter(vv-> vv.getType().equals(VehicleType.CAR)).findAny().orElse(null);
+                    if (vehicleToRemove != null){
+                        for (Vehicle vehicle : hh.getVehicles().stream().filter(vv-> vv.getType().equals(VehicleType.CAR)).collect(Collectors.toSet())) {
+                            if (vehicle.getAge() > vehicleToRemove.getAge()){
+                                vehicleToRemove = vehicle;
+                            }
+                        }
+                    }
+
+                    hh.getVehicles().remove(vehicleToRemove);
+
+                    hh.getVehicles().add(new Car(VehicleUtil.getHighestVehicleIdInHousehold(hh), CarType.AUTONOMOUS, VehicleUtil.getVehicleAgeWhenReplaced()));
+
+
                     event_counter++;
                 }
             }

@@ -19,6 +19,7 @@ import de.tum.bgu.msm.matsim.MatsimTravelTimesAndCosts;
 import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.run.data.dwelling.BangkokDwellingTypes;
+import de.tum.bgu.msm.run.data.jobs.BangkokJobFactory;
 import de.tum.bgu.msm.run.io.GeoDataReaderBangkok;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.matsim.core.config.Config;
@@ -62,7 +63,8 @@ public class DataBuilderBangkok {
         new JobType(properties.jobData.jobTypes);
 
 
-        JobFactory jobFactory = new JobFactoryImpl();
+        BangkokJobFactory jobFactory = new BangkokJobFactory();
+        jobFactory.readWorkingTimeDistributions(properties);
 
         RealEstateDataManager realEstateDataManager = new RealEstateDataManagerImpl(
                 new BangkokDwellingTypes(), dwellingData, householdData, geoData, new DwellingFactoryImpl(), properties);
