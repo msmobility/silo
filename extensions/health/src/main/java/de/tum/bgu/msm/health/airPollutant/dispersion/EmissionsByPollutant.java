@@ -6,7 +6,7 @@ import java.util.Map;
 
 /**
  * Sums up emissions by pollutant. Basically wraps a hash map but is here for better
- * readability of {@link org.matsim.contrib.emissions.analysis.EmissionsOnLinkEventHandler}
+ * readability of {@link EmissionsOnLinkEventHandler}
  */
 class EmissionsByPollutant {
     // The EmissionsByPollutant potentially adds up the same emissions coming from cold and warm.  Thus, this cannot be combined into the enum approach
