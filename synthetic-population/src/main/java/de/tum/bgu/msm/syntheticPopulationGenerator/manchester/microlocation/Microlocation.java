@@ -38,7 +38,7 @@ public class Microlocation extends ModuleSynPop {
 
         if (PropertiesSynPop.get().main.runMicrolocation) {
             generateDwellingMicrolocation();
-            generateJobMicrolocation();
+            //generateJobMicrolocation();
             generateSchoolMicrolocation();
         }
 

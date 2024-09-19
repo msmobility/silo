@@ -32,12 +32,15 @@ public class PrepareFrequencyMatrix {
                 int age =(int) dataSetSynPop.getPersonDataSet().getValueAt(row,"ageCode");
                 int gender = (int) dataSetSynPop.getPersonDataSet().getValueAt(row,"gender");
                 int occupation =(int) dataSetSynPop.getPersonDataSet().getValueAt(row,"employmentCode");
-
+                int ethnic =(int) dataSetSynPop.getPersonDataSet().getValueAt(row,"ethnic");
                 updateHhAgeGender(age, gender, i);
                 updateHhOccupactionGender(occupation, gender, i);
+                updateEthnic(ethnic, i);
             }
             int ddType = (int) dataSetSynPop.getHouseholdDataSet().getValueAt(i,"ddTypeCode");
+            int tenureType = (int) dataSetSynPop.getHouseholdDataSet().getValueAt(i,"tenureCode");
             updateDdType(ddType, i);
+            updateTenureType(tenureType, i);
             updateHhSize(hhSize,i);
             frequencyMatrix.setValueAt(i,"pp",hhSize);
         }
@@ -46,18 +49,46 @@ public class PrepareFrequencyMatrix {
 
     }
 
-    private void updateDdType(int ddType, int i){
-        if (ddType == 1) {
-            frequencyMatrix.setValueAt(i, "dd1", 1);
-        } else if (ddType == 2){
-            frequencyMatrix.setValueAt(i, "dd2", 1);
-        } else if (ddType == 3){
-            frequencyMatrix.setValueAt(i, "dd3", 1);
+    private void updateEthnic(int ethnic, int i) {
+        if (ethnic == 1){
+            int value = 1 + (int) frequencyMatrix.getValueAt(i,"White");
+            frequencyMatrix.setValueAt(i,"White",value);
+        } else if (ethnic == 2){
+            int value = 1 + (int) frequencyMatrix.getValueAt(i,"Mix");
+            frequencyMatrix.setValueAt(i,"Mix",value);
+        } else if (ethnic == 3){
+            int value = 1 + (int) frequencyMatrix.getValueAt(i,"Asian");
+            frequencyMatrix.setValueAt(i,"Asian",value);
+        } else if (ethnic == 4){
+            int value = 1 + (int) frequencyMatrix.getValueAt(i,"Black");
+            frequencyMatrix.setValueAt(i,"Black",value);
         } else {
-            frequencyMatrix.setValueAt(i, "dd4", 1);
+            int value = 1 + (int) frequencyMatrix.getValueAt(i,"Other");
+            frequencyMatrix.setValueAt(i,"Other",value);
         }
     }
 
+    private void updateDdType(int ddType, int i){
+        if (ddType == 1) {
+            frequencyMatrix.setValueAt(i, "detached", 1);
+        } else if (ddType == 2){
+            frequencyMatrix.setValueAt(i, "attached", 1);
+        } else if (ddType == 3){
+            frequencyMatrix.setValueAt(i, "flat", 1);
+        } else {
+            frequencyMatrix.setValueAt(i, "mobileHome", 1);
+        }
+    }
+
+    private void updateTenureType(int tenureType, int i){
+        if (tenureType == 1) {
+            frequencyMatrix.setValueAt(i, "own", 1);
+        } else if (tenureType == 2){
+            frequencyMatrix.setValueAt(i, "rentP", 1);
+        } else {
+            frequencyMatrix.setValueAt(i, "rentS", 1);
+        }
+    }
     private void updateHhSize(int hhSize, int i){
         if (hhSize == 1) {
             frequencyMatrix.setValueAt(i, "hh1", 1);

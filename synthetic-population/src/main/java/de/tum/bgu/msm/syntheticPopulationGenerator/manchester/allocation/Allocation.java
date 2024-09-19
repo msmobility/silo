@@ -49,8 +49,8 @@ public class Allocation extends ModuleSynPop{
         if (PropertiesSynPop.get().main.runJobAllocation) {
             assignJobs();
             summarizeData(dataContainer, "afterAssignJobs");
-            //assignSchools();
-            //summarizeData(dataContainer, "afterAssignSchools");
+            assignSchools();
+            summarizeData(dataContainer, "afterAssignSchools");
             validateTripLengths();
         }
         logger.info("   Completed allocation model.");
@@ -74,7 +74,7 @@ public class Allocation extends ModuleSynPop{
         new AssignSchools(dataContainer, dataSetSynPop).run();
     }
 
-    public void generateAutos() {new CarOwnership(dataContainer).run();}
+    public void generateAutos() {new CarOwnership(dataContainer, dataSetSynPop).run();}
 
     public void readPopulation(){
         educationalLevel = new HashMap<>();

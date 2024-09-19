@@ -3,6 +3,7 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.manchester.allocation;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
+import de.tum.bgu.msm.syntheticPopulationGenerator.manchester.DataSetSynPopMCR;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.MicroDataManager;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -48,7 +49,7 @@ public class GenerateVacantDwellings {
 
         realEstateData = dataContainer.getRealEstateDataManager();
         for (Dwelling dd: realEstateData.getDwellings()){
-            int municipality = (int) PropertiesSynPop.get().main.cellsMatrix.getIndexedValueAt(dd.getZoneId(),"cityID");
+            int municipality = (int) PropertiesSynPop.get().main.cellsMatrix.getIndexedValueAt(dd.getZoneId(),"lsoaID");
             updateQualityMap(municipality, dd.getYearBuilt(), dd.getQuality());
         }
         highestDwellingIdInUse = 0;
@@ -69,9 +70,10 @@ public class GenerateVacantDwellings {
     }
 
     private void generateVacantDwellings(){
-        //for (int municipality = 1; municipality < 3; municipality++){
         for (int taz : dataSetSynPop.getTazs()){
-            float percentageVacantDwellings = dataSetSynPop.getTazAttributes().get(taz).get("percentageVacantDwellings");
+            //TODO: don't know oa vacancy, so use LSOA vacancy
+            int lsoaID = ((DataSetSynPopMCR)dataSetSynPop).getTazMunicipality().get(taz);
+            float percentageVacantDwellings = ((DataSetSynPopMCR)dataSetSynPop).getLsoaAttributes().get(lsoaID).get("percentageVacantDwellings");
             int vacantDwellings = (int) (percentageVacantDwellings * dataSetSynPop.getTazAttributes().get(taz).get("households"));
             List<Dwelling> dwellingForCopy = occupiedDwellings.get(taz);
             int vacantCounter = 0;

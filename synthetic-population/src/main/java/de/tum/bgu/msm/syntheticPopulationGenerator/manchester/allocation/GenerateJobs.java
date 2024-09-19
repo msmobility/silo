@@ -30,7 +30,7 @@ public class GenerateJobs {
         for (int municipality : dataSetSynPop.getMunicipalities()){
             logger.info("   Municipality " + municipality + ". Starting to generate jobs");
             for (String jobType : PropertiesSynPop.get().main.jobStringType) {
-                if (PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, jobType) > 0.1) {
+                if (PropertiesSynPop.get().main.selectedMunicipalities.getIndexedValueAt(municipality, jobType) > 0.1) {
                     initializeTAZprobability(municipality, jobType);
                     generateJobsByTypeAtMunicipalityWithReplacement(municipality, jobType);
                 }
@@ -41,7 +41,7 @@ public class GenerateJobs {
 
     private void generateJobsByTypeAtMunicipalityWithReplacement(int municipality, String jobType){
         JobDataManager jobData = dataContainer.getJobDataManager();
-            int totalJobs = (int) PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, jobType);
+            int totalJobs = (int) PropertiesSynPop.get().main.selectedMunicipalities.getIndexedValueAt(municipality, jobType);
             for (int job = 0; job < totalJobs; job++){
                 int id = jobData.getNextJobId();
                 int tazSelected = SiloUtil.select(jobsByTaz);
@@ -60,7 +60,7 @@ public class GenerateJobs {
         jobsByTaz = new HashMap<>();
         jobsByTaz.clear();
         for (int taz : dataSetSynPop.getTazByMunicipality().get(municipality)){
-            jobsByTaz.put(taz, PropertiesSynPop.get().main.cellsMatrix.getIndexedValueAt(taz, jobType));
+            jobsByTaz.put(taz, dataSetSynPop.getTazAttributes().get(taz).get(jobType));
         }
     }
 }

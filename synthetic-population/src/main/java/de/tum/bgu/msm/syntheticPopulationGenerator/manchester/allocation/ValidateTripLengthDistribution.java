@@ -129,7 +129,7 @@ public class ValidateTripLengthDistribution {
 
     private void initializeODmatrices(){
         cellsMatrix = PropertiesSynPop.get().main.cellsMatrix;
-        cellsMatrix.buildIndex(cellsMatrix.getColumnPosition("zoneID"));
+        cellsMatrix.buildIndex(cellsMatrix.getColumnPosition("oaID"));
         municipalityODMatrix = new TableDataSet();
         municipalityODMatrix.appendColumn(dataSetSynPop.getCityIDs(),"id");
         for (int municipality : dataSetSynPop.getMunicipalities()){

@@ -3,14 +3,20 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.manchester.allocation;
 import com.google.common.collect.Table;
 import de.tum.bgu.msm.common.matrix.Matrix;
 import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.PersonMCR;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.schools.DataContainerWithSchools;
+import de.tum.bgu.msm.schools.SchoolData;
+import de.tum.bgu.msm.schools.SchoolUtils;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
+import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
+import org.locationtech.jts.geom.Coordinate;
 
 import java.util.*;
 
@@ -19,7 +25,7 @@ public class AssignSchools {
     private static final Logger logger = Logger.getLogger(AssignSchools.class);
 
     private final DataSetSynPop dataSetSynPop;
-    private final DataContainer dataContainer;
+    private final DataContainerWithSchools dataContainer;
 
     private ArrayList<Person> studentArrayList;
     private int assignedStudents;
@@ -29,7 +35,10 @@ public class AssignSchools {
     private Map<Integer, Map<Integer,Integer>> schoolCapacityMap;
     private Map<Integer, Integer> numberOfVacantPlacesByType;
 
-    public AssignSchools(DataContainer dataContainer, DataSetSynPop dataSetSynPop){
+    Map<Integer,Map<Integer,Map<Integer,Integer>>> schoolByZoneByType = new HashMap<>();
+
+
+    public AssignSchools(DataContainerWithSchools dataContainer, DataSetSynPop dataSetSynPop){
         this.dataSetSynPop = dataSetSynPop;
         this.dataContainer = dataContainer;
     }
@@ -38,6 +47,7 @@ public class AssignSchools {
         logger.info("   Running module: school allocation");
         calculateDistanceImpedance();
         initializeSchoolCapacity();
+        readSchools();
         shuffleStudents();
 
         for (Person pp : dataContainer.getHouseholdDataManager().getPersons()){
@@ -53,13 +63,16 @@ public class AssignSchools {
             int schooltaz;
             Household household = pp.getHousehold();
             int hometaz = realEstate.getDwelling(household.getDwellingId()).getZoneId();
-            if (pp.getAge() > 18 ){
+            int schoolType = ((PersonMCR)p).getSchoolType();
+            if (schoolType==3){
                 schooltaz = selectTertiarySchool(hometaz);
             } else {
-                schooltaz = selectPrimarySecondarySchool(hometaz, 1);
+                schooltaz = selectPrimarySecondarySchool(hometaz, schoolType);
             }
             if (schooltaz > 0) {
-                pp.setWorkplace(schooltaz);
+                Map<Integer, Integer> weight = schoolByZoneByType.get(schooltaz).get(schoolType);
+                int schoolId = SiloUtil.select(weight);
+                ((PersonMCR)pp).setSchoolId(schoolId);
             }
             if (assignedStudents == logging){
                 logger.info("   Assigned " + assignedStudents + " schools.");
@@ -238,6 +251,28 @@ public class AssignSchools {
             }
         }
         return license;
+    }
+
+    private void readSchools() {
+        SchoolData schoolData = dataContainer.getSchoolData();
+
+        for (int row = 1; row <= PropertiesSynPop.get().main.schoolLocationlist.getRowCount(); row++) {
+
+            int id = (int) PropertiesSynPop.get().main.schoolLocationlist.getValueAt(row,"ID");
+            int zone = (int) PropertiesSynPop.get().main.schoolLocationlist.getValueAt(row,"oaID");
+            float xCoordinate = PropertiesSynPop.get().main.schoolLocationlist.getValueAt(row,"X");
+            float yCoordinate = PropertiesSynPop.get().main.schoolLocationlist.getValueAt(row,"Y");
+            int schoolCapacity = (int) PropertiesSynPop.get().main.schoolLocationlist.getValueAt(row,"capacity_imputed");
+            int schoolType = (int) PropertiesSynPop.get().main.schoolLocationlist.getValueAt(row,"type");
+
+            Coordinate coordinate = new Coordinate(xCoordinate,yCoordinate);
+            schoolData.addSchool(SchoolUtils.getFactory().createSchool(id, schoolType, schoolCapacity,0,coordinate, zone));
+
+            schoolByZoneByType.computeIfAbsent(zone, k -> new HashMap<>())
+                    .computeIfAbsent(schoolType, k -> new HashMap<>())
+                    .put(id, schoolCapacity);
+
+        }
     }
 
 }

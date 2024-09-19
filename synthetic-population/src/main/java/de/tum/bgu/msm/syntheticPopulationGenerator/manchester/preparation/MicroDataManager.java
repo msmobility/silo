@@ -477,10 +477,12 @@ public class MicroDataManager {
 
     public DwellingUsage translateDwellingUsage(int use){
         DwellingUsage usage = DwellingUsage.OWNED;
-        if (use == 2){
+        if (use == 2){//rent private
             usage = DwellingUsage.RENTED;
-        } else if (use == 3){
-            usage = DwellingUsage.VACANT;
+        } else if (use == 3){//local authority
+            usage = DwellingUsage.RENTED;
+        } else if (use == 4){//RSL
+            usage = DwellingUsage.RENTED;
         }
         return usage;
     }

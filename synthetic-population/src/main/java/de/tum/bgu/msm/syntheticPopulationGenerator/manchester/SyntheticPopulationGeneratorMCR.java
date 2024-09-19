@@ -18,7 +18,7 @@ import java.util.PropertyResourceBundle;
 public class SyntheticPopulationGeneratorMCR {
 
     static Logger logger = Logger.getLogger(SyntheticPopulationGeneratorMCR.class);
-    private static DataSetSynPop dataSetSynPop = new DataSetSynPop();
+    private static DataSetSynPopMCR dataSetSynPop = new DataSetSynPopMCR();
 
     public static void main (String[] args) {
 

@@ -6,8 +6,12 @@ import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.common.matrix.Matrix;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
+import de.tum.bgu.msm.syntheticPopulationGenerator.manchester.DataSetSynPopMCR;
+import de.tum.bgu.msm.syntheticPopulationGenerator.properties.ManchesterPropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
+import omx.OmxFile;
+import omx.OmxLookup;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
@@ -29,14 +33,16 @@ public class ReadZonalData {
     }
 
     public void run() {
-        //MSOA = cities
+        //MSOA = county, LSOA = city
         readCities();
-        //LSOA = TAZs
+        //OA = TAZs
         readZones();
+        readLsoaDistanceMatrix();
+        readOADistanceMatrix();
+        readTripLengthFrequencyDistribution();
         //Manchester job assignment approach: base year commute flows LSOA-LSOA
-        readDistanceMatrix();
-        //readTripLengthFrequencyDistribution();
         readCommuteFlow();
+        readCarOwnershipMatrix();
     }
 
     private void readCities() {
@@ -48,11 +54,26 @@ public class ReadZonalData {
         ArrayList<Integer> counties = new ArrayList<>();
         municipalitiesByCounty = new HashMap<>();
         ArrayList<Integer> municipalitiesWithZero = new ArrayList<>();
+
+        HashMap<Integer, HashMap<String, Float>> attributesLSOA = new HashMap<>();
+
         for (int row = 1; row <= PropertiesSynPop.get().main.selectedMunicipalities.getRowCount(); row++) {
-            int city = (int) PropertiesSynPop.get().main.selectedMunicipalities.getValueAt(row, "cityID");
+            int city = (int) PropertiesSynPop.get().main.selectedMunicipalities.getValueAt(row, "lsoaID");
+            float primaryJobs = PropertiesSynPop.get().main.selectedMunicipalities.getValueAt(row, "pri");
+            float secondaryJobs = PropertiesSynPop.get().main.selectedMunicipalities.getValueAt(row, "sec");
+            float tertiaryJobs = PropertiesSynPop.get().main.selectedMunicipalities.getValueAt(row, "ter");
+            float percentageVacantDwellings = PropertiesSynPop.get().main.selectedMunicipalities.getValueAt(row, "percentageVacantDwellings");
+
+            HashMap<String, Float> attributes = new HashMap<>();
+            float totalJob = primaryJobs + secondaryJobs + tertiaryJobs;
+            attributes.put("tot", totalJob);
+            attributes.put("percentageVacantDwellings", percentageVacantDwellings);
+
+            attributesLSOA.put(city, attributes);
+
             municipalities.add(city);
             if (PropertiesSynPop.get().main.twoGeographicalAreasIPU) {
-                int county = (int) PropertiesSynPop.get().main.selectedMunicipalities.getValueAt(row, "ID_county");
+                int county = (int) PropertiesSynPop.get().main.selectedMunicipalities.getValueAt(row, "msoaID");
                 if (!SiloUtil.containsElement(counties, county)) {
                     counties.add(county);
                 }
@@ -78,6 +99,7 @@ public class ReadZonalData {
         cityID = SiloUtil.convertArrayListToIntArray(municipalities);
         countyID = SiloUtil.convertArrayListToIntArray(counties);
 
+        ((DataSetSynPopMCR)dataSetSynPop).setLsoaAttributes(attributesLSOA);
         dataSetSynPop.setCityIDs(cityID);
         dataSetSynPop.setCountyIDs(countyID);
         dataSetSynPop.setMunicipalities(municipalities);
@@ -99,22 +121,21 @@ public class ReadZonalData {
         ArrayList<Float> areas = new ArrayList<>();
         TableDataSet zoneAttributes = PropertiesSynPop.get().main.cellsMatrix;
         HashMap<Integer, HashMap<String, Float>> attributesZone = new HashMap<>();
-
+        HashMap<Integer, Integer> tazCity = new HashMap<>();
         for (int i = 1; i <= zoneAttributes.getRowCount(); i++){
-            int city = (int) zoneAttributes.getValueAt(i,"cityID");
-            int taz = (int) zoneAttributes.getValueAt(i,"zoneID");
+            int city = (int) zoneAttributes.getValueAt(i,"lsoaID");
+            int taz = (int) zoneAttributes.getValueAt(i,"oaID");
+            tazCity.put(taz,city);
             float probability = zoneAttributes.getValueAt(i, "population");
-            areas.add(zoneAttributes.getValueAt(i, "area"));
-            //int capacitySchool = (int)zoneAttributes.getValueAt(i,"stu");
-            float percentageVacantDwellings = zoneAttributes.getValueAt(i, "percentageVacantDwellings");
-            //float averageIncome = zoneAttributes.getValueAt(i, "income");
+
+            int capacityPrimarySchool = (int)zoneAttributes.getValueAt(i,"primaryEdu");
+            int capacitySecondarySchool = (int)zoneAttributes.getValueAt(i,"secondaryEdu");
+            int capacityHigherEducation = (int)zoneAttributes.getValueAt(i,"higherEdu");
+
             float households = zoneAttributes.getValueAt(i, "households");
-            float primaryJobs = zoneAttributes.getValueAt(i, "pri");
-            float secondaryJobs = zoneAttributes.getValueAt(i, "sec");
-            float tertiaryJobs = zoneAttributes.getValueAt(i, "ter");
-            float primaryJobsKm2 = zoneAttributes.getValueAt(i, "pri_km2");
-            float secondaryJobsKm2 = zoneAttributes.getValueAt(i, "sec_km2");
-            float tertiaryJobsKm2 = zoneAttributes.getValueAt(i, "ter_km2");
+            float totEmpWeight = zoneAttributes.getValueAt(i, "totEmp_poiWeight");
+            float wpPop = zoneAttributes.getValueAt(i, "wpPop_scaled2LsoaJob");
+
             if (!tazs.contains(taz)) {
                 tazs.add(taz);
             }
@@ -131,27 +152,16 @@ public class ReadZonalData {
                 probabilities.put(taz, probability);
                 probabilityZone.put(city, probabilities);
             }
-            /*Map<DwellingType, Integer> prices = new HashMap<>();
-            prices.put(DefaultDwellingTypes.DefaultDwellingTypeImpl.SFA, priceSFA);
-            prices.put(DefaultDwellingTypes.DefaultDwellingTypeImpl.SFD, priceSFD);
-            prices.put(DefaultDwellingTypes.DefaultDwellingTypeImpl.MF234, priceMF234);
-            prices.put(DefaultDwellingTypes.DefaultDwellingTypeImpl.MF5plus, priceMF5plus);
-            dwellingPriceByTypeAndZone.put(taz,prices);
-            *///schoolCapacity.put(taz,1,capacitySchool);
+            schoolCapacity.put(taz,1,capacityPrimarySchool);
+            schoolCapacity.put(taz,2,capacitySecondarySchool);
+            schoolCapacity.put(taz,3,capacityHigherEducation);
 
             HashMap<String, Float> Attributes = new HashMap<>();
-            Attributes.put("percentageVacantDwellings", percentageVacantDwellings);
-            //Attributes.put("income", averageIncome);
             Attributes.put("households", households);
-            float totalJob = primaryJobs + secondaryJobs + tertiaryJobs;
-            float totalJobKm2 = primaryJobsKm2 + secondaryJobsKm2 + tertiaryJobsKm2;
-            Attributes.put("pri", primaryJobs);
-            Attributes.put("sec", secondaryJobs);
-            Attributes.put("ter", tertiaryJobs);
-            Attributes.put("tot",totalJob);
-            Attributes.put("totKm2",totalJobKm2);
+            Attributes.put("tot",wpPop);
             attributesZone.put(taz, Attributes);
         }
+        ((DataSetSynPopMCR)dataSetSynPop).setTazMunicipality(tazCity);
         dataSetSynPop.setAreas(SiloUtil.convertArrayListToFloatArray(areas));
         dataSetSynPop.setProbabilityZone(probabilityZone);
         dataSetSynPop.setTazByMunicipality(cityTAZ);
@@ -164,14 +174,14 @@ public class ReadZonalData {
 
     private void readCommuteFlow(){
         //Read the commuteFlow
-        logger.info("   Starting to read CSV matrix");
+        logger.info("   Starting to read CSV matrix for commute flow");
         TableDataSet commuteFlow = SiloUtil.readCSVfile(PropertiesSynPop.get().main.commuteFlowFile);
         int[] externalNumbers = dataSetSynPop.getTazIDs();
         Matrix commuteFlowMatrix = new Matrix("mat1", "mat1", externalNumbers.length, externalNumbers.length);
 
         for (int row = 1; row <= commuteFlow.getRowCount(); row++){
-            int origin = (int) commuteFlow.getValueAt(row, "homeId");
-            int destination = (int) commuteFlow.getValueAt(row, "workId");
+            int origin = (int) commuteFlow.getValueAt(row, "home_oaID");
+            int destination = (int) commuteFlow.getValueAt(row, "work_oaID");
             float value = commuteFlow.getValueAt(row, "freq");
             commuteFlowMatrix.setValueAt(origin, destination, value);
         }
@@ -181,10 +191,33 @@ public class ReadZonalData {
         logger.info("   Read CSV matrix done");
     }
 
-    private void readDistanceMatrix(){
+    private void readCarOwnershipMatrix(){
+        //Read the commuteFlow
+        logger.info("   Starting to read CSV matrix for car ownership");
+        TableDataSet carOwnership = SiloUtil.readCSVfile(((ManchesterPropertiesSynPop)PropertiesSynPop.get().main).carOwnershipFile);
+        Map<Integer, Map<Integer, Map<Integer,Float>>> probability = new HashMap<>();
+
+
+
+        for (int row = 1; row <= carOwnership.getRowCount(); row++){
+            int lsoaID = (int) carOwnership.getValueAt(row, "lsoaID");
+            int hhsize = (int) carOwnership.getValueAt(row, "hhsizeCode");
+            int car = (int) carOwnership.getValueAt(row, "carCode");
+            float value = carOwnership.getValueAt(row, "Observation");
+
+            probability.computeIfAbsent(lsoaID, k -> new HashMap<>())
+                    .computeIfAbsent(hhsize, k -> new HashMap<>())
+                    .put(car, value);
+        }
+
+        ((DataSetSynPopMCR)dataSetSynPop).setCarOwnershipProbabilityByHhsizeAndLSOA(probability);
+        logger.info("   Read CSV matrix done");
+    }
+
+    private void readLsoaDistanceMatrix(){
         //Read the skim matrix
         logger.info("   Starting to read CSV matrix");
-        TableDataSet distances = SiloUtil.readCSVfile(PropertiesSynPop.get().main.omxFileName);
+        TableDataSet distances = SiloUtil.readCSVfile(((ManchesterPropertiesSynPop)PropertiesSynPop.get().main).lsoaDistFileName);
         int[] externalNumbers = dataSetSynPop.getTazIDs();
         Matrix distanceMatrix = new Matrix("mat1", "mat1", externalNumbers.length, externalNumbers.length);
 
@@ -196,8 +229,26 @@ public class ReadZonalData {
         }
 
         distanceMatrix.setExternalNumbersZeroBased(externalNumbers);
-        dataSetSynPop.setDistanceTazToTaz(distanceMatrix);
+        ((DataSetSynPopMCR)dataSetSynPop).setDistanceLSOAToLSOA(distanceMatrix);
         logger.info("   Read CSV matrix done");
+    }
+
+    private void readOADistanceMatrix(){
+        //Read the skim matrix
+        logger.info("   Starting to read OMX matrix");
+        OmxFile travelTimeOmx = new OmxFile(((ManchesterPropertiesSynPop)PropertiesSynPop.get().main).oaDistFileName);
+        travelTimeOmx.openReadOnly();
+        Matrix distanceMatrix = SiloUtil.convertOmxToMatrix(travelTimeOmx.getMatrix("dist"));
+        OmxLookup omxLookUp = travelTimeOmx.getLookup("zone");
+        int[] externalNumbers = (int[]) omxLookUp.getLookup();
+        distanceMatrix.setExternalNumbersZeroBased(externalNumbers);
+        for (int i = 1; i <= distanceMatrix.getRowCount(); i++){
+            for (int j = 1; j <= distanceMatrix.getColumnCount(); j++){
+                distanceMatrix.setValueAt(i,j, distanceMatrix.getValueAt(i,j)/1000);//m to km
+            }
+        }
+        dataSetSynPop.setDistanceTazToTaz(distanceMatrix);
+        logger.info("   Read OMX matrix");
     }
 
 
@@ -215,7 +266,7 @@ public class ReadZonalData {
             String[] header = recString.split(",");
             int posId = SiloUtil.findPositionInArray("km", header);
             int posHBW = SiloUtil.findPositionInArray("HBW",header);
-            int posHBSchool = SiloUtil.findPositionInArray("HBSchool",header);
+            int posTertiary = SiloUtil.findPositionInArray("Tertiary",header);
 
             // read line
             while ((recString = in.readLine()) != null) {
@@ -223,9 +274,9 @@ public class ReadZonalData {
                 String[] lineElements = recString.split(",");
                 int length  = Integer.parseInt(lineElements[posId]);
                 float hbw  = Float.parseFloat(lineElements[posHBW]);
-                float hbschool  = Float.parseFloat(lineElements[posHBSchool]);
+                float tertiary  = Float.parseFloat(lineElements[posTertiary]);
                 frequencies.put(length,"HBW", hbw);
-                frequencies.put(length, "HBSchool", hbschool);
+                frequencies.put(length, "Tertiary", tertiary);
             }
 
 

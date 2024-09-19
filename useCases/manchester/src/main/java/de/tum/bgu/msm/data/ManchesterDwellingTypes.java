@@ -37,7 +37,7 @@ public class ManchesterDwellingTypes implements DwellingTypes {
          */
         MF234(0.07f,0.04f),
         /**
-         * Multi-family houses with 5+ units
+         * Multi-family houses with 5+ units (flat and other)
          */
         MF5plus(0.03f,0.05f);
 

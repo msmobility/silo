@@ -103,22 +103,24 @@ public class TranslateMicroDataToCode {
 
         if(age<=4){
             valueCode=1;
-        }else if(age<=10){
+        }else if(age<=9){
             valueCode=2;
-        }else if(age<=16){
+        }else if(age<=15){
             valueCode=3;
-        }else if(age<=20){
+        }else if(age<=19){
             valueCode=4;
-        }else if(age<=29){
+        }else if(age<=24){
             valueCode=5;
-        }else if(age<=39){
+        }else if(age<=34){
             valueCode=6;
         }else if(age<=49){
             valueCode=7;
-        }else if(age<=59){
+        }else if(age<=64){
             valueCode=8;
-        }else {
+        }else if(age<=74){
             valueCode=9;
+        }else {
+            valueCode=10;
         }
 
 
@@ -147,6 +149,37 @@ public class TranslateMicroDataToCode {
 //                9 Value = 21.0	Label = 85 years +
 
     }
+
+/*    private void translateEducationLevel(int personCount) {
+        int educationLevel = (int) dataSetSynPop.getPersonDataSet().getValueAt(personCount,"educationLevel");
+
+        int valueCode;
+
+        if(educationLevel == -9){
+            valueCode= 0; //TODO: does not apply, students? need to check
+        }else if(educationLevel == 1){
+            valueCode= 1;
+        }else if(educationLevel == 8){
+            valueCode= 3;
+        }else {
+            valueCode= 2;
+        }
+
+
+        dataSetSynPop.getPersonDataSet().setValueAt(personCount,"educationLevelCode",valueCode);
+
+//       NAQual Value = -9	Label = does not apply
+//       1 HighQual Value = 1	Label = degree level or equivalent
+//       2 OtherQual Value = 2	Label = HE qual below degree level
+//       2 OtherQual Value = 3	Label = A levels/ highers
+//       2 OtherQual Value = 4	Label = ONC/ national level BTEC
+//       2 OtherQual Value = 5	Label = Olevel/GCSEequiv grdA_C/CSE equiv Grd1/Stand grd 1-3
+//       3 OtherQual Value = 6	Label = GCSE grade D-G/ CSE grade 2-5/ standard grade level 4-6
+//       2 OtherQual Value = 7	Label = other quals incl foreign quals below degree level
+//       3 NoQual Value = 8	Label = no formal qualification
+
+
+    }*/
 
     private void translateRelationshipToHouseholdHead(int personCount){
         int valueCode = 0;
@@ -239,10 +272,10 @@ public class TranslateMicroDataToCode {
                 valueCode = 4;
                 break;
         }
-//         Value = 1.0	Label = House / bungalow (detached)
-//         Value = 2.0	Label = House / bungalow (semi-detached)
-//         Value = 3.0	Label = House / bungalow (terrace / end terrace)
-//         Value = 4.0	Label = flat, other
+//         Value = 1.0	Label = house detached
+//         Value = 2.0	Label = other house: semi-detached, terraced/end of terrace
+//         Value = 3.0	Label = flat or maisonette, room/rooms
+//         Value = 4.0	Label = other
 
 
         dataSetSynPop.getHouseholdDataSet().setValueAt(hhCount,"ddTypeCode",valueCode);
@@ -253,15 +286,17 @@ public class TranslateMicroDataToCode {
         int valueMicroData = (int) dataSetSynPop.getHouseholdDataSet().getValueAt(ddCount,"tenure");
         switch (valueMicroData){
             case 1:
-                valueCode = 1;
+                valueCode = 1;//own
                 break;
             case 2:
+                valueCode = 2;//rent private
+                break;
             case 3:
             case 4:
-                valueCode = 2;
+                valueCode = 3;//rent social
                 break;
         }
-        // 1 = own
+        // 1 = own (with/without mortgage)
         // 2 = rent
         // 3 = local authority
         // 4 = RSL

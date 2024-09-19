@@ -63,10 +63,12 @@ public class AssignJobs {
             Household hh = pp.getHousehold();
             int origin = realEstate.getDwelling(hh.getDwellingId()).getZoneId();
             //int selectedJobType = guessjobType(pp.getGender(),educationalLevel.get(pp));
-            int selectedJobType = guessjobType(origin);
-            if(numberZonesByType.get(selectedJobType)==0){
+            //int selectedJobType = guessjobType(origin);
+
+            /*if(numberZonesByType.get(selectedJobType)==0){
                 selectedJobType = 2; //set to ter.
-            }
+            }*/
+            int selectedJobType = 0;//job type tot
             int[] workplace = selectWorkplaceByCommuteFlow(origin, selectedJobType);
             //int[] workplace = selectWorkplace(origin, selectedJobType);
             if (workplace[0] > 0) {
@@ -179,7 +181,7 @@ public class AssignJobs {
         for (int i = 0; i < PropertiesSynPop.get().main.jobStringType.length; i++) {
             jobIntTypes.put(PropertiesSynPop.get().main.jobStringType[i], i);
         }
-        int[] cellsID = PropertiesSynPop.get().main.cellsMatrix.getColumnAsInt("zoneID");
+        int[] cellsID = PropertiesSynPop.get().main.cellsMatrix.getColumnAsInt("oaID");
 
         //create the counter hashmaps
         for (int i = 0; i < PropertiesSynPop.get().main.jobStringType.length; i++){
@@ -243,7 +245,6 @@ public class AssignJobs {
 
         }
     }
-
 
     private void updateMaps(int selectedJobType, int[] zoneType){
 

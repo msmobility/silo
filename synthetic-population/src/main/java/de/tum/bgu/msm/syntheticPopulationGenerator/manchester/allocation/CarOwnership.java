@@ -4,14 +4,20 @@ import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
+import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
+import de.tum.bgu.msm.syntheticPopulationGenerator.manchester.DataSetSynPopMCR;
 import de.tum.bgu.msm.utils.SiloUtil;
+
+import java.util.Map;
 
 public class CarOwnership {
 
     private final DataContainer dataContainer;
+    private final DataSetSynPop dataSetSynPop;
 
-    public CarOwnership(DataContainer dataContainer){
+    public CarOwnership(DataContainer dataContainer, DataSetSynPop dataSetSynPop){
         this.dataContainer = dataContainer;
+        this.dataSetSynPop = dataSetSynPop;
     }
 
 
@@ -19,11 +25,18 @@ public class CarOwnership {
 
         HouseholdDataManager householdData = dataContainer.getHouseholdDataManager();
         for (Household hh : householdData.getHouseholds()){
-            float[] probability = autoByIncomeCumProbabilities(HouseholdUtil.getAnnualHhIncome(hh));
-            int autos = SiloUtil.select(probability, 1);
+            //float[] probability = autoByIncomeCumProbabilities(HouseholdUtil.getAnnualHhIncome(hh));
+            Map<Integer, Float> probability = autoByHhsizeByLSOACumProbabilities(hh);
+            int autos = SiloUtil.select(probability);
             hh.setAutos(autos);
         }
 
+    }
+
+    private Map<Integer, Float> autoByHhsizeByLSOACumProbabilities(Household hh){
+        int lsoaID = ((DataSetSynPopMCR)dataSetSynPop).getTazMunicipality().get(dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId()).getZoneId());
+        int hhsize = Math.min(hh.getHhSize(),4);
+        return ((DataSetSynPopMCR)dataSetSynPop).getCarOwnershipProbabilityByHhsizeAndLSOA().get(lsoaID).get(hhsize);
     }
 
     private float[] autoByIncomeCumProbabilities(int income){
