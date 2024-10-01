@@ -3,6 +3,7 @@ package de.tum.bgu.msm.health.airPollutant;
 import cern.colt.map.tfloat.OpenIntFloatHashMap;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Day;
+import de.tum.bgu.msm.health.airPollutant.dispersion.Grid;
 import de.tum.bgu.msm.health.airPollutant.emission.CreateVehicles;
 import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.health.airPollutant.dispersion.EmissionGridAnalyzerMSM;
@@ -16,7 +17,6 @@ import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.contrib.analysis.spatial.Grid;
 import org.matsim.contrib.emissions.EmissionModule;
 import org.matsim.contrib.emissions.Pollutant;
 import org.matsim.contrib.emissions.utils.EmissionsConfigGroup;
@@ -30,10 +30,7 @@ import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.collections.Tuple;
 
 import java.io.PrintWriter;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 import static org.matsim.core.controler.Injector.createInjector;
 
@@ -46,11 +43,13 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
     private Scenario scenario;
     private final Config initialMatsimConfig;
     private final Set<Pollutant> pollutantSet = new HashSet<>();
+    private List<Day> simulatedDays;
 
     public AirPollutantModel(DataContainer dataContainer, Properties properties, Random random, Config config) {
         super(dataContainer, properties, random);
         this.initialMatsimConfig = config;
-        Pollutant[] pollutants = new Pollutant[]{Pollutant.NO2,Pollutant.PM,Pollutant.PM_non_exhaust,Pollutant.PM2_5, Pollutant.PM2_5_non_exhaust};
+        Pollutant[] pollutants = new Pollutant[]{Pollutant.NO2,Pollutant.PM2_5, Pollutant.PM2_5_non_exhaust};
+        simulatedDays = Arrays.asList(Day.thursday,Day.saturday,Day.sunday);
         for(Pollutant pollutant : pollutants){
             this.pollutantSet.add(pollutant);
         }
@@ -200,7 +199,8 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
     private void runEmissionGridAnalyzer(int year, Day day, String eventsFileWithEmission) {
         logger.info("Creating grid cell air pollutant exposure for year " + year + ", day " + day);
 
-        double scalingFactor = properties.main.scaleFactor * Double.parseDouble(Resources.instance.getString(de.tum.bgu.msm.resources.Properties.TRIP_SCALING_FACTOR));
+        //double scalingFactor = properties.main.scaleFactor * Double.parseDouble(Resources.instance.getString(de.tum.bgu.msm.resources.Properties.TRIP_SCALING_FACTOR));
+        double scalingFactor = 0.1;
         System.out.println("current memory usage: " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
 
         EmissionGridAnalyzerMSM gridAnalyzer =	new	EmissionGridAnalyzerMSM.Builder()
@@ -279,7 +279,7 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
             latestMatsimYear = year;
             final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/"
                     + properties.main.scenarioName + "/matsim/" + latestMatsimYear;
-            for(Day day : Day.values()){
+            for(Day day : simulatedDays){
                 scenario = ScenarioUtils.createMutableScenario(initialMatsimConfig);
                 scenario.getConfig().controler().setOutputDirectory(outputDirectoryRoot);
                 prepareConfig();
@@ -307,7 +307,7 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
             latestMatsimYear = year + 1;
             final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/"
                     + properties.main.scenarioName + "/matsim/" + latestMatsimYear;
-            for(Day day : Day.values()){
+            for(Day day : simulatedDays){
 
                 scenario = ScenarioUtils.createMutableScenario(initialMatsimConfig);
                 scenario.getConfig().controler().setOutputDirectory(outputDirectoryRoot);

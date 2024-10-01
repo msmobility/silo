@@ -13,6 +13,11 @@
     <dependencies>
         <dependency>
             <groupId>de.tum.bgu.msm</groupId>
+            <artifactId>siloCore</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>de.tum.bgu.msm</groupId>
             <artifactId>schools</artifactId>
             <version>0.1.0-SNAPSHOT</version>
             <scope>compile</scope>
@@ -22,6 +27,75 @@
             <artifactId>health</artifactId>
             <version>0.1.0-SNAPSHOT</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.tum.bgu.msm</groupId>
+            <artifactId>manchester</artifactId>
+            <version>master-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.media</groupId>
+                    <artifactId>jai_core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jgridshift</groupId>
+                    <artifactId>jgridshift</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jfree</groupId>
+                    <artifactId>jfreechart</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>de.tum.bgu.msm</groupId>
+            <artifactId>mito7days</artifactId>
+            <version>master-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.media</groupId>
+                    <artifactId>jai_core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jgridshift</groupId>
+                    <artifactId>jgridshift</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jfree</groupId>
+                    <artifactId>jfreechart</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>de.tum.bgu.msm</groupId>
+            <artifactId>mitoCore</artifactId>
+            <version>master-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.media</groupId>
+                    <artifactId>jai_core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jgridshift</groupId>
+                    <artifactId>jgridshift</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jfree</groupId>
+                    <artifactId>jfreechart</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 

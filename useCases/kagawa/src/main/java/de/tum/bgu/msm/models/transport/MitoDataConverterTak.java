@@ -8,7 +8,7 @@ import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.Job;
-import de.tum.bgu.msm.data.jobTypes.kagawa.JobTypeTak;
+import de.tum.bgu.msm.data.jobTypes.JobTypeTak;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.mito.MitoDataConverter;
 import de.tum.bgu.msm.schools.DataContainerWithSchoolsImpl;
@@ -28,7 +28,7 @@ public class MitoDataConverterTak implements MitoDataConverter {
 
     @Override
     public DataSet convertData(DataContainer dataContainer) {
-        DataSet dataSet = new DataSet();
+        DataSet dataSet = new DataSetImpl();
         convertZones(dataSet, dataContainer);
         fillMitoZoneEmployees(dataSet, dataContainer);
         convertSchools(dataSet, dataContainer);
@@ -40,7 +40,7 @@ public class MitoDataConverterTak implements MitoDataConverter {
     //TODO: area type
     private void convertZones(DataSet dataSet, DataContainer dataContainer) {
         for (Zone siloZone : dataContainer.getGeoData().getZones().values()) {
-            MitoZone zone = new MitoZone(siloZone.getZoneId(), 0, AreaTypes.SGType.CORE_CITY);
+            MitoZone zone = new MitoZone(siloZone.getZoneId(), AreaTypes.SGType.CORE_CITY);
             zone.setGeometry((Geometry) siloZone.getZoneFeature().getDefaultGeometry());
             dataSet.addZone(zone);
         }
@@ -141,12 +141,11 @@ public class MitoDataConverterTak implements MitoDataConverter {
                 throw new RuntimeException("Unrecognized Occupation!");
         }
 
-        return new MitoPerson(
+        return new MitoPersonImpl(
                 person.getId(),
                 household,
                 mitoOccupationStatus,
                 mitoOccupation,
-                null,
                 person.getAge(),
                 mitoGender,
                 person.hasDriverLicense());

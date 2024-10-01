@@ -9,12 +9,17 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class AssignHbefaRoadTypes {
 
     private static final Logger logger = Logger.getLogger(AssignHbefaRoadTypes.class);
-
-    static String inputFile = "F:/models\\healthModel\\muc\\input\\mito\\trafficAssignment/studyNetworkDenseCarHealth.xml";
-    static String outputFile = "F:/models\\healthModel\\muc\\input\\mito\\trafficAssignment/studyNetworkDenseCarHealth_Hbefa.xml.gz";
+    private static final String OSMTYPE_NAME = "type";
+    private static final List<String> minorRoadTypes = Arrays.asList("residential","access","service","living","track",
+            "unclassified","pedestrian","path","footway","bridleway","bus","cycleway","road");
+    static String inputFile = "/home/qin/models/manchester/scenOutput/mito_1_0_baseStress_basePOI_fullModeset_matsim/matsim/2021/thursday/car/2021.output_network.xml.gz";
+    static String outputFile = "/home/qin/models/manchester/scenOutput/mito_1_0_baseStress_basePOI_fullModeset_matsim/matsim/2021/thursday/car/2021.output_network_hbefa.xml.gz";
 
     /**
      * handled OSM road types:
@@ -59,7 +64,12 @@ public class AssignHbefaRoadTypes {
     public static String getHbefaType(Link link) {
 
         double freeFlowSpeed_kmh = link.getFreespeed()*3.6;
-        String osmType = link.getAttributes().getAttribute("type").toString().split("_")[0];
+        if(link.getAttributes().getAttribute(OSMTYPE_NAME)==null){
+            logger.error("Link id: " + link.getId() + " has no attribute: " + OSMTYPE_NAME);
+            return "URB/Trunk-Nat./70";
+        }
+
+        String osmType = link.getAttributes().getAttribute(OSMTYPE_NAME).toString().split("_")[0];
 
         String type = "";
         String speedRange= "";
@@ -94,11 +104,7 @@ public class AssignHbefaRoadTypes {
         } else if (osmType.equals("tertiary")){
             type = "Local";
             speedRange = "50";
-        } else if (osmType.equals("residential") ||
-                osmType.equals("access") ||
-                osmType.equals("service") ||
-                osmType.equals("living")||
-                osmType.equals("unclassified")){
+        } else if (minorRoadTypes.contains(osmType)){
             type = "Access";
             speedRange = "30";
         } else {

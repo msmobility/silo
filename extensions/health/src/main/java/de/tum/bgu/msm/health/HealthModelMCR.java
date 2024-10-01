@@ -6,6 +6,7 @@ import com.google.common.math.LongMath;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Day;
 import de.tum.bgu.msm.data.MitoGender;
+import de.tum.bgu.msm.data.MitoTrip7days;
 import de.tum.bgu.msm.data.Mode;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.health.airPollutant.AirPollutantModel;
@@ -38,12 +39,13 @@ import org.matsim.core.scenario.ScenarioUtils;
 import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import static org.matsim.contrib.emissions.Pollutant.*;
 
-public class HealthModel extends AbstractModel implements ModelUpdateListener {
+public class HealthModelMCR extends AbstractModel implements ModelUpdateListener {
     private int latestMatsimYear = -1;
-    private static final Logger logger = Logger.getLogger(HealthModel.class);
+    private static final Logger logger = Logger.getLogger(HealthModelMCR.class);
 
     private Map<Integer, Trip> mitoTrips;
     private final Config initialMatsimConfig;
@@ -52,7 +54,7 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
     private AirPollutantModel airPollutantModel;
     private AccidentModel accidentModel;
 
-    public HealthModel(DataContainer dataContainer, Properties properties, Random random, Config config) {
+    public HealthModelMCR(DataContainer dataContainer, Properties properties, Random random, Config config) {
         super(dataContainer, properties, random);
         this.initialMatsimConfig = config;
         airPollutantModel = new AirPollutantModel(dataContainer,properties, SiloUtil.provideNewRandom(),config);
@@ -82,18 +84,22 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
                 ((DataContainerHealth)dataContainer).setLinkInfo(linkInfoMap);
 
                 logger.warn("Run accident model for " + day);
-                accidentModel.endYear(2011, day);
+                //accidentModel.endYear(2021, day);
                 logger.warn("Run air pollutant model for " + day);
-                airPollutantModel.endYear(2011, day);
+                airPollutantModel.endYear(2021, day);
                 logger.warn("Run health exposure model for " + day);
+                Map<Integer, Trip> mitoTripsAll = new TripReaderMucHealth().readData(properties.main.baseDirectory + "scenOutput/"
+                        + properties.main.scenarioName + "/" + latestMatsimYear + "/microData/trips.csv");
+
                 for(Mode mode : Mode.values()){
                     switch (mode){
                         case autoDriver:
                         case autoPassenger:
                         case bicycle:
                         case walk:
-                            mitoTrips = new TripReaderMucHealth().readData(properties.main.baseDirectory + "scenOutput/"
-                                    + properties.main.scenarioName + "/" + latestMatsimYear + "/microData/trips_" + day + "_" + mode + ".csv");
+                            mitoTrips = mitoTripsAll.values().stream().
+                                    filter(trip -> trip.getTripMode().equals(mode) & trip.getDepartureDay().equals(day)).
+                                    collect(Collectors.toMap(Trip::getId,trip -> trip));
                             healthDataAssembler(latestMatsimYear, day, mode);
                             calculatePersonHealthExposures();
                             break;
@@ -120,18 +126,22 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
                 ((DataContainerHealth)dataContainer).setLinkInfo(linkInfoMap);
 
                 logger.warn("Run accident model for " + day);
-                accidentModel.endYear(2011, day);
+                //accidentModel.endYear(2021, day);
                 logger.warn("Run air pollutant model for " + day);
-                airPollutantModel.endYear(2011, day);
+                airPollutantModel.endYear(2021, day);
                 logger.warn("Run health exposure model for " + day);
+                Map<Integer, Trip> mitoTripsAll = new TripReaderMucHealth().readData(properties.main.baseDirectory + "scenOutput/"
+                        + properties.main.scenarioName + "/" + latestMatsimYear + "/microData/trips.csv");
+
                 for(Mode mode : Mode.values()){
                     switch (mode){
                         case autoDriver:
                         case autoPassenger:
                         case bicycle:
                         case walk:
-                            mitoTrips = new TripReaderMucHealth().readData(properties.main.baseDirectory + "scenOutput/"
-                                    + properties.main.scenarioName + "/" + latestMatsimYear + "/microData/trips_" + day + "_" + mode + ".csv");
+                            mitoTrips = mitoTripsAll.values().stream().
+                                    filter(trip -> trip.getTripMode().equals(mode) & trip.getDepartureDay().equals(day)).
+                                    collect(Collectors.toMap(Trip::getId,trip -> trip));
                             healthDataAssembler(latestMatsimYear, day, mode);
                             calculatePersonHealthExposures();
                             break;
@@ -320,9 +330,9 @@ public class HealthModel extends AbstractModel implements ModelUpdateListener {
             if(linkInfo!=null) {
                 // INJURY
                 //linkLightInjuryRisk = getLinkLightInjuryRisk(mode, (int) (enterTimeInSecond / 3600.), linkInfo);
-                double[] severeFatalRisk = getLinkSevereFatalInjuryRisk(mode, (int) (enterTimeInSecond / 3600.), linkInfo);
-                linkSevereInjuryRisk = severeFatalRisk[0];
-                linkFatalityRisk = severeFatalRisk[1];
+                //double[] severeFatalRisk = getLinkSevereFatalInjuryRisk(mode, (int) (enterTimeInSecond / 3600.), linkInfo);
+                //linkSevereInjuryRisk = severeFatalRisk[0];
+                //linkFatalityRisk = severeFatalRisk[1];
 
                 // PHYSICAL ACTIVITY
                 double linkMarginalMet = PhysicalActivity.getMMet(mode, linkLength, linkTime);

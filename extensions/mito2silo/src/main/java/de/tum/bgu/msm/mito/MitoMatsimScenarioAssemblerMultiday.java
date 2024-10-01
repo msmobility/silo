@@ -1,7 +1,5 @@
 package de.tum.bgu.msm.mito;
 
-import de.tum.bgu.msm.MitoModel2017;
-import de.tum.bgu.msm.MitoModel2017withMoped;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.DataSet;
 import de.tum.bgu.msm.data.Day;
@@ -16,14 +14,18 @@ import de.tum.bgu.msm.utils.TravelTimeUtil;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
+import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ScenarioUtils;
+import uk.cam.mrc.phm.MitoModelMCR;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 
@@ -58,12 +60,12 @@ public class MitoMatsimScenarioAssemblerMultiday implements MatsimScenarioAssemb
         DataSet dataSet = convertData(year);
 
         logger.info("  SILO data being sent to MITO");
-        MitoModel2017 mito = MitoModel2017.initializeModelFromSilo(propertiesPath, dataSet, properties.main.scenarioName);
+        MitoModelMCR mito = MitoModelMCR.initializeModelFromSilo(propertiesPath, dataSet, properties.main.scenarioName);
         mito.setRandomNumberGenerator(SiloUtil.getRandomObject());
         mito.run();
 
         logger.info("  Receiving demand from MITO");
-        Population population = mito.getData().getPopulation(Day.weekday);
+        Population population = mito.getData().getPopulation();
 
         Config config = ConfigUtils.loadConfig(initialMatsimConfig.getContext());
         setDemandSpecificConfigSettings(config);
@@ -80,7 +82,7 @@ public class MitoMatsimScenarioAssemblerMultiday implements MatsimScenarioAssemb
         DataSet dataSet = convertData(year);
 
         logger.info("  SILO data being sent to MITO");
-        MitoModel2017withMoped mito = MitoModel2017withMoped.initializeModelFromSilo(propertiesPath, dataSet, properties.main.scenarioName);
+        MitoModelMCR mito = MitoModelMCR.initializeModelFromSilo(propertiesPath, dataSet, properties.main.scenarioName);
         mito.setRandomNumberGenerator(SiloUtil.getRandomObject());
         mito.run();
 
@@ -89,8 +91,18 @@ public class MitoMatsimScenarioAssemblerMultiday implements MatsimScenarioAssemb
         logger.info("  Receiving demand from MITO");
         Map<Day, Scenario> scenarios = new HashMap<>();
 
+        Map<Day, Population> populationByDay = new HashMap();
+
+        for(Person person: dataSet.getPopulation().getPersons().values()){
+            Day day = Day.valueOf((String)person.getAttributes().getAttribute("day"));
+            if (populationByDay.get(day) == null) {
+                populationByDay.put(day, PopulationUtils.createPopulation(ConfigUtils.createConfig()));
+            }
+            populationByDay.get(day).addPerson(person);
+        }
+
         for (Day day : Day.values()){
-            Population population = mito.getData().getPopulation(day);
+            Population population = populationByDay.get(day);
             Config config = ConfigUtils.loadConfig(initialMatsimConfig.getContext());
             setDemandSpecificConfigSettings(config);
             MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(config);

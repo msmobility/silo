@@ -158,7 +158,7 @@ public final class MatsimTransportModelForHealthModel implements TransportModel 
             // Sample down truck plans to match MATSim sample
             double truckSample = properties.main.scaleFactor *
                     Resources.instance.getDouble(de.tum.bgu.msm.resources.Properties.TRIP_SCALING_FACTOR, 1.);
-            if(day.equals(Day.weekday)) {
+            if(day.equals(Day.thursday)) {
                 truckSample *= 1.278066;
             } else if (day.equals(Day.saturday)) {
                 truckSample *= 0.430817;
@@ -201,7 +201,7 @@ public final class MatsimTransportModelForHealthModel implements TransportModel 
             logger.warn("Running MATSim transport model for " + day + " car scenario " + year + " finished.");
 
             // Get travel Times from MATSim - weekday
-            if(day.equals(Day.weekday)){
+            if(day.equals(Day.thursday)){
                 logger.warn("Using MATSim to compute travel times from zone to zone.");
                 TravelTime travelTime = controlerCar.getLinkTravelTimes();
                 TravelDisutility travelDisutility = controlerCar.getTravelDisutilityFactory().createTravelDisutility(travelTime);

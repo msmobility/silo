@@ -1,9 +1,9 @@
 package de.tum.bgu.msm.health.data;
 
 import cern.colt.map.tfloat.OpenIntFloatHashMap;
+import de.tum.bgu.msm.health.injury.AccidentType;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.contrib.accidents.AccidentType;
 import org.matsim.contrib.emissions.Pollutant;
 
 import java.util.HashMap;

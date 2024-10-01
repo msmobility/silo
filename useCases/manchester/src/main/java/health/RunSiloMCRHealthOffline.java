@@ -1,15 +1,20 @@
 package health;
 
+import de.tum.bgu.msm.data.SummarizeData;
+import de.tum.bgu.msm.health.HealthModelMCR;
 import de.tum.bgu.msm.health.airPollutant.AirPollutantModel;
-import de.tum.bgu.msm.health.HealthModel;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.properties.PropertiesUtil;
 import de.tum.bgu.msm.resources.Resources;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 
+import java.io.IOException;
 import java.util.Objects;
+
+import static de.tum.bgu.msm.utils.SiloUtil.*;
 
 /**
  * Implements SILO for the Greater Manchester
@@ -23,7 +28,12 @@ public class RunSiloMCRHealthOffline {
 
     public static void main(String[] args) {
 
-        Properties properties = SiloUtil.siloInitialization(args[0]);
+        Properties properties = Properties.initializeProperties(args[0]);
+        final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
+        createDirectoryIfNotExistingYet(outputDirectory);
+        initializeRandomNumber(properties.main.randomSeed);
+        trackingFile("open");
+        loadHdf5Lib();
 
         Config config = null;
         if (args.length > 1 && args[1] != null) {
@@ -33,14 +43,14 @@ public class RunSiloMCRHealthOffline {
         HealthDataContainerImpl dataContainer = DataBuilderHealth.getModelDataForMuc(properties, config);
         DataBuilderHealth.read(properties, dataContainer);
 
-        Resources.initializeResources(Objects.requireNonNull(properties.main.baseDirectory + properties.transportModel.mitoPropertiesPath));
+        //Resources.initializeResources(Objects.requireNonNull(properties.main.baseDirectory + properties.transportModel.mitoPropertiesPath));
         AirPollutantModel airPollutantModel = new AirPollutantModel(dataContainer,properties, SiloUtil.provideNewRandom(),config);
         //AccidentModel accidentModel = new AccidentModel(dataContainer,properties,SiloUtil.provideNewRandom());
-        HealthModel healthModel = new HealthModel(dataContainer, properties, SiloUtil.provideNewRandom(),config);
+        HealthModelMCR healthModel = new HealthModelMCR(dataContainer, properties, SiloUtil.provideNewRandom(),config);
         healthModel.setup();
         //accidentModel.endYear(2011);
-        airPollutantModel.runOffineWithEmission(2011,false);
-        healthModel.endYear(2011);
+        airPollutantModel.runOffineWithEmission(2021,true);
+        healthModel.endYear(2021);
         dataContainer.endSimulation();
 
         logger.info("Finished SILO.");

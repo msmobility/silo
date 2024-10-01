@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.health.io;
 
+import de.tum.bgu.msm.data.Day;
 import de.tum.bgu.msm.data.Mode;
 import de.tum.bgu.msm.data.Purpose;
 import de.tum.bgu.msm.health.data.Trip;
@@ -41,6 +42,7 @@ public class TripReaderMucHealth {
             int posPerson = SiloUtil.findPositionInArray("p.ID", header);
             int posDepartureTime = SiloUtil.findPositionInArray("departure_time", header);
             int posDepartureTimeReturn = SiloUtil.findPositionInArray("departure_time_return", header);
+            int posDepartureDay = SiloUtil.findPositionInArray("departure_day", header);
 
             // read line
             while ((recString = in.readLine()) != null) {
@@ -70,6 +72,7 @@ public class TripReaderMucHealth {
                 if(!departureTimeReturn.equals("NA")) {
                     mitoTrip.setDepartureReturnInMinutes(Integer.parseInt(departureTimeReturn));
                 }
+                mitoTrip.setDepartureDay(Day.valueOf(lineElements[posDepartureDay]));
 
                 mitoTrips.put(id,mitoTrip);
             }

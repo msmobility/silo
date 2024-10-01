@@ -21,8 +21,8 @@ public class GeoDataReaderManchester implements GeoDataReader {
 
     private GeoData geoDataMcr;
 
-    private final String SHAPE_IDENTIFIER = "zoneID";
-    private final String ZONE_ID_COLUMN = "zoneID";
+    private final String SHAPE_IDENTIFIER = "id";
+    private final String ZONE_ID_COLUMN = "oaID";
 
     public GeoDataReaderManchester(GeoData geoDataMcr) {
         this.geoDataMcr = geoDataMcr;
@@ -32,24 +32,24 @@ public class GeoDataReaderManchester implements GeoDataReader {
     public void readZoneCsv(String path) {
         TableDataSet zonalData = SiloUtil.readCSVfile(path);
         int[] zoneIds = zonalData.getColumnAsInt(ZONE_ID_COLUMN);
-        float[] zoneAreas = zonalData.getColumnAsFloat("area");
+        //float[] zoneAreas = zonalData.getColumnAsFloat("area");
 
         //int[] areaTypes = zonalData.getColumnAsInt("BBSR_Type");
 
-        int[] regionColumn = zonalData.getColumnAsInt("cityID");
+        //int[] regionColumn = zonalData.getColumnAsInt("cityID");
 
         for (int i = 0; i < zoneIds.length; i++) {
             //AreaTypes.SGType type = AreaTypes.SGType.valueOf(areaTypes[i]);
             Region region;
-            int regionId = regionColumn[i];
-            if (geoDataMcr.getRegions().containsKey(regionId)) {
+            //int regionId = regionColumn[i];
+            /*if (geoDataMcr.getRegions().containsKey(regionId)) {
                 region = geoDataMcr.getRegions().get(regionId);
             } else {
                 region = new RegionImpl(regionId);
                 geoDataMcr.addRegion(region);
-            }
-            ZoneImpl zone = new ZoneImpl(zoneIds[i], zoneAreas[i], region);
-            region.addZone(zone);
+            }*/
+            ZoneImpl zone = new ZoneImpl(zoneIds[i], 0, null);
+            //region.addZone(zone);
             geoDataMcr.addZone(zone);
         }
     }

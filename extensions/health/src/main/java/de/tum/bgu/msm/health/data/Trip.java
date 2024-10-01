@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.health.data;
 
+import de.tum.bgu.msm.data.Day;
 import de.tum.bgu.msm.data.Id;
 import de.tum.bgu.msm.data.Mode;
 import de.tum.bgu.msm.data.Purpose;
@@ -24,6 +25,7 @@ public class Trip implements Id {
 
     private int person;
     private Mode tripMode;
+    private Day departureDay;
     private int departureInMinutes;
     private int departureReturnInMinutes;
 
@@ -193,4 +195,11 @@ public class Trip implements Id {
         this.tripDestination = tripDestination;
     }
 
+    public Day getDepartureDay() {
+        return departureDay;
+    }
+
+    public void setDepartureDay(Day departureDay) {
+        this.departureDay = departureDay;
+    }
 }

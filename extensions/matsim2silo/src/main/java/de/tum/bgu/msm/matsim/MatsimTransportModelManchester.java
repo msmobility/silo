@@ -183,13 +183,6 @@ public final class MatsimTransportModelManchester implements TransportModel {
             // To use the fast pt router (Part 1 of 1)
             controler.addOverridingModule(new SwissRailRaptorModule());
 
-            // To use the deterministic pt simulation (Part 2 of 2):
-            controler.configureQSimComponents(components -> {
-                SBBTransitEngineQSimModule.configure(components);
-
-                // if you have other extensions that provide QSim components, call their configure-method here
-            });
-
             setSBBConfig(controler.getConfig(),deterministic, maxSearchRadius, betaTransfer);
         }
 

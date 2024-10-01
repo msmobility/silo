@@ -10,7 +10,7 @@ import de.tum.bgu.msm.data.household.HouseholdMuc;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobMuc;
-import de.tum.bgu.msm.data.jobTypes.munich.MunichJobType;
+import de.tum.bgu.msm.data.jobTypes.MunichJobType;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.data.vehicle.VehicleType;
@@ -33,7 +33,7 @@ public class MitoDataConverterMucWithAVs implements MitoDataConverter {
 
     @Override
     public DataSet convertData(DataContainer dataContainer) {
-        DataSet dataSet = new DataSet();
+        DataSet dataSet = new DataSetImpl();
         convertZones(dataSet, dataContainer);
         fillMitoZoneEmployees(dataSet, dataContainer);
         convertSchools(dataSet, dataContainer);
@@ -43,7 +43,7 @@ public class MitoDataConverterMucWithAVs implements MitoDataConverter {
 
     private void convertZones(DataSet dataSet, DataContainer dataContainer) {
         for (Zone siloZone : dataContainer.getGeoData().getZones().values()) {
-            MitoZone zone = new MitoZone(siloZone.getZoneId(),((ZoneMuc) siloZone).getPTDistance_m() / 1000., ((ZoneMuc) siloZone).getAreaTypeSG());
+            MitoZone zone = new MitoZone(siloZone.getZoneId(), ((ZoneMuc) siloZone).getAreaTypeSG());
             zone.setGeometry((Geometry) siloZone.getZoneFeature().getDefaultGeometry());
             dataSet.addZone(zone);
         }
@@ -153,12 +153,11 @@ public class MitoDataConverterMucWithAVs implements MitoDataConverter {
                 break;
         }
 
-        return new MitoPerson(
+        return new MitoPersonImpl(
                 person.getId(),
                 household,
                 mitoOccupationStatus,
                 mitoOccupation,
-                jobType,
                 person.getAge(),
                 mitoGender,
                 person.hasDriverLicense());

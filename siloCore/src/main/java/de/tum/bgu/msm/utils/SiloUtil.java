@@ -173,7 +173,7 @@ public class SiloUtil {
     }
 
 
-    private static void initializeRandomNumber(int seed) {
+    public static void initializeRandomNumber(int seed) {
         if (seed == -1)
             rand = new Random();
         else
