@@ -93,8 +93,6 @@
             <groupId>org.matsim</groupId>
             <artifactId>matsim</artifactId>
             <version>${matsimVersion}</version>
-            <type>test-jar</type>
-            <scope>test</scope>
             <exclusions>
                 <exclusion>
                     <groupId>javax.media</groupId>
@@ -133,29 +131,6 @@
             <version>2.8.5</version>
             <scope>compile</scope>
         </dependency>
-        <!--<dependency>
-            <groupId>de.tum.bgu.msm</groupId>
-            <artifactId>mito</artifactId>
-            <version>master-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>javax.media</groupId>
-                    <artifactId>jai_core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>jgridshift</groupId>
-                    <artifactId>jgridshift</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>log4j</groupId>
-                    <artifactId>log4j</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>jfree</groupId>
-                    <artifactId>jfreechart</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>-->
         <dependency>
             <groupId>de.tum.bgu.msm</groupId>
             <artifactId>mitoCore</artifactId>

@@ -68,7 +68,7 @@ public class DataBuilderHealth {
 
         final HouseholdFactoryImpl hhFactory = new HouseholdFactoryImpl();
         HouseholdDataManager householdDataManager = new HouseholdDataManagerImpl(
-                householdData, dwellingData, new PersonFactoryMCR(),
+                householdData, dwellingData, new PersonFactoryMCRHealth(),
                 hhFactory, properties, realEstateDataManager);
 
         SchoolData schoolData = new SchoolDataImpl(geoData, dwellingData, properties);
@@ -94,7 +94,7 @@ public class DataBuilderHealth {
 
         String personFile = properties.main.baseDirectory + properties.householdData.personFileName;
         personFile += "_" + year + ".csv";
-        PersonReader personReader = new DefaultPersonReader(dataContainer.getHouseholdDataManager());
+        PersonReader personReader = new PersonReaderMCRHealth(dataContainer.getHouseholdDataManager());
         personReader.readData(personFile);
 
         DwellingReader ddReader = new DefaultDwellingReader(dataContainer.getRealEstateDataManager());

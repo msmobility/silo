@@ -11,5 +11,13 @@
 
     <artifactId>schools</artifactId>
 
+    <dependencies>
+        <dependency>
+            <!--MATSim test infrastructure.  Not transitive.-->
+            <groupId>org.matsim</groupId>
+            <artifactId>matsim</artifactId>
+            <version>${matsimVersion}</version>
+        </dependency>
+    </dependencies>
 
 </project>

@@ -1,18 +1,11 @@
 package health;
 
-import de.tum.bgu.msm.data.SummarizeData;
 import de.tum.bgu.msm.health.HealthModelMCR;
-import de.tum.bgu.msm.health.airPollutant.AirPollutantModel;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.properties.PropertiesUtil;
-import de.tum.bgu.msm.resources.Resources;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-
-import java.io.IOException;
-import java.util.Objects;
 
 import static de.tum.bgu.msm.utils.SiloUtil.*;
 
@@ -44,12 +37,7 @@ public class RunSiloMCRHealthOffline {
         DataBuilderHealth.read(properties, dataContainer);
 
         //Resources.initializeResources(Objects.requireNonNull(properties.main.baseDirectory + properties.transportModel.mitoPropertiesPath));
-        AirPollutantModel airPollutantModel = new AirPollutantModel(dataContainer,properties, SiloUtil.provideNewRandom(),config);
-        //AccidentModel accidentModel = new AccidentModel(dataContainer,properties,SiloUtil.provideNewRandom());
         HealthModelMCR healthModel = new HealthModelMCR(dataContainer, properties, SiloUtil.provideNewRandom(),config);
-        healthModel.setup();
-        //accidentModel.endYear(2011);
-        airPollutantModel.runOffineWithEmission(2021,true);
         healthModel.endYear(2021);
         dataContainer.endSimulation();
 

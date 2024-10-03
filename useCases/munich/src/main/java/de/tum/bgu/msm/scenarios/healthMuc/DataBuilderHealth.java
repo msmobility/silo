@@ -9,7 +9,6 @@ import de.tum.bgu.msm.data.geo.DefaultGeoData;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.*;
 import de.tum.bgu.msm.data.job.*;
-import de.tum.bgu.msm.data.person.PersonFactoryMuc;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.*;
@@ -67,7 +66,7 @@ public class DataBuilderHealth {
 
         final HouseholdFactoryMuc hhFactory = new HouseholdFactoryMuc();
         HouseholdDataManager householdDataManager = new HouseholdDataManagerImpl(
-                householdData, dwellingData, new PersonFactoryMuc(),
+                householdData, dwellingData, new PersonFactoryMucHealth(),
                 hhFactory, properties, realEstateDataManager);
 
         SchoolData schoolData = new SchoolDataImpl(geoData, dwellingData, properties);
@@ -93,7 +92,7 @@ public class DataBuilderHealth {
 
         String personFile = properties.main.baseDirectory + properties.householdData.personFileName;
         personFile += "_" + year + ".csv";
-        PersonReader personReader = new PersonReaderMuc(dataContainer.getHouseholdDataManager());
+        PersonReader personReader = new PersonReaderMucHealth(dataContainer.getHouseholdDataManager());
         personReader.readData(personFile);
 
         DwellingReader ddReader = new DwellingReaderMuc(dataContainer.getRealEstateDataManager());

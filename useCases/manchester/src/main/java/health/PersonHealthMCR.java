@@ -4,6 +4,7 @@ import de.tum.bgu.msm.data.Mode;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.health.data.PersonHealth;
+import de.tum.bgu.msm.health.disease.Diseases;
 import de.tum.bgu.msm.schools.PersonWithSchool;
 
 import java.util.HashMap;

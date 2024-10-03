@@ -142,7 +142,7 @@
 
 	<properties>
 		<geotools.version>24.2</geotools.version>
-		<matsimVersion>14.0-PR1766</matsimVersion>
+		<matsimVersion>14.0</matsimVersion>
 		<jackson.version>2.9.5</jackson.version>
 	</properties>
 </project>

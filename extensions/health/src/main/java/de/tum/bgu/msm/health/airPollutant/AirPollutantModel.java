@@ -77,12 +77,12 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
                 String eventFileWithEmissions = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_events_emission.xml.gz";
                 String vehicleFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_vehicles.xml.gz";
                 String vehicleFileWithEmissionType = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".vehicles_emission.xml.gz";
-                CreateVehicles createVehicles = new CreateVehicles(scenario);
-                createVehicles.runVehicleType();
-                createVehicles.runVehicle(vehicleFile, vehicleFileWithEmissionType);
+                //CreateVehicles createVehicles = new CreateVehicles(scenario);
+                //createVehicles.runVehicleType();
+                //createVehicles.runVehicle(vehicleFile, vehicleFileWithEmissionType);
                 updateConfig(day, vehicleFileWithEmissionType);
                 scenario = ScenarioUtils.loadScenario(scenario.getConfig());
-                createEmissionEventsOffline(eventFileWithoutEmissions,eventFileWithEmissions);
+                //createEmissionEventsOffline(eventFileWithoutEmissions,eventFileWithEmissions);
                 runEmissionGridAnalyzer(year,day, eventFileWithEmissions);
         } else if(properties.transportModel.transportModelYears.contains(year + 1)) {//why year +1
             latestMatsimYear = year + 1;
@@ -95,12 +95,12 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
             String eventFileWithEmissions = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_events_emission.xml.gz";
             String vehicleFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_vehicles.xml.gz";
             String vehicleFileWithEmissionType = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".vehicles_emission.xml.gz";
-            CreateVehicles createVehicles = new CreateVehicles(scenario);
-            createVehicles.runVehicleType();
-            createVehicles.runVehicle(vehicleFile, vehicleFileWithEmissionType);
+            //CreateVehicles createVehicles = new CreateVehicles(scenario);
+            //createVehicles.runVehicleType();
+            //createVehicles.runVehicle(vehicleFile, vehicleFileWithEmissionType);
             updateConfig(day, vehicleFileWithEmissionType);
             scenario = ScenarioUtils.loadScenario(scenario.getConfig());
-            createEmissionEventsOffline(eventFileWithoutEmissions,eventFileWithEmissions);
+            //createEmissionEventsOffline(eventFileWithoutEmissions,eventFileWithEmissions);
             runEmissionGridAnalyzer(year,day, eventFileWithEmissions);
         }
 

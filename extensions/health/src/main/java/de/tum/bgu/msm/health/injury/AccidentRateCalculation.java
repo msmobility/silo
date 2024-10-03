@@ -1,6 +1,5 @@
 package de.tum.bgu.msm.health.injury;
 
-import cern.colt.map.tdouble.OpenIntDoubleHashMap;
 import cern.colt.map.tfloat.OpenIntFloatHashMap;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.network.Link;

@@ -18,19 +18,6 @@ public class PersonMuc implements PersonWithSchool {
     private int schoolPlace = 0;
     private int schoolId = -1;
 
-    private float weeklyTravelSeconds = 0.f;
-    private float weeklyActivityMinutes = 0.f;
-    private float weeklyHomeMinutes = 0.f;
-
-    //for health model
-    private Map<Mode, Float> weeklyMarginalMetHours = new HashMap<>();
-    private Map<String, Float> weeklyAccidentRisks = new HashMap<>();
-    private Map<String, Float> weeklyExposureByPollutant = new HashMap<>();
-    private Map<String, Float> relativeRisks;
-    private float allCauseRR;
-
-
-
 
     public PersonMuc(int id, int age,
                      Gender gender, Occupation occupation,
@@ -173,62 +160,5 @@ public class PersonMuc implements PersonWithSchool {
     @Override
     public void setAttribute(String key, Object value) {
         delegate.setAttribute(key, value);
-    }
-
-    public float getWeeklyMarginalMetHours(Mode mode) {
-        return weeklyMarginalMetHours.getOrDefault(mode, 0.f);
-    }
-
-    public void updateWeeklyMarginalMetHours(Mode mode, float mmetHours) {
-        weeklyMarginalMetHours.put(mode, weeklyMarginalMetHours.getOrDefault(mode, 0.f) + mmetHours);
-    }
-
-    public void updateWeeklyTravelSeconds(float seconds) {
-        weeklyTravelSeconds += seconds;
-    }
-    public void updateWeeklyActivityMinutes(float minutes) {
-        weeklyActivityMinutes += minutes; }
-
-    public float getWeeklyTravelSeconds() {
-        return weeklyTravelSeconds;
-    }
-    public float getWeeklyActivityMinutes() { return weeklyActivityMinutes; }
-
-    public void setWeeklyHomeMinutes(float hours) { this.weeklyHomeMinutes = hours; }
-
-    public float getWeeklyHomeMinutes() { return weeklyHomeMinutes; }
-
-    public float getWeeklyExposureByPollutant(String pollutant) {
-        return weeklyExposureByPollutant.get(pollutant);
-    }
-
-    // todo: make not hardcoded...
-    // 1.49/3 is the "minimum" weekly ventilation rate (8hr sleep + 16hr rest per day)
-    public float getWeeklyExposureByPollutantNormalised(String pollutant) {
-        return (float) (weeklyExposureByPollutant.get(pollutant) / (168.* (1.49/3.)));
-    }
-
-    public float getWeeklyAccidentRisk(String type) {
-        return weeklyAccidentRisks.getOrDefault(type, 0.f);
-    }
-
-    public void updateWeeklyAccidentRisks(Map<String, Float> newRisks) {
-        newRisks.forEach((k, v) -> weeklyAccidentRisks.merge(k, v, (v1, v2) -> v1 + v2 - v1*v2));
-    }
-
-    public void updateWeeklyPollutionExposures(Map<String, Float> newExposures) {
-        newExposures.forEach((k, v) -> weeklyExposureByPollutant.merge(k, v, Float::sum));
-    }
-
-    public float getAllCauseRR() {return allCauseRR;}
-
-    public void setAllCauseRR(float rr) {this.allCauseRR = rr;}
-
-    public float getRelativeRiskByType(String type) {
-        return relativeRisks.get(type);
-    }
-
-    public void setRelativeRisks(Map<String, Float> relativeRisks) {
-        this.relativeRisks = relativeRisks;
     }
 }

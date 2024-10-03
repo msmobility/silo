@@ -148,8 +148,8 @@ public class ModelBuilderMucHealth {
                     transportModel = null;
             }
 
-            AccidentModel accidentModel  = new AccidentModel(dataContainer, properties, SiloUtil.provideNewRandom());
-            AirPollutantModel airPollutantModel  = new AirPollutantModel(dataContainer, properties, SiloUtil.provideNewRandom(),config);
+            //AccidentModel accidentModel  = new AccidentModel(dataContainer, properties, SiloUtil.provideNewRandom());
+            //AirPollutantModel airPollutantModel  = new AirPollutantModel(dataContainer, properties, SiloUtil.provideNewRandom(),config);
             HealthModel healthModel  = new HealthModel(dataContainer, properties, SiloUtil.provideNewRandom(), config);
 
             final ModelContainer modelContainer = new ModelContainer(
