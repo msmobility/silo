@@ -102,7 +102,7 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
             List<String> newDisease = new ArrayList<>();
 
             for(Diseases diseases : Diseases.values()){
-                if(diseases.equals(Diseases.all_cause)){
+                if(diseases.equals(Diseases.all_cause_mortality)){
                     continue;
                 }
 
