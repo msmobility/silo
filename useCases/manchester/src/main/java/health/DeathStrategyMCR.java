@@ -26,7 +26,7 @@ public class DeathStrategyMCR implements DeathStrategy {
         double allCauseRR = 1. ;
 
         for(HealthExposures healthExposures : ((PersonHealth)person).getRelativeRisksByDisease().keySet()){
-            allCauseRR = allCauseRR * ((PersonHealth)person).getRelativeRisksByDisease().get(healthExposures).get(Diseases.all_cause);
+            allCauseRR = allCauseRR * ((PersonHealth)person).getRelativeRisksByDisease().get(healthExposures).get(Diseases.all_cause_mortality);
         };
 
         //TODO: how to integrate injury into all cause mortality
@@ -36,7 +36,7 @@ public class DeathStrategyMCR implements DeathStrategy {
             throw new RuntimeException("Undefined negative person age!"+personAge);
         }
 
-        double alpha = dataContainer.getHealthTransitionData().get(Diseases.all_cause).get(personSex).get(personAge);
+        double alpha = dataContainer.getHealthTransitionData().get(Diseases.all_cause_mortality).get(personSex).get(personAge);
 
         if(adjustByRelativeRisk){
             alpha = alpha * allCauseRR;

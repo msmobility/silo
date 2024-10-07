@@ -524,40 +524,6 @@ public class HealthModelMCR extends AbstractModel implements ModelUpdateListener
         }
     }
 
-    public void updateDiseaseProbability(Boolean adjustByRelativeRisk) {
-        for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
-            for(Diseases diseases : Diseases.values()){
-                double sickProb = 0.;
-                if(adjustByRelativeRisk){
-                    //TODO: how to adjust sick prob by rr?
-                }else{
-                    sickProb = ((DataContainerHealth) dataContainer).getHealthTransitionData().get(diseases).get(person.getGender()).get(person.getAge());
-                }
-                ((PersonHealth)person).getCurrentDiseaseProb().put(diseases, (float) sickProb);
-            }
-        }
-    }
-
-    public void updateHealthDiseaseStates(int year) {
-        for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
-            PersonHealth personHealth = (PersonHealth) person;
-            for(Diseases diseases : Diseases.values()){
-                if(diseases.equals(Diseases.all_cause)){
-                    continue;
-                }
-
-                if(SiloUtil.getRandomObject().nextFloat()<(personHealth.getCurrentDiseaseProb().get(diseases))){
-                    if(!personHealth.getDiseasesHistory().contains(diseases)){
-                        personHealth.getDiseasesHistory().add(diseases);
-
-                        List<Diseases> currentDisease = personHealth.getNewDiseaseByYear().getOrDefault(year, new ArrayList<>());
-                        currentDisease.add(diseases);
-                    }
-                }
-            }
-        }
-    }
-
     private double getAvgCycleSpeed(PersonHealth person) {
         return ((DataContainerHealth)dataContainer).getAvgSpeeds().get(Mode.bicycle).
                 get(MitoGender.valueOf(person.getGender().name())).get(Math.min(person.getAge(),105)) / 3.6;
