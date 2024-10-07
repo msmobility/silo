@@ -12,6 +12,8 @@ import de.tum.bgu.msm.data.household.*;
 import de.tum.bgu.msm.data.job.*;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.health.io.DoseResponseLookupReader;
+import de.tum.bgu.msm.health.io.HealthTransitionTableReader;
 import de.tum.bgu.msm.io.MicroDataScaler;
 import de.tum.bgu.msm.io.input.*;
 import de.tum.bgu.msm.matsim.MatsimTravelTimesAndCosts;
@@ -110,7 +112,11 @@ public class DataBuilderHealth {
         String schoolsFile = properties.main.baseDirectory + properties.schoolData.schoolsFileName + "_" + year + ".csv";
         ssReader.readData(schoolsFile);
 
-        ((HealthDataContainerImpl) dataContainer).setAvgSpeeds(new DefaultSpeedReader().readData(properties.main.baseDirectory + "input/avgSpeeds.csv"));
+        dataContainer.setAvgSpeeds(new DefaultSpeedReader().readData(properties.main.baseDirectory + "input/avgSpeeds.csv"));
+        dataContainer.setHealthTransitionData(new HealthTransitionTableReader().readData(properties.main.baseDirectory + "input/health/health_transitions_melbourne_reduced.csv"));
+        DoseResponseLookupReader doseResponseReader = new DoseResponseLookupReader();
+        doseResponseReader.readData(properties.main.baseDirectory + "input/health/");
+        dataContainer.setDoseResponseData(doseResponseReader.getDoseResponseData());
 
         MicroDataScaler microDataScaler = new MicroDataScaler(dataContainer, properties);
         microDataScaler.scale();

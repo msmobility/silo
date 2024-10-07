@@ -10,6 +10,9 @@ import de.tum.bgu.msm.data.Mode;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.health.airPollutant.AirPollutantModel;
 import de.tum.bgu.msm.health.data.*;
+import de.tum.bgu.msm.health.disease.Diseases;
+import de.tum.bgu.msm.health.disease.HealthExposures;
+import de.tum.bgu.msm.health.disease.RelativeRisksDisease;
 import de.tum.bgu.msm.health.injury.AccidentModel;
 import de.tum.bgu.msm.health.injury.AccidentType;
 import de.tum.bgu.msm.health.io.TripReaderMucHealth;
@@ -509,12 +512,49 @@ public class HealthModelMCR extends AbstractModel implements ModelUpdateListener
         }
     }
 
-    private void calculateRelativeRisk() {
+    public void calculateRelativeRisk() {
         for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
-            PersonHealth personMuc = (PersonHealth)person;
-            Map<String, Float> relativeRisks = RelativeRisks.calculate(personMuc);
-            personMuc.setRelativeRisks(relativeRisks);
-            personMuc.setAllCauseRR(relativeRisks.values().stream().reduce(1.f, (a, b) -> a*b));
+            EnumMap<Diseases, Float> rr_PA = RelativeRisksDisease.calculateForPA((PersonHealth)person, (DataContainerHealth) dataContainer);
+            ((PersonHealth)person).getRelativeRisksByDisease().put(HealthExposures.PHYSICAL_ACTIVITY, rr_PA);
+
+            //EnumMap<Diseases, Float> rr_AP = RelativeRisksDisease.calculateForAP(personMRC, (DataContainerHealth) dataContainer);
+            //personMRC.getRelativeRisksByDisease().put(HealthExposures.AIR_POLLUTION, rr_AP);
+            //TODO: do we combine all RR to calculate all cause rr?
+            //personMRC.setAllCauseRR(relativeRisks.values().stream().reduce(1.f, (a, b) -> a*b));
+        }
+    }
+
+    public void updateDiseaseProbability(Boolean adjustByRelativeRisk) {
+        for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
+            for(Diseases diseases : Diseases.values()){
+                double sickProb = 0.;
+                if(adjustByRelativeRisk){
+                    //TODO: how to adjust sick prob by rr?
+                }else{
+                    sickProb = ((DataContainerHealth) dataContainer).getHealthTransitionData().get(diseases).get(person.getGender()).get(person.getAge());
+                }
+                ((PersonHealth)person).getCurrentDiseaseProb().put(diseases, (float) sickProb);
+            }
+        }
+    }
+
+    public void updateHealthDiseaseStates(int year) {
+        for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
+            PersonHealth personHealth = (PersonHealth) person;
+            for(Diseases diseases : Diseases.values()){
+                if(diseases.equals(Diseases.all_cause)){
+                    continue;
+                }
+
+                if(SiloUtil.getRandomObject().nextFloat()<(personHealth.getCurrentDiseaseProb().get(diseases))){
+                    if(!personHealth.getDiseasesHistory().contains(diseases)){
+                        personHealth.getDiseasesHistory().add(diseases);
+
+                        List<Diseases> currentDisease = personHealth.getNewDiseaseByYear().getOrDefault(year, new ArrayList<>());
+                        currentDisease.add(diseases);
+                    }
+                }
+            }
         }
     }
 

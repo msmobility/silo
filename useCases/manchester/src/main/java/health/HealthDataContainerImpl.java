@@ -1,5 +1,6 @@
 package health;
 
+import cern.colt.map.tlong.OpenLongLongHashMap;
 import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.data.MitoGender;
 import de.tum.bgu.msm.data.Mode;
@@ -9,9 +10,13 @@ import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.job.JobDataManager;
+import de.tum.bgu.msm.data.person.Gender;
+import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.health.data.LinkInfo;
+import de.tum.bgu.msm.health.disease.Diseases;
+import de.tum.bgu.msm.health.disease.HealthExposures;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.schools.SchoolData;
@@ -30,6 +35,9 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     private Map<Id<Link>, LinkInfo> linkInfo = new HashMap<>();
     private Set<Pollutant> pollutantSet = new HashSet<>();
     private EnumMap<Mode, EnumMap<MitoGender,Map<Integer,Double>>> avgSpeeds;
+    private EnumMap<Diseases, EnumMap<Gender,Map<Integer,Double>>> healthTransitionData;
+    private EnumMap<HealthExposures, EnumMap<Diseases, TableDataSet>> doseResponseData;
+    private Map<Integer, Map<Integer, List<String>>> healthDiseaseTrackerRemovedPerson = new HashMap<>();
 
     public HealthDataContainerImpl(DataContainerWithSchools delegate,
                                    Properties properties) {
@@ -96,6 +104,17 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     public void endSimulation() {
         delegate.endSimulation();
         writePersonHealthData(properties.main.endYear);
+        writePersonDiseaseTrackData(properties.main.endYear);
+    }
+
+    private void writePersonDiseaseTrackData(int year) {
+        final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/";
+        String filepp = outputDirectory
+                + properties.householdData.personFinalFileName
+                + "_healthDiseaseTracker_"
+                + year
+                + ".csv";
+        new HealthDiseaseTrackerWriter(this).writeHealthDiseaseTracking(filepp);
     }
 
     public void writePersonHealthData(int year) {
@@ -137,8 +156,28 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
         this.avgSpeeds = avgSpeeds;
     }
 
+    public EnumMap<Diseases, EnumMap<Gender, Map<Integer, Double>>> getHealthTransitionData() {
+        return healthTransitionData;
+    }
+
+    public void setHealthTransitionData(EnumMap<Diseases, EnumMap<Gender, Map<Integer, Double>>> healthTransitionData) {
+        this.healthTransitionData = healthTransitionData;
+    }
+
+    public EnumMap<HealthExposures, EnumMap<Diseases, TableDataSet>> getDoseResponseData() {
+        return doseResponseData;
+    }
+
+    public void setDoseResponseData(EnumMap<HealthExposures, EnumMap<Diseases, TableDataSet>> doseResponseData) {
+        this.doseResponseData = doseResponseData;
+    }
+
     @Override
     public void reset(){
         linkInfo.clear();
+    }
+
+    public Map<Integer, Map<Integer, List<String>>> getHealthDiseaseTrackerRemovedPerson() {
+        return healthDiseaseTrackerRemovedPerson;
     }
 }

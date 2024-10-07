@@ -5,11 +5,10 @@ import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.health.data.PersonHealth;
 import de.tum.bgu.msm.health.disease.Diseases;
+import de.tum.bgu.msm.health.disease.HealthExposures;
 import de.tum.bgu.msm.schools.PersonWithSchool;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class PersonHealthMCR implements PersonWithSchool, PersonHealth {
 
@@ -23,13 +22,21 @@ public class PersonHealthMCR implements PersonWithSchool, PersonHealth {
     private float weeklyActivityMinutes = 0.f;
     private float weeklyHomeMinutes = 0.f;
 
-    //for health model
+    //for exposure model
     private Map<Mode, Float> weeklyMarginalMetHours = new HashMap<>();
+    private float weeklyMarginalMetHoursSport = 0.f;
     private Map<String, Float> weeklyAccidentRisks = new HashMap<>();
     private Map<String, Float> weeklyExposureByPollutant = new HashMap<>();
+
+    //for all-cause health model
     private Map<String, Float> relativeRisks;
     private float allCauseRR;
 
+    //for disease model
+    private EnumMap<HealthExposures, EnumMap<Diseases, Float>> relativeRisksByDisease = new EnumMap<>(HealthExposures.class);
+    private Map<Integer, List<String>> healthDiseaseTracker = new HashMap<>();
+    private List<Diseases> currentDisease = new ArrayList<>();
+    private Map<Diseases, Float> currentDiseaseProb = new HashMap<>();
 
     public PersonHealthMCR(int id, int age,
                            Gender gender, Occupation occupation,
@@ -222,4 +229,34 @@ public class PersonHealthMCR implements PersonWithSchool, PersonHealth {
     public void setRelativeRisks(Map<String, Float> relativeRisks) {
         this.relativeRisks = relativeRisks;
     }
+
+    public float getWeeklyMarginalMetHoursSport() {
+        return weeklyMarginalMetHoursSport;
+    }
+
+    public void setWeeklyMarginalMetHoursSport(float weeklyMarginalMetHoursSport) {
+        this.weeklyMarginalMetHoursSport = weeklyMarginalMetHoursSport;
+    }
+
+    public EnumMap<HealthExposures, EnumMap<Diseases, Float>> getRelativeRisksByDisease() {
+        return relativeRisksByDisease;
+    }
+
+    public void setRelativeRisksByDisease(EnumMap<HealthExposures, EnumMap<Diseases, Float>> relativeRisksByDisease) {
+        this.relativeRisksByDisease = relativeRisksByDisease;
+    }
+
+
+    public Map<Diseases, Float> getCurrentDiseaseProb() {
+        return currentDiseaseProb;
+    }
+
+    public List<Diseases> getCurrentDisease() {
+        return currentDisease;
+    }
+
+    public Map<Integer, List<String>> getHealthDiseaseTracker() {
+        return healthDiseaseTracker;
+    }
+
 }

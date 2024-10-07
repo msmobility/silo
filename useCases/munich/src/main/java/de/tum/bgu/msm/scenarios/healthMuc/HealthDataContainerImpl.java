@@ -1,5 +1,7 @@
 package de.tum.bgu.msm.scenarios.healthMuc;
 
+import cern.colt.map.tlong.OpenLongLongHashMap;
+import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.data.MitoGender;
 import de.tum.bgu.msm.data.Mode;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
@@ -8,9 +10,12 @@ import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.job.JobDataManager;
+import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.health.data.LinkInfo;
+import de.tum.bgu.msm.health.disease.Diseases;
+import de.tum.bgu.msm.health.disease.HealthExposures;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.schools.SchoolData;
 import org.apache.log4j.Logger;
@@ -134,6 +139,31 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     @Override
     public void setAvgSpeeds(EnumMap<Mode, EnumMap<MitoGender, Map<Integer, Double>>> avgSpeeds) {
         this.avgSpeeds = avgSpeeds;
+    }
+
+    @Override
+    public EnumMap<Diseases, EnumMap<Gender, Map<Integer, Double>>> getHealthTransitionData() {
+        return null;
+    }
+
+    @Override
+    public void setHealthTransitionData(EnumMap<Diseases, EnumMap<Gender, Map<Integer, Double>>> healthTransitionData) {
+
+    }
+
+    @Override
+    public EnumMap<HealthExposures, EnumMap<Diseases, TableDataSet>> getDoseResponseData() {
+        return null;
+    }
+
+    @Override
+    public void setDoseResponseData(EnumMap<HealthExposures, EnumMap<Diseases, TableDataSet>> doseResponseData) {
+
+    }
+
+    @Override
+    public Map<Integer, Map<Integer, List<String>>> getHealthDiseaseTrackerRemovedPerson() {
+        return Map.of();
     }
 
     @Override

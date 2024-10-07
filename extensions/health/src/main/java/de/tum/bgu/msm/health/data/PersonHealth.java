@@ -2,15 +2,18 @@ package de.tum.bgu.msm.health.data;
 
 import de.tum.bgu.msm.data.Mode;
 import de.tum.bgu.msm.data.person.*;
+import de.tum.bgu.msm.health.disease.Diseases;
+import de.tum.bgu.msm.health.disease.HealthExposures;
 
-import java.util.HashMap;
+import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
 public interface PersonHealth extends Person {
 
 
     float getWeeklyMarginalMetHours(Mode mode);
-
+    float getWeeklyMarginalMetHoursSport();
     void updateWeeklyMarginalMetHours(Mode mode, float mmetHours);
 
     void updateWeeklyTravelSeconds(float seconds);
@@ -41,7 +44,13 @@ public interface PersonHealth extends Person {
 
     float getRelativeRiskByType(String type);
 
-    public void setRelativeRisks(Map<String, Float> relativeRisks);
+    void setRelativeRisks(Map<String, Float> relativeRisks);
 
+    EnumMap<HealthExposures, EnumMap<Diseases, Float>> getRelativeRisksByDisease();
 
+    List<Diseases> getCurrentDisease();
+
+    Map<Integer, List<String>> getHealthDiseaseTracker();
+
+    Map<Diseases, Float> getCurrentDiseaseProb();
 }

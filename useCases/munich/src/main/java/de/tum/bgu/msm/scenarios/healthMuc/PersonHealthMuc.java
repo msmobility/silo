@@ -4,11 +4,11 @@ import de.tum.bgu.msm.data.Mode;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.health.data.PersonHealth;
+import de.tum.bgu.msm.health.disease.Diseases;
+import de.tum.bgu.msm.health.disease.HealthExposures;
 import de.tum.bgu.msm.schools.PersonWithSchool;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class PersonHealthMuc implements PersonWithSchool, PersonHealth {
 
@@ -179,6 +179,11 @@ public class PersonHealthMuc implements PersonWithSchool, PersonHealth {
         return weeklyMarginalMetHours.getOrDefault(mode, 0.f);
     }
 
+    @Override
+    public float getWeeklyMarginalMetHoursSport() {
+        return 0;
+    }
+
     public void updateWeeklyMarginalMetHours(Mode mode, float mmetHours) {
         weeklyMarginalMetHours.put(mode, weeklyMarginalMetHours.getOrDefault(mode, 0.f) + mmetHours);
     }
@@ -230,5 +235,25 @@ public class PersonHealthMuc implements PersonWithSchool, PersonHealth {
 
     public void setRelativeRisks(Map<String, Float> relativeRisks) {
         this.relativeRisks = relativeRisks;
+    }
+
+    @Override
+    public EnumMap<HealthExposures, EnumMap<Diseases, Float>> getRelativeRisksByDisease() {
+        return null;
+    }
+
+    @Override
+    public List<Diseases> getCurrentDisease() {
+        return List.of();
+    }
+
+    @Override
+    public Map<Integer, List<String>> getHealthDiseaseTracker() {
+        return Map.of();
+    }
+
+    @Override
+    public Map<Diseases, Float> getCurrentDiseaseProb() {
+        return Map.of();
     }
 }
