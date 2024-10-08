@@ -68,10 +68,6 @@ public class ModelBuilderMCR {
 
     public static ModelContainer getModelContainerForManchester(HealthDataContainerImpl dataContainer, Properties properties, Config config) {
 
-        PersonFactory ppFactory = dataContainer.getHouseholdDataManager().getPersonFactory();
-        HouseholdFactory hhFactory = dataContainer.getHouseholdDataManager().getHouseholdFactory();
-        DwellingFactory ddFactory = dataContainer.getRealEstateDataManager().getDwellingFactory();
-
         BirthdayModel birthdayModel = new BirthdayModelImpl(dataContainer, properties, SiloUtil.provideNewRandom());
 
         DeathModel deathModel = new DeathModelMCR(dataContainer, properties, new DeathStrategyMCR(dataContainer, false), SiloUtil.provideNewRandom());

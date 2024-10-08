@@ -1,5 +1,6 @@
 package health;
 
+import de.tum.bgu.msm.data.ManchesterDwellingTypes;
 import de.tum.bgu.msm.data.PersonFactoryMCR;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.accessibility.AccessibilityImpl;
@@ -63,7 +64,7 @@ public class DataBuilderHealth {
         //jobFactory.readWorkingTimeDistributions(properties);
 
         RealEstateDataManager realEstateDataManager = new RealEstateDataManagerImpl(
-                new DefaultDwellingTypes(), dwellingData, householdData, geoData, new DwellingFactoryImpl(), properties);
+                new ManchesterDwellingTypes(), dwellingData, householdData, geoData, new DwellingFactoryImpl(), properties);
 
         JobDataManager jobDataManager = new JobDataManagerImpl(
                 properties, new JobFactoryImpl(), jobData, geoData, travelTimes, commutingTimeProbability);
@@ -115,7 +116,7 @@ public class DataBuilderHealth {
         dataContainer.setAvgSpeeds(new DefaultSpeedReader().readData(properties.main.baseDirectory + "input/avgSpeeds.csv"));
         dataContainer.setHealthTransitionData(new HealthTransitionTableReader().readData(properties.main.baseDirectory + "input/health/health_transitions_melbourne_reduced.csv"));
         DoseResponseLookupReader doseResponseReader = new DoseResponseLookupReader();
-        doseResponseReader.readData(properties.main.baseDirectory + "input/health/");
+        doseResponseReader.readData(properties.main.baseDirectory + "input/health/extdata/");
         dataContainer.setDoseResponseData(doseResponseReader.getDoseResponseData());
 
         MicroDataScaler microDataScaler = new MicroDataScaler(dataContainer, properties);

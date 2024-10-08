@@ -19,13 +19,6 @@ public class HealthTransitionTableReader {
 
         EnumMap<Diseases, EnumMap<Gender,Map<Integer,Double>>> healthDiseaseData = new EnumMap<>(Diseases.class);
 
-        for(Diseases diseases : Diseases.values()) {
-            healthDiseaseData.put(diseases,new EnumMap<>(Gender.class));
-            for(Gender gender : Gender.values()) {
-                healthDiseaseData.get(diseases).put(gender,new LinkedHashMap<>());
-            }
-        }
-
         String recString = "";
         int recCount = 0;
         try {
@@ -36,7 +29,7 @@ public class HealthTransitionTableReader {
             String[] header = recString.split(",");
             int posAge = SiloUtil.findPositionInArray("age", header);
             int posGender= SiloUtil.findPositionInArray("sex", header);
-            int posCause= SiloUtil.findPositionInArray("cause_acronym", header);
+            int posCause= SiloUtil.findPositionInArray("cause", header);
             int posProb= SiloUtil.findPositionInArray("prob", header);
 
             // read line
@@ -44,15 +37,20 @@ public class HealthTransitionTableReader {
                 recCount++;
                 String[] lineElements = recString.split(",");
                 int age = Integer.parseInt(lineElements[posAge]);
-                Gender gender = Gender.valueOf(lineElements[posGender]);
+                Gender gender = Gender.valueOf(Integer.parseInt(lineElements[posGender]));
                 Diseases diseases = Diseases.valueOf(lineElements[posCause]);
                 double prob = Double.parseDouble(lineElements[posProb]);
 
-                healthDiseaseData.get(diseases).get(gender).put(age, prob);
+
+                healthDiseaseData.computeIfAbsent(diseases, k -> new EnumMap<>(Gender.class))
+                        .computeIfAbsent(gender, k -> new HashMap<>())
+                        .put(age, prob);
             }
         } catch (IOException e) {
             logger.fatal("IO Exception caught reading health disease prob file: " + path);
             logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
+        } catch (IllegalArgumentException e){
+            logger.warn(e.getMessage());
         }
         logger.info("Finished reading health disease prob table from csv file.");
         return healthDiseaseData;

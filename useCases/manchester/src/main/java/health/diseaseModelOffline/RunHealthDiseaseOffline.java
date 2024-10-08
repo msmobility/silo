@@ -27,12 +27,7 @@ public class RunHealthDiseaseOffline {
 
     public static void main(String[] args) {
 
-        Properties properties = Properties.initializeProperties(args[0]);
-        final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
-        createDirectoryIfNotExistingYet(outputDirectory);
-        initializeRandomNumber(properties.main.randomSeed);
-        trackingFile("open");
-        loadHdf5Lib();
+        Properties properties = SiloUtil.siloInitialization(args[0]);
 
         Config config = null;
         if (args.length > 1 && args[1] != null) {
@@ -48,7 +43,7 @@ public class RunHealthDiseaseOffline {
 
         //Read in person microdata with exposures
         HealthExposuresReader healthExposuresReader = new HealthExposuresReader();
-        healthExposuresReader.readData(dataContainer,properties.main.baseDirectory + "input/health/pp_health_pa.csv");
+        healthExposuresReader.readData(dataContainer,properties.main.baseDirectory + "input/health/pp_health_2021_base.csv");
 
         model.runModel();
 

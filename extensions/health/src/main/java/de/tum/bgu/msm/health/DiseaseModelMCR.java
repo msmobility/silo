@@ -7,6 +7,7 @@ import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Day;
 import de.tum.bgu.msm.data.MitoGender;
 import de.tum.bgu.msm.data.Mode;
+import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.health.airPollutant.AirPollutantModel;
 import de.tum.bgu.msm.health.data.*;
@@ -55,7 +56,16 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
     public void setup() { }
 
     @Override
-    public void prepareYear(int year) {}
+    public void prepareYear(int year) {
+        //TODO: temporary solution for running Disease model offline. how to deal with it when run the whole longitudinal model?
+        //set up base probability and base rr = 1.
+        if(year == Properties.get().main.baseYear){
+            logger.warn("Health disease model prepare year:" + year);
+            calculateRelativeRisk();
+            updateDiseaseProbability(Boolean.FALSE);
+            updateHealthDiseaseStates(year);
+        }
+    }
 
     @Override
     public void endYear(int year) {
@@ -83,13 +93,34 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
     }
 
     public void updateDiseaseProbability(Boolean adjustByRelativeRisk) {
-        for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
-            for(Diseases diseases : Diseases.values()){
+        for(Diseases diseases : Diseases.values()){
+            if(((DataContainerHealth) dataContainer).getHealthTransitionData().get(diseases)==null){
+                logger.warn("No health transition data for disease: " + diseases.name());
+                continue;
+            }
+
+            for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
+
+                //TODO: more comprehensive validity check of disease for certain gender/age
+                if(diseases.equals(Diseases.breast_cancer) & person.getGender().equals(Gender.MALE)){
+                    continue;
+                }
+
+                if(diseases.equals(Diseases.endometrial_cancer) & person.getGender().equals(Gender.MALE)){
+                    continue;
+                }
+
                 double sickProb = 0.;
                 if(adjustByRelativeRisk){
                     //TODO: how to adjust sick prob by rr?
+                    //PIF = (baseRR - scenarioRR)/baseRR  (Note. baseRR = rr_pa * rr_ap)
+                    //sickProb = sickProb * PIF
                 }else{
-                    sickProb = ((DataContainerHealth) dataContainer).getHealthTransitionData().get(diseases).get(person.getGender()).get(Math.min(person.getAge(), 100));
+                    if (((DataContainerHealth) dataContainer).getHealthTransitionData().get(diseases).get(person.getGender())==null){
+                        logger.warn("No health transition data for disease: " + diseases.name() + "for gender " + person.getGender().name());
+                    }
+                    //TODO: check with Belen, age cap 95 or 100?
+                    sickProb = ((DataContainerHealth) dataContainer).getHealthTransitionData().get(diseases).get(person.getGender()).getOrDefault(Math.min(person.getAge(), 95), 0.);
                 }
                 ((PersonHealth)person).getCurrentDiseaseProb().put(diseases, (float) sickProb);
             }
@@ -103,6 +134,10 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
 
             for(Diseases diseases : Diseases.values()){
                 if(diseases.equals(Diseases.all_cause_mortality)){
+                    continue;
+                }
+
+                if(personHealth.getCurrentDiseaseProb().get(diseases)==null){
                     continue;
                 }
 

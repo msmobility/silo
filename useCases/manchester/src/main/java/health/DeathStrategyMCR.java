@@ -28,6 +28,8 @@ public class DeathStrategyMCR implements DeathStrategy {
         for(HealthExposures healthExposures : ((PersonHealth)person).getRelativeRisksByDisease().keySet()){
             allCauseRR = allCauseRR * ((PersonHealth)person).getRelativeRisksByDisease().get(healthExposures).get(Diseases.all_cause_mortality);
         };
+        //PIF = (baseRR - scenarioRR)/baseRR  (Note. baseRR = rr_pa * rr_ap)
+        //sickProb = sickProb * PIF
 
         //TODO: how to integrate injury into all cause mortality
         //double fatalAccidentRisk = ((PersonHealth)person).getWeeklyAccidentRisk("fatality");

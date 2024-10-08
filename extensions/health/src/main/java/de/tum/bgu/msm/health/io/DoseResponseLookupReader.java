@@ -8,6 +8,7 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
@@ -17,7 +18,7 @@ public class DoseResponseLookupReader {
     private final static Logger logger = Logger.getLogger(DoseResponseLookupReader.class);
 
     private EnumMap<HealthExposures, EnumMap<Diseases, TableDataSet>> doseResponseData = new EnumMap<>(HealthExposures.class);
-    private EnumMap<Diseases, String> diseaseOutcomeLookup = new EnumMap<>(Diseases.class);
+    private EnumMap<Diseases, String> diseaseOutcomeTypeLookup = new EnumMap<>(Diseases.class);
 
     public DoseResponseLookupReader() {
         for(HealthExposures exposures : HealthExposures.values()) {
@@ -35,8 +36,12 @@ public class DoseResponseLookupReader {
             }
 
             for(Diseases diseases : doseResponseData.get(exposures).keySet()){
-                //TODO: check with Ali, are we only using fatal? or also non-fatal?
-                String doseResponseFile = basePath + "extdata/" + diseases.toString().toLowerCase() + "_" + diseaseOutcomeLookup.get(diseases) + ".csv";
+                String doseResponseFile = basePath + diseases.toString().toLowerCase() + "_" + diseaseOutcomeTypeLookup.get(diseases) + ".csv";
+                File file = new File(doseResponseFile);
+                if(!file.exists()){
+                    logger.error("Dose response data for exposure "+diseases.name()+" not found");
+                    continue;
+                }
                 doseResponseData.get(exposures).put(diseases, SiloUtil.readCSVfile(doseResponseFile));
             }
         }
@@ -52,7 +57,7 @@ public class DoseResponseLookupReader {
 
             // read header
             String[] header = recString.split(",");
-            int posDisease = SiloUtil.findPositionInArray("acronym", header);
+            int posDisease = SiloUtil.findPositionInArray("acronym_inJava", header);
             int posAirPollutant = SiloUtil.findPositionInArray("air_pollution", header);
             int posPhysicalActivity = SiloUtil.findPositionInArray("physical_activity", header);
             int posOutcome = SiloUtil.findPositionInArray("outcome", header);
@@ -66,7 +71,7 @@ public class DoseResponseLookupReader {
                 int physicalActivity = Integer.parseInt(lineElements[posPhysicalActivity]);
                 String outcome = lineElements[posOutcome];
 
-                diseaseOutcomeLookup.put(diseases, outcome);
+                diseaseOutcomeTypeLookup.put(diseases, outcome);
 
                 if (airPollutant == 1) {
                     doseResponseData.get(HealthExposures.AIR_POLLUTION).put(diseases, new TableDataSet());
@@ -80,6 +85,7 @@ public class DoseResponseLookupReader {
         } catch (IOException e) {
             logger.fatal("IO Exception caught reading dose-response file: " + path);
             logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
+            logger.fatal(e.getMessage());
         }
     }
 

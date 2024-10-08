@@ -36,20 +36,21 @@ public class GeoDataReaderManchester implements GeoDataReader {
 
         //int[] areaTypes = zonalData.getColumnAsInt("BBSR_Type");
 
-        //int[] regionColumn = zonalData.getColumnAsInt("cityID");
+        //TODO: check where region is used. then to define it should be msoa, lad or losa
+        int[] regionColumn = zonalData.getColumnAsInt("msoaID");
 
         for (int i = 0; i < zoneIds.length; i++) {
             //AreaTypes.SGType type = AreaTypes.SGType.valueOf(areaTypes[i]);
             Region region;
-            //int regionId = regionColumn[i];
-            /*if (geoDataMcr.getRegions().containsKey(regionId)) {
+            int regionId = regionColumn[i];
+            if (geoDataMcr.getRegions().containsKey(regionId)) {
                 region = geoDataMcr.getRegions().get(regionId);
             } else {
                 region = new RegionImpl(regionId);
                 geoDataMcr.addRegion(region);
-            }*/
-            ZoneImpl zone = new ZoneImpl(zoneIds[i], 0, null);
-            //region.addZone(zone);
+            }
+            ZoneImpl zone = new ZoneImpl(zoneIds[i], 0, region);
+            region.addZone(zone);
             geoDataMcr.addZone(zone);
         }
     }
