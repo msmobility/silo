@@ -35,8 +35,9 @@ public class RelativeRisksDisease {
     }
 
     public static EnumMap<Diseases, Float> calculateForAP(PersonHealth personMRC, DataContainerHealth dataContainer) {
-        //TODO: check with Ali, how to combine pm25 and No2 for rr?
-
+        //TODO: check with Ali, how to combine pm25 and No2 for rr? PM25
+        //TODO: Belen check if AP is daily, weekly or annual measure?
+        //AP exposure no cap
         double total_pm25 = personMRC.getWeeklyExposureByPollutantNormalised("pm2.5");
         EnumMap<Diseases, Float> relativeRisksByDisease = new EnumMap<>(Diseases.class);
 

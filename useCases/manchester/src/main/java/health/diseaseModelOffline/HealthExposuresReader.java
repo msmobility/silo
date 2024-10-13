@@ -34,7 +34,7 @@ public class HealthExposuresReader {
             int posId = SiloUtil.findPositionInArray("id", header);
             int posMmetWalk = SiloUtil.findPositionInArray("mmetHr_walk", header);
             int posMmetCycle = SiloUtil.findPositionInArray("mmetHr_cycle", header);
-            //int posMmetSport = SiloUtil.findPositionInArray("mmetHr_sport", header);
+            int posMmetSport = SiloUtil.findPositionInArray("mmetHr_sport", header);
             int posPM2_5 = SiloUtil.findPositionInArray("exposure_normalised_pm25", header);
             int posNO2 = SiloUtil.findPositionInArray("exposure_normalised_no2", header);
 
@@ -45,7 +45,7 @@ public class HealthExposuresReader {
                 PersonHealthMCR pp = (PersonHealthMCR) dataContainer.getHouseholdDataManager().getPersonFromId(Integer.parseInt(lineElements[posId]));
                 pp.updateWeeklyMarginalMetHours(Mode.walk, Float.parseFloat(lineElements[posMmetWalk]));
                 pp.updateWeeklyMarginalMetHours(Mode.bicycle, Float.parseFloat(lineElements[posMmetCycle]));
-                //pp.setWeeklyMarginalMetHoursSport(Float.parseFloat(lineElements[posMmetSport]));
+                pp.setWeeklyMarginalMetHoursSport(Float.parseFloat(lineElements[posMmetSport]));
 
                 Map<String, Float> exposureMap = new HashMap<>();
                 exposureMap.put("pm2.5", Float.parseFloat(lineElements[posPM2_5]));

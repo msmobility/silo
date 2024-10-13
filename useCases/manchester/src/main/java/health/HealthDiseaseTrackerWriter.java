@@ -36,7 +36,7 @@ public class HealthDiseaseTrackerWriter {
         int startYear = Properties.get().main.baseYear;
         int endYear = Properties.get().main.endYear;
 
-        for(int i = startYear; i <= endYear; i++) {
+        for(int i = startYear; i < endYear; i++) {
             pwp.print(",");
             pwp.print(i);
         }
@@ -45,7 +45,7 @@ public class HealthDiseaseTrackerWriter {
         //print disease tracking of alive person
         for (Person pp : householdData.getPersons()) {
             pwp.print(pp.getId());
-            for(int i = startYear; i <= endYear; i++) {
+            for(int i = startYear; i < endYear; i++) {
                 List<String> diseaseState = ((PersonHealth) pp).getHealthDiseaseTracker().get(i);
                 if(diseaseState == null) {
                     pwp.print(",");
@@ -62,7 +62,7 @@ public class HealthDiseaseTrackerWriter {
         for (int ppId : ((DataContainerHealth) dataContainer).getHealthDiseaseTrackerRemovedPerson().keySet()) {
             pwp.print(ppId);
             Map<Integer, List<String>> healthDiseaseTracker =  ((DataContainerHealth) dataContainer).getHealthDiseaseTrackerRemovedPerson().get(ppId);
-            for(int i = startYear; i <= endYear; i++) {
+            for(int i = startYear; i < endYear; i++) {
                 List<String> diseaseState = healthDiseaseTracker.get(i);
                 if(diseaseState == null) {
                     pwp.print(",");

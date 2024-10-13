@@ -15,9 +15,9 @@ import static de.tum.bgu.msm.utils.SiloUtil.*;
  * @author Qin Zhang*/
 
 
-public class RunSiloMCRHealthOffline {
+public class RunExposureHealthOffline {
 
-    private final static Logger logger = Logger.getLogger(RunSiloMCRHealthOffline.class);
+    private final static Logger logger = Logger.getLogger(RunExposureHealthOffline.class);
 
     public static void main(String[] args) {
 

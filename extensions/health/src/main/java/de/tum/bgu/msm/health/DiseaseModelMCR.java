@@ -1,49 +1,18 @@
 package de.tum.bgu.msm.health;
 
-import cern.colt.map.tfloat.OpenIntFloatHashMap;
-import com.google.common.collect.Iterables;
-import com.google.common.math.LongMath;
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.Day;
-import de.tum.bgu.msm.data.MitoGender;
-import de.tum.bgu.msm.data.Mode;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Person;
-import de.tum.bgu.msm.health.airPollutant.AirPollutantModel;
 import de.tum.bgu.msm.health.data.*;
 import de.tum.bgu.msm.health.disease.Diseases;
 import de.tum.bgu.msm.health.disease.HealthExposures;
 import de.tum.bgu.msm.health.disease.RelativeRisksDisease;
-import de.tum.bgu.msm.health.injury.AccidentModel;
-import de.tum.bgu.msm.health.injury.AccidentType;
-import de.tum.bgu.msm.health.io.TripReaderMucHealth;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.util.MitoUtil;
-import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
-import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.network.Link;
-import org.matsim.api.core.v01.network.Node;
-import org.matsim.contrib.dvrp.trafficmonitoring.TravelTimeUtils;
-import org.matsim.contrib.emissions.Pollutant;
-import org.matsim.core.config.Config;
-import org.matsim.core.controler.ControlerDefaults;
-import org.matsim.core.network.NetworkUtils;
-import org.matsim.core.network.io.MatsimNetworkReader;
-import org.matsim.core.router.speedy.SpeedyALTFactory;
-import org.matsim.core.router.util.LeastCostPathCalculator;
-import org.matsim.core.router.util.TravelDisutility;
-import org.matsim.core.router.util.TravelTime;
-import org.matsim.core.scenario.MutableScenario;
-import org.matsim.core.scenario.ScenarioUtils;
 
-import java.io.PrintWriter;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListener {
     private static final Logger logger = Logger.getLogger(DiseaseModelMCR.class);
@@ -53,18 +22,16 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
     }
 
     @Override
-    public void setup() { }
+    public void setup() {
+        //set up base rr = 1. and assume everyone is healthy at beginning. year 0 is the warm-up
+        logger.warn("Set up health model relative risk and disease state");
+        initializeRelativeRisk();
+        initializeHealthDiseaseStates();
+    }
 
     @Override
     public void prepareYear(int year) {
-        //TODO: temporary solution for running Disease model offline. how to deal with it when run the whole longitudinal model?
-        //set up base probability and base rr = 1.
-        if(year == Properties.get().main.baseYear){
-            logger.warn("Health disease model prepare year:" + year);
-            calculateRelativeRisk();
-            updateDiseaseProbability(Boolean.FALSE);
-            updateHealthDiseaseStates(year);
-        }
+
     }
 
     @Override
@@ -79,6 +46,19 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
     public void endSimulation() {
     }
 
+    private void initializeRelativeRisk() {
+        for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
+            EnumMap<Diseases, Float> rr_PA = new EnumMap<>(Diseases.class);
+
+            for(Diseases diseases : ((DataContainerHealth)dataContainer).getDoseResponseData().get(HealthExposures.PHYSICAL_ACTIVITY).keySet()){
+                rr_PA.put(diseases, 1.f);
+            }
+            ((PersonHealth)person).getRelativeRisksByDisease().put(HealthExposures.PHYSICAL_ACTIVITY, rr_PA);
+
+            //EnumMap<Diseases, Float> rr_AP = RelativeRisksDisease.calculateForAP(personMRC, (DataContainerHealth) dataContainer);
+            //personMRC.getRelativeRisksByDisease().put(HealthExposures.AIR_POLLUTION, rr_AP);
+        }
+    }
 
     public void calculateRelativeRisk() {
         for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
@@ -87,8 +67,6 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
 
             //EnumMap<Diseases, Float> rr_AP = RelativeRisksDisease.calculateForAP(personMRC, (DataContainerHealth) dataContainer);
             //personMRC.getRelativeRisksByDisease().put(HealthExposures.AIR_POLLUTION, rr_AP);
-            //TODO: do we combine all RR to calculate all cause rr?
-            //personMRC.setAllCauseRR(relativeRisks.values().stream().reduce(1.f, (a, b) -> a*b));
         }
     }
 
@@ -112,20 +90,26 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
 
                 double sickProb = 0.;
                 if(adjustByRelativeRisk){
-                    //TODO: how to adjust sick prob by rr?
-                    //PIF = (baseRR - scenarioRR)/baseRR  (Note. baseRR = rr_pa * rr_ap)
-                    //sickProb = sickProb * PIF
+
                 }else{
                     if (((DataContainerHealth) dataContainer).getHealthTransitionData().get(diseases).get(person.getGender())==null){
                         logger.warn("No health transition data for disease: " + diseases.name() + "for gender " + person.getGender().name());
                     }
                     //TODO: check with Belen, age cap 95 or 100?
+                    //the age cap should be 100 for all diseases and all-cause-mortality
                     sickProb = ((DataContainerHealth) dataContainer).getHealthTransitionData().get(diseases).get(person.getGender()).getOrDefault(Math.min(person.getAge(), 95), 0.);
                 }
                 ((PersonHealth)person).getCurrentDiseaseProb().put(diseases, (float) sickProb);
             }
         }
     }
+
+    private void initializeHealthDiseaseStates() {
+        for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
+            ((PersonHealth) person).getHealthDiseaseTracker().put(Properties.get().main.startYear, Arrays.asList("health"));
+        }
+    }
+
 
     public void updateHealthDiseaseStates(int year) {
         for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
