@@ -31,7 +31,7 @@ public class HealthDiseaseTrackerWriter {
 
         //print header
         pwp.print("id");
-        int startYear = Properties.get().main.baseYear;
+        int startYear = Properties.get().main.baseYear - 1;
         int endYear = Properties.get().main.endYear;
 
         for(int i = startYear; i < endYear; i++) {

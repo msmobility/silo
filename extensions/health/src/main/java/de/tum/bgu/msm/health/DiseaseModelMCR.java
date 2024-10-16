@@ -106,7 +106,8 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
 
     private void initializeHealthDiseaseStates() {
         for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
-            ((PersonHealth) person).getHealthDiseaseTracker().put(Properties.get().main.startYear, Arrays.asList("health"));
+            //start year-1 as initial state
+            ((PersonHealth) person).getHealthDiseaseTracker().put(Properties.get().main.startYear-1, Arrays.asList("healthy"));
         }
     }
 
@@ -135,11 +136,8 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
 
             //update Disease track map
             if(newDisease.isEmpty()){
-                if(year == Properties.get().main.baseYear){
-                    personHealth.getHealthDiseaseTracker().put(year, Arrays.asList("health"));
-                }else {
-                    personHealth.getHealthDiseaseTracker().put(year, personHealth.getHealthDiseaseTracker().get(year-1));
-                }
+                //for base year, year-1 is the initial state "healthy"
+                personHealth.getHealthDiseaseTracker().put(year, personHealth.getHealthDiseaseTracker().get(year-1));
             }else {
                 personHealth.getHealthDiseaseTracker().put(year, newDisease);
             }
