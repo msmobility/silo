@@ -2,7 +2,7 @@ package de.tum.bgu.msm.scenarios.healthMuc;
 
 import de.tum.bgu.msm.health.injury.AccidentModel;
 import de.tum.bgu.msm.health.airPollutant.AirPollutantModel;
-import de.tum.bgu.msm.health.HealthModel;
+import de.tum.bgu.msm.health.HealthModelMuc;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.resources.Resources;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -37,7 +37,7 @@ public class RunSiloMucHealthOffline {
         Resources.initializeResources(Objects.requireNonNull(properties.main.baseDirectory + properties.transportModel.mitoPropertiesPath));
         AirPollutantModel airPollutantModel = new AirPollutantModel(dataContainer,properties, SiloUtil.provideNewRandom(),config);
         AccidentModel accidentModel = new AccidentModel(dataContainer,properties,SiloUtil.provideNewRandom());
-        HealthModel healthModel = new HealthModel(dataContainer, properties, SiloUtil.provideNewRandom(),config);
+        HealthModelMuc healthModel = new HealthModelMuc(dataContainer, properties, SiloUtil.provideNewRandom(),config);
         healthModel.setup();
         accidentModel.endYear(2011);
         airPollutantModel.runOffineWithEmission(2011,false);

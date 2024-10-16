@@ -1,12 +1,10 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.manchester;
 
 import de.tum.bgu.msm.DataBuilder;
+import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.io.input.GeoDataReader;
 import de.tum.bgu.msm.io.output.*;
 import de.tum.bgu.msm.properties.Properties;
-import io.*;
-import de.tum.bgu.msm.run.io.JobWriterBangkok;
-import de.tum.bgu.msm.run.io.PersonWriterBangkok;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.schools.SchoolsWriter;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;

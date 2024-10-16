@@ -90,6 +90,33 @@ public final class MatsimData {
         filterNetwork(network);
     }
 
+    public MatsimData(Config config, Properties properties,
+                      ZoneConnectorManagerImpl.ZoneConnectorMethod method,
+                      DataContainer dataContainer, Network network) {
+        int threads = properties.main.numberOfThreads;
+        final Collection<Zone> zones = dataContainer.getGeoData().getZones().values();
+        ZoneConnectorManager zoneConnectorManager;
+        switch (method) {
+            case RANDOM:
+                zoneConnectorManager = ZoneConnectorManagerImpl.createRandomZoneConnectors(zones, NUMBER_OF_CALC_POINTS);
+                break;
+            case WEIGHTED_BY_POPULATION:
+                zoneConnectorManager = ZoneConnectorManagerImpl.createWeightedZoneConnectors(zones,
+                        dataContainer.getRealEstateDataManager(),
+                        dataContainer.getHouseholdDataManager());
+                break;
+            default:
+                throw new RuntimeException("No valid zone connector method defined!");
+        }
+
+        ConfigUtils.setVspDefaults(config); // Needs to be done before config becomes locked for those changes
+        this.config = config;
+        this.nThreads = threads;
+        this.schedule = null;
+        this.zoneConnectorManager = zoneConnectorManager;
+        filterNetwork(network);
+    }
+
     public MatsimData(Config config, int threads,Network network,
                       TransitSchedule schedule, ZoneConnectorManager zoneConnectorManager) {
         ConfigUtils.setVspDefaults(config); // Needs to be done before config becomes locked for those changes

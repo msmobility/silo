@@ -6,8 +6,6 @@ import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.mito.MitoDataConverterMuc;
 import de.tum.bgu.msm.data.person.PersonFactory;
 import de.tum.bgu.msm.health.*;
-import de.tum.bgu.msm.health.airPollutant.AirPollutantModel;
-import de.tum.bgu.msm.health.injury.AccidentModel;
 import de.tum.bgu.msm.matsim.*;
 import de.tum.bgu.msm.mito.MitoMatsimScenarioAssembler;
 import de.tum.bgu.msm.models.EducationModelMuc;
@@ -128,7 +126,7 @@ public class ModelBuilderMucHealth {
                     carOwnershipModel, hhFactory, properties, new DefaultMarriageStrategy(), SiloUtil.provideNewRandom());
 
 
-            MatsimTransportModelForHealthModel transportModel;
+            MatsimTransportModelMucHealth transportModel;
             MatsimData matsimData = null;
             if (config != null) {
                 final Scenario scenario = ScenarioUtils.loadScenario(config);
@@ -137,11 +135,11 @@ public class ModelBuilderMucHealth {
             switch (properties.transportModel.transportModelIdentifier) {
                 case MITO_MATSIM:
                     MatsimScenarioAssembler delegate = new MitoMatsimScenarioAssembler(dataContainer, properties, new MitoDataConverterMuc());
-                    transportModel = new MatsimTransportModelForHealthModel(dataContainer, config, properties, delegate, matsimData, dataContainer.getAvgSpeeds());
+                    transportModel = new MatsimTransportModelMucHealth(dataContainer, config, properties, delegate, matsimData, dataContainer.getAvgSpeeds());
                     break;
                 case MATSIM:
                     delegate = new SimpleMatsimScenarioAssembler(dataContainer, properties);
-                    transportModel = new MatsimTransportModelForHealthModel(dataContainer, config, properties, delegate, matsimData, dataContainer.getAvgSpeeds());
+                    transportModel = new MatsimTransportModelMucHealth(dataContainer, config, properties, delegate, matsimData, dataContainer.getAvgSpeeds());
                     break;
                 case NONE:
                 default:
@@ -150,7 +148,7 @@ public class ModelBuilderMucHealth {
 
             //AccidentModel accidentModel  = new AccidentModel(dataContainer, properties, SiloUtil.provideNewRandom());
             //AirPollutantModel airPollutantModel  = new AirPollutantModel(dataContainer, properties, SiloUtil.provideNewRandom(),config);
-            HealthModel healthModel  = new HealthModel(dataContainer, properties, SiloUtil.provideNewRandom(), config);
+            HealthModelMuc healthModel  = new HealthModelMuc(dataContainer, properties, SiloUtil.provideNewRandom(), config);
 
             final ModelContainer modelContainer = new ModelContainer(
                     birthModel, birthdayModel,

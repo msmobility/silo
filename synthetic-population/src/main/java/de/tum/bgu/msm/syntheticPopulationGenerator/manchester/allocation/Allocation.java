@@ -1,18 +1,16 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.manchester.allocation;
 
 
-import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.io.output.*;
-import de.tum.bgu.msm.run.io.PersonWriterBangkok;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.ModuleSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
-import io.DwellingWriterMCR;
-import io.HouseholdWriterMCR;
-import io.JobWriterMCR;
-import io.PersonWriterMCR;
+import de.tum.bgu.msm.io.DwellingWriterMCR;
+import de.tum.bgu.msm.io.HouseholdWriterMCR;
+import de.tum.bgu.msm.io.JobWriterMCR;
+import de.tum.bgu.msm.io.PersonWriterMCR;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;

@@ -1,20 +1,14 @@
 package de.tum.bgu.msm.mito;
 
-
-import de.tum.bgu.msm.MitoModel;
-import de.tum.bgu.msm.MitoModel2;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.DataSet;
-import de.tum.bgu.msm.data.DataSetImpl;
 import de.tum.bgu.msm.data.Day;
-import de.tum.bgu.msm.data.MitoTrip;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.matsim.MatsimScenarioAssembler;
 import de.tum.bgu.msm.matsim.MatsimTravelTimesAndCosts;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.resources.Resources;
-import de.tum.bgu.msm.scenarios.mito7days.MitoModel7days;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.utils.TravelTimeUtil;
 import org.apache.log4j.Logger;
@@ -33,11 +27,10 @@ import uk.cam.mrc.phm.MitoModelMCR;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
-public class MitoMatsimScenarioAssembler implements MatsimScenarioAssembler {
+public class MitoMatsimScenarioAssemblerMCR implements MatsimScenarioAssembler {
 
-    private static final Logger logger = Logger.getLogger(MitoMatsimScenarioAssembler.class);
+    private static final Logger logger = Logger.getLogger(MitoMatsimScenarioAssemblerMCR.class);
 
     private final String propertiesPath;
 
@@ -47,9 +40,11 @@ public class MitoMatsimScenarioAssembler implements MatsimScenarioAssembler {
 
     private SkimTravelTimes mitoInputTravelTime;
 
-    public MitoMatsimScenarioAssembler(DataContainer dataContainer,
-                                       Properties properties,
-                                       MitoDataConverter dataConverter) {
+
+
+    public MitoMatsimScenarioAssemblerMCR(DataContainer dataContainer,
+                                          Properties properties,
+                                          MitoDataConverter dataConverter) {
         this.dataContainer = dataContainer;
         this.properties = properties;
         this.dataConverter = dataConverter;
@@ -59,24 +54,8 @@ public class MitoMatsimScenarioAssembler implements MatsimScenarioAssembler {
     @Override
     public Scenario assembleScenario(Config initialMatsimConfig, int year, TravelTimes travelTimes) {
 
-        logger.info("  Running travel demand model MITO for the year " + year);
-
-        DataSet dataSet = convertData(year);
-
-        logger.info("  SILO data being sent to MITO");
-        //TODO: should not always call Manchester model, register mito model for use case?
-        MitoModel2 mito = MitoModel2.initializeModelFromSilo(propertiesPath, dataSet, properties.main.scenarioName);
-        mito.setRandomNumberGenerator(SiloUtil.getRandomObject());
-        mito.run();
-
-        logger.info("  Receiving demand from MITO");
-        Population population = mito.getData().getPopulation();
-
-        Config config = ConfigUtils.loadConfig(initialMatsimConfig.getContext());
-        setDemandSpecificConfigSettings(config);
-        MutableScenario scenario = (MutableScenario) ScenarioUtils.loadScenario(config);
-        scenario.setPopulation(population);
-        return scenario;
+        logger.error("Manchester no single day MITO implementation. Please assemble multiday scenarios.");
+        return null;
     }
 
     @Override
@@ -87,7 +66,7 @@ public class MitoMatsimScenarioAssembler implements MatsimScenarioAssembler {
         DataSet dataSet = convertData(year);
 
         logger.info("  SILO data being sent to MITO");
-        MitoModel7days mito = MitoModel7days.initializeModelFromSilo(propertiesPath, dataSet, properties.main.scenarioName);
+        MitoModelMCR mito = MitoModelMCR.initializeModelFromSilo(propertiesPath, dataSet, properties.main.scenarioName);
         mito.setRandomNumberGenerator(SiloUtil.getRandomObject());
         mito.run();
 
@@ -118,11 +97,6 @@ public class MitoMatsimScenarioAssembler implements MatsimScenarioAssembler {
 
 
     public void setDemandSpecificConfigSettings(Config config) {
-        config.qsim().setFlowCapFactor(properties.main.scaleFactor * Double.parseDouble(Resources.instance.getString(de.tum.bgu.msm.resources.Properties.TRIP_SCALING_FACTOR)));
-        config.qsim().setStorageCapFactor(properties.main.scaleFactor * Double.parseDouble(Resources.instance.getString(de.tum.bgu.msm.resources.Properties.TRIP_SCALING_FACTOR)));
-
-        logger.info("Flow Cap Factor: " + config.qsim().getFlowCapFactor());
-        logger.info("Storage Cap Factor: " + config.qsim().getStorageCapFactor());
 
         PlanCalcScoreConfigGroup.ActivityParams homeActivity = new PlanCalcScoreConfigGroup.ActivityParams("home").setTypicalDuration(12 * 60 * 60);
         config.planCalcScore().addActivityParams(homeActivity);
@@ -141,9 +115,6 @@ public class MitoMatsimScenarioAssembler implements MatsimScenarioAssembler {
 
         PlanCalcScoreConfigGroup.ActivityParams otherActivity = new PlanCalcScoreConfigGroup.ActivityParams("other").setTypicalDuration(1 * 60 * 60);
         config.planCalcScore().addActivityParams(otherActivity);
-
-        PlanCalcScoreConfigGroup.ActivityParams airportActivity = new PlanCalcScoreConfigGroup.ActivityParams("airport").setTypicalDuration(1 * 60 * 60);
-        config.planCalcScore().addActivityParams(airportActivity);
     }
 
     private DataSet convertData(int year) {
@@ -175,4 +146,5 @@ public class MitoMatsimScenarioAssembler implements MatsimScenarioAssembler {
         dataSet.setYear(year);
         return dataSet;
     }
+
 }
