@@ -20,32 +20,24 @@ package de.tum.bgu.msm.matsim;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Day;
-import de.tum.bgu.msm.data.MitoGender;
-import de.tum.bgu.msm.data.Mode;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
-import de.tum.bgu.msm.resources.Resources;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
-import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.contrib.dvrp.trafficmonitoring.TravelTimeUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.config.groups.QSimConfigGroup;
-import org.matsim.core.config.groups.StrategyConfigGroup;
-import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.ControlerDefaults;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
-import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.router.MainModeIdentifierImpl;
 import org.matsim.core.router.TripStructureUtils;
@@ -63,7 +55,6 @@ import routing.WalkModule;
 import java.io.File;
 import java.util.*;
 
-import static org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
 import static org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ModeParams;
 
 /**
@@ -167,6 +158,7 @@ public final class MatsimTransportModelMCRHealth implements TransportModel {
             Population populationBikePed = PopulationUtils.createPopulation(ConfigUtils.createConfig());
 
             // Add bike, and pedestrian plans from MITO
+            //TODO: do we need to scale it down?
             for (Person pp : assembledScenario.getPopulation().getPersons().values()) {
                 String mode = mainModeIdentifier.identifyMainMode(TripStructureUtils.getLegs(pp.getSelectedPlan()));
                 if("bike".equals(mode) || "walk".equals(mode)){
@@ -219,30 +211,66 @@ public final class MatsimTransportModelMCRHealth implements TransportModel {
 
             Population populationCarTruck = PopulationUtils.createPopulation(ConfigUtils.createConfig());
 
-            // Add truck plans from FOCA (static)
+            // Add truck plans from tfgm (static)
             String truckPlans = properties.main.baseDirectory + properties.healthData.truck_plan_file;
             PopulationUtils.readPopulation(populationCarTruck, truckPlans);
 
-            //TODO: scale up/down by day of week
-            /*if(day.equals(Day.thursday)) {
-                truckSample *= 1.278066;
+            double truckSample = 0.;
+            if(day.equals(Day.thursday)) {
+                truckSample = 1.278066;
             } else if (day.equals(Day.saturday)) {
-                truckSample *= 0.430817;
+                truckSample = 0.430817;
             } else if (day.equals(Day.sunday)) {
-                truckSample *= 0.178852;
+                truckSample = 0.178852;
             } else {
                 throw new RuntimeException("Unrecognised day " + day);
-            }*/
+            }
+
+            logger.info(day + " truck sample: " + truckSample);
+            if(truckSample < 1.) {
+                PopulationUtils.sampleDown(populationCarTruck, truckSample);
+            }
+
+            logger.warn("MATSim truck population: " + day + "|" + year + "|" + populationCarTruck.getPersons().size());
+
+            //Add through car plans from tfgm (static)
+            Population populationThroughTraffic = PopulationUtils.createPopulation(ConfigUtils.createConfig());
+
+            String throughPlans = properties.main.baseDirectory + properties.healthData.throughTraffic_plan_file;
+            PopulationUtils.readPopulation(populationThroughTraffic, throughPlans);
+
+            double throughCarSample = 0.;
+            if(day.equals(Day.thursday)) {
+                throughCarSample = 1.;
+            } else if (day.equals(Day.saturday)) {
+                throughCarSample = 0.79;
+            } else if (day.equals(Day.sunday)) {
+                throughCarSample = 0.46;
+            } else {
+                throw new RuntimeException("Unrecognised day " + day);
+            }
+
+            logger.info(day + " through traffic sample: " + throughCarSample);
+            if(throughCarSample < 1.) {
+                PopulationUtils.sampleDown(populationThroughTraffic, throughCarSample);
+            }
+
+            for (Person pp : populationThroughTraffic.getPersons().values()) {
+                populationCarTruck.addPerson(pp);
+            }
+
+            logger.warn("MATSim truck/through population: " + day + "|" + year + "|" + populationCarTruck.getPersons().size());
 
             // Add car plans from MITO
             for (Person pp : assembledScenario.getPopulation().getPersons().values()) {
                 String mode = mainModeIdentifier.identifyMainMode(TripStructureUtils.getLegs(pp.getSelectedPlan()));
                 if("car".equals(mode)){
-                    if (random.nextDouble() < properties.healthData.matsim_scale_factor_car){
                         populationCarTruck.addPerson(pp);
-                    }
                 }
             }
+
+            logger.warn("MATSim car/truck/through population: " + day + "|" + year + "|" + populationCarTruck.getPersons().size());
+
 
             logger.warn("Running MATSim transport model for " + day + " car scenario " + year + ".");
             //initialize car truck config
