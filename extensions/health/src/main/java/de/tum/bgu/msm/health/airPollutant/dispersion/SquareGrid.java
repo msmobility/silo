@@ -1,7 +1,9 @@
 package de.tum.bgu.msm.health.airPollutant.dispersion;
 
+import java.util.List;
 import java.util.function.Supplier;
 
+import de.tum.bgu.msm.data.Zone;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.matsim.api.core.v01.network.Network;
@@ -39,6 +41,9 @@ public final class SquareGrid<T> extends Grid<T> {
         super(network, centroidDistance, initialValueSupplier, bounds);
     }
 
+    public SquareGrid(Network network, List<Zone> zone, final double centroidDistance, final Supplier<T> initialValueSupplier, final PreparedGeometry bounds) {
+        super(network, zone, centroidDistance, initialValueSupplier, bounds);
+    }
     @Override
     double getMinX(double forY) {
         return quadTree.getMinEasting() + horizontalCentroidDistance / 2;

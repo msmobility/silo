@@ -13,8 +13,6 @@ public class LinkInfo {
 
     private final Id<Link> linkId;
 
-    //private  Map<AccidentType, Map<Integer, Double>> lightCasualityExposureByAccidentTypeByTime = new HashMap<>();
-
     private  Map<AccidentType, OpenIntFloatHashMap> severeFatalCasualityExposureByAccidentTypeByTime = new HashMap<>();
 
     private Map<Pollutant, OpenIntFloatHashMap> exposure2Pollutant2TimeBin = new HashMap<>();
@@ -27,17 +25,9 @@ public class LinkInfo {
         return linkId;
     }
 
-//    public Map<AccidentType, Map<Integer, Double>> getLightCasualityExposureByAccidentTypeByTime() {
-//        return lightCasualityExposureByAccidentTypeByTime;
-//    }
-
     public Map<AccidentType, OpenIntFloatHashMap> getSevereFatalCasualityExposureByAccidentTypeByTime() {
         return severeFatalCasualityExposureByAccidentTypeByTime;
     }
-
-//    public void setLightCasualityExposureByAccidentTypeByTime(Map<AccidentType, Map<Integer, Double>> lightCasualityExposureByAccidentTypeByTime) {
-//        this.lightCasualityExposureByAccidentTypeByTime = lightCasualityExposureByAccidentTypeByTime;
-//    }
 
     public void setSevereFatalCasualityExposureByAccidentTypeByTime(Map<AccidentType, OpenIntFloatHashMap> severeFatalCasualityExposureByAccidentTypeByTime) {
         this.severeFatalCasualityExposureByAccidentTypeByTime = severeFatalCasualityExposureByAccidentTypeByTime;

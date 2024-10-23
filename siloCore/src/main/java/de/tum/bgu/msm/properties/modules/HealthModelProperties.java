@@ -16,7 +16,9 @@ public class HealthModelProperties {
     public final String activeModeNetworkFile;
     public final double MAX_WALKSPEED;
     public final double MAX_CYCLESPEED;
+    public final String COLD_EMISSION_FILE;
 
+    public final String HOT_EMISSION_FILE;
 
 
     public HealthModelProperties(ResourceBundle bundle) {
@@ -35,6 +37,9 @@ public class HealthModelProperties {
         MAX_WALKSPEED = PropertiesUtil.getDoubleProperty(bundle, "max.walk.speed.kph", 5.);
 
         MAX_CYCLESPEED = PropertiesUtil.getDoubleProperty(bundle, "max.cycle.speed.kph", 15.);
+
+        COLD_EMISSION_FILE = PropertiesUtil.getStringProperty(bundle, "cold.emission.file", "input/mito/trafficAssignment/EFA_ColdStart_Vehcat_healthModelWithTruck.txt");
+        HOT_EMISSION_FILE =  PropertiesUtil.getStringProperty(bundle, "hot.emission.file", "input/mito/trafficAssignment/EFA_HOT_Vehcat_healthModelWithTruck.txt");
 
     }
 

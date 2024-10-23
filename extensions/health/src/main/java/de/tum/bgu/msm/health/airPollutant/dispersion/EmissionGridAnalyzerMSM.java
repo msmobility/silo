@@ -3,6 +3,7 @@ package de.tum.bgu.msm.health.airPollutant.dispersion;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.tum.bgu.msm.data.Zone;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
@@ -28,6 +29,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -177,6 +179,18 @@ public class EmissionGridAnalyzerMSM {
         return Tuple.of(nextBin.getStartTime(), grid);
     }
 
+    public Tuple<Double, Grid<Map<Pollutant, Float>>> processNextTimeBin(List<Zone> zones) {
+        if (this.timeBins == null) throw new RuntimeException("Must call processTimeBinsWithEmissions() first.");
+        if (!this.timeBins.hasNext()) throw new RuntimeException("processNextTimeBin() was called too many times");
+
+        TimeBinMap.TimeBin<Map<Id<Link>, EmissionsByPollutant>> nextBin = this.timeBins.next();
+        logger.info("creating grid for time bin with start time: " + nextBin.getStartTime());
+
+        Grid<Map<Pollutant, Float>> grid = writeAllLinksZonesToGrid(nextBin.getValue(),zones);
+
+        return Tuple.of(nextBin.getStartTime(), grid);
+    }
+
     /**
      * Works like {@link EmissionGridAnalyzerMSM#process(String)} but writes the
      * result into a Json-String
@@ -291,6 +305,28 @@ public class EmissionGridAnalyzerMSM {
 
         return grid;
     }
+    private Grid<Map<Pollutant, Float>> writeAllLinksZonesToGrid(Map<Id<Link>, EmissionsByPollutant> linksWithEmissions, List<Zone> zones) {
+
+        final var grid = createGrid(network, zones);
+        final var counter = new AtomicInteger();
+
+        // using stream's forEach here, instead of for each loop, to parallelize processing
+        linksWithEmissions.entrySet().parallelStream()
+                .forEach(entry -> {
+                    var count = counter.incrementAndGet();
+                    if (count % 10000 == 0)
+                        logger.info("processing: " + count * 100 / linksWithEmissions.keySet().size() + "% done");
+
+                    if (network.getLinks().containsKey(entry.getKey()) && isWithinBounds(network.getLinks().get(entry.getKey()))) {
+                        processLink(network.getLinks().get(entry.getKey()), entry.getValue(), grid);
+                    }
+                });
+
+        grid.getCells().parallelStream()
+                .forEach(cell -> removeTinyValuesFromResults(cell.getValue()));
+
+        return grid;
+    }
 
     private void processLink(Link link, EmissionsByPollutant emissions, Grid<Map<Pollutant, Float>> grid) {
 
@@ -338,6 +374,14 @@ public class EmissionGridAnalyzerMSM {
             return new HexagonalGrid<>(network, gridSize, ConcurrentHashMap::new, bounds);
         else
             return new SquareGrid<>(network, gridSize, ConcurrentHashMap::new, bounds);
+    }
+
+    private Grid<Map<Pollutant, Float>> createGrid(Network network, List<Zone> zones) {
+
+        if (gridType == GridType.Hexagonal)
+            return new HexagonalGrid<>(network, gridSize, ConcurrentHashMap::new, bounds);
+        else
+            return new SquareGrid<>(network, zones, gridSize, ConcurrentHashMap::new, bounds);
     }
 
     private ObjectMapper createObjectMapper() {

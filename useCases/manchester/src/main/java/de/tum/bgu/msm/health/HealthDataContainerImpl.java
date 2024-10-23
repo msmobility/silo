@@ -1,8 +1,10 @@
 package de.tum.bgu.msm.health;
 
+import cern.colt.map.tfloat.OpenIntFloatHashMap;
 import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.data.MitoGender;
 import de.tum.bgu.msm.data.Mode;
+import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
@@ -32,6 +34,8 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     private final Properties properties;
     private Map<Id<Link>, LinkInfo> linkInfo = new HashMap<>();
     private Set<Pollutant> pollutantSet = new HashSet<>();
+    private Map<Zone, Map<Pollutant, OpenIntFloatHashMap>> zoneExposure2Pollutant2TimeBin = new HashMap<>();
+
     private EnumMap<Mode, EnumMap<MitoGender,Map<Integer,Double>>> avgSpeeds;
     private EnumMap<Diseases, EnumMap<Gender,Map<Integer,Double>>> healthTransitionData;
     private EnumMap<HealthExposures, EnumMap<Diseases, TableDataSet>> doseResponseData;
@@ -178,5 +182,13 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
 
     public Map<Integer, Map<Integer, List<String>>> getHealthDiseaseTrackerRemovedPerson() {
         return healthDiseaseTrackerRemovedPerson;
+    }
+
+    public Map<Zone, Map<Pollutant, OpenIntFloatHashMap>> getZoneExposure2Pollutant2TimeBin() {
+        return zoneExposure2Pollutant2TimeBin;
+    }
+
+    public void setZoneExposure2Pollutant2TimeBin(Map<Zone, Map<Pollutant, OpenIntFloatHashMap>> zoneExposure2Pollutant2TimeBin) {
+        this.zoneExposure2Pollutant2TimeBin = zoneExposure2Pollutant2TimeBin;
     }
 }

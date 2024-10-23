@@ -2,8 +2,10 @@ package de.tum.bgu.msm.health.airPollutant.dispersion;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Supplier;
 
+import de.tum.bgu.msm.data.Zone;
 import org.locationtech.jts.geom.*;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
@@ -38,7 +40,13 @@ public abstract class Grid<T> {
 
     public Grid(Network network, final double horizontalCentroidDistance, final Supplier<T> initialValueSupplier, final PreparedGeometry bounds) {
         this.horizontalCentroidDistance = horizontalCentroidDistance;
-        generate(network, initialValueSupplier, bounds);
+        generateRoadReceiverPoints(network, initialValueSupplier, bounds);
+    }
+
+    public Grid(Network network, List<Zone> zoneList, final double horizontalCentroidDistance, final Supplier<T> initialValueSupplier, final PreparedGeometry bounds) {
+        this.horizontalCentroidDistance = horizontalCentroidDistance;
+        generateRoadReceiverPoints(network, initialValueSupplier, bounds);
+        generateZoneCentroidReceiverPonts(zoneList,initialValueSupplier, bounds);
     }
 
     /**
@@ -127,8 +135,8 @@ public abstract class Grid<T> {
         }
     }
 
-    //generate exposure receiver points on road network (network nodes, centroid node of each link)
-    private void generate(Network network, final Supplier<T> initialValueSupplier, final PreparedGeometry bounds) {
+    //TODO: JIBE generate exposure receiver points on road network (network nodes, centroid node of each link)
+    private void generateRoadReceiverPoints(Network network, final Supplier<T> initialValueSupplier, final PreparedGeometry bounds) {
         Envelope envelope = bounds.getGeometry().getEnvelopeInternal();
 
         quadTree = new QuadTree<>(envelope.getMinX(), envelope.getMinY(), envelope.getMaxX(), envelope.getMaxY());
@@ -145,6 +153,15 @@ public abstract class Grid<T> {
                 quadTree.put(linkCentroid.x, linkCentroid.y, new Cell<>(linkCentroid, initialValueSupplier.get()));
         }
     }
+
+    private void generateZoneCentroidReceiverPonts(List<Zone> zoneList, Supplier<T> initialValueSupplier, PreparedGeometry bounds) {
+        for (Zone zone : zoneList){
+            final Coordinate coordinate = ((Geometry) zone.getZoneFeature().getDefaultGeometry())
+                    .getCentroid().getCoordinate();
+            quadTree.put(coordinate.x, coordinate.y, new Cell<>(coordinate, initialValueSupplier.get()));
+        }
+    }
+
 
     public static class Cell<T> {
 

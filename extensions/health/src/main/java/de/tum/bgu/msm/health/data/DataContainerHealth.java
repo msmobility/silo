@@ -1,9 +1,11 @@
 package de.tum.bgu.msm.health.data;
 
+import cern.colt.map.tfloat.OpenIntFloatHashMap;
 import cern.colt.map.tlong.OpenLongLongHashMap;
 import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.data.MitoGender;
 import de.tum.bgu.msm.data.Mode;
+import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.health.data.LinkInfo;
 import de.tum.bgu.msm.health.disease.Diseases;
@@ -27,6 +29,10 @@ public interface DataContainerHealth {
     Set<Pollutant> getPollutantSet();
 
     void setPollutantSet(Set<Pollutant> pollutantSet);
+
+    Map<Zone, Map<Pollutant, OpenIntFloatHashMap>> getZoneExposure2Pollutant2TimeBin();
+
+    void setZoneExposure2Pollutant2TimeBin(Map<Zone, Map<Pollutant, OpenIntFloatHashMap>> zoneExposure2Pollutant2TimeBin);
 
     EnumMap<Mode, EnumMap<MitoGender, Map<Integer, Double>>> getAvgSpeeds();
 
