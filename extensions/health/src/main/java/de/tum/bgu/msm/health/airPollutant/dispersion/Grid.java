@@ -46,7 +46,7 @@ public abstract class Grid<T> {
     public Grid(Network network, List<Zone> zoneList, final double horizontalCentroidDistance, final Supplier<T> initialValueSupplier, final PreparedGeometry bounds) {
         this.horizontalCentroidDistance = horizontalCentroidDistance;
         generateRoadReceiverPoints(network, initialValueSupplier, bounds);
-        generateZoneCentroidReceiverPonts(zoneList,initialValueSupplier, bounds);
+        generateZoneCentroidReceiverPonts(zoneList,initialValueSupplier);
     }
 
     /**
@@ -154,7 +154,7 @@ public abstract class Grid<T> {
         }
     }
 
-    private void generateZoneCentroidReceiverPonts(List<Zone> zoneList, Supplier<T> initialValueSupplier, PreparedGeometry bounds) {
+    private void generateZoneCentroidReceiverPonts(List<Zone> zoneList, Supplier<T> initialValueSupplier) {
         for (Zone zone : zoneList){
             final Coordinate coordinate = ((Geometry) zone.getZoneFeature().getDefaultGeometry())
                     .getCentroid().getCoordinate();

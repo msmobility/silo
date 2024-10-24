@@ -379,7 +379,7 @@ public class EmissionGridAnalyzerMSM {
     private Grid<Map<Pollutant, Float>> createGrid(Network network, List<Zone> zones) {
 
         if (gridType == GridType.Hexagonal)
-            return new HexagonalGrid<>(network, gridSize, ConcurrentHashMap::new, bounds);
+            return new HexagonalGrid<>(network, zones, gridSize, ConcurrentHashMap::new, bounds);
         else
             return new SquareGrid<>(network, zones, gridSize, ConcurrentHashMap::new, bounds);
     }

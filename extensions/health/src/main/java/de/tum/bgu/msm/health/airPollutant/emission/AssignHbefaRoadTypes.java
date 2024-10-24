@@ -18,8 +18,8 @@ public class AssignHbefaRoadTypes {
     private static final String OSMTYPE_NAME = "type";
     private static final List<String> minorRoadTypes = Arrays.asList("residential","access","service","living","track",
             "unclassified","pedestrian","path","footway","bridleway","bus","cycleway","road");
-    static String inputFile = "/home/qin/models/manchester/scenOutput/mito_1_0_baseStress_basePOI_fullModeset_matsim/matsim/2021/thursday/car/2021.output_network.xml.gz";
-    static String outputFile = "/home/qin/models/manchester/scenOutput/mito_1_0_baseStress_basePOI_fullModeset_matsim/matsim/2021/thursday/car/2021.output_network_hbefa.xml.gz";
+    static String inputFile = "/home/qin/models/manchester/input/mito/trafficAssignment/network_car_calibrated.xml";
+    static String outputFile = "/home/qin/models/manchester/input/mito/trafficAssignment/network_car_calibrated_hbefa.xml";
 
     /**
      * handled OSM road types:

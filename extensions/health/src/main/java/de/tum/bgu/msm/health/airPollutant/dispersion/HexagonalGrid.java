@@ -1,7 +1,9 @@
 package de.tum.bgu.msm.health.airPollutant.dispersion;
 
+import java.util.List;
 import java.util.function.Supplier;
 
+import de.tum.bgu.msm.data.Zone;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.matsim.api.core.v01.network.Network;
@@ -37,6 +39,10 @@ public final class HexagonalGrid<T> extends Grid<T> {
 
     public HexagonalGrid(Network network, double horizontalCentroidDistance, Supplier<T> initialValueSupplier, PreparedGeometry bounds) {
         super(network,horizontalCentroidDistance, initialValueSupplier, bounds);
+    }
+
+    public HexagonalGrid(Network network, List<Zone> zone, double horizontalCentroidDistance, Supplier<T> initialValueSupplier, PreparedGeometry bounds) {
+        super(network,zone,horizontalCentroidDistance, initialValueSupplier, bounds);
     }
 
     @Override

@@ -82,12 +82,12 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
                 String eventFileWithEmissions = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_events_emission.xml.gz";
                 String vehicleFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_vehicles.xml.gz";
                 String vehicleFileWithEmissionType = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".vehicles_emission.xml.gz";
-                CreateVehicles createVehicles = new CreateVehicles(scenario);
-                createVehicles.runVehicleType();
-                createVehicles.runVehicle(vehicleFile, vehicleFileWithEmissionType);
+                //CreateVehicles createVehicles = new CreateVehicles(scenario);
+                //createVehicles.runVehicleType();
+                //createVehicles.runVehicle(vehicleFile, vehicleFileWithEmissionType);
                 updateConfig(day, vehicleFileWithEmissionType);
                 scenario = ScenarioUtils.loadScenario(scenario.getConfig());
-                createEmissionEventsOffline(eventFileWithoutEmissions,eventFileWithEmissions);
+                //createEmissionEventsOffline(eventFileWithoutEmissions,eventFileWithEmissions);
                 runEmissionGridAnalyzer(year,day, eventFileWithEmissions);
 
                 String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/";
@@ -161,6 +161,7 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
     }
     
     private void createEmissionEventsOffline(String eventsFileWithoutEmissions, String eventsFileWithEmission) {
+        logger.warn("Start create Emission events offline...");
         EventsManager eventsManager = new EventsManagerImpl();
 
         AbstractModule module = new AbstractModule(){
@@ -344,7 +345,7 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
         logger.warn("Updating Zonal air pollutant exposure for year: " + year + "| day of week: " + day + "| time of day: " + gridEmissionMap.getFirst() + ".");
 
         for(Zone zone :dataContainer.getGeoData().getZones().values()){
-            Map<Pollutant, OpenIntFloatHashMap> exposure2Pollutant2TimeBin =  ((DataContainerHealth)dataContainer).getZoneExposure2Pollutant2TimeBin().get(zone);
+            Map<Pollutant, OpenIntFloatHashMap> exposure2Pollutant2TimeBin =  ((DataContainerHealth)dataContainer).getZoneExposure2Pollutant2TimeBin().getOrDefault(zone, new HashMap<>());
 
             Coordinate coordinate = ((Geometry) zone.getZoneFeature().getDefaultGeometry())
                     .getCentroid().getCoordinate();
@@ -352,12 +353,15 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
             Grid.Cell<Map<Pollutant,Float>> zoneCell = grid.getCell(coordinate);
 
             for(Pollutant pollutant : pollutantSet){
+                if(zoneCell.getValue().get(pollutant)==null){
+                    logger.info("No pollutant concentration for zone: " + zone.getZoneId()  + "| " + pollutant.toString());
+                }
                 if(exposure2Pollutant2TimeBin.get(pollutant)==null){
                     OpenIntFloatHashMap exposureByTimeBin = new OpenIntFloatHashMap();
-                    exposureByTimeBin.put(startTime, zoneCell.getValue().get(pollutant));
+                    exposureByTimeBin.put(startTime, zoneCell.getValue().getOrDefault(pollutant, 0.f));
                     exposure2Pollutant2TimeBin.put(pollutant, exposureByTimeBin);
                 }else {
-                    exposure2Pollutant2TimeBin.get(pollutant).put(startTime, zoneCell.getValue().get(pollutant));
+                    exposure2Pollutant2TimeBin.get(pollutant).put(startTime, zoneCell.getValue().getOrDefault(pollutant,0.f));
                 }
             }
 
