@@ -40,7 +40,7 @@ public class MitoDataConverterMCR implements MitoDataConverter {
         for (Zone siloZone : dataContainer.getGeoData().getZones().values()) {
             //TODO: check manchester area type, urban rural? where the area type is used in the SILO model
             MitoZone zone = new MitoZone(siloZone.getZoneId(), null);
-            zone.setAreaTypeR(AreaTypes.RType.URBAN);
+            zone.setAreaTypeR(((ZoneMCR)siloZone).getAreaTypeRType());
             zone.setGeometry((Geometry) siloZone.getZoneFeature().getDefaultGeometry());
             dataSet.addZone(zone);
         }

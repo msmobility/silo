@@ -43,10 +43,10 @@ public abstract class Grid<T> {
         generateRoadReceiverPoints(network, initialValueSupplier, bounds);
     }
 
-    public Grid(Network network, List<Zone> zoneList, final double horizontalCentroidDistance, final Supplier<T> initialValueSupplier, final PreparedGeometry bounds) {
+    public Grid(Network network, List<Coordinate> receiverPoints, final double horizontalCentroidDistance, final Supplier<T> initialValueSupplier, final PreparedGeometry bounds) {
         this.horizontalCentroidDistance = horizontalCentroidDistance;
         generateRoadReceiverPoints(network, initialValueSupplier, bounds);
-        generateZoneCentroidReceiverPonts(zoneList,initialValueSupplier);
+        generateZoneCentroidReceiverPonts(receiverPoints,initialValueSupplier);
     }
 
     /**
@@ -154,10 +154,8 @@ public abstract class Grid<T> {
         }
     }
 
-    private void generateZoneCentroidReceiverPonts(List<Zone> zoneList, Supplier<T> initialValueSupplier) {
-        for (Zone zone : zoneList){
-            final Coordinate coordinate = ((Geometry) zone.getZoneFeature().getDefaultGeometry())
-                    .getCentroid().getCoordinate();
+    private void generateZoneCentroidReceiverPonts(List<Coordinate> receiverPoints, Supplier<T> initialValueSupplier) {
+        for (Coordinate coordinate : receiverPoints){
             quadTree.put(coordinate.x, coordinate.y, new Cell<>(coordinate, initialValueSupplier.get()));
         }
     }

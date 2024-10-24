@@ -11,6 +11,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
+import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -119,7 +120,7 @@ public class EmissionGridAnalyzerMSM {
 
         TimeBinMap<Map<Id<Link>, EmissionsByPollutant>> emissionsByPollutant = processEventsFile(eventsFile);
 
-        logger.info("!! Event data ready for first time bin grid.");
+        logger.info("Event data ready for first time bin grid.");
         this.timeBins = emissionsByPollutant.getTimeBins().iterator();
     }
 
@@ -179,14 +180,14 @@ public class EmissionGridAnalyzerMSM {
         return Tuple.of(nextBin.getStartTime(), grid);
     }
 
-    public Tuple<Double, Grid<Map<Pollutant, Float>>> processNextTimeBin(List<Zone> zones) {
+    public Tuple<Double, Grid<Map<Pollutant, Float>>> processNextTimeBin(List<Coordinate> receiverPoints) {
         if (this.timeBins == null) throw new RuntimeException("Must call processTimeBinsWithEmissions() first.");
         if (!this.timeBins.hasNext()) throw new RuntimeException("processNextTimeBin() was called too many times");
 
         TimeBinMap.TimeBin<Map<Id<Link>, EmissionsByPollutant>> nextBin = this.timeBins.next();
         logger.info("creating grid for time bin with start time: " + nextBin.getStartTime());
 
-        Grid<Map<Pollutant, Float>> grid = writeAllLinksZonesToGrid(nextBin.getValue(),zones);
+        Grid<Map<Pollutant, Float>> grid = writeAllLinksZonesToGrid(nextBin.getValue(),receiverPoints);
 
         return Tuple.of(nextBin.getStartTime(), grid);
     }
@@ -305,9 +306,9 @@ public class EmissionGridAnalyzerMSM {
 
         return grid;
     }
-    private Grid<Map<Pollutant, Float>> writeAllLinksZonesToGrid(Map<Id<Link>, EmissionsByPollutant> linksWithEmissions, List<Zone> zones) {
+    private Grid<Map<Pollutant, Float>> writeAllLinksZonesToGrid(Map<Id<Link>, EmissionsByPollutant> linksWithEmissions, List<Coordinate> receiverPoints) {
 
-        final var grid = createGrid(network, zones);
+        final var grid = createGrid(network, receiverPoints);
         final var counter = new AtomicInteger();
 
         // using stream's forEach here, instead of for each loop, to parallelize processing
@@ -376,12 +377,12 @@ public class EmissionGridAnalyzerMSM {
             return new SquareGrid<>(network, gridSize, ConcurrentHashMap::new, bounds);
     }
 
-    private Grid<Map<Pollutant, Float>> createGrid(Network network, List<Zone> zones) {
+    private Grid<Map<Pollutant, Float>> createGrid(Network network, List<Coordinate> receiverPoints) {
 
         if (gridType == GridType.Hexagonal)
-            return new HexagonalGrid<>(network, zones, gridSize, ConcurrentHashMap::new, bounds);
+            return new HexagonalGrid<>(network, receiverPoints, gridSize, ConcurrentHashMap::new, bounds);
         else
-            return new SquareGrid<>(network, zones, gridSize, ConcurrentHashMap::new, bounds);
+            return new SquareGrid<>(network, receiverPoints, gridSize, ConcurrentHashMap::new, bounds);
     }
 
     private ObjectMapper createObjectMapper() {
