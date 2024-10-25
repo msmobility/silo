@@ -47,11 +47,13 @@ public class RunExposureHealthOffline {
         DataBuilderHealth.read(properties, dataContainer);
 
         //Resources.initializeResources(Objects.requireNonNull(properties.main.baseDirectory + properties.transportModel.mitoPropertiesPath));
-        HealthExposureModelMCR healthModel = new HealthExposureModelMCR(dataContainer, properties, SiloUtil.provideNewRandom(),config);
         AirPollutantModel airPollutantModel = new AirPollutantModel(dataContainer, properties, SiloUtil.provideNewRandom(),config);
+        HealthExposureModelMCR exposureModelMCR = new HealthExposureModelMCR(dataContainer, properties, SiloUtil.provideNewRandom(),config);
+        DiseaseModelMCR diseaseModelMCR = new DiseaseModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
 
         Scenario scenario = ScenarioUtils.createMutableScenario(config);
-        String networkFile = properties.main.baseDirectory + "/" + scenario.getConfig().network().getInputFile();
+        //need to use full network (include all car, active mode links) for dispersion
+        String networkFile = properties.main.baseDirectory + properties.healthData.fullNetworkFile;
         new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
         Map<Id<Link>, LinkInfo> linkInfoMap = new HashMap<>();
         for(Link link : scenario.getNetwork().getLinks().values()){
@@ -60,7 +62,9 @@ public class RunExposureHealthOffline {
         ((DataContainerHealth)dataContainer).setLinkInfo(linkInfoMap);
 
         airPollutantModel.endYear(2021);
-        //healthModel.endYear(2021);
+        exposureModelMCR.endYear(2021);
+        diseaseModelMCR.setup();
+        diseaseModelMCR.endYear(2021);
         dataContainer.endSimulation();
 
         logger.info("Finished SILO.");

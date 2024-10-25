@@ -1,6 +1,8 @@
 package de.tum.bgu.msm.health.data;
 
 import de.tum.bgu.msm.data.Mode;
+import org.matsim.api.core.v01.network.Link;
+import routing.components.Gradient;
 
 // Calculates physical activity exposure for a given mode, distance, and time
 public class PhysicalActivity {
@@ -17,33 +19,35 @@ public class PhysicalActivity {
     private static final double STATIONARY_TIME_PROPORTION = 0.2;
     private static final double CYCLE_EFFICIENCY = 0.93;
 
-    public static double getMet(Mode mode, double metres, double seconds, double gradient) {
+    public static double getMet(Mode mode, double metres, double seconds, Link link) {
         if(mode.equals(Mode.autoDriver) || mode.equals(Mode.autoPassenger)) {
             return 1.28;
         } else if(mode.equals(Mode.bus)) {
             return 1.67;
         } else if(mode.equals(Mode.walk)) {
-            return getWalkMet(metres, seconds, gradient);
+            return getWalkMet(metres, seconds, link);
         } else if(mode.equals(Mode.bicycle)) {
-            return getCycleMet(metres, seconds, gradient);
+            return getCycleMet(metres, seconds, link);
         } else {
             return 0.;
         }
     }
 
-    public static double getMMet(Mode mode, double metres, double seconds, double gradient) {
-        return getMet(mode, metres, seconds, gradient == Double.NEGATIVE_INFINITY?GRADIENT:gradient) - 1.;
+    public static double getMMet(Mode mode, double metres, double seconds, Link link) {
+        return getMet(mode, metres, seconds, link) - 1.;
     }
 
 
-    private static double getWalkMet(double metres, double seconds, double gradient) {
+    private static double getWalkMet(double metres, double seconds, Link link) {
         // From ACSM's Guidelines for Exercise Testing and Prescription
         double speed = metres / seconds;
-        return (6. * speed + 108. * speed * gradient + 3.5) / 3.5;
+        double gradient = link== null? GRADIENT : Gradient.getGradient(link);
+        return (6. * speed + 108. * speed *  gradient + 3.5) / 3.5;
     }
 
-    private static double getCycleMet(double metres, double seconds, double gradient) {
+    private static double getCycleMet(double metres, double seconds, Link link) {
         // From Propensity to Cycle Tool
+        double gradient = link== null? GRADIENT : Gradient.getGradient(link);
         double speed = metres / seconds;
         double speedMoving = speed / (1-STATIONARY_TIME_PROPORTION);
         double speedAir = speedMoving;

@@ -2,6 +2,7 @@ package de.tum.bgu.msm.health.io;
 
 import cern.colt.map.tfloat.OpenIntFloatHashMap;
 import de.tum.bgu.msm.data.Day;
+import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -12,6 +13,7 @@ import org.matsim.contrib.emissions.Pollutant;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 public class LinkInfoReader {
@@ -78,7 +80,7 @@ public class LinkInfoReader {
 
             // read header
             String[] header = recString.split(",");
-            int posLinkId = SiloUtil.findPositionInArray("linkId", header);
+            int posZoneId = SiloUtil.findPositionInArray("zoneId", header);
             int posPollutant = SiloUtil.findPositionInArray("pollutant", header);
             int posTimebin = SiloUtil.findPositionInArray("timebin", header);
             int posValue = SiloUtil.findPositionInArray("value", header);
@@ -87,16 +89,19 @@ public class LinkInfoReader {
             while ((recString = in.readLine()) != null) {
                 recCount++;
                 String[] lineElements = recString.split(",");
-                Id<Link> linkId = Id.createLinkId(lineElements[posLinkId]);
+                int zoneId = Integer.parseInt(lineElements[posZoneId]);
                 Pollutant pollutant  = Pollutant.valueOf(lineElements[posPollutant]);
                 int startTime = Integer.parseInt(lineElements[posTimebin]);
                 float value = Float.parseFloat(lineElements[posValue]);
 
-                if (dataContainer.getLinkInfo().get(linkId)==null){
-                    logger.error("Link " + linkId + " does not exist in Link Info container.");
+                Zone zone = dataContainer.getGeoData().getZones().get(zoneId);
+
+                if(dataContainer.getZoneExposure2Pollutant2TimeBin().get(zone)==null){
+                    logger.warn("Zone " + zoneId + " does not exist in Zone Info container.");
                 }
 
-                Map<Pollutant, OpenIntFloatHashMap> exposure2Pollutant2TimeBin =  (dataContainer).getLinkInfo().get(linkId).getExposure2Pollutant2TimeBin();
+                Map<Pollutant, OpenIntFloatHashMap> exposure2Pollutant2TimeBin =  dataContainer.getZoneExposure2Pollutant2TimeBin().getOrDefault(zone, new HashMap<>());
+
                 if(exposure2Pollutant2TimeBin.get(pollutant)==null){
                     OpenIntFloatHashMap exposureByTimeBin = new OpenIntFloatHashMap();
                     exposureByTimeBin.put(startTime, value);
@@ -104,6 +109,8 @@ public class LinkInfoReader {
                 }else {
                     exposure2Pollutant2TimeBin.get(pollutant).put(startTime, value);
                 }
+                dataContainer.getZoneExposure2Pollutant2TimeBin().put(zone,exposure2Pollutant2TimeBin);
+
             }
         } catch (IOException e) {
             logger.fatal("IO Exception caught reading link concentration file: " + path);

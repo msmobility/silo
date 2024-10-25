@@ -42,6 +42,7 @@ public class PersonReaderMCRHealth implements PersonReader {
             int posWorkplace = SiloUtil.findPositionInArray("workplace",header);
             int posIncome = SiloUtil.findPositionInArray("income",header);
             int posDriver = SiloUtil.findPositionInArray("driversLicense", header);
+            int posSportMMet = SiloUtil.findPositionInArray("mmetHr_otherSport", header);
 
             // read line
             while ((recString = in.readLine()) != null) {
@@ -71,6 +72,7 @@ public class PersonReaderMCRHealth implements PersonReader {
                 householdDataManager.addPerson(pp);
                 householdDataManager.addPersonToHousehold(pp, household);
                 pp.setDriverLicense(license);
+                pp.setWeeklyMarginalMetHoursSport(Float.parseFloat(lineElements[posSportMMet]));
 
                 if (id == SiloUtil.trackPp) {
                     SiloUtil.trackWriter.println("Read person with following attributes from " + path);

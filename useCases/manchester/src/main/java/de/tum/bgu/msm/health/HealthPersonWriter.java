@@ -4,6 +4,9 @@ import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Mode;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.health.data.DataContainerHealth;
+import de.tum.bgu.msm.health.disease.Diseases;
+import de.tum.bgu.msm.health.disease.HealthExposures;
 import de.tum.bgu.msm.io.output.PersonWriter;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
@@ -55,16 +58,13 @@ public class HealthPersonWriter implements PersonWriter {
         pwp.print("exposure_normalised_pm25");
         pwp.print(",");
         pwp.print("exposure_normalised_no2");
-        pwp.print(",");
-        pwp.print("rr_walk");
-        pwp.print(",");
-        pwp.print("rr_cycle");
-        pwp.print(",");
-        pwp.print("rr_pm25");
-        pwp.print(",");
-        pwp.print("rr_no2");
-        pwp.print(",");
-        pwp.print("rr_all");
+
+        for(HealthExposures exposures : HealthExposures.values()){
+            for(Diseases diseases : ((DataContainerHealth)dataContainer).getDoseResponseData().get(exposures).keySet()){
+                pwp.print(",");
+                pwp.print("rr_" + exposures.name() + "_" + diseases.name());
+            }
+        }
         pwp.println();
 
         for (Person pp : householdData.getPersons()) {
@@ -114,16 +114,17 @@ public class HealthPersonWriter implements PersonWriter {
             pwp.print((((PersonHealthMCR) pp).getWeeklyExposureByPollutantNormalised("pm2.5")));
             pwp.print(",");
             pwp.print((((PersonHealthMCR) pp).getWeeklyExposureByPollutantNormalised("no2")));
-            pwp.print(",");
-            pwp.print((((PersonHealthMCR) pp).getRelativeRiskByType("walk")));
-            pwp.print(",");
-            pwp.print((((PersonHealthMCR) pp).getRelativeRiskByType("cycle")));
-            pwp.print(",");
-            pwp.print((((PersonHealthMCR) pp).getRelativeRiskByType("pm2.5")));
-            pwp.print(",");
-            pwp.print((((PersonHealthMCR) pp).getRelativeRiskByType("no2")));
-            pwp.print(",");
-            pwp.print(((PersonHealthMCR)pp).getAllCauseRR());
+
+            for(HealthExposures exposures : HealthExposures.values()){
+                for(Diseases diseases : ((DataContainerHealth)dataContainer).getDoseResponseData().get(exposures).keySet()){
+                    pwp.print(",");
+                    if(((PersonHealthMCR) pp).getRelativeRisksByDisease().get(exposures)==null){
+                        pwp.print(0.);
+                    }else {
+                        pwp.print(((PersonHealthMCR) pp).getRelativeRisksByDisease().get(exposures).getOrDefault(diseases, 0.f));
+                    }
+                }
+            }
             pwp.println();
             if (pp.getId() == SiloUtil.trackPp) {
                 SiloUtil.trackingFile("Writing pp " + pp.getId() + " to micro data file.");

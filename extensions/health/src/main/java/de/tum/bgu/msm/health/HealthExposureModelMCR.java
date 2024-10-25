@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
+import org.matsim.api.core.v01.population.PopulationFactory;
 import org.matsim.contrib.dvrp.trafficmonitoring.TravelTimeUtils;
 import org.matsim.contrib.emissions.Pollutant;
 import org.matsim.core.config.Config;
@@ -35,7 +36,6 @@ import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ScenarioUtils;
 import routing.BicycleConfigGroup;
 import routing.WalkConfigGroup;
-import routing.components.Gradient;
 import routing.travelDisutility.BicycleTravelDisutilityFactory;
 import routing.travelDisutility.WalkTravelDisutilityFactory;
 import routing.travelTime.BicycleTravelTime;
@@ -52,9 +52,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
     private static final Logger logger = Logger.getLogger(HealthExposureModelMCR.class);
     private Map<Integer, Trip> mitoTrips = new HashMap<>();
     private final Config initialMatsimConfig;
-
     private MutableScenario scenario;
-
     private List<Day> simulatedDays;
     private List<Day> weekdays = Arrays.asList(Day.monday,Day.tuesday,Day.wednesday,Day.thursday,Day.friday);
 
@@ -88,7 +86,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             Map<Integer, Trip> mitoTripsAll = new TripReaderMucHealth().readData(properties.main.baseDirectory + "scenOutput/"
                     + properties.main.scenarioName + "/" + latestMITOYear + "/microData/trips.csv");
 
-            for(Day day : Day.values()){
+            for(Day day : simulatedDays){
                 logger.warn("Health model setup for " + day);
 
                 replyLinkInfoFromFile(day);
@@ -101,24 +99,30 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                         case autoPassenger:
                         case bicycle:
                         case walk:
-                            mitoTrips = mitoTripsAll.values().stream().
-                                    filter(trip -> trip.getTripMode().equals(mode) & trip.getDepartureDay().equals(day)).
-                                    collect(Collectors.toMap(Trip::getId,trip -> trip));
+                            if(Day.thursday.equals(day)){
+                                mitoTrips = mitoTripsAll.values().stream().
+                                        filter(trip -> trip.getTripMode().equals(mode) & weekdays.contains(trip.getDepartureDay())).
+                                        collect(Collectors.toMap(Trip::getId,trip -> trip));
+                            }else {
+                                mitoTrips = mitoTripsAll.values().stream().
+                                        filter(trip -> trip.getTripMode().equals(mode) & trip.getDepartureDay().equals(day)).
+                                        collect(Collectors.toMap(Trip::getId,trip -> trip));
+                            }
+                            logger.info(mitoTrips.size());
                             healthDataAssembler(latestMatsimYear, day, mode);
                             calculatePersonHealthExposures();
+                            final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName +"/";
+                            String filett = outputDirectory
+                                    + "healthIndicators_"
+                                    + year
+                                    + "_" + day
+                                    + "_" + mode
+                                    + ".csv";
+                            new TripExposureWriter().writeMitoTrips(mitoTrips,filett);
                             break;
                         default:
-                            logger.warn("No health model for mode: " + mode);
+                            logger.warn("No exposure model for mode: " + mode);
                     }
-
-                    final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName +"/";
-                    String filett = outputDirectory
-                            + "healthIndicators_"
-                            + year
-                            + "_" + day
-                            + "_" + mode
-                            + ".csv";
-                    new TripExposureWriter().writeMitoTrips(mitoTrips,filett);
                     mitoTrips.clear();
                     System.gc();
                 }
@@ -132,6 +136,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
     @Override
     public void endSimulation() {
     }
+
     private void replyLinkInfoFromFile(Day day) {
         scenario = ScenarioUtils.createMutableScenario(initialMatsimConfig);
         String networkFile = properties.main.baseDirectory + "/" + scenario.getConfig().network().getInputFile();
@@ -143,10 +148,17 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         }
         ((DataContainerHealth)dataContainer).setLinkInfo(linkInfoMap);
 
+        for(Zone zone : dataContainer.getGeoData().getZones().values()){
+            Map<Pollutant, OpenIntFloatHashMap> pollutantMap = new HashMap<>();
+            ((DataContainerHealth)dataContainer).getZoneExposure2Pollutant2TimeBin().put(zone, pollutantMap);
+        }
+
+
         String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/";
 
         new LinkInfoReader().readData( ((DataContainerHealth)dataContainer), outputDirectory, day);
     }
+
     private void healthDataAssembler(int year, Day day, Mode mode) {
         logger.info("Updating health data for year " + year + "|day: " + day + "|mode: " + mode + ".");
 
@@ -159,6 +171,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
         calculateTripHealthIndicator(new ArrayList<>(mitoTrips.values()), day, mode);
     }
+
     private void calculateTripHealthIndicator(List<Trip> trips, Day day, Mode mode) {
         logger.info("Updating trip health data for mode " + mode + ", day " + day);
 
@@ -211,7 +224,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
         for (final List<Trip> partition : partitions) {
             LeastCostPathCalculator pathCalculator = new SpeedyALTFactory().createPathCalculator(scenario.getNetwork(),travelDisutility,travelTime);
-
+            PopulationFactory factory = PopulationUtils.getFactory();
             executor.addTaskToQueue(() -> {
                 try {
 
@@ -228,7 +241,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
                         // Calculate exposures for outbound path
                         int outboundDepartureTimeInSeconds = trip.getDepartureTimeInMinutes()*60;
-                        org.matsim.api.core.v01.population.Person person = PopulationUtils.getFactory().createPerson(Id.createPersonId(trip.getId()));
+                        org.matsim.api.core.v01.population.Person person = factory.createPerson(Id.createPersonId(trip.getId()));
                         person.getAttributes().putAttribute("purpose",convertTripPurpose(trip));
 
                         LeastCostPathCalculator.Path outboundPath = pathCalculator.calcLeastCostPath(originNode, destinationNode,outboundDepartureTimeInSeconds,person,null);
@@ -245,7 +258,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                         // Calculate exposures for activity & return trip (home-based trips only)
                         if(trip.isHomeBased()) {
                             int returnDepartureTimeInSeconds = trip.getDepartureReturnInMinutes()*60;
-                            LeastCostPathCalculator.Path returnPath = pathCalculator.calcLeastCostPath(destinationNode, originNode,returnDepartureTimeInSeconds,null,null);
+                            LeastCostPathCalculator.Path returnPath = pathCalculator.calcLeastCostPath(destinationNode, originNode,returnDepartureTimeInSeconds,person,null);
                             if(returnPath == null){
                                 logger.warn("trip id: " + trip.getId() + ", trip depart time: " + trip.getDepartureTimeInMinutes() +
                                         "origin coord: [" + trip.getTripOrigin().getX() + "," + trip.getTripOrigin().getY() + "], " +
@@ -316,7 +329,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 //linkFatalityRisk = severeFatalRisk[1];
 
                 // PHYSICAL ACTIVITY
-                double linkMarginalMet = PhysicalActivity.getMMet(mode, linkLength, linkTime, Gradient.getGradient(link));
+                double linkMarginalMet = PhysicalActivity.getMMet(mode, linkLength, linkTime, link);
                 linkMarginalMetHours = linkMarginalMet * linkTime / 3600.;
 
                 // AIR POLLUTION Concentration
@@ -474,7 +487,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             return "commute";
         } else if (purpose.equals(Purpose.HBE)){
             return "commute";
-        } else if (purpose.equals(Purpose.HBS)|purpose.equals(Purpose.HBO)|purpose.equals(Purpose.HBR)){
+        } else if (purpose.equals(Purpose.HBS)|purpose.equals(Purpose.HBO)|purpose.equals(Purpose.HBR)|purpose.equals(Purpose.RRT)){
             return "discretionary";
         } else {
             return purpose.name();
@@ -485,10 +498,28 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         walkConfigGroup.getMarginalCostVgvi().put("commute",0.);
         walkConfigGroup.getMarginalCostLinkStress().put("commute",0.);
         walkConfigGroup.getMarginalCostJctStress().put("commute",4.27);
+        walkConfigGroup.getMarginalCostSpeed().put("commute",0.);
         walkConfigGroup.getMarginalCostGradient().put("discretionary",0.);
         walkConfigGroup.getMarginalCostVgvi().put("discretionary",0.62);
         walkConfigGroup.getMarginalCostLinkStress().put("discretionary",0.);
         walkConfigGroup.getMarginalCostJctStress().put("discretionary",14.34);
+        walkConfigGroup.getMarginalCostSpeed().put("discretionary",0.);
+        walkConfigGroup.getMarginalCostGradient().put("HBA",0.);
+        walkConfigGroup.getMarginalCostVgvi().put("HBA",0.691);
+        walkConfigGroup.getMarginalCostLinkStress().put("HBA",0.);
+        walkConfigGroup.getMarginalCostJctStress().put("HBA",0.);
+        walkConfigGroup.getMarginalCostSpeed().put("HBA",0.);
+        walkConfigGroup.getMarginalCostGradient().put("NHBO",0.);
+        walkConfigGroup.getMarginalCostVgvi().put("NHBO",0.);
+        walkConfigGroup.getMarginalCostLinkStress().put("NHBO",0.);
+        walkConfigGroup.getMarginalCostJctStress().put("NHBO",0.);
+        walkConfigGroup.getMarginalCostSpeed().put("NHBO",3.449);
+        walkConfigGroup.getMarginalCostGradient().put("NHBW",0.);
+        walkConfigGroup.getMarginalCostVgvi().put("NHBW",0.);
+        walkConfigGroup.getMarginalCostLinkStress().put("NHBW",0.);
+        walkConfigGroup.getMarginalCostJctStress().put("NHBW",0.);
+        walkConfigGroup.getMarginalCostSpeed().put("NHBW",0.);
+
     }
 
     private void fillConfigWithBikeStandardValue(BicycleConfigGroup bicycleConfigGroup) {
@@ -496,10 +527,27 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         bicycleConfigGroup.getMarginalCostVgvi().put("commute",0.);
         bicycleConfigGroup.getMarginalCostLinkStress().put("commute",6.3);
         bicycleConfigGroup.getMarginalCostJctStress().put("commute",0.);
+        bicycleConfigGroup.getMarginalCostSpeed().put("commute",0.);
         bicycleConfigGroup.getMarginalCostGradient().put("discretionary",63.45);
         bicycleConfigGroup.getMarginalCostVgvi().put("discretionary",0.);
         bicycleConfigGroup.getMarginalCostLinkStress().put("discretionary",1.59);
         bicycleConfigGroup.getMarginalCostJctStress().put("discretionary",0.);
+        bicycleConfigGroup.getMarginalCostSpeed().put("discretionary",0.);
+        bicycleConfigGroup.getMarginalCostGradient().put("HBA",0.);
+        bicycleConfigGroup.getMarginalCostVgvi().put("HBA",0.);
+        bicycleConfigGroup.getMarginalCostLinkStress().put("HBA",0.);
+        bicycleConfigGroup.getMarginalCostJctStress().put("HBA",0.);
+        bicycleConfigGroup.getMarginalCostSpeed().put("HBA",0.);
+        bicycleConfigGroup.getMarginalCostGradient().put("NHBO",0.);
+        bicycleConfigGroup.getMarginalCostVgvi().put("NHBO",0.);
+        bicycleConfigGroup.getMarginalCostLinkStress().put("NHBO",0.);
+        bicycleConfigGroup.getMarginalCostJctStress().put("NHBO",0.);
+        bicycleConfigGroup.getMarginalCostSpeed().put("NHBO",0.);
+        bicycleConfigGroup.getMarginalCostGradient().put("NHBW",0.);
+        bicycleConfigGroup.getMarginalCostVgvi().put("NHBW",0.);
+        bicycleConfigGroup.getMarginalCostLinkStress().put("NHBW",0.);
+        bicycleConfigGroup.getMarginalCostJctStress().put("NHBW",0.);
+        bicycleConfigGroup.getMarginalCostSpeed().put("NHBW",0.);
     }
 
 }
