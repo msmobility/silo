@@ -4,18 +4,14 @@ import cern.colt.map.tfloat.OpenIntFloatHashMap;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Day;
 import de.tum.bgu.msm.data.Zone;
-import de.tum.bgu.msm.data.geo.ZoneImpl;
 import de.tum.bgu.msm.health.airPollutant.dispersion.Grid;
 import de.tum.bgu.msm.health.airPollutant.emission.CreateVehicles;
 import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.health.airPollutant.dispersion.EmissionGridAnalyzerMSM;
-import de.tum.bgu.msm.health.data.LinkInfo;
 import de.tum.bgu.msm.health.io.LinkInfoWriter;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.resources.Resources;
-import de.tum.bgu.msm.util.MitoUtil;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
@@ -30,17 +26,17 @@ import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.events.EventsManagerImpl;
 import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.events.algorithms.EventWriterXML;
+import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.collections.Tuple;
 
-import java.io.PrintWriter;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.matsim.core.controler.Injector.createInjector;
 
 public class AirPollutantModel extends AbstractModel implements ModelUpdateListener {
-    public static final int EMISSION_TIME_BIN_SIZE = 3600*4;
+    public static final int EMISSION_TIME_BIN_SIZE = 3600;
     private static final double EMISSION_GRID_SIZE = 20;
     private static final double EMISSION_SMOOTH_RADIUS = 100;
     private int latestMatsimYear = -1;
@@ -151,7 +147,9 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
 
     public Config updateConfig(Day day, String vehicleFile) {
         String populationFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + latestMatsimYear + ".output_plans.xml.gz";
-
+        //need to use full network (include all car, active mode links) for dispersion
+        String networkFile = properties.main.baseDirectory + properties.healthData.fullNetworkFile;
+        scenario.getConfig().network().setInputFile(networkFile);
         scenario.getConfig().vehicles().setVehiclesFile(vehicleFile);
         scenario.getConfig().plans().setInputFile(populationFile);
 
