@@ -4,6 +4,7 @@ import cern.colt.map.tfloat.OpenIntFloatHashMap;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Day;
 import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.data.geo.ZoneImpl;
 import de.tum.bgu.msm.health.airPollutant.dispersion.Grid;
 import de.tum.bgu.msm.health.airPollutant.emission.CreateVehicles;
 import de.tum.bgu.msm.health.data.DataContainerHealth;
@@ -83,12 +84,12 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
                 String eventFileWithEmissions = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_events_emission.xml.gz";
                 String vehicleFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_vehicles.xml.gz";
                 String vehicleFileWithEmissionType = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".vehicles_emission.xml.gz";
-                //CreateVehicles createVehicles = new CreateVehicles(scenario);
-                //createVehicles.runVehicleType();
-                //createVehicles.runVehicle(vehicleFile, vehicleFileWithEmissionType);
+                CreateVehicles createVehicles = new CreateVehicles(scenario);
+                createVehicles.runVehicleType();
+                createVehicles.runVehicle(vehicleFile, vehicleFileWithEmissionType);
                 updateConfig(day, vehicleFileWithEmissionType);
                 scenario = ScenarioUtils.loadScenario(scenario.getConfig());
-                //createEmissionEventsOffline(eventFileWithoutEmissions,eventFileWithEmissions);
+                createEmissionEventsOffline(eventFileWithoutEmissions,eventFileWithEmissions);
                 runEmissionGridAnalyzer(year,day, eventFileWithEmissions);
 
                 String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/";
@@ -181,7 +182,8 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
 
         while(gridAnalyzer.hasNextTimeBin()){
             //assembleLinkExposure(year, day, gridAnalyzer.processNextTimeBin());
-            assembleLinkZoneExposure(year, day, gridAnalyzer.processNextTimeBin(dataContainer.getGeoData().getZones().values().stream().collect(Collectors.toList())));
+            //TODO: can be improve, create all receiver points first then feed into analyzer, not differentiate link or zone points
+            assembleLinkZoneExposure(year, day, gridAnalyzer.processNextTimeBin(dataContainer.getGeoData().getZones().values().stream().map(Zone ::getPopCentroidCoord).collect(Collectors.toList())));
         }
         System.out.println("current memory usage: " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
 
@@ -297,9 +299,6 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
             Grid.Cell<Map<Pollutant,Float>> zoneCell = grid.getCell(coordinate);
 
             for(Pollutant pollutant : pollutantSet){
-                if(zoneCell.getValue().get(pollutant)==null){
-                    logger.info("No pollutant concentration for zone: " + zone.getZoneId()  + "| " + pollutant.toString());
-                }
                 if(exposure2Pollutant2TimeBin.get(pollutant)==null){
                     OpenIntFloatHashMap exposureByTimeBin = new OpenIntFloatHashMap();
                     exposureByTimeBin.put(startTime, zoneCell.getValue().getOrDefault(pollutant, 0.f));

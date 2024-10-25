@@ -105,4 +105,9 @@ public class ZoneImpl implements Zone {
     public Map<String, Object> getAttributes() {
         return attributes;
     }
+
+    @Override
+    public Coordinate getPopCentroidCoord() {
+        return null;
+    }
 }

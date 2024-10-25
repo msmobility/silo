@@ -27,4 +27,6 @@ public interface Zone extends Location, Id {
     void setDevelopment(Development development);
 
     Map<String, Object> getAttributes();
+
+    Coordinate getPopCentroidCoord();
 }
