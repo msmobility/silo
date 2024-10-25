@@ -17,39 +17,39 @@ public class PhysicalActivity {
     private static final double STATIONARY_TIME_PROPORTION = 0.2;
     private static final double CYCLE_EFFICIENCY = 0.93;
 
-    public static double getMet(Mode mode, double metres, double seconds) {
+    public static double getMet(Mode mode, double metres, double seconds, double gradient) {
         if(mode.equals(Mode.autoDriver) || mode.equals(Mode.autoPassenger)) {
             return 1.28;
         } else if(mode.equals(Mode.bus)) {
             return 1.67;
         } else if(mode.equals(Mode.walk)) {
-            return getWalkMet(metres, seconds);
+            return getWalkMet(metres, seconds, gradient);
         } else if(mode.equals(Mode.bicycle)) {
-            return getCycleMet(metres, seconds);
+            return getCycleMet(metres, seconds, gradient);
         } else {
             return 0.;
         }
     }
 
-    public static double getMMet(Mode mode, double metres, double seconds) {
-        return getMet(mode, metres, seconds) - 1.;
+    public static double getMMet(Mode mode, double metres, double seconds, double gradient) {
+        return getMet(mode, metres, seconds, gradient == Double.NEGATIVE_INFINITY?GRADIENT:gradient) - 1.;
     }
 
 
-    private static double getWalkMet(double metres, double seconds) {
+    private static double getWalkMet(double metres, double seconds, double gradient) {
         // From ACSM's Guidelines for Exercise Testing and Prescription
         double speed = metres / seconds;
-        return (6. * speed + 108. * speed * GRADIENT + 3.5) / 3.5;
+        return (6. * speed + 108. * speed * gradient + 3.5) / 3.5;
     }
 
-    private static double getCycleMet(double metres, double seconds) {
+    private static double getCycleMet(double metres, double seconds, double gradient) {
         // From Propensity to Cycle Tool
         double speed = metres / seconds;
         double speedMoving = speed / (1-STATIONARY_TIME_PROPORTION);
         double speedAir = speedMoving;
         double powerRoadResistance = GROUND_RESISTANCE_COEFFICIENT * (PERSON_KG + BIKE_AND_BAG_KG) * speedMoving;
         double powerWindResistance = WIND_RESISTANCE_COEFFICIENT * FRONTAL_AREA_M2 * AIR_DENSITY_KG_PER_M2 * Math.pow(speedAir,2) * speedMoving;
-        double powerGravity = GRAVITY_M_PER_S2 * GRADIENT *  (PERSON_KG + BIKE_AND_BAG_KG) * speedMoving;
+        double powerGravity = GRAVITY_M_PER_S2 * gradient *  (PERSON_KG + BIKE_AND_BAG_KG) * speedMoving;
         double power = (powerRoadResistance + powerWindResistance + powerGravity) / CYCLE_EFFICIENCY;
         double oxygenLitersPerMin = 0.01141 * power + 0.435;
         double kCalPerMin = oxygenLitersPerMin * 5;

@@ -1,12 +1,13 @@
 package de.tum.bgu.msm.health.data;
 
 import de.tum.bgu.msm.data.Mode;
+import de.tum.bgu.msm.properties.Properties;
 
 public class PollutionExposure {
 
     // Background Rates
-    private static final double BACKGROUND_PM25 = 9.;
-    private static final double BACKGROUND_NO2 = 17.6;
+    private static final double BACKGROUND_PM25 = Properties.get().healthData.BACKGROUND_PM25;
+    private static final double BACKGROUND_NO2 = Properties.get().healthData.BACKGROUND_NO2;
 
     // Other Constants
     private static final double BASE_LEVEL_INHALATION_RATE = 1.;  // from METAHIT
@@ -26,13 +27,33 @@ public class PollutionExposure {
         return BACKGROUND_NO2 * (REST_VENTILATION_RATE * minutesResting + SLEEP_VENTILATION_RATE * minutesSleeping) / 60.;
     }
 
+    public static double getHomeExposurePm25(double minutesAtHome,double zonalIncremental) {
+        double minutesResting = Math.max(0,minutesAtHome - 3360);
+        double minutesSleeping = minutesAtHome - minutesResting;
+        return (BACKGROUND_PM25 + zonalIncremental) * (REST_VENTILATION_RATE * minutesResting + SLEEP_VENTILATION_RATE * minutesSleeping) / 60.;
+    }
+
+    public static double getHomeExposureNo2(double minutesAtHome,double zonalIncremental) {
+        double minutesResting = Math.max(0,minutesAtHome - 3360);
+        double minutesSleeping = minutesAtHome - minutesResting;
+        return (BACKGROUND_NO2 + zonalIncremental) * (REST_VENTILATION_RATE * minutesResting + SLEEP_VENTILATION_RATE * minutesSleeping) / 60.;
+    }
+
     // Activity Exposures
     public static double getActivityExposurePm25(double activityMinutes) {
         return BACKGROUND_PM25 * REST_VENTILATION_RATE * activityMinutes / 60.;
     }
 
+    public static double getActivityExposurePm25(double activityMinutes, double zonalIncremental) {
+        return (BACKGROUND_PM25 + zonalIncremental) * REST_VENTILATION_RATE * activityMinutes / 60.;
+    }
+
     public static double getActivityExposureNo2(double activityMinutes) {
         return BACKGROUND_NO2 * REST_VENTILATION_RATE * activityMinutes / 60.;
+    }
+
+    public static double getActivityExposureNo2(double activityMinutes,double zonalIncremental) {
+        return (BACKGROUND_NO2 + zonalIncremental)  * REST_VENTILATION_RATE * activityMinutes / 60.;
     }
 
     // Link Exposures

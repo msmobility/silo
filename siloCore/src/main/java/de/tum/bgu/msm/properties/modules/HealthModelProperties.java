@@ -19,6 +19,9 @@ public class HealthModelProperties {
     public final String COLD_EMISSION_FILE;
 
     public final String HOT_EMISSION_FILE;
+    public final int HEALTH_MODEL_INTERVAL;
+    public final double BACKGROUND_PM25;
+    public final double BACKGROUND_NO2;
 
 
     public HealthModelProperties(ResourceBundle bundle) {
@@ -41,6 +44,10 @@ public class HealthModelProperties {
         COLD_EMISSION_FILE = PropertiesUtil.getStringProperty(bundle, "cold.emission.file", "input/mito/trafficAssignment/EFA_ColdStart_Vehcat_healthModelWithTruck.txt");
         HOT_EMISSION_FILE =  PropertiesUtil.getStringProperty(bundle, "hot.emission.file", "input/mito/trafficAssignment/EFA_HOT_Vehcat_healthModelWithTruck.txt");
 
+        HEALTH_MODEL_INTERVAL = PropertiesUtil.getIntProperty(bundle, "health.model.interval", 2);
+
+        BACKGROUND_PM25 = PropertiesUtil.getDoubleProperty(bundle, "background.pm25", 9.);//default is munich rates
+        BACKGROUND_NO2 = PropertiesUtil.getDoubleProperty(bundle, "background.no2", 17.6);
     }
 
 }

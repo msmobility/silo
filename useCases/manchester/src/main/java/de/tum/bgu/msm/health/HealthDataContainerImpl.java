@@ -105,8 +105,7 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     @Override
     public void endSimulation() {
         delegate.endSimulation();
-        //TODO: comment out for running disease model offline
-        //writePersonHealthData(properties.main.endYear);
+        writePersonHealthData(properties.main.endYear);
         writePersonDiseaseTrackData(properties.main.endYear);
     }
 

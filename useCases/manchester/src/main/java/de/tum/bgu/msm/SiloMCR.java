@@ -3,7 +3,6 @@ package de.tum.bgu.msm;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.health.DataBuilderHealth;
 import de.tum.bgu.msm.health.HealthDataContainerImpl;
-import de.tum.bgu.msm.health.HealthExposureModelMCR;
 import de.tum.bgu.msm.io.output.MultiFileResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;

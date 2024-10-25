@@ -33,8 +33,10 @@ public class TripReaderMucHealth {
             String[] header = recString.split(",");
             int posId = SiloUtil.findPositionInArray("t.id", header);
             int posPurpose = SiloUtil.findPositionInArray("t.purpose", header);
+            int posOriginZone = SiloUtil.findPositionInArray("origin", header);
             int posOriginX = SiloUtil.findPositionInArray("originX", header);
             int posOriginY = SiloUtil.findPositionInArray("originY", header);
+            int posDestinationZone = SiloUtil.findPositionInArray("destination", header);
             int posDestinationX = SiloUtil.findPositionInArray("destinationX", header);
             int posDestinationY = SiloUtil.findPositionInArray("destinationY", header);
 
@@ -62,6 +64,9 @@ public class TripReaderMucHealth {
                 if(lineElements[posOriginX].equals("null")||lineElements[posDestinationX].equals("null")){
                     logger.warn("trip id: " + id + "no origin or destination microlocation!");
                 }
+
+                mitoTrip.setTripOriginZone(Integer.parseInt(lineElements[posOriginZone]));
+                mitoTrip.setTripDestinationZone(Integer.parseInt(lineElements[posDestinationZone]));
                 mitoTrip.setTripOrigin(CoordUtils.createCoord(Double.parseDouble(lineElements[posOriginX]),Double.parseDouble(lineElements[posOriginY])));
                 mitoTrip.setTripDestination(CoordUtils.createCoord(Double.parseDouble(lineElements[posDestinationX]),Double.parseDouble(lineElements[posDestinationY])));
 

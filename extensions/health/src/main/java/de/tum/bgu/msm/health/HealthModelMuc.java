@@ -325,7 +325,7 @@ public class HealthModelMuc extends AbstractModel implements ModelUpdateListener
                 linkFatalityRisk = severeFatalRisk[1];
 
                 // PHYSICAL ACTIVITY
-                double linkMarginalMet = PhysicalActivity.getMMet(mode, linkLength, linkTime);
+                double linkMarginalMet = PhysicalActivity.getMMet(mode, linkLength, linkTime, Double.NEGATIVE_INFINITY);
                 linkMarginalMetHours = linkMarginalMet * linkTime / 3600.;
 
                 // AIR POLLUTION

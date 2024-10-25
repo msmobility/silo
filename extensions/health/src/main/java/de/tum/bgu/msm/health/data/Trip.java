@@ -1,9 +1,6 @@
 package de.tum.bgu.msm.health.data;
 
-import de.tum.bgu.msm.data.Day;
-import de.tum.bgu.msm.data.Id;
-import de.tum.bgu.msm.data.Mode;
-import de.tum.bgu.msm.data.Purpose;
+import de.tum.bgu.msm.data.*;
 import org.matsim.api.core.v01.Coord;
 
 import java.util.HashMap;
@@ -23,6 +20,8 @@ public class Trip implements Id {
     private Coord tripOrigin;
     private Coord tripDestination;
 
+    private int tripOriginZone;
+    private int tripDestinationZone;
     private int person;
     private Mode tripMode;
     private Day departureDay;
@@ -201,5 +200,21 @@ public class Trip implements Id {
 
     public void setDepartureDay(Day departureDay) {
         this.departureDay = departureDay;
+    }
+
+    public int getTripOriginZone() {
+        return tripOriginZone;
+    }
+
+    public void setTripOriginZone(int tripOriginZone) {
+        this.tripOriginZone = tripOriginZone;
+    }
+
+    public int getTripDestinationZone() {
+        return tripDestinationZone;
+    }
+
+    public void setTripDestinationZone(int tripDestinationZone) {
+        this.tripDestinationZone = tripDestinationZone;
     }
 }
