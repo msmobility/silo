@@ -1,9 +1,11 @@
 package de.tum.bgu.msm.scenarios.healthMuc;
 
+import cern.colt.map.tfloat.OpenIntFloatHashMap;
 import cern.colt.map.tlong.OpenLongLongHashMap;
 import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.data.MitoGender;
 import de.tum.bgu.msm.data.Mode;
+import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
@@ -129,6 +131,16 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     @Override
     public void setPollutantSet(Set<Pollutant> pollutantSet) {
         this.pollutantSet = pollutantSet;
+    }
+
+    @Override
+    public Map<Zone, Map<Pollutant, OpenIntFloatHashMap>> getZoneExposure2Pollutant2TimeBin() {
+        return Map.of();
+    }
+
+    @Override
+    public void setZoneExposure2Pollutant2TimeBin(Map<Zone, Map<Pollutant, OpenIntFloatHashMap>> zoneExposure2Pollutant2TimeBin) {
+
     }
 
     @Override

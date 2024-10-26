@@ -18,6 +18,7 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.PopulationFactory;
@@ -130,6 +131,8 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 System.gc();
             }
         }
+        //TODO: read zonal concentration info from CSV, use Thursday exposure as average?
+        replyLinkInfoFromFile(Day.thursday);
         calculatePersonHealthExposuresAtHome();
     }
 
@@ -138,23 +141,24 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
     }
 
     private void replyLinkInfoFromFile(Day day) {
-        scenario = ScenarioUtils.createMutableScenario(initialMatsimConfig);
-        String networkFile = properties.main.baseDirectory + "/" + scenario.getConfig().network().getInputFile();
-        new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
+        String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/";
 
+        //need to initialize link info and zone exposure map everytime, because to save memory, dataContainer.reset for each day/mode assembler
+        Scenario scenario = ScenarioUtils.createMutableScenario(initialMatsimConfig);
+        //need to use full network (include all car, active mode links) for dispersion
+        String networkFile = properties.main.baseDirectory + properties.healthData.network_for_airPollutant_model;
+        new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
         Map<Id<Link>, LinkInfo> linkInfoMap = new HashMap<>();
         for(Link link : scenario.getNetwork().getLinks().values()){
             linkInfoMap.put(link.getId(), new LinkInfo(link.getId()));
         }
         ((DataContainerHealth)dataContainer).setLinkInfo(linkInfoMap);
+        logger.info("Initialized Link Info for " + ((DataContainerHealth)dataContainer).getLinkInfo().size() + " links ");
 
         for(Zone zone : dataContainer.getGeoData().getZones().values()){
             Map<Pollutant, OpenIntFloatHashMap> pollutantMap = new HashMap<>();
             ((DataContainerHealth)dataContainer).getZoneExposure2Pollutant2TimeBin().put(zone, pollutantMap);
         }
-
-
-        String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/";
 
         new LinkInfoReader().readData( ((DataContainerHealth)dataContainer), outputDirectory, day);
     }

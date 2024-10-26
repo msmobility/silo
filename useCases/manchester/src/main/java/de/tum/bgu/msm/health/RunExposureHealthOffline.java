@@ -1,5 +1,7 @@
 package de.tum.bgu.msm.health;
 
+import cern.colt.map.tfloat.OpenIntFloatHashMap;
+import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.health.airPollutant.AirPollutantModel;
 import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.health.data.LinkInfo;
@@ -9,6 +11,7 @@ import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.contrib.emissions.Pollutant;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
@@ -53,13 +56,20 @@ public class RunExposureHealthOffline {
 
         Scenario scenario = ScenarioUtils.createMutableScenario(config);
         //need to use full network (include all car, active mode links) for dispersion
-        String networkFile = properties.main.baseDirectory + properties.healthData.fullNetworkFile;
+        String networkFile = properties.main.baseDirectory + properties.healthData.network_for_airPollutant_model;
         new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
         Map<Id<Link>, LinkInfo> linkInfoMap = new HashMap<>();
         for(Link link : scenario.getNetwork().getLinks().values()){
             linkInfoMap.put(link.getId(), new LinkInfo(link.getId()));
         }
         ((DataContainerHealth)dataContainer).setLinkInfo(linkInfoMap);
+        logger.info("Initialized Link Info for " + ((DataContainerHealth)dataContainer).getLinkInfo().size() + " links ");
+
+        for(Zone zone : dataContainer.getGeoData().getZones().values()){
+            Map<Pollutant, OpenIntFloatHashMap> pollutantMap = new HashMap<>();
+            ((DataContainerHealth)dataContainer).getZoneExposure2Pollutant2TimeBin().put(zone, pollutantMap);
+        }
+
 
         airPollutantModel.endYear(2021);
         exposureModelMCR.endYear(2021);

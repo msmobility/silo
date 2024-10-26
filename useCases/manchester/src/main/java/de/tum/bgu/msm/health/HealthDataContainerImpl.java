@@ -177,6 +177,7 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     @Override
     public void reset(){
         linkInfo.clear();
+        zoneExposure2Pollutant2TimeBin.clear();
     }
 
     public Map<Integer, Map<Integer, List<String>>> getHealthDiseaseTrackerRemovedPerson() {

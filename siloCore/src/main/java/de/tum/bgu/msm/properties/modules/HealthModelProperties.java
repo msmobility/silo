@@ -22,7 +22,7 @@ public class HealthModelProperties {
     public final int HEALTH_MODEL_INTERVAL;
     public final double BACKGROUND_PM25;
     public final double BACKGROUND_NO2;
-    public final String fullNetworkFile;
+    public final String network_for_airPollutant_model ;
 
 
     public HealthModelProperties(ResourceBundle bundle) {
@@ -50,7 +50,7 @@ public class HealthModelProperties {
         BACKGROUND_PM25 = PropertiesUtil.getDoubleProperty(bundle, "background.pm25", 9.);//default is munich rates
         BACKGROUND_NO2 = PropertiesUtil.getDoubleProperty(bundle, "background.no2", 17.6);
 
-        fullNetworkFile = PropertiesUtil.getStringProperty(bundle, "matsim.network.fullMode", "input/mito/trafficAssignment/network.xml");
+        network_for_airPollutant_model = PropertiesUtil.getStringProperty(bundle, "matsim.network.for.air.pollutant.model", "input/mito/trafficAssignment/network_hbefa.xml");
 
     }
 

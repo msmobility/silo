@@ -40,7 +40,7 @@ public class RunSiloMucHealthOffline {
         HealthModelMuc healthModel = new HealthModelMuc(dataContainer, properties, SiloUtil.provideNewRandom(),config);
         healthModel.setup();
         accidentModel.endYear(2011);
-        airPollutantModel.runOffineWithEmission(2011,false);
+        airPollutantModel.endYear(2011);
         healthModel.endYear(2011);
         dataContainer.endSimulation();
 
