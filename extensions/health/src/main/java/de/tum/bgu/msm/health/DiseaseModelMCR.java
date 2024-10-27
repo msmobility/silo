@@ -48,25 +48,36 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
 
     private void initializeRelativeRisk() {
         for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
-            EnumMap<Diseases, Float> rr_PA = new EnumMap<>(Diseases.class);
+            for (HealthExposures exposures : HealthExposures.values()){
+                EnumMap<Diseases, Float> rr = new EnumMap<>(Diseases.class);
 
-            for(Diseases diseases : ((DataContainerHealth)dataContainer).getDoseResponseData().get(HealthExposures.PHYSICAL_ACTIVITY).keySet()){
-                rr_PA.put(diseases, 1.f);
+                for(Diseases diseases : ((DataContainerHealth)dataContainer).getDoseResponseData().get(exposures).keySet()){
+                    rr.put(diseases, 1.f);
+                }
+                ((PersonHealth)person).getRelativeRisksByDisease().put(exposures, rr);
             }
-            ((PersonHealth)person).getRelativeRisksByDisease().put(HealthExposures.PHYSICAL_ACTIVITY, rr_PA);
-
-            //EnumMap<Diseases, Float> rr_AP = RelativeRisksDisease.calculateForAP(personMRC, (DataContainerHealth) dataContainer);
-            //personMRC.getRelativeRisksByDisease().put(HealthExposures.AIR_POLLUTION, rr_AP);
         }
     }
 
     public void calculateRelativeRisk() {
         for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
-            EnumMap<Diseases, Float> rr_PA = RelativeRisksDisease.calculateForPA((PersonHealth)person, (DataContainerHealth) dataContainer);
-            ((PersonHealth)person).getRelativeRisksByDisease().put(HealthExposures.PHYSICAL_ACTIVITY, rr_PA);
-
-            //EnumMap<Diseases, Float> rr_AP = RelativeRisksDisease.calculateForAP(personMRC, (DataContainerHealth) dataContainer);
-            //personMRC.getRelativeRisksByDisease().put(HealthExposures.AIR_POLLUTION, rr_AP);
+            for(HealthExposures exposures : HealthExposures.values()){
+                EnumMap<Diseases, Float> rr = null;
+                switch (exposures){
+                    case PHYSICAL_ACTIVITY:
+                        rr = RelativeRisksDisease.calculateForPA((PersonHealth)person, (DataContainerHealth) dataContainer);
+                        break;
+                    case AIR_POLLUTION_PM25:
+                        rr = RelativeRisksDisease.calculateForPM25((PersonHealth)person, (DataContainerHealth) dataContainer);
+                        break;
+                    case AIR_POLLUTION_NO2:
+                        rr = RelativeRisksDisease.calculateForNO2((PersonHealth)person, (DataContainerHealth) dataContainer);
+                        break;
+                    default:
+                        logger.error("Unknown exposures " + exposures);
+                }
+                ((PersonHealth)person).getRelativeRisksByDisease().put(exposures, rr);
+            }
         }
     }
 

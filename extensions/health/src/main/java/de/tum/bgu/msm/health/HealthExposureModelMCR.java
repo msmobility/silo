@@ -37,8 +37,8 @@ import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ScenarioUtils;
 import routing.BicycleConfigGroup;
 import routing.WalkConfigGroup;
-import routing.travelDisutility.BicycleTravelDisutilityFactory;
-import routing.travelDisutility.WalkTravelDisutilityFactory;
+import routing.travelDisutility.BikeTravelDisutilityPreCalc;
+import routing.travelDisutility.WalkTravelDisutilityPreCalc;
 import routing.travelTime.BicycleTravelTime;
 import routing.travelTime.WalkTravelTime;
 import routing.travelTime.speed.BicycleLinkSpeedCalculatorDefaultImpl;
@@ -109,7 +109,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                                         filter(trip -> trip.getTripMode().equals(mode) & trip.getDepartureDay().equals(day)).
                                         collect(Collectors.toMap(Trip::getId,trip -> trip));
                             }
-                            logger.info(mitoTrips.size());
+
                             healthDataAssembler(latestMatsimYear, day, mode);
                             calculatePersonHealthExposures();
                             final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName +"/";
@@ -187,6 +187,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         TravelDisutility travelDisutility;
         String networkFile;
 
+        String[] purposes = new String[]{"commute","discretionary","HBA","NHBO","NHBW"};
         switch (mode){
             case autoDriver:
             case autoPassenger:
@@ -202,7 +203,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 WalkConfigGroup walkConfigGroup = new WalkConfigGroup();
                 fillConfigWithWalkStandardValue(walkConfigGroup);
                 travelTime = new WalkTravelTime();
-                travelDisutility = new WalkTravelDisutilityFactory(walkConfigGroup).createTravelDisutility(travelTime);
+                travelDisutility = new WalkTravelDisutilityPreCalc(scenario.getNetwork(),purposes,walkConfigGroup,travelTime);
                 break;
             case bicycle:
                 networkFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/bikePed/" + latestMatsimYear + ".output_network.xml.gz";
@@ -210,7 +211,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 BicycleConfigGroup bicycleConfigGroup = new BicycleConfigGroup();
                 fillConfigWithBikeStandardValue(bicycleConfigGroup);
                 travelTime = new BicycleTravelTime(new BicycleLinkSpeedCalculatorDefaultImpl(bicycleConfigGroup));
-                travelDisutility = new BicycleTravelDisutilityFactory(bicycleConfigGroup).createTravelDisutility(travelTime);
+                travelDisutility = new BikeTravelDisutilityPreCalc(scenario.getNetwork(),purposes,bicycleConfigGroup,travelTime);
                 break;
             default:
                 travelTime = null;

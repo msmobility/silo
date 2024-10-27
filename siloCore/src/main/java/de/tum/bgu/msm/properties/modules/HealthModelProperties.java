@@ -23,6 +23,10 @@ public class HealthModelProperties {
     public final double BACKGROUND_PM25;
     public final double BACKGROUND_NO2;
     public final String network_for_airPollutant_model ;
+    public final String basePath;
+    public final String diseaseLookupTable;
+    public final String avgSpeedFile;
+    public final String healthTransitionData;
 
 
     public HealthModelProperties(ResourceBundle bundle) {
@@ -52,6 +56,13 @@ public class HealthModelProperties {
 
         network_for_airPollutant_model = PropertiesUtil.getStringProperty(bundle, "matsim.network.for.air.pollutant.model", "input/mito/trafficAssignment/network_hbefa.xml");
 
+        basePath = PropertiesUtil.getStringProperty(bundle, "healthData.basePath", "input/health/");
+
+        diseaseLookupTable = PropertiesUtil.getStringProperty(bundle, "disease.outcome.lookup", "disease_outcomes_lookup.csv");
+
+        avgSpeedFile = PropertiesUtil.getStringProperty(bundle, "avg.speed.file", "input/avgSpeeds.csv");
+
+        healthTransitionData = PropertiesUtil.getStringProperty(bundle, "health.transition.data", "input/health/health_transitions_manchester.csv");
     }
 
 }

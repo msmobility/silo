@@ -114,10 +114,10 @@ public class DataBuilderHealth {
         String schoolsFile = properties.main.baseDirectory + properties.schoolData.schoolsFileName + "_" + year + ".csv";
         ssReader.readData(schoolsFile);
 
-        dataContainer.setAvgSpeeds(new DefaultSpeedReader().readData(properties.main.baseDirectory + "input/avgSpeeds.csv"));
-        dataContainer.setHealthTransitionData(new HealthTransitionTableReader().readData(properties.main.baseDirectory + "input/health/health_transitions_melbourne_reduced.csv"));
+        dataContainer.setAvgSpeeds(new DefaultSpeedReader().readData(properties.main.baseDirectory + properties.healthData.avgSpeedFile));
+        dataContainer.setHealthTransitionData(new HealthTransitionTableReader().readData(properties.main.baseDirectory + properties.healthData.healthTransitionData));
         DoseResponseLookupReader doseResponseReader = new DoseResponseLookupReader();
-        doseResponseReader.readData(properties.main.baseDirectory + "input/health/extdata/");
+        doseResponseReader.readData(properties.main.baseDirectory + properties.healthData.basePath);
         dataContainer.setDoseResponseData(doseResponseReader.getDoseResponseData());
 
         MicroDataScaler microDataScaler = new MicroDataScaler(dataContainer, properties);

@@ -34,16 +34,26 @@ public class RelativeRisksDisease {
         return relativeRisksByDisease;
     }
 
-    public static EnumMap<Diseases, Float> calculateForAP(PersonHealth personMRC, DataContainerHealth dataContainer) {
-        //TODO: check with Ali, how to combine pm25 and No2 for rr? PM25
-        //TODO: Belen check if AP is daily, weekly or annual measure?
-        //AP exposure no cap
+    public static EnumMap<Diseases, Float> calculateForPM25(PersonHealth personMRC, DataContainerHealth dataContainer) {
         double total_pm25 = personMRC.getWeeklyExposureByPollutantNormalised("pm2.5");
         EnumMap<Diseases, Float> relativeRisksByDisease = new EnumMap<>(Diseases.class);
 
-        for(Diseases diseases : dataContainer.getDoseResponseData().get(HealthExposures.AIR_POLLUTION).keySet()){
-            double rr = LinearInterpolation.interpolate(dataContainer.getDoseResponseData().get(HealthExposures.AIR_POLLUTION).get(diseases).getColumnAsDouble("dose"),
-                    dataContainer.getDoseResponseData().get(HealthExposures.AIR_POLLUTION).get(diseases).getColumnAsDouble("RR"), total_pm25);
+        for(Diseases diseases : dataContainer.getDoseResponseData().get(HealthExposures.AIR_POLLUTION_PM25).keySet()){
+            double rr = LinearInterpolation.interpolate(dataContainer.getDoseResponseData().get(HealthExposures.AIR_POLLUTION_PM25).get(diseases).getColumnAsDouble("dose"),
+                    dataContainer.getDoseResponseData().get(HealthExposures.AIR_POLLUTION_PM25).get(diseases).getColumnAsDouble("RR"), total_pm25);
+            relativeRisksByDisease.put(diseases, (float) rr);
+        }
+
+        return relativeRisksByDisease;
+    }
+
+    public static EnumMap<Diseases, Float> calculateForNO2(PersonHealth personMRC, DataContainerHealth dataContainer) {
+        double total_pm25 = personMRC.getWeeklyExposureByPollutantNormalised("no2");
+        EnumMap<Diseases, Float> relativeRisksByDisease = new EnumMap<>(Diseases.class);
+
+        for(Diseases diseases : dataContainer.getDoseResponseData().get(HealthExposures.AIR_POLLUTION_NO2).keySet()){
+            double rr = LinearInterpolation.interpolate(dataContainer.getDoseResponseData().get(HealthExposures.AIR_POLLUTION_NO2).get(diseases).getColumnAsDouble("dose"),
+                    dataContainer.getDoseResponseData().get(HealthExposures.AIR_POLLUTION_NO2).get(diseases).getColumnAsDouble("RR"), total_pm25);
             relativeRisksByDisease.put(diseases, (float) rr);
         }
 

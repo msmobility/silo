@@ -51,6 +51,8 @@ public class HealthPersonWriter implements PersonWriter {
         pwp.print(",");
         pwp.print("mmetHr_cycle");
         pwp.print(",");
+        pwp.print("mmetHr_otherSport");
+        pwp.print(",");
         pwp.print("exposure_pm25");
         pwp.print(",");
         pwp.print("exposure_no2");
@@ -106,6 +108,8 @@ public class HealthPersonWriter implements PersonWriter {
             pwp.print(((PersonHealthMCR)pp).getWeeklyMarginalMetHours(Mode.walk));
             pwp.print(",");
             pwp.print(((PersonHealthMCR)pp).getWeeklyMarginalMetHours(Mode.bicycle));
+            pwp.print(",");
+            pwp.print(((PersonHealthMCR)pp).getWeeklyMarginalMetHoursSport());
             pwp.print(",");
             pwp.print((((PersonHealthMCR) pp).getWeeklyExposureByPollutant("pm2.5")));
             pwp.print(",");
