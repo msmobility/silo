@@ -39,7 +39,7 @@ import routing.BicycleConfigGroup;
 import routing.WalkConfigGroup;
 import routing.travelDisutility.BikeTravelDisutilityPreCalc;
 import routing.travelDisutility.WalkTravelDisutilityPreCalc;
-import routing.travelTime.BicycleTravelTime;
+import routing.travelTime.BicycleTravelTimeFast;
 import routing.travelTime.WalkTravelTime;
 import routing.travelTime.speed.BicycleLinkSpeedCalculatorDefaultImpl;
 
@@ -210,7 +210,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
                 BicycleConfigGroup bicycleConfigGroup = new BicycleConfigGroup();
                 fillConfigWithBikeStandardValue(bicycleConfigGroup);
-                travelTime = new BicycleTravelTime(new BicycleLinkSpeedCalculatorDefaultImpl(bicycleConfigGroup));
+                travelTime = new BicycleTravelTimeFast(new BicycleLinkSpeedCalculatorDefaultImpl(bicycleConfigGroup), scenario.getNetwork(),null);
                 travelDisutility = new BikeTravelDisutilityPreCalc(scenario.getNetwork(),purposes,bicycleConfigGroup,travelTime);
                 break;
             default:

@@ -3,7 +3,6 @@ package de.tum.bgu.msm.health.airPollutant.dispersion;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.tum.bgu.msm.data.Zone;
 import org.apache.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
@@ -11,7 +10,6 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
-import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -39,10 +37,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  * This class may be used to collect emission events of some events file and assign those emissions to a grid structure.
  * Additionally those emissions are divided into time bins
  */
-public class EmissionGridAnalyzerMSM {
+public class EmissionSpatialDispersion {
 
     private static final Double minimumThreshold = 1e-6;
-    private static final Logger logger = Logger.getLogger(EmissionGridAnalyzerMSM.class);
+    private static final Logger logger = Logger.getLogger(EmissionSpatialDispersion.class);
 
     private final double binSize;
     private final double smoothingRadius;
@@ -56,9 +54,9 @@ public class EmissionGridAnalyzerMSM {
     private final PreparedGeometry bounds;
     private Iterator<TimeBinMap.TimeBin<Map<Id<Link>, EmissionsByPollutant>>> timeBins;
 
-    private EmissionGridAnalyzerMSM(final double binSize, final double gridSize, final double smoothingRadius,
-                                    final double countScaleFactor, final GridType gridType, final Network network,
-                                    final PreparedGeometry bounds, final double startTime) {
+    private EmissionSpatialDispersion(final double binSize, final double gridSize, final double smoothingRadius,
+                                      final double countScaleFactor, final GridType gridType, final Network network,
+                                      final PreparedGeometry bounds, final double startTime) {
         this.binSize = binSize;
         this.network = network;
         this.gridType = gridType;
@@ -193,7 +191,7 @@ public class EmissionGridAnalyzerMSM {
     }
 
     /**
-     * Works like {@link EmissionGridAnalyzerMSM#process(String)} but writes the
+     * Works like {@link EmissionSpatialDispersion#process(String)} but writes the
      * result into a Json-String
      *
      * @param eventsFile Path to the events file e.g. '/path/to/events.xml.gz
@@ -211,7 +209,7 @@ public class EmissionGridAnalyzerMSM {
     }
 
     /**
-     * Works like {@link EmissionGridAnalyzerMSM#process(String)} but writes the
+     * Works like {@link EmissionSpatialDispersion#process(String)} but writes the
      * result into a JSON-File
      *
      * @param eventsFile Path to the events file e.g. '/path/to/events.xml.gz
@@ -348,7 +346,16 @@ public class EmissionGridAnalyzerMSM {
 
         for (var entry : emissions.getEmissions().entrySet()) {
             var emissionValue = entry.getValue() * weight * countScaleFactor;
-            cell.getValue().merge(entry.getKey(), (float) emissionValue, Float::sum);
+            //the unit of emissionValue is [g]
+            //Convert [g] to [ug/m3] by applying grid area and vertical dispersion parameter
+            //Simple solution for now emissionValue/grid area * 10^6 * vertical dispersion factor.
+            // We assume vertical dispersion parameter as 100 m and use gaussian smoothing.
+            //and use ground floor concentration for exposure (height=0)
+            //TODO: apply real 3D dispersion plume function
+
+            var concentration = emissionValue / (gridSize * gridSize) * 10e6 * 0.01128379;
+            //the unit of emissionValue is [ug/m3]
+            cell.getValue().merge(entry.getKey(), (float) concentration, Float::sum);
         }
     }
 
@@ -398,7 +405,7 @@ public class EmissionGridAnalyzerMSM {
     public enum GridType {Square, Hexagonal}
 
     /**
-     * Builder to configure a new {@link EmissionGridAnalyzerMSM} instance
+     * Builder to configure a new {@link EmissionSpatialDispersion} instance
      */
     public static class Builder {
         private double binSize;
@@ -493,13 +500,13 @@ public class EmissionGridAnalyzerMSM {
         }
 
         /**
-         * Builds a new Instance of {@link EmissionGridAnalyzerMSM}
+         * Builds a new Instance of {@link EmissionSpatialDispersion}
          *
-         * @return {@link EmissionGridAnalyzerMSM}
+         * @return {@link EmissionSpatialDispersion}
          * @throws IllegalArgumentException if binSize, gridSize, smoothingRadius are <= 0, and if
          *                                            network was not set
          */
-        public EmissionGridAnalyzerMSM build() {
+        public EmissionSpatialDispersion build() {
 
             if (!isValidParameters())
                 throw new IllegalArgumentException("binSize, gridSize, smoothingRadius must be set and greater 0, Also network must be set");
@@ -509,7 +516,7 @@ public class EmissionGridAnalyzerMSM {
 
             if (bounds == null)
                 bounds = new PreparedGeometryFactory().create(createBounds());
-            return new EmissionGridAnalyzerMSM(binSize, gridSize, smoothingRadius, countScaleFactor, gridType, network, bounds,startTime);
+            return new EmissionSpatialDispersion(binSize, gridSize, smoothingRadius, countScaleFactor, gridType, network, bounds,startTime);
         }
 
         private boolean isValidParameters() {

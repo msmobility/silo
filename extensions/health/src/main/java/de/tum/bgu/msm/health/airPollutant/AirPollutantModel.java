@@ -7,7 +7,7 @@ import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.health.airPollutant.dispersion.Grid;
 import de.tum.bgu.msm.health.airPollutant.emission.CreateVehicles;
 import de.tum.bgu.msm.health.data.DataContainerHealth;
-import de.tum.bgu.msm.health.airPollutant.dispersion.EmissionGridAnalyzerMSM;
+import de.tum.bgu.msm.health.airPollutant.dispersion.EmissionSpatialDispersion;
 import de.tum.bgu.msm.health.io.LinkInfoWriter;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
@@ -170,13 +170,13 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
 
         System.out.println("current memory usage: " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
 
-        EmissionGridAnalyzerMSM gridAnalyzer =	new	EmissionGridAnalyzerMSM.Builder()
+        EmissionSpatialDispersion gridAnalyzer =	new	EmissionSpatialDispersion.Builder()
                 .withNetwork(scenario.getNetwork())
                 .withTimeBinSize(EMISSION_TIME_BIN_SIZE)
                 .withGridSize(EMISSION_GRID_SIZE)
                 .withSmoothingRadius(EMISSION_SMOOTH_RADIUS)
                 .withCountScaleFactor(1./scalingFactor)
-                .withGridType(EmissionGridAnalyzerMSM.GridType.Square)
+                .withGridType(EmissionSpatialDispersion.GridType.Square)
                 .build();
         System.out.println("current memory usage: " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
 
@@ -184,15 +184,15 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
         System.out.println("current memory usage: " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
 
         while(gridAnalyzer.hasNextTimeBin()){
-            //assembleLinkExposure(year, day, gridAnalyzer.processNextTimeBin());
+            //assembleLinkConcentration(year, day, gridAnalyzer.processNextTimeBin());
             //TODO: can be improve, create all receiver points first then feed into analyzer, not differentiate link or zone points
-            assembleLinkZoneExposure(year, day, gridAnalyzer.processNextTimeBin(dataContainer.getGeoData().getZones().values().stream().map(Zone ::getPopCentroidCoord).collect(Collectors.toList())));
+            assembleLinkZoneConcentration(year, day, gridAnalyzer.processNextTimeBin(dataContainer.getGeoData().getZones().values().stream().map(Zone ::getPopCentroidCoord).collect(Collectors.toList())));
         }
         System.out.println("current memory usage: " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
 
     }
 
-    private void assembleLinkExposure(int year, Day day, Tuple<Double, Grid<Map<Pollutant, Float>>>  gridEmissionMap) {
+    private void assembleLinkConcentration(int year, Day day, Tuple<Double, Grid<Map<Pollutant, Float>>>  gridEmissionMap) {
         logger.warn("Updating link air pollutant exposure for year: " + year + "| day of week: " + day + "| time of day: " + gridEmissionMap.getFirst() + ".");
         int startTime = (int) Math.floor(gridEmissionMap.getFirst());
         System.out.println("current memory usage: " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
@@ -242,7 +242,7 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
         logger.warn("Updating link air pollutant exposure for year: " + year + "| day of week: " + day + " finished.");
     }
 
-    private void assembleLinkZoneExposure(int year, Day day, Tuple<Double, Grid<Map<Pollutant, Float>>>  gridEmissionMap) {
+    private void assembleLinkZoneConcentration(int year, Day day, Tuple<Double, Grid<Map<Pollutant, Float>>>  gridEmissionMap) {
         logger.warn("Updating link air pollutant exposure for year: " + year + "| day of week: " + day + "| time of day: " + gridEmissionMap.getFirst() + ".");
         int startTime = (int) Math.floor(gridEmissionMap.getFirst());
         System.out.println("current memory usage: " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));

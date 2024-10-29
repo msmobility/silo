@@ -23,8 +23,8 @@ public class LinkInfoWriter {
     private final static Logger logger = Logger.getLogger(LinkInfoWriter.class);
 
     public void writeData(DataContainerHealth dataContainer, String outputDirectory, Day day){
-        writeLinkExposure(dataContainer,outputDirectory + "linkExposure_" + day + ".csv");
-        writeZoneExposure(dataContainer,outputDirectory + "zoneExposure_" + day + ".csv");
+        writeLinkExposure(dataContainer,outputDirectory + "linkConcentration_" + day + ".csv");
+        writeZoneExposure(dataContainer,outputDirectory + "zoneConcentration_" + day + ".csv");
     }
     private void writeLinkExposure(DataContainerHealth dataContainer, String path) {
         logger.info("  Writing link exposure health indicators file");
