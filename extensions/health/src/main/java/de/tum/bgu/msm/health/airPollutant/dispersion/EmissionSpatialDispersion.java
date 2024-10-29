@@ -353,7 +353,7 @@ public class EmissionSpatialDispersion {
             //and use ground floor concentration for exposure (height=0)
             //TODO: apply real 3D dispersion plume function
 
-            var concentration = emissionValue / (gridSize * gridSize) * 10e6 * 0.01128379;
+            var concentration = emissionValue / (gridSize * gridSize) * 1e6 * 0.01128379;
             //the unit of emissionValue is [ug/m3]
             cell.getValue().merge(entry.getKey(), (float) concentration, Float::sum);
         }
