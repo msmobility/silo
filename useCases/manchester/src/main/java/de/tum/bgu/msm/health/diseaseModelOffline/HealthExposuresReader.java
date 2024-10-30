@@ -34,7 +34,7 @@ public class HealthExposuresReader {
             int posId = SiloUtil.findPositionInArray("id", header);
             int posMmetWalk = SiloUtil.findPositionInArray("mmetHr_walk", header);
             int posMmetCycle = SiloUtil.findPositionInArray("mmetHr_cycle", header);
-            int posMmetSport = SiloUtil.findPositionInArray("mmetHr_sport", header);
+            int posMmetSport = SiloUtil.findPositionInArray("mmetHr_otherSport", header);
             int posPM2_5 = SiloUtil.findPositionInArray("exposure_normalised_pm25", header);
             int posNO2 = SiloUtil.findPositionInArray("exposure_normalised_no2", header);
 
