@@ -28,6 +28,7 @@ public class HealthModelProperties {
     public final String avgSpeedFile;
     public final String healthTransitionData;
     public final Boolean adjustByRelativeRisk;
+    public final String baseExposureFile;
 
 
     public HealthModelProperties(ResourceBundle bundle) {
@@ -66,6 +67,8 @@ public class HealthModelProperties {
         healthTransitionData = PropertiesUtil.getStringProperty(bundle, "health.transition.data", "input/health/health_transitions_manchester.csv");
 
         adjustByRelativeRisk = PropertiesUtil.getBooleanProperty(bundle, "adjust.transition.byRelativeRisk", false);
+
+        baseExposureFile = PropertiesUtil.getStringProperty(bundle, "base.exposure.file", "input/health/pp_health_2021_base.csv");
     }
 
 }

@@ -38,7 +38,7 @@ public class RunHealthDiseaseOffline {
 
         //Read in person microdata with exposures
         HealthExposuresReader healthExposuresReader = new HealthExposuresReader();
-        healthExposuresReader.readData(dataContainer,properties.main.baseDirectory + "input/health/pp_health_2021_base_withSport.csv");
+        healthExposuresReader.readData(dataContainer,properties.healthData.baseExposureFile);
 
         model.runModel();
 
