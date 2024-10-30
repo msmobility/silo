@@ -8,7 +8,7 @@ public enum Diseases {
     bladder_cancer,
     breast_cancer,
     colon_cancer,
-    COPD,
+    copd,
     coronary_heart_disease,
     depression,
     diabetes,

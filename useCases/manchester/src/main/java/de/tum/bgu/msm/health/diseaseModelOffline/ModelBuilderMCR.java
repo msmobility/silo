@@ -19,7 +19,7 @@ public class ModelBuilderMCR {
 
         BirthdayModel birthdayModel = new BirthdayModelImpl(dataContainer, properties, SiloUtil.provideNewRandom());
 
-        DeathModel deathModel = new DeathModelMCR(dataContainer, properties, new DeathStrategyMCR(dataContainer, false), SiloUtil.provideNewRandom());
+        DeathModel deathModel = new DeathModelMCR(dataContainer, properties, new DeathStrategyMCR(dataContainer, properties.healthData.adjustByRelativeRisk), SiloUtil.provideNewRandom());
 
         final ModelContainer modelContainer = new ModelContainer(
                 null, birthdayModel,

@@ -38,7 +38,7 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
     public void endYear(int year) {
         logger.warn("Health disease model end year:" + year);
         calculateRelativeRisk();
-        updateDiseaseProbability(Boolean.FALSE);
+        updateDiseaseProbability(properties.healthData.adjustByRelativeRisk);
         updateHealthDiseaseStates(year);
     }
 
@@ -90,6 +90,11 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
 
             for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
 
+                //age under 18 no disease prob applied
+                if(person.getAge() < 18){
+                    continue;
+                }
+
                 //TODO: more comprehensive validity check of disease for certain gender/age
                 if(diseases.equals(Diseases.breast_cancer) & person.getGender().equals(Gender.MALE)){
                     continue;
@@ -99,17 +104,19 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
                     continue;
                 }
 
-                double sickProb = 0.;
-                if(adjustByRelativeRisk){
-
-                }else{
-                    if (((DataContainerHealth) dataContainer).getHealthTransitionData().get(diseases).get(person.getGender())==null){
-                        logger.warn("No health transition data for disease: " + diseases.name() + "for gender " + person.getGender().name());
-                    }
-                    //TODO: check with Belen, age cap 95 or 100?
-                    //the age cap should be 100 for all diseases and all-cause-mortality
-                    sickProb = ((DataContainerHealth) dataContainer).getHealthTransitionData().get(diseases).get(person.getGender()).getOrDefault(Math.min(person.getAge(), 95), 0.);
+                if (((DataContainerHealth) dataContainer).getHealthTransitionData().get(diseases).get(person.getGender())==null){
+                    logger.warn("No health transition data for disease: " + diseases.name() + "for gender " + person.getGender().name());
                 }
+
+                //the age cap should be 100 for all diseases and all-cause-mortality
+                double sickProb = ((DataContainerHealth) dataContainer).getHealthTransitionData().get(diseases).get(person.getGender()).getOrDefault(Math.min(person.getAge(), 100), 0.);
+
+                if(adjustByRelativeRisk){
+                    for(HealthExposures exposures : HealthExposures.values()){
+                        sickProb *= ((PersonHealth) person).getRelativeRisksByDisease().get(exposures).getOrDefault(diseases, 1.f);
+                    }
+                }
+
                 ((PersonHealth)person).getCurrentDiseaseProb().put(diseases, (float) sickProb);
             }
         }

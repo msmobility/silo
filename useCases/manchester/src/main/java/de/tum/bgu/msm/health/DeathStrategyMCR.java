@@ -22,26 +22,26 @@ public class DeathStrategyMCR implements DeathStrategy {
         final int personAge = Math.min(person.getAge(), 100);
         Gender personSex = person.getGender();
 
-        //TODO: check with Ali
-        double allCauseRR = 1. ;
-
-        for(HealthExposures healthExposures : ((PersonHealth)person).getRelativeRisksByDisease().keySet()){
-            allCauseRR = allCauseRR * ((PersonHealth)person).getRelativeRisksByDisease().get(healthExposures).get(Diseases.all_cause_mortality);
-        };
-        //PIF = (baseRR - scenarioRR)/baseRR  (Note. baseRR = rr_pa * rr_ap)
-        //sickProb = sickProb * PIF
-
-        //TODO: how to integrate injury into all cause mortality
-        //double fatalAccidentRisk = ((PersonHealth)person).getWeeklyAccidentRisk("fatality");
-
         if (personAge < 0){
             throw new RuntimeException("Undefined negative person age!"+personAge);
         }
 
         double alpha = dataContainer.getHealthTransitionData().get(Diseases.all_cause_mortality).get(personSex).get(personAge);
 
+        //no rr adjustment for age under 18
+        if(personAge < 18){
+            return alpha;
+        }
+
+        //cap age at 100, over 100 all cause mortality prob = 1
+        if (personAge >= 100){
+            return 1.;
+        }
+
         if(adjustByRelativeRisk){
-            alpha = alpha * allCauseRR;
+            for(HealthExposures healthExposures : ((PersonHealth)person).getRelativeRisksByDisease().keySet()){
+                alpha *=  ((PersonHealth)person).getRelativeRisksByDisease().get(healthExposures).get(Diseases.all_cause_mortality);
+            }
         }
 
         return alpha;

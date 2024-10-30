@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.health;
+package de.tum.bgu.msm.scenarios.healthMuc;
 
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Person;
