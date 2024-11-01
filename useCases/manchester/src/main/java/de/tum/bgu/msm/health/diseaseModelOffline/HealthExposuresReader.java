@@ -35,8 +35,9 @@ public class HealthExposuresReader {
             int posMmetWalk = SiloUtil.findPositionInArray("mmetHr_walk", header);
             int posMmetCycle = SiloUtil.findPositionInArray("mmetHr_cycle", header);
             int posMmetSport = SiloUtil.findPositionInArray("mmetHr_otherSport", header);
-            int posPM2_5 = SiloUtil.findPositionInArray("exposure_normalised_pm25", header);
-            int posNO2 = SiloUtil.findPositionInArray("exposure_normalised_no2", header);
+            //read in the non-converted exposures in [g], the exposure normalization will be done in code
+            int posPM2_5 = SiloUtil.findPositionInArray("exposure_pm25", header);
+            int posNO2 = SiloUtil.findPositionInArray("exposure_no2", header);
 
             // read line
             while ((recString = in.readLine()) != null) {

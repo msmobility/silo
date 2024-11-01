@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.health;
 
 import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.ZoneMCR;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.health.data.*;
@@ -23,9 +24,12 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
 
     @Override
     public void setup() {
-        //set up base rr = 1. and assume everyone is healthy at beginning. year 0 is the warm-up
         logger.warn("Set up health model relative risk and disease state");
-        initializeRelativeRisk();
+        if (properties.healthData.baseExposureFile == null) {
+            initializeRelativeRisk();
+        }else {
+            calculateRelativeRisk();
+        }
         initializeHealthDiseaseStates();
     }
 
@@ -37,7 +41,9 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
     @Override
     public void endYear(int year) {
         logger.warn("Health disease model end year:" + year);
-        calculateRelativeRisk();
+        if(properties.healthData.exposureModelYears.contains(year)) {
+            calculateRelativeRisk();
+        }
         updateDiseaseProbability(properties.healthData.adjustByRelativeRisk);
         updateHealthDiseaseStates(year);
     }
@@ -47,6 +53,7 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
     }
 
     private void initializeRelativeRisk() {
+        //set up base rr = 1. and assume everyone is healthy at beginning. year 0 is the warm-up
         for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
             for (HealthExposures exposures : HealthExposures.values()){
                 EnumMap<Diseases, Float> rr = new EnumMap<>(Diseases.class);
@@ -96,20 +103,20 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
                 }
 
                 //TODO: more comprehensive validity check of disease for certain gender/age
-                if(diseases.equals(Diseases.breast_cancer) & person.getGender().equals(Gender.MALE)){
-                    continue;
-                }
-
                 if(diseases.equals(Diseases.endometrial_cancer) & person.getGender().equals(Gender.MALE)){
                     continue;
                 }
 
-                if (((DataContainerHealth) dataContainer).getHealthTransitionData().get(diseases).get(person.getGender())==null){
-                    logger.warn("No health transition data for disease: " + diseases.name() + "for gender " + person.getGender().name());
+                int zoneId = dataContainer.getRealEstateDataManager().getDwelling(person.getHousehold().getDwellingId()).getZoneId();
+                String location = ((ZoneMCR)dataContainer.getGeoData().getZones().get(zoneId)).getLsoaCode();
+                String compositeKey = ((DataContainerHealth) dataContainer).createTransitionLookupIndex(Math.min(person.getAge(), 100), person.getGender(), location);
+                if (((DataContainerHealth) dataContainer).getHealthTransitionData().get(diseases).get(compositeKey)==null){
+                    logger.warn("No health transition data for disease: " + diseases + "| " + compositeKey);
+                    continue;
                 }
 
                 //the age cap should be 100 for all diseases and all-cause-mortality
-                double sickProb = ((DataContainerHealth) dataContainer).getHealthTransitionData().get(diseases).get(person.getGender()).getOrDefault(Math.min(person.getAge(), 100), 0.);
+                double sickProb = ((DataContainerHealth) dataContainer).getHealthTransitionData().get(diseases).get(compositeKey);
 
                 if(adjustByRelativeRisk){
                     for(HealthExposures exposures : HealthExposures.values()){

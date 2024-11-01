@@ -19,7 +19,9 @@ import java.util.Map;
 import java.util.Set;
 
 public interface DataContainerHealth extends DataContainer {
-    void writePersonHealthData(int year);
+    void writePersonExposureData(int year);
+
+    void writePersonRelativeRiskData(int year);
 
     Map<Id<Link>, LinkInfo> getLinkInfo();
 
@@ -37,9 +39,9 @@ public interface DataContainerHealth extends DataContainer {
 
     void setAvgSpeeds(EnumMap<Mode, EnumMap<MitoGender, Map<Integer, Double>>> avgSpeeds);
 
-    EnumMap<Diseases, EnumMap<Gender, Map<Integer, Double>>> getHealthTransitionData();
+    EnumMap<Diseases, Map<String, Double>> getHealthTransitionData();
 
-    void setHealthTransitionData(EnumMap<Diseases, EnumMap<Gender, Map<Integer, Double>>> healthTransitionData);
+    void setHealthTransitionData(EnumMap<Diseases, Map<String, Double>> healthTransitionData);
 
     EnumMap<HealthExposures, EnumMap<Diseases, TableDataSet>> getDoseResponseData();
 
@@ -48,4 +50,6 @@ public interface DataContainerHealth extends DataContainer {
     Map<Integer, Map<Integer, List<String>>> getHealthDiseaseTrackerRemovedPerson();
 
     void reset();
+
+    String createTransitionLookupIndex(int age, Gender gender, String location);
 }

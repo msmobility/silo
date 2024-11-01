@@ -3,6 +3,7 @@ package de.tum.bgu.msm.properties.modules;
 import de.tum.bgu.msm.properties.PropertiesUtil;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
@@ -29,6 +30,7 @@ public class HealthModelProperties {
     public final String healthTransitionData;
     public final Boolean adjustByRelativeRisk;
     public final String baseExposureFile;
+    public final List<Integer> exposureModelYears;
 
 
     public HealthModelProperties(ResourceBundle bundle) {
@@ -68,7 +70,9 @@ public class HealthModelProperties {
 
         adjustByRelativeRisk = PropertiesUtil.getBooleanProperty(bundle, "adjust.transition.byRelativeRisk", false);
 
-        baseExposureFile = PropertiesUtil.getStringProperty(bundle, "base.exposure.file", "input/health/pp_health_2021_base.csv");
+        baseExposureFile = PropertiesUtil.getStringProperty(bundle, "base.exposure.file", null);
+
+        exposureModelYears = Arrays.stream((PropertiesUtil.getIntPropertyArray(bundle, "exposure.model.years", new int[]{2030,2040,2050}))).boxed().collect(Collectors.toList());
     }
 
 }

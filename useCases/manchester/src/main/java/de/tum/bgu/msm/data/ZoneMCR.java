@@ -7,6 +7,7 @@ public class ZoneMCR extends ZoneImpl {
 
     private final AreaTypes.RType areaType;
     private final Coordinate popCentroidCoord;
+    private String lsoaCode;
 
     public ZoneMCR(int id, float area, AreaTypes.RType areaType, Coordinate coordinate, Region region) {
 
@@ -21,5 +22,13 @@ public class ZoneMCR extends ZoneImpl {
 
     public Coordinate getPopCentroidCoord() {
         return popCentroidCoord;
+    }
+
+    public String getLsoaCode() {
+        return lsoaCode;
+    }
+
+    public void setLsoaCode(String lsoaCode) {
+        this.lsoaCode = lsoaCode;
     }
 }

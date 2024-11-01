@@ -35,9 +35,8 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     private Map<Id<Link>, LinkInfo> linkInfo = new HashMap<>();
     private Set<Pollutant> pollutantSet = new HashSet<>();
     private Map<Zone, Map<Pollutant, OpenIntFloatHashMap>> zoneExposure2Pollutant2TimeBin = new HashMap<>();
-
     private EnumMap<Mode, EnumMap<MitoGender,Map<Integer,Double>>> avgSpeeds;
-    private EnumMap<Diseases, EnumMap<Gender,Map<Integer,Double>>> healthTransitionData;
+    private EnumMap<Diseases, Map<String, Double>> healthTransitionData;
     private EnumMap<HealthExposures, EnumMap<Diseases, TableDataSet>> doseResponseData;
     private Map<Integer, Map<Integer, List<String>>> healthDiseaseTrackerRemovedPerson = new HashMap<>();
 
@@ -100,13 +99,19 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     @Override
     public void endYear(int year) {
         delegate.endYear(year);
+        if (year == properties.main.startYear || properties.healthData.exposureModelYears.contains(year)) {
+            writePersonExposureData(year);
+            writePersonRelativeRiskData(year);
+        }
+        writePersonDiseaseTrackData(year);
     }
 
     @Override
     public void endSimulation() {
         delegate.endSimulation();
-        writePersonHealthData(properties.main.endYear);
-        writePersonDiseaseTrackData(properties.main.endYear);
+        //writePersonExposureData(properties.main.endYear);
+        //writePersonRelativeRiskData(properties.main.endYear);
+        //writePersonDiseaseTrackData(properties.main.endYear);
     }
 
     private void writePersonDiseaseTrackData(int year) {
@@ -119,15 +124,26 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
         new HealthDiseaseTrackerWriter(this).writeHealthDiseaseTracking(filepp);
     }
 
-    public void writePersonHealthData(int year) {
+    public void writePersonExposureData(int year) {
         final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/";
         String filepp = outputDirectory
                 + properties.householdData.personFinalFileName
-                + "_health_"
+                + "_exposure_"
                 + year
                 + ".csv";
-        new HealthPersonWriter(this).writePersons(filepp);
+        new HealthPersonWriter(this).writePersonExposure(filepp);
     }
+
+    public void writePersonRelativeRiskData(int year) {
+        final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/";
+        String filepp = outputDirectory
+                + properties.householdData.personFinalFileName
+                + "_rr_"
+                + year
+                + ".csv";
+        new HealthPersonWriter(this).writePersonRelativeRisk(filepp);
+    }
+
     @Override
     public Map<Id<Link>, LinkInfo> getLinkInfo() {
         return linkInfo;
@@ -158,14 +174,6 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
         this.avgSpeeds = avgSpeeds;
     }
 
-    public EnumMap<Diseases, EnumMap<Gender, Map<Integer, Double>>> getHealthTransitionData() {
-        return healthTransitionData;
-    }
-
-    public void setHealthTransitionData(EnumMap<Diseases, EnumMap<Gender, Map<Integer, Double>>> healthTransitionData) {
-        this.healthTransitionData = healthTransitionData;
-    }
-
     public EnumMap<HealthExposures, EnumMap<Diseases, TableDataSet>> getDoseResponseData() {
         return doseResponseData;
     }
@@ -190,5 +198,21 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
 
     public void setZoneExposure2Pollutant2TimeBin(Map<Zone, Map<Pollutant, OpenIntFloatHashMap>> zoneExposure2Pollutant2TimeBin) {
         this.zoneExposure2Pollutant2TimeBin = zoneExposure2Pollutant2TimeBin;
+    }
+
+    @Override
+    public EnumMap<Diseases, Map<String, Double>> getHealthTransitionData() {
+        return healthTransitionData;
+    }
+    @Override
+    public void setHealthTransitionData(EnumMap<Diseases, Map<String, Double>> healthTransitionData) {
+        this.healthTransitionData = healthTransitionData;
+    }
+
+    @Override
+    public String createTransitionLookupIndex(int age, Gender gender, String location) {
+        StringBuilder key = new StringBuilder();
+        key.append(age).append("|").append(gender.name().toLowerCase()).append("|").append(location);
+        return key.toString();
     }
 }

@@ -1,7 +1,9 @@
 package de.tum.bgu.msm.health;
 
+import de.tum.bgu.msm.data.ZoneMCR;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.health.data.PersonHealth;
 import de.tum.bgu.msm.health.disease.Diseases;
 import de.tum.bgu.msm.health.disease.HealthExposures;
@@ -26,16 +28,20 @@ public class DeathStrategyMCR implements DeathStrategy {
             throw new RuntimeException("Undefined negative person age!"+personAge);
         }
 
-        double alpha = dataContainer.getHealthTransitionData().get(Diseases.all_cause_mortality).get(personSex).get(personAge);
+        //cap age at 100, over 100 all cause mortality prob = 1
+        if (personAge >= 100){
+            return 1.;
+        }
+
+        int zoneId = dataContainer.getRealEstateDataManager().getDwelling(person.getHousehold().getDwellingId()).getZoneId();
+        String location = ((ZoneMCR)dataContainer.getGeoData().getZones().get(zoneId)).getLsoaCode();
+        String compositeKey = ((DataContainerHealth) dataContainer).createTransitionLookupIndex(Math.min(person.getAge(), 100), person.getGender(), location);
+
+        double alpha = dataContainer.getHealthTransitionData().get(Diseases.all_cause_mortality).get(compositeKey);
 
         //no rr adjustment for age under 18
         if(personAge < 18){
             return alpha;
-        }
-
-        //cap age at 100, over 100 all cause mortality prob = 1
-        if (personAge >= 100){
-            return 1.;
         }
 
         if(adjustByRelativeRisk){

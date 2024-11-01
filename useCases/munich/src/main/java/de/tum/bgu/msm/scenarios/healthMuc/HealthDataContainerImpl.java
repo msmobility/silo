@@ -113,6 +113,17 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
                 + ".csv";
         new HealthPersonWriter(this).writePersons(filepp);
     }
+
+    @Override
+    public void writePersonExposureData(int year) {
+
+    }
+
+    @Override
+    public void writePersonRelativeRiskData(int year) {
+
+    }
+
     @Override
     public Map<Id<Link>, LinkInfo> getLinkInfo() {
         return linkInfo;
@@ -154,12 +165,12 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     }
 
     @Override
-    public EnumMap<Diseases, EnumMap<Gender, Map<Integer, Double>>> getHealthTransitionData() {
+    public EnumMap<Diseases, Map<String, Double>>getHealthTransitionData() {
         return null;
     }
 
     @Override
-    public void setHealthTransitionData(EnumMap<Diseases, EnumMap<Gender, Map<Integer, Double>>> healthTransitionData) {
+    public void setHealthTransitionData(EnumMap<Diseases, Map<String, Double>> healthTransitionData) {
 
     }
 
@@ -181,5 +192,10 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     @Override
     public void reset(){
         linkInfo.clear();
+    }
+
+    @Override
+    public String createTransitionLookupIndex(int age, Gender gender, String location) {
+        return "";
     }
 }
