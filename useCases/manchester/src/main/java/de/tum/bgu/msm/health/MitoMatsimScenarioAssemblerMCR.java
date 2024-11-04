@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.mito;
+package de.tum.bgu.msm.health;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.DataSet;
@@ -7,8 +7,8 @@ import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.matsim.MatsimScenarioAssembler;
 import de.tum.bgu.msm.matsim.MatsimTravelTimesAndCosts;
+import de.tum.bgu.msm.mito.MitoDataConverter;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.resources.Resources;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.utils.TravelTimeUtil;
 import org.apache.log4j.Logger;
@@ -95,6 +95,17 @@ public class MitoMatsimScenarioAssemblerMCR implements MatsimScenarioAssembler {
         return scenarios;
     }
 
+    public void runMitoStandalone(int year) {
+
+        logger.info("  Running travel demand model MITO for the year " + year);
+
+        DataSet dataSet = convertData(year);
+
+        logger.info("  SILO data being sent to MITO");
+        MitoModelMCR mito = MitoModelMCR.initializeModelFromSilo(propertiesPath, dataSet, properties.main.scenarioName);
+        mito.setRandomNumberGenerator(SiloUtil.getRandomObject());
+        mito.run();
+    }
 
     public void setDemandSpecificConfigSettings(Config config) {
 

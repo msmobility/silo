@@ -77,15 +77,19 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
     @Override
     public void endYear(int year) {
-        logger.warn("Health model end year:" + year);
-        if(properties.main.startYear == year || ((year-properties.main.startYear)%properties.healthData.HEALTH_MODEL_INTERVAL == 0)) {
-
+        if(properties.healthData.exposureModelYears.contains(year)) {
+            logger.warn("Health model end year:" + year);
             TreeSet<Integer> sortedYears = new TreeSet<>(properties.transportModel.transportModelYears);
             latestMatsimYear = sortedYears.floor(year);
             latestMITOYear = year;
 
             Map<Integer, Trip> mitoTripsAll = new TripReaderMucHealth().readData(properties.main.baseDirectory + "scenOutput/"
                     + properties.main.scenarioName + "/" + latestMITOYear + "/microData/trips.csv");
+
+            //clear the health data from last exposure model year
+            for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
+                ((PersonHealth) person).resetHealthData();
+            }
 
             for(Day day : simulatedDays){
                 logger.warn("Health model setup for " + day);
@@ -112,10 +116,9 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
                             healthDataAssembler(latestMatsimYear, day, mode);
                             calculatePersonHealthExposures();
-                            final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName +"/";
+                            final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName +"/" + year+"/" ;
                             String filett = outputDirectory
-                                    + "healthIndicators_"
-                                    + year
+                                    + "healthIndicators"
                                     + "_" + day
                                     + "_" + mode
                                     + ".csv";
@@ -130,10 +133,11 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 ((DataContainerHealth)dataContainer).reset();
                 System.gc();
             }
+            //TODO: read zonal concentration info from CSV, use Thursday exposure as average?
+            replyLinkInfoFromFile(Day.thursday);
+            calculatePersonHealthExposuresAtHome();
         }
-        //TODO: read zonal concentration info from CSV, use Thursday exposure as average?
-        replyLinkInfoFromFile(Day.thursday);
-        calculatePersonHealthExposuresAtHome();
+
     }
 
     @Override

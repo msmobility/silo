@@ -53,4 +53,6 @@ public interface PersonHealth extends Person {
     Map<Integer, List<String>> getHealthDiseaseTracker();
 
     Map<Diseases, Float> getCurrentDiseaseProb();
+
+    void resetHealthData();
 }

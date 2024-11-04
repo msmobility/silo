@@ -88,7 +88,7 @@ public class SiloMatsimUtils {
 		LOG.info("Extent of facilities is: xmin = " + xmin + "; xmax = " + xmax + "; ymin = " + ymin + "; ymax = " + ymax);
 	}
 
-	static TravelTime getAnEmptyNetworkTravelTime(){
+	public static TravelTime getAnEmptyNetworkTravelTime(){
 		return new TravelTime() {
 			@Override
 			public double getLinkTravelTime(Link link, double time, Person person, Vehicle vehicle) {
@@ -97,7 +97,7 @@ public class SiloMatsimUtils {
 		};
 	}
 
-	static TravelDisutility getAnEmptyNetworkTravelDisutility(){
+	public static TravelDisutility getAnEmptyNetworkTravelDisutility(){
 		return new TravelDisutility() {
 			@Override
 			public double getLinkTravelDisutility(Link link, double time, Person person, Vehicle vehicle) {

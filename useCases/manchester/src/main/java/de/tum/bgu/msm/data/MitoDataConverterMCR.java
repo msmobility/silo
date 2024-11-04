@@ -142,6 +142,8 @@ public class MitoDataConverterMCR implements MitoDataConverter {
             case STUDENT:
                 if (person.getSchoolId() > 0) {
                     mitoOccupation = dataSet.getSchools().get(person.getSchoolId());
+                } else {
+                    logger.warn("person id " + person.getId()+" has no school." + " Age: " +person.getAge()+" Occupation: "+ person.getOccupation().name());
                 }
                 break;
         }

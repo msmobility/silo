@@ -16,12 +16,16 @@
  *   See also COPYING, LICENSE and WARRANTY file                           *
  *                                                                         *
  * *********************************************************************** */
-package de.tum.bgu.msm.matsim;
+package de.tum.bgu.msm.health;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Day;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.matsim.MatsimData;
+import de.tum.bgu.msm.matsim.MatsimScenarioAssembler;
+import de.tum.bgu.msm.matsim.MatsimTravelTimesAndCosts;
+import de.tum.bgu.msm.matsim.SiloMatsimUtils;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
@@ -107,7 +111,8 @@ public final class MatsimTransportModelMCRHealth implements TransportModel {
         internalTravelTimes.initialize(dataContainer.getGeoData(), matsimData);
 
         if (properties.transportModel.matsimInitialEventsFile == null) {
-            runTransportModel(properties.main.startYear);
+            //TODO: comment out for longitudinal simulation. need to make it more general
+            //runTransportModel(properties.main.startYear);
         } else {
             String eventsFile = properties.main.baseDirectory + properties.transportModel.matsimInitialEventsFile;
             replayFromEvents(eventsFile);
@@ -122,12 +127,31 @@ public final class MatsimTransportModelMCRHealth implements TransportModel {
     public void endYear(int year) {
         if (properties.transportModel.transportModelYears.contains(year + 1)) {
             runTransportModel(year + 1);
+        } else if (properties.healthData.exposureModelYears.contains(year)){
+            runMitoModel (year);
+
+            logger.warn( "Updating reginal travel times");
+            final TravelTimes mainTravelTimes = dataContainer.getTravelTimes();
+
+            if (mainTravelTimes instanceof SkimTravelTimes) {
+                ((SkimTravelTimes) mainTravelTimes).updateRegionalTravelTimes(dataContainer.getGeoData().getRegions().values(),
+                        dataContainer.getGeoData().getZones().values());
+            }
+            logger.warn( "finish update reginal travel times");
         }
     }
+
+
 
     @Override
     public void endSimulation() {
     }
+
+    private void runMitoModel(int year) {
+        logger.warn("Running MITO model only for year " + year + ".");
+        ((MitoMatsimScenarioAssemblerMCR)scenarioAssembler).runMitoStandalone(year);
+    }
+
 
     private void runTransportModel(int year) {
         logger.warn("Running MATSim transport model for year " + year + ".");
@@ -428,6 +452,7 @@ public final class MatsimTransportModelMCRHealth implements TransportModel {
      * @param eventsFile
      */
     private void replayFromEvents(String eventsFile) {
+        initialMatsimConfig.plansCalcRoute().setRoutingRandomness(0.);
         Scenario scenario = ScenarioUtils.loadScenario(initialMatsimConfig);
         TravelTime travelTime = TravelTimeUtils.createTravelTimesFromEvents(scenario.getNetwork(),scenario.getConfig(),eventsFile);
         TravelDisutility travelDisutility = ControlerDefaults.createDefaultTravelDisutilityFactory(scenario).createTravelDisutility(travelTime);

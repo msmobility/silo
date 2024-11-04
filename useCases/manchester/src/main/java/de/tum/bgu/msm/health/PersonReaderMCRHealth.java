@@ -4,6 +4,8 @@ import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.io.input.PersonReader;
+import de.tum.bgu.msm.schools.DataContainerWithSchools;
+import de.tum.bgu.msm.schools.SchoolDataImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.log4j.Logger;
 
@@ -43,6 +45,7 @@ public class PersonReaderMCRHealth implements PersonReader {
             int posIncome = SiloUtil.findPositionInArray("income",header);
             int posDriver = SiloUtil.findPositionInArray("driversLicense", header);
             int posSportMMet = SiloUtil.findPositionInArray("mmetHr_otherSport", header);
+            int posSchoolId = SiloUtil.findPositionInArray("schoolId", header);
 
             // read line
             while ((recString = in.readLine()) != null) {
@@ -64,6 +67,7 @@ public class PersonReaderMCRHealth implements PersonReader {
                 boolean license = Boolean.parseBoolean(lineElements[posDriver]);
                 //todo temporary assign driving license since this is not in the current SP version
                 //boolean license = MicroDataManager.obtainLicense(gender, age);
+
                 Household household = householdDataManager.getHouseholdFromId(hhid);
                 if(household == null) {
                     throw new RuntimeException("Person " + id + " refers to non existing household " + hhid + "!");
@@ -73,6 +77,9 @@ public class PersonReaderMCRHealth implements PersonReader {
                 householdDataManager.addPersonToHousehold(pp, household);
                 pp.setDriverLicense(license);
                 pp.setWeeklyMarginalMetHoursSport(Float.parseFloat(lineElements[posSportMMet]));
+
+                int schoolId = Integer.parseInt(lineElements[posSchoolId]);
+                pp.setSchoolId(schoolId);
 
                 if (id == SiloUtil.trackPp) {
                     SiloUtil.trackWriter.println("Read person with following attributes from " + path);

@@ -12,6 +12,7 @@ import de.tum.bgu.msm.data.household.*;
 import de.tum.bgu.msm.data.job.*;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.health.diseaseModelOffline.HealthExposuresReader;
 import de.tum.bgu.msm.health.io.DoseResponseLookupReader;
 import de.tum.bgu.msm.health.io.HealthTransitionTableReader;
 import de.tum.bgu.msm.io.DwellingReaderMCR;
@@ -119,6 +120,11 @@ public class DataBuilderHealth {
         DoseResponseLookupReader doseResponseReader = new DoseResponseLookupReader();
         doseResponseReader.readData(properties.main.baseDirectory + properties.healthData.basePath);
         dataContainer.setDoseResponseData(doseResponseReader.getDoseResponseData());
+
+        //Read in person microdata with exposures
+        if(properties.healthData.baseExposureFile != null){
+            new HealthExposuresReader().readData(dataContainer,properties.healthData.baseExposureFile);
+        }
 
         MicroDataScaler microDataScaler = new MicroDataScaler(dataContainer, properties);
         microDataScaler.scale();

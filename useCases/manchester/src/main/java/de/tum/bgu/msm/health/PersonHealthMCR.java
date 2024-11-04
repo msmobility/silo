@@ -259,4 +259,11 @@ public class PersonHealthMCR implements PersonWithSchool, PersonHealth {
         return healthDiseaseTracker;
     }
 
+    public void resetHealthData(){
+        weeklyTravelSeconds = 0.f;
+        weeklyActivityMinutes = 0.f;
+        weeklyMarginalMetHours.clear();
+        weeklyAccidentRisks.clear();
+        weeklyExposureByPollutant.clear();
+    }
 }

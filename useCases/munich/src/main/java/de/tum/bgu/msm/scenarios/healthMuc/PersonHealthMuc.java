@@ -256,4 +256,9 @@ public class PersonHealthMuc implements PersonWithSchool, PersonHealth {
     public Map<Diseases, Float> getCurrentDiseaseProb() {
         return Map.of();
     }
+
+    @Override
+    public void resetHealthData() {
+
+    }
 }
