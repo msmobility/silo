@@ -132,7 +132,7 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>de.tum.bgu.msm</groupId>
+            <groupId>de.tum.bgu.msm.mito</groupId>
             <artifactId>mitoCore</artifactId>
             <version>master-SNAPSHOT</version>
             <exclusions>
@@ -155,7 +155,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>de.tum.bgu.msm</groupId>
+            <groupId>de.tum.bgu.msm.mito</groupId>
             <artifactId>manchester</artifactId>
             <version>master-SNAPSHOT</version>
             <exclusions>
@@ -178,7 +178,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>de.tum.bgu.msm</groupId>
+            <groupId>de.tum.bgu.msm.mito</groupId>
             <artifactId>munich</artifactId>
             <version>master-SNAPSHOT</version>
             <exclusions>
@@ -201,7 +201,7 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>de.tum.bgu.msm</groupId>
+            <groupId>de.tum.bgu.msm.mito</groupId>
             <artifactId>mito7days</artifactId>
             <version>master-SNAPSHOT</version>
             <exclusions>

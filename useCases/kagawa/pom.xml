@@ -33,7 +33,7 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>de.tum.bgu.msm</groupId>
+            <groupId>de.tum.bgu.msm.mito</groupId>
             <artifactId>kagawa</artifactId>
             <version>master-SNAPSHOT</version>
             <exclusions>
