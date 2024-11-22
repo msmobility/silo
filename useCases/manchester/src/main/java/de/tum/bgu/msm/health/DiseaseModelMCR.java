@@ -164,7 +164,10 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
                 //for base year, year-1 is the initial state "healthy"
                 personHealth.getHealthDiseaseTracker().put(year, personHealth.getHealthDiseaseTracker().get(year-1));
             }else {
-                personHealth.getHealthDiseaseTracker().put(year, newDisease);
+                List<String> fullDisease = new ArrayList<>(personHealth.getHealthDiseaseTracker().get(year-1));
+                fullDisease.addAll(newDisease);
+                fullDisease.remove("healthy");
+                personHealth.getHealthDiseaseTracker().put(year, fullDisease);
             }
         }
     }

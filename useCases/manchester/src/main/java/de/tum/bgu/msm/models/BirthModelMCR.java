@@ -52,6 +52,7 @@ public class BirthModelMCR extends AbstractModel implements BirthModel {
     private final PersonFactory factory;
     private final BirthStrategy strategy;
     private final float localScaler = properties.demographics.localScaler;
+    private int currentYear;
 
 
     public BirthModelMCR(DataContainer dataContainer, PersonFactory factory,
@@ -70,6 +71,7 @@ public class BirthModelMCR extends AbstractModel implements BirthModel {
 
     @Override
     public Collection<BirthEvent> getEventsForCurrentYear(int year) {
+        currentYear = year;
         final List<BirthEvent> events = new ArrayList<>();
         for (Person per : dataContainer.getHouseholdDataManager().getPersons()) {
             final int id = per.getId();
@@ -141,6 +143,8 @@ public class BirthModelMCR extends AbstractModel implements BirthModel {
             }
             ((PersonHealthMCR)child).getRelativeRisksByDisease().put(exposures, rr);
         }
+
+        ((PersonHealthMCR) child).getHealthDiseaseTracker().put(currentYear, Arrays.asList("healthy"));
 
         householdDataManager.addPerson(child);
         householdDataManager.addPersonToHousehold(child, household);

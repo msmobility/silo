@@ -40,14 +40,26 @@ public class PhysicalActivity {
 
     private static double getWalkMet(double metres, double seconds, Link link) {
         // From ACSM's Guidelines for Exercise Testing and Prescription
-        double speed = metres / seconds;
         double gradient = link== null? GRADIENT : Gradient.getGradient(link);
+
+        // assume walking downhill = walking on flat
+        gradient = Math.max(0., gradient);
+
+        double speed = metres / seconds;
         return (6. * speed + 108. * speed *  gradient + 3.5) / 3.5;
     }
 
     private static double getCycleMet(double metres, double seconds, Link link) {
         // From Propensity to Cycle Tool
+
+
         double gradient = link== null? GRADIENT : Gradient.getGradient(link);
+
+        // assume cycling downhill = 1 (marginal met =0)
+        if (gradient < 0){
+            return 1;
+        }
+
         double speed = metres / seconds;
         double speedMoving = speed / (1-STATIONARY_TIME_PROPORTION);
         double speedAir = speedMoving;
