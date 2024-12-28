@@ -7,7 +7,8 @@ import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.health.data.PersonHealth;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.PrintWriter;
 import java.util.List;
@@ -15,7 +16,7 @@ import java.util.Map;
 
 public class HealthDiseaseTrackerWriter {
 
-    private final static Logger logger = Logger.getLogger(HealthDiseaseTrackerWriter.class);
+    private final static Logger logger = LogManager.getLogger(HealthDiseaseTrackerWriter.class);
     protected final DataContainer dataContainer;
     private final HouseholdDataManager householdData;
 

@@ -11,14 +11,15 @@ import de.tum.bgu.msm.mito.MitoDataConverter;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.utils.TravelTimeUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
+import org.matsim.core.config.groups.*;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ScenarioUtils;
@@ -30,7 +31,7 @@ import java.util.Objects;
 
 public class MitoMatsimScenarioAssemblerMCR implements MatsimScenarioAssembler {
 
-    private static final Logger logger = Logger.getLogger(MitoMatsimScenarioAssemblerMCR.class);
+    private static final Logger logger = LogManager.getLogger(MitoMatsimScenarioAssemblerMCR.class);
 
     private final String propertiesPath;
 
@@ -109,23 +110,23 @@ public class MitoMatsimScenarioAssemblerMCR implements MatsimScenarioAssembler {
 
     public void setDemandSpecificConfigSettings(Config config) {
 
-        PlanCalcScoreConfigGroup.ActivityParams homeActivity = new PlanCalcScoreConfigGroup.ActivityParams("home").setTypicalDuration(12 * 60 * 60);
-        config.planCalcScore().addActivityParams(homeActivity);
+        ScoringConfigGroup.ActivityParams homeActivity = new ScoringConfigGroup.ActivityParams("home").setTypicalDuration(12 * 60 * 60);
+        config.scoring().addActivityParams(homeActivity);
 
-        PlanCalcScoreConfigGroup.ActivityParams workActivity = new PlanCalcScoreConfigGroup.ActivityParams("work").setTypicalDuration(8 * 60 * 60);
-        config.planCalcScore().addActivityParams(workActivity);
+        ScoringConfigGroup.ActivityParams workActivity = new ScoringConfigGroup.ActivityParams("work").setTypicalDuration(8 * 60 * 60);
+        config.scoring().addActivityParams(workActivity);
 
-        PlanCalcScoreConfigGroup.ActivityParams educationActivity = new PlanCalcScoreConfigGroup.ActivityParams("education").setTypicalDuration(8 * 60 * 60);
-        config.planCalcScore().addActivityParams(educationActivity);
+        ScoringConfigGroup.ActivityParams educationActivity = new ScoringConfigGroup.ActivityParams("education").setTypicalDuration(8 * 60 * 60);
+        config.scoring().addActivityParams(educationActivity);
 
-        PlanCalcScoreConfigGroup.ActivityParams shoppingActivity = new PlanCalcScoreConfigGroup.ActivityParams("shopping").setTypicalDuration(1 * 60 * 60);
-        config.planCalcScore().addActivityParams(shoppingActivity);
+        ScoringConfigGroup.ActivityParams shoppingActivity = new ScoringConfigGroup.ActivityParams("shopping").setTypicalDuration(1 * 60 * 60);
+        config.scoring().addActivityParams(shoppingActivity);
 
-        PlanCalcScoreConfigGroup.ActivityParams recreationActivity = new PlanCalcScoreConfigGroup.ActivityParams("recreation").setTypicalDuration(1 * 60 * 60);
-        config.planCalcScore().addActivityParams(recreationActivity);
+        ScoringConfigGroup.ActivityParams recreationActivity = new ScoringConfigGroup.ActivityParams("recreation").setTypicalDuration(1 * 60 * 60);
+        config.scoring().addActivityParams(recreationActivity);
 
-        PlanCalcScoreConfigGroup.ActivityParams otherActivity = new PlanCalcScoreConfigGroup.ActivityParams("other").setTypicalDuration(1 * 60 * 60);
-        config.planCalcScore().addActivityParams(otherActivity);
+        ScoringConfigGroup.ActivityParams otherActivity = new ScoringConfigGroup.ActivityParams("other").setTypicalDuration(1 * 60 * 60);
+        config.scoring().addActivityParams(otherActivity);
     }
 
     private DataSet convertData(int year) {

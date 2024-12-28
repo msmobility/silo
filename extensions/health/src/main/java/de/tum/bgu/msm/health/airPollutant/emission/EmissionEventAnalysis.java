@@ -154,11 +154,11 @@ public class EmissionEventAnalysis {
         emissionsConfig.setAverageColdEmissionFactorsFile("F:\\models\\healthModel\\muc\\input\\mito\\trafficAssignment/EFA_ColdStart_Vehcat_healthModelWithTruck.txt");
         emissionsConfig.setAverageWarmEmissionFactorsFile("F:\\models\\healthModel\\muc\\input\\mito\\trafficAssignment/EFA_HOT_Vehcat_healthModelWithTruck.txt");
         emissionsConfig.setNonScenarioVehicles(EmissionsConfigGroup.NonScenarioVehicles.ignore);
-        emissionsConfig.setHbefaRoadTypeSource(EmissionsConfigGroup.HbefaRoadTypeSource.fromLinkAttributes);
+        //emissionsConfig.setHbefaRoadTypeSource(EmissionsConfigGroup.HbefaRoadTypeSource.fromLinkAttributes);
         emissionsConfig.setHbefaVehicleDescriptionSource(EmissionsConfigGroup.HbefaVehicleDescriptionSource.fromVehicleTypeDescription);
 
         config = ConfigUtils.loadConfig(configFile, emissionsConfig);
-        config.controler().setOutputDirectory(outDirectory);
+        config.controller().setOutputDirectory(outDirectory);
         config.vehicles().setVehiclesFile(vehicleFile);
         config.network().setInputFile(networkFile);
         //config.plans().setInputFile(populationFile);

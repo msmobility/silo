@@ -11,7 +11,8 @@ import de.tum.bgu.msm.schools.PersonWithSchool;
 import de.tum.bgu.msm.schools.School;
 import de.tum.bgu.msm.schools.SchoolDataImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,7 +27,7 @@ import java.util.Random;
  **/
 public class EducationModelMCR extends AbstractModel implements EducationModel {
 
-    private static final Logger logger = Logger.getLogger(EducationModelMCR.class);
+    private static final Logger logger = LogManager.getLogger(EducationModelMCR.class);
     private static final int MIN_PRIMARY_AGE = 6;
     private static final int MIN_SECONDARY_AGE = 10;
     private static final int MIN_TERTIARY_AGE = 18;

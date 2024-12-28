@@ -132,7 +132,7 @@ public class SyntheticPopJP implements SyntheticPopI {
 
     private HashMap<Person, Integer> jobTypeByWorker= new HashMap<>();
 
-    static Logger logger = Logger.getLogger(String.valueOf(SyntheticPopJP.class));
+    static Logger logger = LogManager.getLogger(String.valueOf(SyntheticPopJP.class));
     private Properties properties;
 
 

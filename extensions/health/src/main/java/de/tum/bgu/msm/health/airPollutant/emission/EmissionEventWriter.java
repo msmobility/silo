@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.health.airPollutant.emission;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.contrib.emissions.EmissionModule;
 import org.matsim.contrib.emissions.utils.EmissionsConfigGroup;
@@ -19,7 +20,7 @@ import static org.matsim.core.controler.Injector.createInjector;
 
 public class EmissionEventWriter {
 
-    private static final Logger logger = Logger.getLogger(EmissionEventWriter.class);
+    private static final Logger logger = LogManager.getLogger(EmissionEventWriter.class);
 
 
     public static void main(String[] args) {
@@ -31,18 +32,18 @@ public class EmissionEventWriter {
         String configFile = "F:/models/healthModel/muc/configHealth.xml";
         Config config = ConfigUtils.loadConfig(configFile);
         Scenario scenario = ScenarioUtils.createMutableScenario(config);
-        scenario.getConfig().controler().setOutputDirectory(outputDirectoryRoot);
+        scenario.getConfig().controller().setOutputDirectory(outputDirectoryRoot);
         prepareConfig(scenario);
 
-        String eventFileWithEmissions = scenario.getConfig().controler().getOutputDirectory() + "/" + "2011.output_events_emission.xml.gz";
-        String vehicleFileWithEmissionType = scenario.getConfig().controler().getOutputDirectory() + "/" + "2011.vehicles_emission.xml.gz";
-        String networkFile = scenario.getConfig().controler().getOutputDirectory()+"/2011.output_network.xml.gz";
-        String populationFile = scenario.getConfig().controler().getOutputDirectory()+"/2011.output_plans.xml.gz";
+        String eventFileWithEmissions = scenario.getConfig().controller().getOutputDirectory() + "/" + "2011.output_events_emission.xml.gz";
+        String vehicleFileWithEmissionType = scenario.getConfig().controller().getOutputDirectory() + "/" + "2011.vehicles_emission.xml.gz";
+        String networkFile = scenario.getConfig().controller().getOutputDirectory()+"/2011.output_network.xml.gz";
+        String populationFile = scenario.getConfig().controller().getOutputDirectory()+"/2011.output_plans.xml.gz";
 
-        String linkWarmEmissionFile = scenario.getConfig().controler().getOutputDirectory() + "/linkWarmEmissionFile.csv";
-        String linkColdEmissionFile = scenario.getConfig().controler().getOutputDirectory() + "/linkColdEmissionFile.csv";
-        String vehicleWarmEmissionFile = scenario.getConfig().controler().getOutputDirectory() + "/vehicleWarmEmissionFile.csv";
-        String vehicleColdEmissionFile = scenario.getConfig().controler().getOutputDirectory() + "/vehicleColdEmissionFile.csv";
+        String linkWarmEmissionFile = scenario.getConfig().controller().getOutputDirectory() + "/linkWarmEmissionFile.csv";
+        String linkColdEmissionFile = scenario.getConfig().controller().getOutputDirectory() + "/linkColdEmissionFile.csv";
+        String vehicleWarmEmissionFile = scenario.getConfig().controller().getOutputDirectory() + "/vehicleWarmEmissionFile.csv";
+        String vehicleColdEmissionFile = scenario.getConfig().controller().getOutputDirectory() + "/vehicleColdEmissionFile.csv";
 
 
 
@@ -96,10 +97,10 @@ public class EmissionEventWriter {
         scenario.getConfig().travelTimeCalculator().setTraveltimeBinSize(3600);
         EmissionsConfigGroup emissionsConfig= new EmissionsConfigGroup();
         emissionsConfig.setDetailedVsAverageLookupBehavior(EmissionsConfigGroup.DetailedVsAverageLookupBehavior.directlyTryAverageTable);
-        emissionsConfig.setAverageColdEmissionFactorsFile(scenario.getConfig().controler().getOutputDirectory()+ "/EFA_ColdStart_Vehcat_matching.txt");
-        emissionsConfig.setAverageWarmEmissionFactorsFile(scenario.getConfig().controler().getOutputDirectory()+ "/EFA_HOT_Vehcat_matching.txt");
+        emissionsConfig.setAverageColdEmissionFactorsFile(scenario.getConfig().controller().getOutputDirectory()+ "/EFA_ColdStart_Vehcat_matching.txt");
+        emissionsConfig.setAverageWarmEmissionFactorsFile(scenario.getConfig().controller().getOutputDirectory()+ "/EFA_HOT_Vehcat_matching.txt");
         emissionsConfig.setNonScenarioVehicles(EmissionsConfigGroup.NonScenarioVehicles.ignore);
-        emissionsConfig.setHbefaRoadTypeSource(EmissionsConfigGroup.HbefaRoadTypeSource.fromLinkAttributes);
+        //emissionsConfig.setHbefaRoadTypeSource(EmissionsConfigGroup.HbefaRoadTypeSource.fromLinkAttributes);
         emissionsConfig.setHbefaVehicleDescriptionSource(EmissionsConfigGroup.HbefaVehicleDescriptionSource.fromVehicleTypeDescription);
         scenario.getConfig().addModule(emissionsConfig);
 

@@ -6,7 +6,8 @@ import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.job.JobFactory;
 import de.tum.bgu.msm.io.input.JobReader;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.io.BufferedReader;
@@ -15,7 +16,7 @@ import java.io.IOException;
 
 public class JobReaderMCR implements JobReader {
 
-    private final static Logger logger = Logger.getLogger(JobReaderMCR.class);
+    private final static Logger logger = LogManager.getLogger(JobReaderMCR.class);
     private final JobDataManager jobData;
     private final DataContainer dataContainer;
 

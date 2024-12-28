@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.utils.concurrent;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.matsim.api.core.v01.Id;
@@ -21,7 +22,7 @@ import java.util.Set;
 
 public class ParallelRoutingTest {
 
-    private static Logger logger = Logger.getLogger(ParallelRoutingTest.class);
+    private static Logger logger = LogManager.getLogger(ParallelRoutingTest.class);
 
     @Test
     @Ignore
@@ -34,7 +35,7 @@ public class ParallelRoutingTest {
 
 
         MultiNodePathCalculator calculator
-                = (MultiNodePathCalculator) new FastMultiNodeDijkstraFactory(true).createPathCalculator(network, new TravelDisutility() {
+                = (MultiNodePathCalculator) new MultiNodeDijkstraFactory(true).createPathCalculator(network, new TravelDisutility() {
                     @Override
                     public double getLinkTravelDisutility(Link link, double time, Person person, Vehicle vehicle) {
                         return link.getLength() / link.getFreespeed();

@@ -7,7 +7,8 @@ import de.tum.bgu.msm.data.person.PersonFactory;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix2D;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Network;
@@ -27,7 +28,7 @@ import java.util.*;
 
 public class MatsimSkimCreator {
 
-    private final static Logger logger = Logger.getLogger(MatsimSkimCreator.class);
+    private final static Logger logger = LogManager.getLogger(MatsimSkimCreator.class);
 
     private MatsimData matsimData;
 

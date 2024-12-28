@@ -5,11 +5,12 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import org.apache.commons.math.MathException;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class TranslateMicroDataToCode {
 
-    private static final Logger logger = Logger.getLogger(TranslateMicroDataToCode.class);
+    private static final Logger logger = LogManager.getLogger(TranslateMicroDataToCode.class);
 
     private DataSetSynPop dataSetSynPop;
 

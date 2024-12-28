@@ -25,8 +25,8 @@ import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -34,7 +34,6 @@ import org.matsim.api.core.v01.population.PopulationFactory;
 import org.matsim.contrib.dvrp.trafficmonitoring.TravelTimeUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.ControlerDefaults;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
@@ -44,13 +43,10 @@ import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.vehicles.Vehicle;
 import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleUtils;
-import org.matsim.vehicles.Vehicles;
 
 import java.io.File;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 import static de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule.*;
@@ -60,7 +56,7 @@ import static de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule.*
  */
 public final class MatsimTransportModel implements TransportModel {
 
-    private static final Logger logger = Logger.getLogger(MatsimTransportModel.class);
+    private static final Logger logger = LogManager.getLogger(MatsimTransportModel.class);
 
     private final Properties properties;
     private final Config initialMatsimConfig;
@@ -173,12 +169,12 @@ public final class MatsimTransportModel implements TransportModel {
     private void finalizeConfig(Config config, int runId, String dir) {
         final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
         String outputDirectory = outputDirectoryRoot + "/matsim/" + dir + "/";
-        config.controler().setRunId(String.valueOf(runId));
-        config.controler().setOutputDirectory(outputDirectory);
-        config.controler().setWritePlansInterval(Math.max(config.controler().getLastIteration(), 1));
-        config.controler().setWriteEventsInterval(Math.max(config.controler().getLastIteration(), 1));
-        config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
-        config.plansCalcRoute().setRoutingRandomness(0.);
+        config.controller().setRunId(String.valueOf(runId));
+        config.controller().setOutputDirectory(outputDirectory);
+        config.controller().setWritePlansInterval(Math.max(config.controller().getLastIteration(), 1));
+        config.controller().setWriteEventsInterval(Math.max(config.controller().getLastIteration(), 1));
+        config.controller().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
+        config.routing().setRoutingRandomness(0.);
     }
 
     /**

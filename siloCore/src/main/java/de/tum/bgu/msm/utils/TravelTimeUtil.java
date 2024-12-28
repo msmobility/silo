@@ -2,7 +2,8 @@ package de.tum.bgu.msm.utils;
 
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.properties.Properties;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
 public class TravelTimeUtil {

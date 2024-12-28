@@ -9,15 +9,16 @@ import de.tum.bgu.msm.data.geo.County;
 import de.tum.bgu.msm.data.geo.MstmRegion;
 import de.tum.bgu.msm.data.geo.MstmZone;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.geotools.api.feature.simple.SimpleFeature;
 import org.matsim.core.utils.gis.ShapeFileReader;
-import org.opengis.feature.simple.SimpleFeature;
 
 import java.util.Map;
 
 public class GeoDataReaderMstm implements GeoDataReader {
 
-    private final static Logger logger = Logger.getLogger(GeoDataReaderMstm.class);
+    private final static Logger logger = LogManager.getLogger(GeoDataReaderMstm.class);
 
     private final String ZONE_ID_COLUMN = "ZoneId";
     private final String COUNTY_COLUMN_NAME = "COUNTYFIPS";

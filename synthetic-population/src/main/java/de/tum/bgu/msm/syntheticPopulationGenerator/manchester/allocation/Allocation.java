@@ -11,14 +11,15 @@ import de.tum.bgu.msm.io.DwellingWriterMCR;
 import de.tum.bgu.msm.io.HouseholdWriterMCR;
 import de.tum.bgu.msm.io.JobWriterMCR;
 import de.tum.bgu.msm.io.PersonWriterMCR;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Allocation extends ModuleSynPop{
 
-    private static final Logger logger = Logger.getLogger(Allocation.class);
+    private static final Logger logger = LogManager.getLogger(Allocation.class);
     private final  DataContainerWithSchools dataContainer;
     private HashMap<Person, Integer> educationalLevel;
 

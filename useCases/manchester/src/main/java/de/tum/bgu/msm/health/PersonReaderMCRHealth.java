@@ -7,7 +7,8 @@ import de.tum.bgu.msm.io.input.PersonReader;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.schools.SchoolDataImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -15,7 +16,7 @@ import java.io.IOException;
 
 public class PersonReaderMCRHealth implements PersonReader {
 
-    private final static Logger logger = Logger.getLogger(PersonReaderMCRHealth.class);
+    private final static Logger logger = LogManager.getLogger(PersonReaderMCRHealth.class);
     private final HouseholdDataManager householdDataManager;
 
     public PersonReaderMCRHealth(HouseholdDataManager householdDataManager) {

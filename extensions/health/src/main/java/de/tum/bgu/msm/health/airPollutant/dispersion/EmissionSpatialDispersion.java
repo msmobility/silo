@@ -3,7 +3,8 @@ package de.tum.bgu.msm.health.airPollutant.dispersion;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -40,7 +41,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class EmissionSpatialDispersion {
 
     private static final Double minimumThreshold = 1e-6;
-    private static final Logger logger = Logger.getLogger(EmissionSpatialDispersion.class);
+    private static final Logger logger = LogManager.getLogger(EmissionSpatialDispersion.class);
 
     private final double binSize;
     private final double smoothingRadius;
@@ -328,7 +329,6 @@ public class EmissionSpatialDispersion {
     }
 
     private void processLink(Link link, EmissionsByPollutant emissions, Grid<Map<Pollutant, Float>> grid) {
-
         // create a clipping area to speed up calculation time
         // use 5*smoothing radius as longer distances result in a weighting of effectively 0
         Geometry clip = factory.createPoint(new Coordinate(link.getCoord().getX(), link.getCoord().getY())).buffer(smoothingRadius * 5);
@@ -343,7 +343,6 @@ public class EmissionSpatialDispersion {
     }
 
     private void processCell(Grid.Cell<Map<Pollutant, Float>> cell, EmissionsByPollutant emissions, double weight) {
-
         for (var entry : emissions.getEmissions().entrySet()) {
             var emissionValue = entry.getValue() * weight * countScaleFactor;
             //the unit of emissionValue is [g]
@@ -352,8 +351,7 @@ public class EmissionSpatialDispersion {
             // We assume vertical dispersion parameter as 100 m and use gaussian smoothing.
             //and use ground floor concentration for exposure (height=0)
             //TODO: apply real 3D dispersion plume function
-
-            var concentration = emissionValue / (gridSize * gridSize) * 1e6 * 0.01128379;
+            var concentration = emissionValue / (gridSize * gridSize) * 1000000 * 0.01128379;
             //the unit of emissionValue is [ug/m3]
             cell.getValue().merge(entry.getKey(), (float) concentration, Float::sum);
         }

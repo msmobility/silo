@@ -1,13 +1,14 @@
 package de.tum.bgu.msm.health.airPollutant.emission;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.vehicles.*;
 
 public class CreateVehicles {
 
-    private static final Logger logger = Logger.getLogger(CreateVehicles.class);
+    private static final Logger logger = LogManager.getLogger(CreateVehicles.class);
     //Create scenario
     private final Scenario sc;
 
@@ -32,6 +33,7 @@ public class CreateVehicles {
             //createVehicleType("LCV",mode,6.2,1.0,1.0,1.0,"BEGIN_EMISSIONSPASSENGER_CAR;petrol (4S);&gt;=2L;PC-P-Euro-1END_EMISSIONS");
             createVehicleType("pass. car",mode,5.2,1.0,1.0,1.0, "BEGIN_EMISSIONSPASSENGER_CAR;average;average;averageEND_EMISSIONS");
             createVehicleType("ZERO_EMISSION_VEHICLE", mode, 2, 1, 1, 1, "BEGIN_EMISSIONSZERO_EMISSION_VEHICLE;average;average;averageEND_EMISSIONS");
+            createVehicleType("urban bus", mode, 18.0, 2.5, 1, 1, "BEGIN_EMISSIONSURBAN_BUS;average;average;averageEND_EMISSIONS");
     }
 
     private void createVehicleType(String name, VehicleType.DoorOperationMode mode, double length, double width, double accessTime, double egressTime, String description) {
@@ -78,7 +80,12 @@ public class CreateVehicles {
             } else if (id.contains("cargoBike")){
                 vehicle = VehicleUtils.getFactory().createVehicle(vehId, vehicles.getVehicleTypes().get(Id.create("ZERO_EMISSION_VEHICLE", VehicleType.class)));
                 vehicles.addVehicle(vehicle);
-            } else {
+            } else if (id.contains("bus")){
+                vehicle = VehicleUtils.getFactory().createVehicle(vehId, vehicles.getVehicleTypes().get(Id.create("urban bus", VehicleType.class)));
+                vehicles.addVehicle(vehicle);
+            }else if (id.contains("rail")||id.contains("tram")||id.contains("subway")||id.contains("ferry")){
+                //TODO: currently exclude rail, tram, subway and ferry vehicles
+            }else {
                 vehicle = VehicleUtils.getFactory().createVehicle(vehId, vehicles.getVehicleTypes().get(Id.create("pass. car", VehicleType.class)));
                 vehicles.addVehicle(vehicle);
             }

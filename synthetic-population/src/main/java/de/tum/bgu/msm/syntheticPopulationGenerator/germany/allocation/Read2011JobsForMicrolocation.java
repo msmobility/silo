@@ -16,7 +16,8 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.germany.io.HouseholdReaderMuc
 import de.tum.bgu.msm.syntheticPopulationGenerator.germany.io.PersonReaderMucMito;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
 import javax.xml.crypto.Data;
@@ -29,7 +30,7 @@ import java.util.Map;
 
 public class Read2011JobsForMicrolocation {
 
-    private static final Logger logger = Logger.getLogger(Read2011JobsForMicrolocation.class);
+    private static final Logger logger = LogManager.getLogger(Read2011JobsForMicrolocation.class);
     private final DataContainer dataContainer;
     private int subPopulation;
     private DataSetSynPop dataSetSynPop;

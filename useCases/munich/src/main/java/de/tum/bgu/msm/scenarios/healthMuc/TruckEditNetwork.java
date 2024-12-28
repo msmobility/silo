@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.scenarios.healthMuc;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.*;
 import org.matsim.core.network.NetworkUtils;
@@ -10,7 +11,7 @@ import java.util.*;
 
 public class TruckEditNetwork {
 
-    public static final Logger logger = Logger.getLogger(TruckEditNetwork.class);
+    public static final Logger logger = LogManager.getLogger(TruckEditNetwork.class);
 
     public static void main(String[] args) {
 

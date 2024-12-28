@@ -7,7 +7,8 @@ import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.health.data.LinkInfo;
 import de.tum.bgu.msm.util.MitoUtil;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.emissions.Pollutant;
@@ -20,11 +21,11 @@ import java.util.Map;
 
 public class LinkInfoWriter {
 
-    private final static Logger logger = Logger.getLogger(LinkInfoWriter.class);
+    private final static Logger logger = LogManager.getLogger(LinkInfoWriter.class);
 
-    public void writeData(DataContainerHealth dataContainer, String outputDirectory, Day day){
-        writeLinkExposure(dataContainer,outputDirectory + "linkConcentration_" + day + ".csv");
-        writeZoneExposure(dataContainer,outputDirectory + "zoneConcentration_" + day + ".csv");
+    public void writeData(DataContainerHealth dataContainer, String outputDirectory, Day day, String sourceMode){
+        writeLinkExposure(dataContainer,outputDirectory + "linkConcentration_" + day + "_" + sourceMode + ".csv");
+        writeZoneExposure(dataContainer,outputDirectory + "zoneConcentration_" + day + "_" + sourceMode + ".csv");
     }
     private void writeLinkExposure(DataContainerHealth dataContainer, String path) {
         logger.info("  Writing link exposure health indicators file");

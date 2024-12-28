@@ -28,7 +28,8 @@ import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
 import de.tum.bgu.msm.resources.Resources;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -37,9 +38,8 @@ import org.matsim.api.core.v01.population.Population;
 import org.matsim.contrib.dvrp.trafficmonitoring.TravelTimeUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
+import org.matsim.core.config.groups.*;
 import org.matsim.core.config.groups.QSimConfigGroup;
-import org.matsim.core.config.groups.StrategyConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.ControlerDefaults;
@@ -57,15 +57,15 @@ import org.matsim.vehicles.VehicleUtils;
 import java.io.File;
 import java.util.*;
 
-import static org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
-import static org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ModeParams;
+import static org.matsim.core.config.groups.ScoringConfigGroup.ActivityParams;
+import static org.matsim.core.config.groups.ScoringConfigGroup.ModeParams;
 
 /**
  * @author qinzhang
  */
 public final class MatsimTransportModelMucHealth implements TransportModel {
 
-    private static final Logger logger = Logger.getLogger(MatsimTransportModelMucHealth.class);
+    private static final Logger logger = LogManager.getLogger(MatsimTransportModelMucHealth.class);
     private static final double MAX_WALKSPEED = 5.0;
     private static final double MAX_CYCLESPEED = 15.0;
 
@@ -256,81 +256,81 @@ public final class MatsimTransportModelMucHealth implements TransportModel {
 
     private void finalizeConfigForBikePedScenario(Config bikePedConfig, int year, Day day) {
 
-        bikePedConfig.controler().setLastIteration(1);
+        bikePedConfig.controller().setLastIteration(1);
         bikePedConfig.qsim().setFlowCapFactor(1.);
         bikePedConfig.qsim().setStorageCapFactor(1.);
         bikePedConfig.qsim().setEndTime(24*60*60);
 
         ActivityParams homeActivity = new ActivityParams("home").setTypicalDuration(12 * 60 * 60);
-        bikePedConfig.planCalcScore().addActivityParams(homeActivity);
+        bikePedConfig.scoring().addActivityParams(homeActivity);
 
         ActivityParams workActivity = new ActivityParams("work").setTypicalDuration(8 * 60 * 60);
-        bikePedConfig.planCalcScore().addActivityParams(workActivity);
+        bikePedConfig.scoring().addActivityParams(workActivity);
 
         ActivityParams educationActivity = new ActivityParams("education").setTypicalDuration(8 * 60 * 60);
-        bikePedConfig.planCalcScore().addActivityParams(educationActivity);
+        bikePedConfig.scoring().addActivityParams(educationActivity);
 
         ActivityParams shoppingActivity = new ActivityParams("shopping").setTypicalDuration(1 * 60 * 60);
-        bikePedConfig.planCalcScore().addActivityParams(shoppingActivity);
+        bikePedConfig.scoring().addActivityParams(shoppingActivity);
 
         ActivityParams recreationActivity = new ActivityParams("recreation").setTypicalDuration(1 * 60 * 60);
-        bikePedConfig.planCalcScore().addActivityParams(recreationActivity);
+        bikePedConfig.scoring().addActivityParams(recreationActivity);
 
         ActivityParams otherActivity = new ActivityParams("other").setTypicalDuration(1 * 60 * 60);
-        bikePedConfig.planCalcScore().addActivityParams(otherActivity);
+        bikePedConfig.scoring().addActivityParams(otherActivity);
 
         ActivityParams airportActivity = new ActivityParams("airport").setTypicalDuration(1 * 60 * 60);
-        bikePedConfig.planCalcScore().addActivityParams(airportActivity);
+        bikePedConfig.scoring().addActivityParams(airportActivity);
 
         final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
         String outputDirectory = outputDirectoryRoot + "/matsim/" + year + "/" + day + "/bikePed/";
-        bikePedConfig.controler().setOutputDirectory(outputDirectory);
-        bikePedConfig.controler().setRunId(String.valueOf(year));
-        bikePedConfig.controler().setWritePlansInterval(Math.max(bikePedConfig.controler().getLastIteration(), 1));
-        bikePedConfig.controler().setWriteEventsInterval(Math.max(bikePedConfig.controler().getLastIteration(), 1));
-        bikePedConfig.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
+        bikePedConfig.controller().setOutputDirectory(outputDirectory);
+        bikePedConfig.controller().setRunId(String.valueOf(year));
+        bikePedConfig.controller().setWritePlansInterval(Math.max(bikePedConfig.controller().getLastIteration(), 1));
+        bikePedConfig.controller().setWriteEventsInterval(Math.max(bikePedConfig.controller().getLastIteration(), 1));
+        bikePedConfig.controller().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
         if (properties.transportModel.includeAccessEgress) {
             //config.plansCalcRoute().setAccessEgressType(PlansCalcRouteConfigGroup.AccessEgressType.walkConstantTimeToLink);
         }
         bikePedConfig.transit().setUsingTransitInMobsim(false);
 
-        bikePedConfig.strategy().setMaxAgentPlanMemorySize(5);
+        bikePedConfig.replanning().setMaxAgentPlanMemorySize(5);
         {
-            StrategyConfigGroup.StrategySettings strategySettings = new StrategyConfigGroup.StrategySettings();
+            ReplanningConfigGroup.StrategySettings strategySettings = new ReplanningConfigGroup.StrategySettings();
             strategySettings.setStrategyName("ChangeExpBeta");
             strategySettings.setWeight(0.8);
-            bikePedConfig.strategy().addStrategySettings(strategySettings);
+            bikePedConfig.replanning().addStrategySettings(strategySettings);
         }
 
         {
-            StrategyConfigGroup.StrategySettings strategySettings = new StrategyConfigGroup.StrategySettings();
+            ReplanningConfigGroup.StrategySettings strategySettings = new ReplanningConfigGroup.StrategySettings();
             strategySettings.setStrategyName("ReRoute");
             strategySettings.setWeight(0.2);
-            bikePedConfig.strategy().addStrategySettings(strategySettings);
+            bikePedConfig.replanning().addStrategySettings(strategySettings);
         }
 
         List<String> mainModeList = new ArrayList<>();
         mainModeList.add("bike");
         mainModeList.add("walk");
         bikePedConfig.qsim().setMainModes(mainModeList);
-        bikePedConfig.plansCalcRoute().setNetworkModes(mainModeList);
+        bikePedConfig.routing().setNetworkModes(mainModeList);
 
-        bikePedConfig.plansCalcRoute().removeModeRoutingParams("bike");
-        bikePedConfig.plansCalcRoute().removeModeRoutingParams("walk");
+        bikePedConfig.routing().removeModeRoutingParams("bike");
+        bikePedConfig.routing().removeModeRoutingParams("walk");
 
         ModeParams bicycleParams = new ModeParams(TransportMode.bike);
         bicycleParams.setConstant(0. );
         bicycleParams.setMarginalUtilityOfDistance(-0.0004 );
         bicycleParams.setMarginalUtilityOfTraveling(-6.0 );
         bicycleParams.setMonetaryDistanceRate(0. );
-        bikePedConfig.planCalcScore().addModeParams(bicycleParams);
+        bikePedConfig.scoring().addModeParams(bicycleParams);
 
         ModeParams walkParams = new ModeParams(TransportMode.walk);
         walkParams.setConstant(0. );
         walkParams.setMarginalUtilityOfDistance(-0.0004 );
         walkParams.setMarginalUtilityOfTraveling(-6.0 );
         walkParams.setMonetaryDistanceRate(0. );
-        bikePedConfig.planCalcScore().addModeParams(walkParams);
+        bikePedConfig.scoring().addModeParams(walkParams);
     }
 
     private void prepCarTruckConfig(Config config) {
@@ -341,34 +341,34 @@ public final class MatsimTransportModelMucHealth implements TransportModel {
         logger.info("Storage Cap Factor: " + config.qsim().getStorageCapFactor());
 
         ActivityParams startActivity = new ActivityParams("start").setTypicalDuration(12 * 60 * 60);
-        config.planCalcScore().addActivityParams(startActivity);
+        config.scoring().addActivityParams(startActivity);
 
         ActivityParams endActivity = new ActivityParams("end").setTypicalDuration(8 * 60 * 60);
-        config.planCalcScore().addActivityParams(endActivity);
+        config.scoring().addActivityParams(endActivity);
 
         ActivityParams homeActivity = new ActivityParams("home").setTypicalDuration(12 * 60 * 60);
-        config.planCalcScore().addActivityParams(homeActivity);
+        config.scoring().addActivityParams(homeActivity);
 
         ActivityParams workActivity = new ActivityParams("work").setTypicalDuration(8 * 60 * 60);
-        config.planCalcScore().addActivityParams(workActivity);
+        config.scoring().addActivityParams(workActivity);
 
         ActivityParams educationActivity = new ActivityParams("education").setTypicalDuration(8 * 60 * 60);
-        config.planCalcScore().addActivityParams(educationActivity);
+        config.scoring().addActivityParams(educationActivity);
 
         ActivityParams shoppingActivity = new ActivityParams("shopping").setTypicalDuration(1 * 60 * 60);
-        config.planCalcScore().addActivityParams(shoppingActivity);
+        config.scoring().addActivityParams(shoppingActivity);
 
         ActivityParams recreationActivity = new ActivityParams("recreation").setTypicalDuration(1 * 60 * 60);
-        config.planCalcScore().addActivityParams(recreationActivity);
+        config.scoring().addActivityParams(recreationActivity);
 
         ActivityParams otherActivity = new ActivityParams("other").setTypicalDuration(1 * 60 * 60);
-        config.planCalcScore().addActivityParams(otherActivity);
+        config.scoring().addActivityParams(otherActivity);
 
         ActivityParams airportActivity = new ActivityParams("airport").setTypicalDuration(1 * 60 * 60);
-        config.planCalcScore().addActivityParams(airportActivity);
+        config.scoring().addActivityParams(airportActivity);
 
         if (properties.transportModel.includeAccessEgress) {
-            config.plansCalcRoute().setAccessEgressType(PlansCalcRouteConfigGroup.AccessEgressType.walkConstantTimeToLink);
+            config.routing().setAccessEgressType(RoutingConfigGroup.AccessEgressType.walkConstantTimeToLink);
         }
         config.transit().setUsingTransitInMobsim(false);
         config.qsim().setEndTime(24*60*60);
@@ -377,26 +377,26 @@ public final class MatsimTransportModelMucHealth implements TransportModel {
         mainModeList.add("car");
         mainModeList.add("truck");
         config.qsim().setMainModes(mainModeList);
-        config.plansCalcRoute().setNetworkModes(mainModeList);
+        config.routing().setNetworkModes(mainModeList);
 
-        ModeParams carParams = config.planCalcScore().getOrCreateModeParams(TransportMode.car);
+        ModeParams carParams = config.scoring().getOrCreateModeParams(TransportMode.car);
         ModeParams truckParams = new ModeParams(TransportMode.truck);
         truckParams.setConstant(carParams.getConstant());
         truckParams.setDailyMonetaryConstant(carParams.getDailyMonetaryConstant());
         truckParams.setMarginalUtilityOfDistance(carParams.getMarginalUtilityOfDistance());
         truckParams.setDailyUtilityConstant(carParams.getDailyUtilityConstant());
         truckParams.setMonetaryDistanceRate(carParams.getMonetaryDistanceRate());
-        config.planCalcScore().addModeParams(truckParams);
+        config.scoring().addModeParams(truckParams);
     }
 
     private void finalizeCarTruckConfig(Config config, String runId, String dir) {
         final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
         String outputDirectory = outputDirectoryRoot + "/matsim/" + dir + "/car/";
-        config.controler().setRunId(runId);
-        config.controler().setOutputDirectory(outputDirectory);
-        config.controler().setWritePlansInterval(Math.max(config.controler().getLastIteration(), 1));
-        config.controler().setWriteEventsInterval(Math.max(config.controler().getLastIteration(), 1));
-        config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
+        config.controller().setRunId(runId);
+        config.controller().setOutputDirectory(outputDirectory);
+        config.controller().setWritePlansInterval(Math.max(config.controller().getLastIteration(), 1));
+        config.controller().setWriteEventsInterval(Math.max(config.controller().getLastIteration(), 1));
+        config.controller().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
     }
 
     /**
@@ -411,7 +411,7 @@ public final class MatsimTransportModelMucHealth implements TransportModel {
 
     private void updateTravelTimes(TravelTime travelTime, TravelDisutility disutility) {
         matsimData.update(disutility, travelTime);
-        matsimData.getConfig().plansCalcRoute().setRoutingRandomness(0);
+        matsimData.getConfig().routing().setRoutingRandomness(0);
         internalTravelTimes.update(matsimData);
         final TravelTimes mainTravelTimes = dataContainer.getTravelTimes();
 

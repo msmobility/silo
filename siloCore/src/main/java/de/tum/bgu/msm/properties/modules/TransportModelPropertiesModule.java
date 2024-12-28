@@ -47,6 +47,7 @@ public class TransportModelPropertiesModule {
     public final boolean onlySimulateCarTrips;
 
     public final boolean includeAccessEgress;
+    public final String matsimInitialPlansFile;
 
     public enum TransportModelIdentifier {
         MITO_MATSIM, MATSIM, NONE;
@@ -102,6 +103,9 @@ public class TransportModelPropertiesModule {
 
         PropertiesUtil.newPropertySubmodule("MATSim - Include access and egress walks for all modes");
         includeAccessEgress = PropertiesUtil.getBooleanProperty(bundle, "matsim.include.access.egress", false);
+
+        matsimInitialPlansFile = PropertiesUtil.getStringProperty(bundle, "matsim.initial.plans", null);
+
     }
 
 }

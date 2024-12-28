@@ -7,12 +7,13 @@ import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.io.output.DefaultDwellingWriter;
 import de.tum.bgu.msm.io.output.DwellingWriter;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.PrintWriter;
 
 public class DwellingWriterTak implements DwellingWriter {
-    private final static Logger logger = Logger.getLogger(DwellingWriterTak.class);
+    private final static Logger logger = LogManager.getLogger(DwellingWriterTak.class);
     private final RealEstateDataManager realEstateDataManager;
 
 

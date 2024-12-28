@@ -7,7 +7,8 @@ import de.tum.bgu.msm.data.vehicle.VehicleType;
 import de.tum.bgu.msm.io.output.DefaultHouseholdWriter;
 import de.tum.bgu.msm.io.output.HouseholdWriter;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 import java.io.PrintWriter;
@@ -16,7 +17,7 @@ public class HouseholdWriterMucDisability implements HouseholdWriter {
 
     private final HouseholdDataManager householdData;
     private final RealEstateDataManager realEstateData;
-    private final static Logger logger = Logger.getLogger(DefaultHouseholdWriter.class);
+    private final static Logger logger = LogManager.getLogger(DefaultHouseholdWriter.class);
 
     public HouseholdWriterMucDisability(HouseholdDataManager householdData, RealEstateDataManager realEstateData) {
         this.householdData = householdData;

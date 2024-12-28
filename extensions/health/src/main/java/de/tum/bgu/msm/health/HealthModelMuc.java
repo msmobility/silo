@@ -19,7 +19,8 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.MitoUtil;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
@@ -43,7 +44,7 @@ import static org.matsim.contrib.emissions.Pollutant.*;
 
 public class HealthModelMuc extends AbstractModel implements ModelUpdateListener {
     private int latestMatsimYear = -1;
-    private static final Logger logger = Logger.getLogger(HealthModelMuc.class);
+    private static final Logger logger = LogManager.getLogger(HealthModelMuc.class);
 
     private Map<Integer, Trip> mitoTrips;
     private final Config initialMatsimConfig;
@@ -165,17 +166,17 @@ public class HealthModelMuc extends AbstractModel implements ModelUpdateListener
             case autoDriver:
             case autoPassenger:
                 scenario = ScenarioUtils.createMutableScenario(initialMatsimConfig);
-                scenario.getConfig().controler().setOutputDirectory(outputDirectoryRoot);
-                eventsFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + latestMatsimYear + ".output_events.xml.gz";
-                networkFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + latestMatsimYear + ".output_network.xml.gz";
+                scenario.getConfig().controller().setOutputDirectory(outputDirectoryRoot);
+                eventsFile = scenario.getConfig().controller().getOutputDirectory() + "/" + day + "/car/" + latestMatsimYear + ".output_events.xml.gz";
+                networkFile = scenario.getConfig().controller().getOutputDirectory() + "/" + day + "/car/" + latestMatsimYear + ".output_network.xml.gz";
                 calculateTripHealthIndicator(networkFile, eventsFile, new ArrayList<>(mitoTrips.values()), day, mode);
                 break;
             case bicycle:
             case walk:
                 scenario = ScenarioUtils.createMutableScenario(initialMatsimConfig);
-                scenario.getConfig().controler().setOutputDirectory(outputDirectoryRoot);
-                eventsFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/bikePed/" + latestMatsimYear + ".output_events.xml.gz";
-                networkFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + latestMatsimYear + ".output_network.xml.gz";
+                scenario.getConfig().controller().setOutputDirectory(outputDirectoryRoot);
+                eventsFile = scenario.getConfig().controller().getOutputDirectory() + "/" + day + "/bikePed/" + latestMatsimYear + ".output_events.xml.gz";
+                networkFile = scenario.getConfig().controller().getOutputDirectory() + "/" + day + "/car/" + latestMatsimYear + ".output_network.xml.gz";
                 calculateTripHealthIndicator(networkFile, eventsFile, new ArrayList<>(mitoTrips.values()), day, mode);
                 break;
             default:

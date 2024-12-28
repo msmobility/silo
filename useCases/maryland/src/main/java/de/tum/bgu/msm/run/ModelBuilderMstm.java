@@ -50,14 +50,15 @@ import de.tum.bgu.msm.models.relocation.moves.RegionProbabilityStrategyImpl;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
 import org.matsim.core.scenario.ScenarioUtils;
 
 public class ModelBuilderMstm {
 
-    private final static Logger logger = Logger.getLogger(ModelBuilderMstm.class);
+    private final static Logger logger = LogManager.getLogger(ModelBuilderMstm.class);
 
     private ModelBuilderMstm() {}
 

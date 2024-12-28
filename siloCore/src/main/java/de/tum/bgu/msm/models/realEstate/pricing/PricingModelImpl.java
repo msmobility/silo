@@ -6,7 +6,8 @@ import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -22,7 +23,7 @@ import java.util.Random;
  **/
 public final class PricingModelImpl extends AbstractModel implements PricingModel {
 
-    private final static Logger logger = Logger.getLogger(PricingModelImpl.class);
+    private final static Logger logger = LogManager.getLogger(PricingModelImpl.class);
     private final PricingStrategy strategy;
 
     public PricingModelImpl(DataContainer dataContainer, Properties properties, PricingStrategy strategy, Random rnd) {

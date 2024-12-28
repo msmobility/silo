@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  */
 public class SwitchToElectricVehicleModelMuc extends AbstractModel implements ModelUpdateListener {
 
-    private final static Logger logger = Logger.getLogger(SwitchToElectricVehicleModelMuc.class);
+    private final static Logger logger = LogManager.getLogger(SwitchToElectricVehicleModelMuc.class);
 
 
     /**

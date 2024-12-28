@@ -26,7 +26,8 @@ import omx.OmxLookup;
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.distribution.GammaDistributionImpl;
 import org.apache.commons.math.stat.Frequency;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.util.*;
@@ -163,7 +164,7 @@ public class SyntheticPopCTrace implements SyntheticPopI {
     protected TableDataSet dataHousehold;
     protected TableDataSet dataPerson;
 
-    static Logger logger = Logger.getLogger(SyntheticPopCTrace.class);
+    static Logger logger = LogManager.getLogger(SyntheticPopCTrace.class);
     private DataContainer dataContainer;
     private Properties properties;
 

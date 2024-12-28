@@ -29,7 +29,8 @@ import de.tum.bgu.msm.matsim.SiloMatsimUtils;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -59,14 +60,14 @@ import routing.WalkModule;
 import java.io.File;
 import java.util.*;
 
-import static org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ModeParams;
+import static org.matsim.core.config.groups.ScoringConfigGroup.ModeParams;
 
 /**
  * @author qinzhang
  */
 public final class MatsimTransportModelMCRHealth implements TransportModel {
 
-    private static final Logger logger = Logger.getLogger(MatsimTransportModelMCRHealth.class);
+    private static final Logger logger = LogManager.getLogger(MatsimTransportModelMCRHealth.class);
 
     private final Properties properties;
     private final Config initialMatsimConfig;
@@ -339,14 +340,14 @@ public final class MatsimTransportModelMCRHealth implements TransportModel {
         bikePedConfig.network().setInputFile(properties.main.baseDirectory + properties.healthData.activeModeNetworkFile);
 
         // set basic controler settings
-        bikePedConfig.controler().setLastIteration(1);
+        bikePedConfig.controller().setLastIteration(1);
         final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
         String outputDirectory = outputDirectoryRoot + "/matsim/" + year + "/" + day + "/bikePed/";
-        bikePedConfig.controler().setOutputDirectory(outputDirectory);
-        bikePedConfig.controler().setRunId(String.valueOf(year));
-        bikePedConfig.controler().setWritePlansInterval(Math.max(bikePedConfig.controler().getLastIteration(), 1));
-        bikePedConfig.controler().setWriteEventsInterval(Math.max(bikePedConfig.controler().getLastIteration(), 1));
-        bikePedConfig.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
+        bikePedConfig.controller().setOutputDirectory(outputDirectory);
+        bikePedConfig.controller().setRunId(String.valueOf(year));
+        bikePedConfig.controller().setWritePlansInterval(Math.max(bikePedConfig.controller().getLastIteration(), 1));
+        bikePedConfig.controller().setWriteEventsInterval(Math.max(bikePedConfig.controller().getLastIteration(), 1));
+        bikePedConfig.controller().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
 
         // set qsim - passingQ
         bikePedConfig.qsim().setFlowCapFactor(properties.main.scaleFactor * properties.healthData.matsim_scale_factor_bikePed);
@@ -362,7 +363,7 @@ public final class MatsimTransportModelMCRHealth implements TransportModel {
         mainModeList.add(TransportMode.bike);
         mainModeList.add(TransportMode.walk);
         bikePedConfig.qsim().setMainModes(mainModeList);
-        bikePedConfig.plansCalcRoute().setNetworkModes(mainModeList);
+        bikePedConfig.routing().setNetworkModes(mainModeList);
 
         // set walk/bike routing parameters
         BicycleConfigGroup bicycleConfigGroup = (BicycleConfigGroup) bikePedConfig.getModules().get(BicycleConfigGroup.GROUP_NAME);
@@ -392,14 +393,14 @@ public final class MatsimTransportModelMCRHealth implements TransportModel {
         bicycleParams.setMarginalUtilityOfDistance(-0.0004 );
         bicycleParams.setMarginalUtilityOfTraveling(-6.0 );
         bicycleParams.setMonetaryDistanceRate(0. );
-        bikePedConfig.planCalcScore().addModeParams(bicycleParams);
+        bikePedConfig.scoring().addModeParams(bicycleParams);
 
         ModeParams walkParams = new ModeParams(TransportMode.walk);
         walkParams.setConstant(0. );
         walkParams.setMarginalUtilityOfDistance(-0.0004 );
         walkParams.setMarginalUtilityOfTraveling(-6.0 );
         walkParams.setMonetaryDistanceRate(0. );
-        bikePedConfig.planCalcScore().addModeParams(walkParams);
+        bikePedConfig.scoring().addModeParams(walkParams);
 
         bikePedConfig.transit().setUsingTransitInMobsim(false);
     }
@@ -410,7 +411,7 @@ public final class MatsimTransportModelMCRHealth implements TransportModel {
         config.global().setNumberOfThreads(16);
         config.qsim().setNumberOfThreads(16);
         config.transit().setUsingTransitInMobsim(false);
-        config.plansCalcRoute().setRoutingRandomness(0.);
+        config.routing().setRoutingRandomness(0.);
 
         // Set scale factor
         //TODO: check with Mahsa and Corin, if we need scale down again, or it is already incorperated in network
@@ -422,11 +423,11 @@ public final class MatsimTransportModelMCRHealth implements TransportModel {
         // Set output directory
         final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
         String outputDirectory = outputDirectoryRoot + "/matsim/" + year + "/" + day + "/car/";
-        config.controler().setRunId(String.valueOf(year));
-        config.controler().setOutputDirectory(outputDirectory);
-        config.controler().setWritePlansInterval(Math.max(config.controler().getLastIteration(), 1));
-        config.controler().setWriteEventsInterval(Math.max(config.controler().getLastIteration(), 1));
-        config.controler().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
+        config.controller().setRunId(String.valueOf(year));
+        config.controller().setOutputDirectory(outputDirectory);
+        config.controller().setWritePlansInterval(Math.max(config.controller().getLastIteration(), 1));
+        config.controller().setWriteEventsInterval(Math.max(config.controller().getLastIteration(), 1));
+        config.controller().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
 
 
 
@@ -435,16 +436,16 @@ public final class MatsimTransportModelMCRHealth implements TransportModel {
         mainModeList.add("car");
         mainModeList.add("truck");
         config.qsim().setMainModes(mainModeList);
-        config.plansCalcRoute().setNetworkModes(mainModeList);
+        config.routing().setNetworkModes(mainModeList);
 
-        ModeParams carParams = config.planCalcScore().getOrCreateModeParams(TransportMode.car);
+        ModeParams carParams = config.scoring().getOrCreateModeParams(TransportMode.car);
         ModeParams truckParams = new ModeParams(TransportMode.truck);
         truckParams.setConstant(carParams.getConstant());
         truckParams.setDailyMonetaryConstant(carParams.getDailyMonetaryConstant());
         truckParams.setMarginalUtilityOfDistance(carParams.getMarginalUtilityOfDistance());
         truckParams.setDailyUtilityConstant(carParams.getDailyUtilityConstant());
         truckParams.setMonetaryDistanceRate(carParams.getMonetaryDistanceRate());
-        config.planCalcScore().addModeParams(truckParams);
+        config.scoring().addModeParams(truckParams);
 
     }
 
@@ -452,7 +453,7 @@ public final class MatsimTransportModelMCRHealth implements TransportModel {
      * @param eventsFile
      */
     private void replayFromEvents(String eventsFile) {
-        initialMatsimConfig.plansCalcRoute().setRoutingRandomness(0.);
+        initialMatsimConfig.routing().setRoutingRandomness(0.);
         Scenario scenario = ScenarioUtils.loadScenario(initialMatsimConfig);
         TravelTime travelTime = TravelTimeUtils.createTravelTimesFromEvents(scenario.getNetwork(),scenario.getConfig(),eventsFile);
         TravelDisutility travelDisutility = ControlerDefaults.createDefaultTravelDisutilityFactory(scenario).createTravelDisutility(travelTime);
@@ -461,7 +462,7 @@ public final class MatsimTransportModelMCRHealth implements TransportModel {
 
     private void updateTravelTimes(TravelTime travelTime, TravelDisutility disutility) {
         matsimData.update(disutility, travelTime);
-        matsimData.getConfig().plansCalcRoute().setRoutingRandomness(0.);
+        matsimData.getConfig().routing().setRoutingRandomness(0.);
         internalTravelTimes.update(matsimData);
         final TravelTimes mainTravelTimes = dataContainer.getTravelTimes();
 

@@ -15,7 +15,8 @@ import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.schools.School;
 import de.tum.bgu.msm.schools.SchoolImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import uk.cam.mrc.phm.jobTypes.ManchesterJobType;
@@ -24,7 +25,7 @@ import java.util.Map;
 
 public class MitoDataConverterMCR implements MitoDataConverter {
 
-    private final static Logger logger = Logger.getLogger(MitoDataConverterMCR.class);
+    private final static Logger logger = LogManager.getLogger(MitoDataConverterMCR.class);
 
     @Override
     public DataSet convertData(DataContainer dataContainer) {

@@ -1,6 +1,8 @@
 package de.tum.bgu.msm.scenarios.healthMuc;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.geotools.api.feature.simple.SimpleFeature;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -16,18 +18,17 @@ import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.matsim.core.population.PopulationUtils;
-import org.matsim.core.router.FastDijkstraFactory;
+import org.matsim.core.router.DijkstraFactory;
 import org.matsim.core.router.costcalculators.FreespeedTravelTimeAndDisutility;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.utils.gis.ShapeFileReader;
-import org.opengis.feature.simple.SimpleFeature;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class TruckSubPopulationGenerator {
 
-    public static final Logger logger = Logger.getLogger(TruckSubPopulationGenerator.class);
+    public static final Logger logger = LogManager.getLogger(TruckSubPopulationGenerator.class);
 
     public static void main(String[] args) {
 
@@ -79,9 +80,9 @@ public class TruckSubPopulationGenerator {
         SimpleFeature feature = features.get(0);
         Geometry mucRegion = ((Geometry) feature.getDefaultGeometry());
 
-        FreespeedTravelTimeAndDisutility freespeed = new FreespeedTravelTimeAndDisutility(ConfigUtils.createConfig().planCalcScore());
+        FreespeedTravelTimeAndDisutility freespeed = new FreespeedTravelTimeAndDisutility(ConfigUtils.createConfig().scoring());
 
-        LeastCostPathCalculator dijkstra = new FastDijkstraFactory(false)
+        LeastCostPathCalculator dijkstra = new DijkstraFactory(false)
                 .createPathCalculator(networkEur, freespeed, freespeed);
 
 

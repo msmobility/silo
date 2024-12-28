@@ -10,7 +10,8 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.properties.BangkokPropertiesS
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.MunichPropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -18,7 +19,7 @@ import java.util.PropertyResourceBundle;
 
 public class SyntheticPopulationGeneratorBK {
 
-    static Logger logger = Logger.getLogger(SyntheticPopulationGeneratorBK.class);
+    static Logger logger = LogManager.getLogger(SyntheticPopulationGeneratorBK.class);
     private static DataSetSynPop dataSetSynPop = new DataSetSynPop();
 
     public static void main (String[] args) {

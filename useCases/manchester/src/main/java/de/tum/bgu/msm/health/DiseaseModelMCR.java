@@ -11,12 +11,13 @@ import de.tum.bgu.msm.health.disease.RelativeRisksDisease;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 
 public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListener {
-    private static final Logger logger = Logger.getLogger(DiseaseModelMCR.class);
+    private static final Logger logger = LogManager.getLogger(DiseaseModelMCR.class);
 
     public DiseaseModelMCR(DataContainer dataContainer, Properties properties, Random random) {
         super(dataContainer, properties, random);

@@ -4,12 +4,13 @@ import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.io.output.DwellingWriter;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.PrintWriter;
 
 public class DwellingWriterMCR implements DwellingWriter {
-    private final static Logger logger = Logger.getLogger(DwellingWriterMCR.class);
+    private final static Logger logger = LogManager.getLogger(DwellingWriterMCR.class);
     private final DataContainer dataContainer;
 
     public DwellingWriterMCR(DataContainer dataContainer) {

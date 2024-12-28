@@ -66,7 +66,7 @@ public class DataBuilderHealth {
         //jobFactory.readWorkingTimeDistributions(properties);
 
         RealEstateDataManager realEstateDataManager = new RealEstateDataManagerImpl(
-                new ManchesterDwellingTypes(), dwellingData, householdData, geoData, new DwellingFactoryImpl(), properties);
+                new ManchesterDwellingTypes(), dwellingData, householdData, geoData, new DwellingFactoryMCR(new DwellingFactoryImpl()), properties);
 
         JobDataManager jobDataManager = new JobDataManagerImpl(
                 properties, new JobFactoryImpl(), jobData, geoData, travelTimes, commutingTimeProbability);

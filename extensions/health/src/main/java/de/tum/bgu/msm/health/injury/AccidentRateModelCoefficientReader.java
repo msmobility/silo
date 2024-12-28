@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.health.injury;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -10,7 +11,7 @@ import java.util.Map;
 
 public class AccidentRateModelCoefficientReader {
 
-    private final static Logger logger = Logger.getLogger(AccidentRateModelCoefficientReader.class);
+    private final static Logger logger = LogManager.getLogger(AccidentRateModelCoefficientReader.class);
     private AccidentType accidentType;
     private AccidentSeverity accidentSeverity;
     private String path;

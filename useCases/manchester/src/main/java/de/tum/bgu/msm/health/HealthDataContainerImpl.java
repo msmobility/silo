@@ -17,10 +17,12 @@ import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.health.data.LinkInfo;
 import de.tum.bgu.msm.health.disease.Diseases;
 import de.tum.bgu.msm.health.disease.HealthExposures;
+import de.tum.bgu.msm.io.NoiseDwellingWriter;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.schools.SchoolData;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.emissions.Pollutant;
@@ -28,7 +30,7 @@ import org.matsim.contrib.emissions.Pollutant;
 import java.util.*;
 
 public class HealthDataContainerImpl implements DataContainerWithSchools, DataContainerHealth {
-    private final static Logger logger = Logger.getLogger(HealthDataContainerImpl.class);
+    private final static Logger logger = LogManager.getLogger(HealthDataContainerImpl.class);
 
     private final DataContainerWithSchools delegate;
     private final Properties properties;
@@ -109,6 +111,7 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     @Override
     public void endSimulation() {
         delegate.endSimulation();
+        writeDwellingsWithNoise(properties.main.endYear);
         //writePersonExposureData(properties.main.endYear);
         //writePersonRelativeRiskData(properties.main.endYear);
         //writePersonDiseaseTrackData(properties.main.endYear);
@@ -142,6 +145,16 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
                 + year
                 + ".csv";
         new HealthPersonWriter(this).writePersonRelativeRisk(filepp);
+    }
+
+    private void writeDwellingsWithNoise(int year) {
+        final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName +"/";
+        String filedd = outputDirectory
+                + properties.realEstate.dwellingsFinalFileName
+                + "Noise_"
+                + year
+                + ".csv";
+        new NoiseDwellingWriter(delegate.getRealEstateDataManager()).writeDwellings(filedd);
     }
 
     @Override

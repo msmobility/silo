@@ -4,7 +4,8 @@ import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.List;
@@ -16,7 +17,7 @@ import static de.tum.bgu.msm.data.household.IncomeCategory.*;
 
 public class HouseholdUtil {
 
-    private final static Logger logger = Logger.getLogger(HouseholdUtil.class);
+    private final static Logger logger = LogManager.getLogger(HouseholdUtil.class);
 
     private final static HouseholdFactory factory = new HouseholdFactoryImpl();
 

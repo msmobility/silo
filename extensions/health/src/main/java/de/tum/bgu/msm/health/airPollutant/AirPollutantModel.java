@@ -12,7 +12,8 @@ import de.tum.bgu.msm.health.io.LinkInfoWriter;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.matsim.api.core.v01.Scenario;
@@ -33,6 +34,7 @@ import org.matsim.core.utils.collections.Tuple;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.lang.Boolean.TRUE;
 import static org.matsim.core.controler.Injector.createInjector;
 
 public class AirPollutantModel extends AbstractModel implements ModelUpdateListener {
@@ -40,7 +42,7 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
     private static final double EMISSION_GRID_SIZE = 20;
     private static final double EMISSION_SMOOTH_RADIUS = 100;
     private int latestMatsimYear = -1;
-    private static final Logger logger = Logger.getLogger(AirPollutantModel.class);
+    private static final Logger logger = LogManager.getLogger(AirPollutantModel.class);
     private Scenario scenario;
     private final Config initialMatsimConfig;
     private final Set<Pollutant> pollutantSet = new HashSet<>();
@@ -69,36 +71,84 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
     public void endYear(int year) {
         logger.warn("Air pollutant exposure model end year:" + year);
         if(properties.main.startYear == year) {
-            for(Day day : simulatedDays){
+            //car truck emission
+            /*for(Day day : simulatedDays){
                 latestMatsimYear = year;
                 final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/"
                         + properties.main.scenarioName + "/matsim/" + latestMatsimYear;
                 Config config = ConfigUtils.loadConfig(initialMatsimConfig.getContext());
 
                 scenario = ScenarioUtils.createMutableScenario(config);
-                scenario.getConfig().controler().setOutputDirectory(outputDirectoryRoot);
+                scenario.getConfig().controller().setOutputDirectory(outputDirectoryRoot);
                 prepareConfig();
-                String eventFileWithoutEmissions = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_events.xml.gz";
-                String eventFileWithEmissions = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_events_emission.xml.gz";
-                String vehicleFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_vehicles.xml.gz";
-                String vehicleFileWithEmissionType = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".vehicles_emission.xml.gz";
+                String eventFileWithoutEmissions = scenario.getConfig().controller().getOutputDirectory() + "/" + day + "/car/" + year + ".output_events.xml.gz";
+                String eventFileWithEmissions = scenario.getConfig().controller().getOutputDirectory() + "/" + day + "/car/" + year + ".output_events_emission.xml.gz";
+                String vehicleFile = scenario.getConfig().controller().getOutputDirectory() + "/" + day + "/car/" + year + ".output_vehicles.xml.gz";
+                String vehicleFileWithEmissionType = scenario.getConfig().controller().getOutputDirectory() + "/" + day + "/car/" + year + ".vehicles_emission.xml.gz";
                 CreateVehicles createVehicles = new CreateVehicles(scenario);
                 createVehicles.runVehicleType();
                 createVehicles.runVehicle(vehicleFile, vehicleFileWithEmissionType);
                 updateConfig(day, vehicleFileWithEmissionType);
                 scenario = ScenarioUtils.loadScenario(scenario.getConfig());
                 createEmissionEventsOffline(eventFileWithoutEmissions,eventFileWithEmissions);
+            }*/
 
+            //car truck concentration
+            for(Day day : simulatedDays){
+                latestMatsimYear = year;
+                final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/"
+                        + properties.main.scenarioName + "/matsim/" + latestMatsimYear;
+                Config config = ConfigUtils.loadConfig(initialMatsimConfig.getContext());
                 //need to use full network (include all car, active mode links) for dispersion, need to have hbefa type for emission model
+                String networkFile = properties.main.baseDirectory + properties.healthData.network_for_airPollutant_model;
+                String eventFileWithEmissions = outputDirectoryRoot + "/" + day + "/car/" + year + ".output_events_emission.xml.gz";
+                config.network().setInputFile(networkFile);
+                config.controller().setOutputDirectory(outputDirectoryRoot);
+
+                scenario = ScenarioUtils.loadScenario(config);
+                double scalingFactor = properties.main.scaleFactor * properties.healthData.matsim_scale_factor_car;
+                runEmissionGridAnalyzer(year,day, eventFileWithEmissions, scalingFactor);
+
+                String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/";
+                new LinkInfoWriter().writeData((DataContainerHealth) dataContainer, outputDirectory, day, "carTruck");
+                System.gc();
+            }
+
+            //bus emission and concentration
+         /*   for(Day day : simulatedDays){
+                latestMatsimYear = year;
+                final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/"
+                        + properties.main.scenarioName + "/matsim/" + latestMatsimYear;
+                Config config = ConfigUtils.loadConfig(initialMatsimConfig.getContext());
+
+                scenario = ScenarioUtils.createMutableScenario(config);
+                scenario.getConfig().controller().setOutputDirectory(outputDirectoryRoot);
+                prepareConfig();
+                String eventFileWithoutEmissions = scenario.getConfig().controller().getOutputDirectory() + "/" + day + "/bus/" + year + ".output_events_bus.xml.gz";
+                String eventFileWithEmissions = scenario.getConfig().controller().getOutputDirectory() + "/" + day + "/bus/" + year + ".output_events_emission.xml.gz";
+                String vehicleFile = scenario.getConfig().controller().getOutputDirectory() + "/" + day + "/bus/" + year + ".output_transitVehicles.xml.gz";
+                String vehicleFileWithEmissionType = scenario.getConfig().controller().getOutputDirectory() + "/" + day + "/bus/" + year + ".vehicles_emission.xml.gz";
+                CreateVehicles createVehicles = new CreateVehicles(scenario);
+                createVehicles.runVehicleType();
+                createVehicles.runVehicle(vehicleFile, vehicleFileWithEmissionType);
+
+                scenario.getConfig().vehicles().setVehiclesFile(vehicleFileWithEmissionType);
+                scenario.getConfig().network().setInputFile(properties.healthData.bus_network);
+                scenario = ScenarioUtils.loadScenario(scenario.getConfig());
+                ((EmissionsConfigGroup)scenario.getConfig().getModules().get("emissions")).setHandlesHighAverageSpeeds(TRUE);
+                createEmissionEventsOffline(eventFileWithoutEmissions,eventFileWithEmissions);
+
+                //need to use bus network for dispersion, need to have hbefa type for emission model
                 String networkFile = properties.main.baseDirectory + properties.healthData.network_for_airPollutant_model;
                 scenario.getConfig().network().setInputFile(networkFile);
                 scenario = ScenarioUtils.loadScenario(scenario.getConfig());
-                runEmissionGridAnalyzer(year,day, eventFileWithEmissions);
+                double scalingFactor = properties.main.scaleFactor * 1.0;
+                runEmissionGridAnalyzer(year,day, eventFileWithEmissions, scalingFactor);
 
                 String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/";
-                new LinkInfoWriter().writeData((DataContainerHealth) dataContainer, outputDirectory, day);
+                new LinkInfoWriter().writeData((DataContainerHealth) dataContainer, outputDirectory, day, "bus");
                 System.gc();
-            }
+            }*/
         }
     }
 
@@ -146,14 +196,15 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
         emissionsConfig.setAverageColdEmissionFactorsFile(Properties.get().main.baseDirectory+ Properties.get().healthData.COLD_EMISSION_FILE);
         emissionsConfig.setAverageWarmEmissionFactorsFile(Properties.get().main.baseDirectory+ Properties.get().healthData.HOT_EMISSION_FILE);
         emissionsConfig.setNonScenarioVehicles(EmissionsConfigGroup.NonScenarioVehicles.ignore);
-        emissionsConfig.setHbefaRoadTypeSource(EmissionsConfigGroup.HbefaRoadTypeSource.fromLinkAttributes);
+        //TODO: check how the hbefa road type is determined inside matsim in version 2025.0
+        //emissionsConfig.setHbefaRoadTypeSource(EmissionsConfigGroup.HbefaRoadTypeSource.fromLinkAttributes);
         emissionsConfig.setHbefaVehicleDescriptionSource(EmissionsConfigGroup.HbefaVehicleDescriptionSource.fromVehicleTypeDescription);
         scenario.getConfig().addModule(emissionsConfig);
         return scenario.getConfig();
     }
 
     public Config updateConfig(Day day, String vehicleFile) {
-        String populationFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + latestMatsimYear + ".output_plans.xml.gz";
+        String populationFile = scenario.getConfig().controller().getOutputDirectory() + "/" + day + "/car/" + latestMatsimYear + ".output_plans.xml.gz";
 
         scenario.getConfig().vehicles().setVehiclesFile(vehicleFile);
         scenario.getConfig().plans().setInputFile(populationFile);
@@ -162,10 +213,9 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
     }
 
 
-    private void runEmissionGridAnalyzer(int year, Day day, String eventsFileWithEmission) {
+    private void runEmissionGridAnalyzer(int year, Day day, String eventsFileWithEmission, double scalingFactor) {
         logger.info("Creating grid cell air pollutant exposure for year " + year + ", day " + day);
 
-        double scalingFactor = properties.main.scaleFactor * properties.healthData.matsim_scale_factor_car;
         logger.info("Apply scale factor: " + scalingFactor + " to emission grid analyzer.");
 
         System.out.println("current memory usage: " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
@@ -326,41 +376,43 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
             final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/"
                     + properties.main.scenarioName + "/matsim/" + latestMatsimYear;
             scenario = ScenarioUtils.createMutableScenario(initialMatsimConfig);
-            scenario.getConfig().controler().setOutputDirectory(outputDirectoryRoot);
+            scenario.getConfig().controller().setOutputDirectory(outputDirectoryRoot);
             prepareConfig();
-            String eventFileWithoutEmissions = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_events.xml.gz";
-            String eventFileWithEmissions = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_events_emission.xml.gz";
-            String vehicleFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_vehicles.xml.gz";
-            String vehicleFileWithEmissionType = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".vehicles_emission.xml.gz";
+            String eventFileWithoutEmissions = scenario.getConfig().controller().getOutputDirectory() + "/" + day + "/car/" + year + ".output_events.xml.gz";
+            String eventFileWithEmissions = scenario.getConfig().controller().getOutputDirectory() + "/" + day + "/car/" + year + ".output_events_emission.xml.gz";
+            String vehicleFile = scenario.getConfig().controller().getOutputDirectory() + "/" + day + "/car/" + year + ".output_vehicles.xml.gz";
+            String vehicleFileWithEmissionType = scenario.getConfig().controller().getOutputDirectory() + "/" + day + "/car/" + year + ".vehicles_emission.xml.gz";
             CreateVehicles createVehicles = new CreateVehicles(scenario);
             createVehicles.runVehicleType();
             createVehicles.runVehicle(vehicleFile, vehicleFileWithEmissionType);
             updateConfig(day, vehicleFileWithEmissionType);
             scenario = ScenarioUtils.loadScenario(scenario.getConfig());
             createEmissionEventsOffline(eventFileWithoutEmissions,eventFileWithEmissions);
-            runEmissionGridAnalyzer(year,day, eventFileWithEmissions);
+            double scalingFactor = properties.main.scaleFactor * properties.healthData.matsim_scale_factor_car;
+            runEmissionGridAnalyzer(year,day, eventFileWithEmissions, scalingFactor);
         } else if(properties.transportModel.transportModelYears.contains(year + 1)) {//why year +1
             latestMatsimYear = year + 1;
             final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/"
                     + properties.main.scenarioName + "/matsim/" + latestMatsimYear;
             scenario = ScenarioUtils.createMutableScenario(initialMatsimConfig);
-            scenario.getConfig().controler().setOutputDirectory(outputDirectoryRoot);
+            scenario.getConfig().controller().setOutputDirectory(outputDirectoryRoot);
             prepareConfig();
-            String eventFileWithoutEmissions = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_events.xml.gz";
-            String eventFileWithEmissions = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_events_emission.xml.gz";
-            String vehicleFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".output_vehicles.xml.gz";
-            String vehicleFileWithEmissionType = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + year + ".vehicles_emission.xml.gz";
+            String eventFileWithoutEmissions = scenario.getConfig().controller().getOutputDirectory() + "/" + day + "/car/" + year + ".output_events.xml.gz";
+            String eventFileWithEmissions = scenario.getConfig().controller().getOutputDirectory() + "/" + day + "/car/" + year + ".output_events_emission.xml.gz";
+            String vehicleFile = scenario.getConfig().controller().getOutputDirectory() + "/" + day + "/car/" + year + ".output_vehicles.xml.gz";
+            String vehicleFileWithEmissionType = scenario.getConfig().controller().getOutputDirectory() + "/" + day + "/car/" + year + ".vehicles_emission.xml.gz";
             CreateVehicles createVehicles = new CreateVehicles(scenario);
             createVehicles.runVehicleType();
             createVehicles.runVehicle(vehicleFile, vehicleFileWithEmissionType);
             updateConfig(day, vehicleFileWithEmissionType);
             scenario = ScenarioUtils.loadScenario(scenario.getConfig());
             createEmissionEventsOffline(eventFileWithoutEmissions,eventFileWithEmissions);
-            runEmissionGridAnalyzer(year,day, eventFileWithEmissions);
+            double scalingFactor = properties.main.scaleFactor * properties.healthData.matsim_scale_factor_car;
+            runEmissionGridAnalyzer(year,day, eventFileWithEmissions, scalingFactor);
         }
 
         final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/";
-        new LinkInfoWriter().writeData((DataContainerHealth) dataContainer, outputDirectory, day);
+        new LinkInfoWriter().writeData((DataContainerHealth) dataContainer, outputDirectory, day, "carTruck");
 
         System.gc();
     }

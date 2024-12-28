@@ -10,7 +10,8 @@ import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.utils.TimeTracker;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 
@@ -21,7 +22,7 @@ import java.util.*;
  **/
 public final class Simulator {
 
-    private final static Logger logger = Logger.getLogger(Simulator.class);
+    private final static Logger logger = LogManager.getLogger(Simulator.class);
 
     private final Multiset<Class<? extends MicroEvent>> eventCounter = HashMultiset.create();
 

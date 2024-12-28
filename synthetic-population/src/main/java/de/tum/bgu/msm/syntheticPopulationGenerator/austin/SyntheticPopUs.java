@@ -25,7 +25,8 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.run.DataBuilder;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
 import java.io.BufferedReader;
@@ -55,7 +56,7 @@ public class SyntheticPopUs implements SyntheticPopI {
     //    protected static final String PROPERTIES_FILENAME_HH_VALIDATION  = "file.name.hh.validation";
     //    protected static final String PROPERTIES_FILENAME_DD_VALIDATION  = "file.name.dd.validation";
 
-    protected transient Logger logger = Logger.getLogger(SyntheticPopUs.class);
+    protected transient Logger logger = LogManager.getLogger(SyntheticPopUs.class);
     protected int[] pumas;
     protected int[] simplifiedPumas;
     protected HashMap<Integer, int[]> tazByPuma;

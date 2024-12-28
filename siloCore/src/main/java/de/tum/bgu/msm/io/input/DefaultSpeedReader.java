@@ -3,7 +3,8 @@ package de.tum.bgu.msm.io.input;
 import de.tum.bgu.msm.data.MitoGender;
 import de.tum.bgu.msm.data.Mode;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
 import java.io.BufferedReader;
@@ -13,7 +14,7 @@ import java.util.*;
 
 public class DefaultSpeedReader implements SpeedReader {
 
-    private final static Logger logger = Logger.getLogger(DefaultSpeedReader.class);
+    private final static Logger logger = LogManager.getLogger(DefaultSpeedReader.class);
 
     @Override
     public EnumMap<Mode,EnumMap<MitoGender,Map<Integer,Double>>> readData(String fileName) {

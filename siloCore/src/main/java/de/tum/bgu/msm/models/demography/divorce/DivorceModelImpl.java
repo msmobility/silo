@@ -14,7 +14,8 @@ import de.tum.bgu.msm.models.relocation.moves.MovesModel;
 import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,7 +24,7 @@ import java.util.Random;
 
 public class DivorceModelImpl extends AbstractModel implements DivorceModel {
 
-    private final static Logger logger = Logger.getLogger(DivorceModelImpl.class);
+    private final static Logger logger = LogManager.getLogger(DivorceModelImpl.class);
 
     private final MovesModel movesModel;
     private final CreateCarOwnershipModel carOwnership;

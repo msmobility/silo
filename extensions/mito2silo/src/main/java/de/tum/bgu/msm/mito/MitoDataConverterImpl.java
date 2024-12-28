@@ -13,7 +13,8 @@ import de.tum.bgu.msm.data.jobTypes.MunichJobType;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.vehicle.VehicleType;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 
@@ -30,7 +31,7 @@ import java.util.Map;
  */
 public class MitoDataConverterImpl implements MitoDataConverter {
 
-    private final Logger logger = Logger.getLogger(MitoDataConverterImpl.class);
+    private final Logger logger = LogManager.getLogger(MitoDataConverterImpl.class);
 
     @Override
     public DataSet convertData(DataContainer dataContainer) {

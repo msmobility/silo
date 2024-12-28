@@ -15,13 +15,18 @@
         <dependency>
             <groupId>org.matsim.contrib</groupId>
             <artifactId>dvrp</artifactId>
-            <version>14.0</version>
+            <version>${matsimVersion}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.matsim.contrib</groupId>
+            <artifactId>locationchoice</artifactId>
+            <version>${matsimVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.matsim.contrib</groupId>
             <artifactId>sbb-extensions</artifactId>
-            <version>14.0</version>
+            <version>${matsimVersion}</version>
             <exclusions>
                 <exclusion>
                     <groupId>javax.media</groupId>

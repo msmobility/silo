@@ -26,7 +26,8 @@ import de.tum.bgu.msm.models.relocation.moves.RegionProbabilityStrategy;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
 import java.util.EnumMap;
@@ -39,7 +40,7 @@ import static de.tum.bgu.msm.data.dwelling.RealEstateUtils.RENT_CATEGORIES;
 
 public class HousingStrategyMuc implements HousingStrategy {
 
-    private final static Logger logger = Logger.getLogger(HousingStrategyMuc.class);
+    private final static Logger logger = LogManager.getLogger(HousingStrategyMuc.class);
 
     private enum Normalizer {
         /**

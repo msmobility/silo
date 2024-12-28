@@ -21,7 +21,8 @@
 //import org.apache.commons.math.distribution.GammaDistributionImpl;
 //import org.apache.commons.math.stat.Frequency;
 //import org.apache.commons.math3.distribution.EnumeratedIntegerDistribution;
-//import org.apache.log4j.Logger;
+//import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 //
 //import java.io.*;
 //import java.util.*;
@@ -154,7 +155,7 @@
 //
 //    private HashMap<Person, Integer> educationalLevelByPerson;
 //
-//    static Logger logger = Logger.getLogger(SyntheticPopCT.class);
+//    static Logger logger = LogManager.getLogger(SyntheticPopCT.class);
 //    private DataContainer dataContainer;
 //
 //    public SyntheticPopCT(ResourceBundle rb){

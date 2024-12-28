@@ -13,7 +13,8 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.manchester.allocation.Allocat
 import de.tum.bgu.msm.syntheticPopulationGenerator.manchester.preparation.Preparation;
 import de.tum.bgu.msm.syntheticPopulationGenerator.optimizationIPU.optimization.Optimization;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -24,7 +25,7 @@ import org.apache.log4j.Logger;
  */
 public class SyntheticPopMCR implements SyntheticPopI {
 
-    public static final Logger logger = Logger.getLogger(SyntheticPopMCR.class);
+    public static final Logger logger = LogManager.getLogger(SyntheticPopMCR.class);
     private final DataSetSynPop dataSetSynPop;
     private Properties properties;
 

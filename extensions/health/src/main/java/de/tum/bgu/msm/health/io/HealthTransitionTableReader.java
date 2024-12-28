@@ -4,7 +4,8 @@ import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.health.disease.Diseases;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -13,7 +14,7 @@ import java.util.*;
 
 public class HealthTransitionTableReader {
 
-    private final static Logger logger = Logger.getLogger(HealthTransitionTableReader.class);
+    private final static Logger logger = LogManager.getLogger(HealthTransitionTableReader.class);
 
     public EnumMap<Diseases, Map<String, Double>> readData(DataContainerHealth dataContainer, String path) {
         logger.info("Reading health disease prob table from csv file");

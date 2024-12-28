@@ -5,7 +5,8 @@ import de.tum.bgu.msm.data.Day;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.emissions.Pollutant;
@@ -18,7 +19,7 @@ import java.util.Map;
 
 public class LinkInfoReader {
 
-    private final static Logger logger = Logger.getLogger(LinkInfoReader.class);
+    private final static Logger logger = LogManager.getLogger(LinkInfoReader.class);
 
     public void readData(DataContainerHealth dataContainer, String outputDirectory, Day day){
         readLinkConcentrationData(dataContainer,outputDirectory + "linkConcentration_" + day + ".csv");

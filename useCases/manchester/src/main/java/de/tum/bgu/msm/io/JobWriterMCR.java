@@ -4,13 +4,14 @@ import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.io.output.JobWriter;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.PrintWriter;
 
 public class JobWriterMCR implements JobWriter {
 
-    private final static Logger logger = Logger.getLogger(JobWriterMCR.class);
+    private final static Logger logger = LogManager.getLogger(JobWriterMCR.class);
 
     private final JobDataManager jobDataManager;
 

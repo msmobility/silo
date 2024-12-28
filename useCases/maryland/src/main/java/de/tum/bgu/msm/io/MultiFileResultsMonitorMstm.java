@@ -8,7 +8,8 @@ import de.tum.bgu.msm.data.person.Race;
 import de.tum.bgu.msm.events.MicroEvent;
 import de.tum.bgu.msm.io.output.MultiFileResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -19,7 +20,7 @@ public class MultiFileResultsMonitorMstm extends MultiFileResultsMonitor {
     private DataContainer dataContainer;
     private Properties properties;
     private PrintWriter popByRace;
-    private final Logger logger = Logger.getLogger(MultiFileResultsMonitorMstm.class);
+    private final Logger logger = LogManager.getLogger(MultiFileResultsMonitorMstm.class);
 
 
     public MultiFileResultsMonitorMstm(DataContainer dataContainer, Properties properties) {

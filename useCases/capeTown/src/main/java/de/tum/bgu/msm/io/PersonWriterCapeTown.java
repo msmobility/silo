@@ -5,13 +5,14 @@ import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonCapeTown;
 import de.tum.bgu.msm.io.output.PersonWriter;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.PrintWriter;
 
 public class PersonWriterCapeTown implements PersonWriter {
 
-    private final static Logger logger = Logger.getLogger(PersonWriterCapeTown.class);
+    private final static Logger logger = LogManager.getLogger(PersonWriterCapeTown.class);
 
     private final HouseholdDataManager householdData;
 

@@ -6,7 +6,8 @@ import de.tum.bgu.msm.health.HealthModelMuc;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.resources.Resources;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 
@@ -20,7 +21,7 @@ import java.util.Objects;
 
 public class RunSiloMucHealthOffline {
 
-    private final static Logger logger = Logger.getLogger(RunSiloMucHealthOffline.class);
+    private final static Logger logger = LogManager.getLogger(RunSiloMucHealthOffline.class);
 
     public static void main(String[] args) {
 

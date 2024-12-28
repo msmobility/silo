@@ -12,11 +12,12 @@ import de.tum.bgu.msm.properties.PropertiesUtil;
 import omx.OmxMatrix;
 import omx.hdf5.OmxHdf5Datatype;
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.log4j.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.FileAppender;
 import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.log4j.*;
 import org.matsim.core.controler.Controler;
 
 import java.io.*;
@@ -34,7 +35,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
  **/
 public class SiloUtil {
 
-    private final static Logger logger = Logger.getLogger(SiloUtil.class);
+    private final static Logger logger = LogManager.getLogger(SiloUtil.class);
 
     private static final String TIME_TRACKER_FILE = "timeTracker.csv";
     private static Random rand;
@@ -1106,16 +1107,17 @@ public class SiloUtil {
         int min = (int) (endTime - 60 * hours);
         logger.info("Runtime: " + hours + " hours and " + min + " minutes.");
         SiloUtil.writeOutTimeTracker(timeTracker);
-        Logger root = Logger.getRootLogger();
-        Appender app = root.getAppender(LOG_FILE_NAME);
+        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+        org.apache.logging.log4j.core.Logger root = LoggerContext.getContext(false).getRootLogger();
+        Appender app = root.getAppenders().get(LOG_FILE_NAME);
         if (app != null) {
             root.removeAppender(app);
-            app.close();
+            app.stop();
         }
-        app = root.getAppender(LOG_WARN_FILE_NAME);
+        app = root.getAppenders().get(LOG_WARN_FILE_NAME);
         if (app != null) {
             root.removeAppender(app);
-            app.close();
+            app.stop();
         }
     }
 

@@ -6,7 +6,8 @@ import de.tum.bgu.msm.health.disease.Diseases;
 import de.tum.bgu.msm.health.disease.HealthExposures;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -16,7 +17,7 @@ import java.util.*;
 
 public class DoseResponseLookupReader {
 
-    private final static Logger logger = Logger.getLogger(DoseResponseLookupReader.class);
+    private final static Logger logger = LogManager.getLogger(DoseResponseLookupReader.class);
 
     private EnumMap<HealthExposures, EnumMap<Diseases, TableDataSet>> doseResponseData = new EnumMap<>(HealthExposures.class);
     private EnumMap<Diseases, String> diseaseOutcomeTypeLookup = new EnumMap<>(Diseases.class);

@@ -6,7 +6,8 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.health.HealthDataContainerImpl;
 import de.tum.bgu.msm.health.PersonFactoryMCRHealth;
 import de.tum.bgu.msm.health.PersonHealthMCR;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -16,7 +17,7 @@ import java.util.Map;
 
 public class HealthExposuresReader {
 
-    private final static Logger logger = Logger.getLogger(HealthExposuresReader.class);
+    private final static Logger logger = LogManager.getLogger(HealthExposuresReader.class);
 
     public Map<Integer, PersonHealth> readData(HealthDataContainerImpl dataContainer, String path) {
         logger.info("Reading person micro data with health exposures");

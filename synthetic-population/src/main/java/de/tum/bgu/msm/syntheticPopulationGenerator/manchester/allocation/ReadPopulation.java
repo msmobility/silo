@@ -16,7 +16,8 @@ import de.tum.bgu.msm.data.job.JobMuc;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.io.BufferedReader;
@@ -26,7 +27,7 @@ import java.util.HashMap;
 
 public class ReadPopulation {
 
-    private static final Logger logger = Logger.getLogger(ReadPopulation.class);
+    private static final Logger logger = LogManager.getLogger(ReadPopulation.class);
     private final DataContainer dataContainer;
     private HashMap<Person, Integer> educationalLevel;
 

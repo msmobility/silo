@@ -16,7 +16,8 @@ import de.tum.bgu.msm.schools.PersonWithSchool;
 import de.tum.bgu.msm.schools.School;
 import de.tum.bgu.msm.schools.SchoolImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 
@@ -24,7 +25,7 @@ import java.util.Map;
 
 public class MitoDataConverterTak implements MitoDataConverter {
 
-    private final static Logger logger = Logger.getLogger(MitoDataConverterTak.class);
+    private final static Logger logger = LogManager.getLogger(MitoDataConverterTak.class);
 
     @Override
     public DataSet convertData(DataContainer dataContainer) {

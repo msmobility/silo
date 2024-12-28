@@ -3,10 +3,12 @@ package de.tum.bgu.msm.transportModel.mstm;
 import de.tum.bgu.msm.data.MitoTrip;
 import de.tum.bgu.msm.transportModel.SiloTestUtils;
 import junitx.framework.FileAssert;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Rule;
+import org.junit.rules.TestRule.*;
 import org.junit.Test;
 import org.matsim.testcases.MatsimTestUtils;
 import de.tum.bgu.msm.run.SiloMstm;
@@ -14,14 +16,13 @@ import de.tum.bgu.msm.run.SiloMstm;
 import java.io.File;
 
 public class SiloMstmTest {
-    private static final Logger LOG = Logger.getLogger(SiloMstmTest.class);
+    private static final Logger LOG = LogManager.getLogger(SiloMstmTest.class);
 
     private final static String filename_dd = "./test/scenarios/annapolis/scenOutput/test_reduced_mstm/microData/dd_2001.csv";
     private final static String filename_hh = "./test/scenarios/annapolis/scenOutput/test_reduced_mstm/microData/hh_2001.csv";
     private final static String filename_jj = "./test/scenarios/annapolis/scenOutput/test_reduced_mstm/microData/jj_2001.csv";
     private final static String filename_pp = "./test/scenarios/annapolis/scenOutput/test_reduced_mstm/microData/pp_2001.csv";
 
-    @Rule
     public MatsimTestUtils utils = new MatsimTestUtils();
 
     /**

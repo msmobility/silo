@@ -29,7 +29,8 @@ import de.tum.bgu.msm.models.relocation.moves.MovesModel;
 import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,7 +44,7 @@ import java.util.Random;
  **/
 public class LeaveParentHhModelImpl extends AbstractModel implements LeaveParentHhModel {
 
-    private final static Logger logger = Logger.getLogger(LeaveParentHhModelImpl.class);
+    private final static Logger logger = LogManager.getLogger(LeaveParentHhModelImpl.class);
 
     private final CreateCarOwnershipModel createCarOwnershipModel;
     private final HouseholdFactory hhFactory;

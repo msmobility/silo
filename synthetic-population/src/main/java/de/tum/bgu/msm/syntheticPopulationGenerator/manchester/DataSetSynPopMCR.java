@@ -7,9 +7,10 @@ import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.common.matrix.Matrix;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.geotools.api.feature.simple.SimpleFeature;
 import org.locationtech.jts.geom.Coordinate;
-import org.opengis.feature.simple.SimpleFeature;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,7 +23,7 @@ import java.util.Map;
 
 public class DataSetSynPopMCR extends DataSetSynPop {
 
-    private static final Logger logger = Logger.getLogger(DataSetSynPopMCR.class);
+    private static final Logger logger = LogManager.getLogger(DataSetSynPopMCR.class);
 
     private TableDataSet weights;
     private TableDataSet frequencyMatrix;

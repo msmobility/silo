@@ -2,9 +2,13 @@ package de.tum.bgu.msm.io;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.*;
+import de.tum.bgu.msm.health.DwellingFactoryMCR;
+import de.tum.bgu.msm.health.NoiseDwellingMCR;
+import de.tum.bgu.msm.health.PersonFactoryMCRHealth;
 import de.tum.bgu.msm.io.input.DwellingReader;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.io.BufferedReader;
@@ -13,26 +17,12 @@ import java.io.IOException;
 
 public class DwellingReaderMCR implements DwellingReader {
 
-    private final static Logger logger = Logger.getLogger(DwellingReaderMCR.class);
+    private final static Logger logger = LogManager.getLogger(DwellingReaderMCR.class);
     private final DwellingData dwellingData;
 
     private final DwellingTypes dwellingTypes;
-    private final DwellingFactory dwellingFactory;
+    private final DwellingFactoryMCR dwellingFactory;
     private DataContainer dataContainer;
-
-    public DwellingReaderMCR(DwellingData realEstate) {
-        this(realEstate, new DefaultDwellingTypes(),  new DwellingFactoryImpl());
-    }
-
-    public DwellingReaderMCR(DwellingData realEstate,
-                             DwellingFactory dwellingFactory) {
-        this(realEstate, new DefaultDwellingTypes(),  dwellingFactory);
-    }
-
-    public DwellingReaderMCR(DwellingData realEstate,
-                             DwellingTypes dwellingTypes) {
-        this(realEstate, dwellingTypes,  new DwellingFactoryImpl());
-    }
 
     public DwellingReaderMCR(RealEstateDataManager realEstate, DataContainer dataContainer) {
         this(realEstate.getDwellingData(), realEstate.getDwellingTypes(), realEstate.getDwellingFactory());
@@ -43,12 +33,13 @@ public class DwellingReaderMCR implements DwellingReader {
                              DwellingFactory dwellingFactory) {
         this.dwellingData = realEstate;
         this.dwellingTypes = dwellingTypes;
-        this.dwellingFactory = dwellingFactory;
+        this.dwellingFactory = new DwellingFactoryMCR(dwellingFactory);
     }
 
     @Override
     public void readData(String path) {
         logger.info("Reading dwelling micro data from ascii file");
+
         String recString = "";
         int recCount = 0;
         try {
@@ -99,7 +90,7 @@ public class DwellingReaderMCR implements DwellingReader {
                     coordinate = dataContainer.getGeoData().getZones().get(zoneId).getRandomCoordinate(SiloUtil.getRandomObject());
                 }
 
-                Dwelling dwelling = dwellingFactory.createDwelling(id, zoneId, coordinate, hhId, type, area, quality, price, yearBuilt);
+                NoiseDwellingMCR dwelling = dwellingFactory.createDwelling(id, zoneId, coordinate, hhId, type, area, quality, price, yearBuilt);
                 dwellingData.addDwelling(dwelling);
                 if (id == SiloUtil.trackDd) {
                     SiloUtil.trackWriter.println("Read dwelling with following attributes from " + path);

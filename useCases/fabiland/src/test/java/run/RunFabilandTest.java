@@ -1,7 +1,7 @@
 package run;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -12,9 +12,12 @@ import org.matsim.core.events.EventsUtils;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.testcases.MatsimTestUtils;
+import org.matsim.utils.eventsfilecomparison.ComparisonResult;
 import org.matsim.utils.eventsfilecomparison.EventsFileComparator;
 
 import java.net.URL;
+
+import static org.matsim.utils.eventsfilecomparison.ComparisonResult.FILES_ARE_EQUAL;
 
 public class RunFabilandTest{
 	private static final Logger log = LogManager.getLogger( RunFabilandTest.class );
@@ -50,8 +53,8 @@ public class RunFabilandTest{
 			{
 				String expected = utils.getInputDirectory() + "/0.output_events.xml.gz" ;
 				String actual = "scenario/scenOutput/base/matsim/0/0.output_events.xml.gz" ;
-				EventsFileComparator.Result result = EventsUtils.compareEventsFiles( expected, actual );
-				Assert.assertEquals( EventsFileComparator.Result.FILES_ARE_EQUAL, result );
+				ComparisonResult result = EventsUtils.compareEventsFiles( expected, actual );
+				Assert.assertEquals( FILES_ARE_EQUAL, result );
 			}
 
 			log.info("############################################");
@@ -70,8 +73,8 @@ public class RunFabilandTest{
 			{
 				String expected = utils.getInputDirectory() + "/1.0.events.xml.gz" ;
 				String actual = "scenario/scenOutput/base/matsim/1/ITERS/it.0/1.0.events.xml.gz" ;
-				EventsFileComparator.Result result = EventsUtils.compareEventsFiles( expected, actual );
-				Assert.assertEquals( EventsFileComparator.Result.FILES_ARE_EQUAL, result );
+				ComparisonResult result = EventsUtils.compareEventsFiles( expected, actual );
+				Assert.assertEquals( FILES_ARE_EQUAL, result );
 			}
 
 			log.info("############################################");
@@ -90,8 +93,8 @@ public class RunFabilandTest{
 			{
 				String expected = utils.getInputDirectory() + "/1.output_events.xml.gz" ;
 				String actual = "scenario/scenOutput/base/matsim/1/1.output_events.xml.gz" ;
-				EventsFileComparator.Result result = EventsUtils.compareEventsFiles( expected, actual );
-				Assert.assertEquals( EventsFileComparator.Result.FILES_ARE_EQUAL, result );
+				ComparisonResult result = EventsUtils.compareEventsFiles( expected, actual );
+				Assert.assertEquals( FILES_ARE_EQUAL, result );
 			}
 
 			log.info("############################################");

@@ -14,7 +14,8 @@ import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.data.vehicle.VehicleType;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
@@ -33,7 +34,7 @@ import java.util.Random;
 import java.util.Map;
 
 public class SimpleMatsimScenarioAssembler implements MatsimScenarioAssembler {
-    private final static Logger logger = Logger.getLogger(SimpleMatsimScenarioAssembler.class);
+    private final static Logger logger = LogManager.getLogger(SimpleMatsimScenarioAssembler.class);
     private final DataContainer dataContainer;
     private final Properties properties;
 //    private final boolean newRandomSeed = false;

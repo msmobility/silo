@@ -79,22 +79,9 @@
             <!--MATSim test infrastructure.  Not transitive.-->
             <groupId>org.matsim</groupId>
             <artifactId>matsim</artifactId>
+            <type>test-jar</type>
             <version>${matsimVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.matsim.contrib</groupId>
-            <artifactId>emissions</artifactId>
-            <version>14.0</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>javax.media</groupId>
-                    <artifactId>jai_core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>jgridshift</groupId>
-                    <artifactId>jgridshift</artifactId>
-                </exclusion>
-            </exclusions>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -105,14 +92,8 @@
         <dependency>
             <groupId>org.matsim.contrib</groupId>
             <artifactId>emissions</artifactId>
-            <version>14.0</version>
+            <version>${matsimVersion}</version>
             <scope>compile</scope>
         </dependency>
-        <!--        <dependency>-->
-<!--            <groupId>de.tum.bgu.msm</groupId>-->
-<!--            <artifactId>matsim2silo</artifactId>-->
-<!--            <version>0.1.0-SNAPSHOT</version>-->
-<!--            <scope>compile</scope>-->
-<!--        </dependency>-->
     </dependencies>
 </project>

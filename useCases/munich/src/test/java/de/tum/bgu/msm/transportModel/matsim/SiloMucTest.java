@@ -11,7 +11,8 @@ import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.utils.SiloUtil;
 import junitx.framework.FileAssert;
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -32,7 +33,7 @@ public class SiloMucTest {
      */
     private static final boolean CLEANUP_AFTER_TEST = false;
 
-    private static final Logger log = Logger.getLogger(SiloMucTest.class);
+    private static final Logger log = LogManager.getLogger(SiloMucTest.class);
 
     @Test
     public final void testMain() {

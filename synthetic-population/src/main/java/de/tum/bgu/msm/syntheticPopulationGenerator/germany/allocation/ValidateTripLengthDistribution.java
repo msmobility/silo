@@ -12,7 +12,8 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.commons.math.stat.Frequency;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -21,7 +22,7 @@ import java.util.ArrayList;
 
 public class ValidateTripLengthDistribution {
 
-    private static final Logger logger = Logger.getLogger(ValidateTripLengthDistribution.class);
+    private static final Logger logger = LogManager.getLogger(ValidateTripLengthDistribution.class);
 
     private final DataSetSynPop dataSetSynPop;
     private final DataContainer dataContainer;

@@ -13,7 +13,8 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.MicroDataManager;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -22,7 +23,7 @@ import java.util.Random;
 
 public class GenerateHouseholdsPersonsDwellingsTrampa {
 
-    private static final Logger logger = Logger.getLogger(GenerateHouseholdsPersonsDwellingsTrampa.class);
+    private static final Logger logger = LogManager.getLogger(GenerateHouseholdsPersonsDwellingsTrampa.class);
 
     private final DataContainer dataContainer;
 

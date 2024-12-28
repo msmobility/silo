@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.data.accessibility;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import de.tum.bgu.msm.common.datafile.TableDataSet;
 
@@ -11,7 +12,7 @@ import de.tum.bgu.msm.utils.SiloUtil;
  * @author dziemke
  */
 public class CommutingTimeProbabilityImpl implements CommutingTimeProbability {
-	private static final Logger logger = Logger.getLogger(CommutingTimeProbabilityImpl.class);
+	private static final Logger logger = LogManager.getLogger(CommutingTimeProbabilityImpl.class);
 
     private float[] workTripLengthFrequencyDistribution;
     

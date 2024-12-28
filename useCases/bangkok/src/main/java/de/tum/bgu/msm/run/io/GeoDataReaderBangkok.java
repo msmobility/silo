@@ -9,13 +9,14 @@ import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.geo.RegionImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.geotools.api.feature.simple.SimpleFeature;
 import org.matsim.core.utils.gis.ShapeFileReader;
-import org.opengis.feature.simple.SimpleFeature;
 
 public class GeoDataReaderBangkok implements GeoDataReader {
 
-    private static Logger logger = Logger.getLogger(GeoDataReaderBangkok.class);
+    private static Logger logger = LogManager.getLogger(GeoDataReaderBangkok.class);
 
     private GeoData geoDataMuc;
 

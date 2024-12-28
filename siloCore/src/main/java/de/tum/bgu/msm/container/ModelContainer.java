@@ -30,7 +30,8 @@ import de.tum.bgu.msm.models.realEstate.renovation.RenovationModel;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigration;
 import de.tum.bgu.msm.models.relocation.moves.MovesModel;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -49,7 +50,7 @@ import java.util.Map;
  */
 public class ModelContainer {
 
-    private final static Logger logger = Logger.getLogger(ModelContainer.class);
+    private final static Logger logger = LogManager.getLogger(ModelContainer.class);
 
     private final Map<Class<? extends MicroEvent>, EventModel> eventModels = new LinkedHashMap<>();
     private final List<ModelUpdateListener> modelUpdateListeners = new ArrayList<>();

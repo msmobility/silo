@@ -20,7 +20,8 @@ import de.tum.bgu.msm.health.disease.Diseases;
 import de.tum.bgu.msm.health.disease.HealthExposures;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.schools.SchoolData;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.emissions.Pollutant;
@@ -29,7 +30,7 @@ import de.tum.bgu.msm.properties.Properties;
 import java.util.*;
 
 public class HealthDataContainerImpl implements DataContainerWithSchools, DataContainerHealth {
-    private final static Logger logger = Logger.getLogger(HealthDataContainerImpl.class);
+    private final static Logger logger = LogManager.getLogger(HealthDataContainerImpl.class);
 
     private final DataContainerWithSchools delegate;
     private final Properties properties;

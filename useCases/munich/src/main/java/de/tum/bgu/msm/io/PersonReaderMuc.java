@@ -10,7 +10,8 @@ import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.PersonRole;
 import de.tum.bgu.msm.io.input.PersonReader;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -18,7 +19,7 @@ import java.io.IOException;
 
 public class PersonReaderMuc implements PersonReader {
 
-    private final static Logger logger = Logger.getLogger(PersonReaderMuc.class);
+    private final static Logger logger = LogManager.getLogger(PersonReaderMuc.class);
     private final HouseholdDataManager householdDataManager;
 
     public PersonReaderMuc(HouseholdDataManager householdDataManager) {

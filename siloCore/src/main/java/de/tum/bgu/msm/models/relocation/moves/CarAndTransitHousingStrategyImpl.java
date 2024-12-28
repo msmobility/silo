@@ -21,7 +21,8 @@ import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.data.vehicle.VehicleType;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
 import java.util.EnumMap;
@@ -32,7 +33,7 @@ import static de.tum.bgu.msm.data.dwelling.RealEstateUtils.RENT_CATEGORIES;
 
 public class CarAndTransitHousingStrategyImpl implements HousingStrategy {
 
-    private final static Logger logger = Logger.getLogger(CarAndTransitHousingStrategyImpl.class);
+    private final static Logger logger = LogManager.getLogger(CarAndTransitHousingStrategyImpl.class);
 
     private enum Normalizer {
         /**

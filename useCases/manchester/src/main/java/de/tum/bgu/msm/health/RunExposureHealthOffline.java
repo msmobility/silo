@@ -5,9 +5,9 @@ import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.health.airPollutant.AirPollutantModel;
 import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.health.data.LinkInfo;
+import de.tum.bgu.msm.health.noise.NoiseModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
@@ -16,6 +16,8 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,16 +32,17 @@ import static de.tum.bgu.msm.utils.SiloUtil.*;
 
 public class RunExposureHealthOffline {
 
-    private final static Logger logger = Logger.getLogger(RunExposureHealthOffline.class);
+    private final static Logger logger = LogManager.getLogger(RunExposureHealthOffline.class);
 
     public static void main(String[] args) {
 
-        Properties properties = Properties.initializeProperties(args[0]);
+        Properties properties = SiloUtil.siloInitialization(args[0]);
+        /*Properties properties = Properties.initializeProperties(args[0]);
         final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
         createDirectoryIfNotExistingYet(outputDirectory);
         initializeRandomNumber(properties.main.randomSeed);
         trackingFile("open");
-        loadHdf5Lib();
+        loadHdf5Lib();*/
 
         Config config = null;
         if (args.length > 1 && args[1] != null) {
@@ -51,6 +54,7 @@ public class RunExposureHealthOffline {
 
         //Resources.initializeResources(Objects.requireNonNull(properties.main.baseDirectory + properties.transportModel.mitoPropertiesPath));
         AirPollutantModel airPollutantModel = new AirPollutantModel(dataContainer, properties, SiloUtil.provideNewRandom(),config);
+        NoiseModel noiseModel = new NoiseModel(dataContainer,properties, SiloUtil.provideNewRandom(),config);
         HealthExposureModelMCR exposureModelMCR = new HealthExposureModelMCR(dataContainer, properties, SiloUtil.provideNewRandom(),config);
         DiseaseModelMCR diseaseModelMCR = new DiseaseModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
 
@@ -70,11 +74,11 @@ public class RunExposureHealthOffline {
             ((DataContainerHealth)dataContainer).getZoneExposure2Pollutant2TimeBin().put(zone, pollutantMap);
         }
 
-
+        //noiseModel.endYear(2021);
         airPollutantModel.endYear(2021);
-        exposureModelMCR.endYear(2021);
-        diseaseModelMCR.setup();
-        diseaseModelMCR.endYear(2021);
+        //exposureModelMCR.endYear(2021);
+        //diseaseModelMCR.setup();
+        //diseaseModelMCR.endYear(2021);
         dataContainer.endSimulation();
 
         logger.info("Finished SILO.");

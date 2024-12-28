@@ -5,7 +5,9 @@ import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.io.output.OmxMatrixWriter;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix2D;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.geotools.api.feature.simple.SimpleFeature;
 import org.locationtech.jts.geom.Geometry;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -20,7 +22,6 @@ import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.core.utils.gis.ShapeFileReader;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.transitSchedule.api.TransitScheduleReader;
-import org.opengis.feature.simple.SimpleFeature;
 
 import java.util.Collection;
 import java.util.List;
@@ -29,7 +30,7 @@ import java.util.stream.Collectors;
 
 public class StandaloneSkimCreator {
 
-    private final static Logger logger = Logger.getLogger(StandaloneSkimCreator.class);
+    private final static Logger logger = LogManager.getLogger(StandaloneSkimCreator.class);
 
     public static void main(String[] args) {
 //        createSkims(Integer.parseInt(args[0]), args[1], args[2], args[3], args[4], Integer.parseInt(args[5]));
@@ -74,7 +75,7 @@ public class StandaloneSkimCreator {
 
         logger.info("Preparing MATSim data...");
         MatsimData data = new MatsimData(config, threads, network, schedule, zoneConnectorManager);
-        FreespeedTravelTimeAndDisutility freespeed = new FreespeedTravelTimeAndDisutility(config.planCalcScore());
+        FreespeedTravelTimeAndDisutility freespeed = new FreespeedTravelTimeAndDisutility(config.scoring());
         data.update(freespeed, freespeed);
 
         final MatsimSkimCreator matsimSkimCreator = new MatsimSkimCreator(data);

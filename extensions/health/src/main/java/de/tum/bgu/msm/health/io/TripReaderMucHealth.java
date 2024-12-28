@@ -5,7 +5,8 @@ import de.tum.bgu.msm.data.Mode;
 import de.tum.bgu.msm.data.Purpose;
 import de.tum.bgu.msm.health.data.Trip;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.core.utils.geometry.CoordUtils;
 
 import java.io.BufferedReader;
@@ -16,7 +17,7 @@ import java.util.Map;
 
 public class TripReaderMucHealth {
 
-    private final static Logger logger = Logger.getLogger(TripReaderMucHealth.class);
+    private final static Logger logger = LogManager.getLogger(TripReaderMucHealth.class);
 
 
     public Map<Integer, Trip> readData(String path) {

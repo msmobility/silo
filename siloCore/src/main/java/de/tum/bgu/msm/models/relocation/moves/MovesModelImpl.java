@@ -21,7 +21,8 @@ import de.tum.bgu.msm.utils.SampleException;
 import de.tum.bgu.msm.utils.Sampler;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.commons.math3.util.Precision;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.nio.file.Path;
@@ -44,7 +45,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
     public static boolean track = false;
 
-    protected final static Logger logger = Logger.getLogger(MovesModelImpl.class);
+    protected final static Logger logger = LogManager.getLogger(MovesModelImpl.class);
     private static final int MAX_NUMBER_DWELLINGS = 20;
 
     private final MovesStrategy movesStrategy;

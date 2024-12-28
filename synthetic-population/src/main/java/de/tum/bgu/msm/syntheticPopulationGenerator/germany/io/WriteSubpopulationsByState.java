@@ -10,7 +10,8 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ import java.util.Map;
  */
 public class WriteSubpopulationsByState {
 
-    public static final Logger logger = Logger.getLogger(WriteSubpopulationsByState.class);
+    public static final Logger logger = LogManager.getLogger(WriteSubpopulationsByState.class);
     private final DataContainerWithSchools dataContainer;
     private String outputFolder;
     private final String state;

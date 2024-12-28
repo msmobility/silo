@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.health.airPollutant.emission;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -14,12 +15,14 @@ import java.util.List;
 
 public class AssignHbefaRoadTypes {
 
-    private static final Logger logger = Logger.getLogger(AssignHbefaRoadTypes.class);
+    private static final Logger logger = LogManager.getLogger(AssignHbefaRoadTypes.class);
     private static final String OSMTYPE_NAME = "type";
     private static final List<String> minorRoadTypes = Arrays.asList("residential","access","service","living","track",
             "unclassified","pedestrian","path","footway","bridleway","bus","cycleway","road");
-    static String inputFile = "/home/qin/models/manchester/input/mito/trafficAssignment/network_car_calibrated.xml";
-    static String outputFile = "/home/qin/models/manchester/input/mito/trafficAssignment/network_car_calibrated_hbefa.xml";
+//    static String inputFile = "/home/qin/models/manchester/input/mito/trafficAssignment/network_car_calibrated.xml";
+//    static String outputFile = "/home/qin/models/manchester/input/mito/trafficAssignment/network_car_calibrated_hbefa.xml";
+    static String inputFile = "/home/qin/models/manchester/input/mito/trafficAssignment/network_bus.xml";
+    static String outputFile = "/home/qin/models/manchester/input/mito/trafficAssignment/network_bus_hbefa.xml";
 
     /**
      * handled OSM road types:
@@ -64,15 +67,33 @@ public class AssignHbefaRoadTypes {
     public static String getHbefaType(Link link) {
 
         double freeFlowSpeed_kmh = link.getFreespeed()*3.6;
-        if(link.getAttributes().getAttribute(OSMTYPE_NAME)==null){
-            logger.error("Link id: " + link.getId() + " has no attribute: " + OSMTYPE_NAME);
-            return "URB/Trunk-Nat./70";
-        }
-
-        String osmType = link.getAttributes().getAttribute(OSMTYPE_NAME).toString().split("_")[0];
 
         String type = "";
         String speedRange= "";
+
+        if(link.getAttributes().getAttribute(OSMTYPE_NAME)==null){
+            if(link.getAllowedModes().contains("bus")){
+                if (freeFlowSpeed_kmh > 80) {
+                    type = "MW-Nat.";
+                    speedRange = "80";
+                } else if (freeFlowSpeed_kmh > 60){
+                    type = "MW-City";
+                    speedRange = "60";
+                } else if (freeFlowSpeed_kmh >= 50){
+                    type = "Local";
+                    speedRange = "50";
+                } else {
+                    type = "Access";
+                    speedRange = "30";
+                }
+                return "URB/" + type + "/" + speedRange;
+            }else{
+                logger.error("Link id: " + link.getId() + " has no attribute: " + OSMTYPE_NAME);
+                return "URB/Trunk-Nat./70";
+            }
+        }
+
+        String osmType = link.getAttributes().getAttribute(OSMTYPE_NAME).toString().split("_")[0];
 
         if (osmType.equals("motorway")){
             if (freeFlowSpeed_kmh > 80) {

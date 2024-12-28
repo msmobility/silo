@@ -10,7 +10,8 @@ import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Collection;
 
@@ -18,7 +19,7 @@ public class MicroDataScaler {
 
     private final DataContainer dataContainer;
     private final Properties properties;
-    private static Logger logger = Logger.getLogger(MicroDataScaler.class);
+    private static Logger logger = LogManager.getLogger(MicroDataScaler.class);
 
 
     public MicroDataScaler(DataContainer dataContainer, Properties properties) {

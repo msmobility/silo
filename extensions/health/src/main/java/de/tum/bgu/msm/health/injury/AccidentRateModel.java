@@ -1,7 +1,8 @@
 package de.tum.bgu.msm.health.injury;
 
 import cern.colt.map.tfloat.OpenIntFloatHashMap;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
@@ -21,7 +22,7 @@ import java.io.FileOutputStream;
 import java.io.PrintWriter;
 
 public class AccidentRateModel {
-    private static final Logger log = Logger.getLogger( AccidentRateModel.class );
+    private static final Logger log = LogManager.getLogger( AccidentRateModel.class );
     private Scenario scenario;
     private final float SCALEFACTOR;
     private AccidentsContext accidentsContext = new AccidentsContext();
@@ -59,10 +60,10 @@ public class AccidentRateModel {
 
         log.info("Reading network file...");
         String networkFile;
-        if (this.scenario.getConfig().controler().getRunId() == null || this.scenario.getConfig().controler().getRunId().equals("")) {
-            networkFile = this.scenario.getConfig().controler().getOutputDirectory() + "car/" + "output_network.xml.gz";
+        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
+            networkFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + "output_network.xml.gz";
         } else {
-            networkFile = this.scenario.getConfig().controler().getOutputDirectory() + "car/" + this.scenario.getConfig().controler().getRunId() + ".output_network.xml.gz";
+            networkFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + this.scenario.getConfig().controller().getRunId() + ".output_network.xml.gz";
         }
         new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
         log.info("Reading network file... Done.");
@@ -74,10 +75,10 @@ public class AccidentRateModel {
         EventsManager events = injector.getInstance( EventsManager.class ) ;
         MatsimEventsReader eventsReader = new MatsimEventsReader(events);
         String eventsFile;
-        if (this.scenario.getConfig().controler().getRunId() == null || this.scenario.getConfig().controler().getRunId().equals("")) {
-            eventsFile = this.scenario.getConfig().controler().getOutputDirectory() + "car/" + "output_events.xml.gz";
+        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
+            eventsFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + "output_events.xml.gz";
         } else {
-            eventsFile = this.scenario.getConfig().controler().getOutputDirectory() + "car/" + this.scenario.getConfig().controler().getRunId() + ".output_events.xml.gz";
+            eventsFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + this.scenario.getConfig().controller().getRunId() + ".output_events.xml.gz";
         }
         events.addHandler(analysisEventHandler);
         eventsReader.readFile(eventsFile); //car AADT are calculated by eventHandler
@@ -85,10 +86,10 @@ public class AccidentRateModel {
 
         log.info("Reading bike&ped events file...");
         String eventsFileBikePed;
-        if (this.scenario.getConfig().controler().getRunId() == null || this.scenario.getConfig().controler().getRunId().equals("")) {
-            eventsFileBikePed = this.scenario.getConfig().controler().getOutputDirectory() + "bikePed/" + "output_events.xml.gz";
+        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
+            eventsFileBikePed = this.scenario.getConfig().controller().getOutputDirectory() + "bikePed/" + "output_events.xml.gz";
         } else {
-            eventsFileBikePed = this.scenario.getConfig().controler().getOutputDirectory() + "bikePed/" + this.scenario.getConfig().controler().getRunId() + ".output_events.xml.gz";
+            eventsFileBikePed = this.scenario.getConfig().controller().getOutputDirectory() + "bikePed/" + this.scenario.getConfig().controller().getRunId() + ".output_events.xml.gz";
         }
         eventsReader.readFile(eventsFileBikePed); //car, bike, ped AADT are calculated by eventHandler
         log.info("Reading bike&ped events file... Done.");
@@ -162,10 +163,10 @@ public class AccidentRateModel {
 
         log.info("Reading network file...");
         String networkFile;
-        if (this.scenario.getConfig().controler().getRunId() == null || this.scenario.getConfig().controler().getRunId().equals("")) {
-            networkFile = this.scenario.getConfig().controler().getOutputDirectory() + "car/" + "output_network.xml.gz";
+        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
+            networkFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + "output_network.xml.gz";
         } else {
-            networkFile = this.scenario.getConfig().controler().getOutputDirectory() + "car/" + this.scenario.getConfig().controler().getRunId() + ".output_network.xml.gz";
+            networkFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + this.scenario.getConfig().controller().getRunId() + ".output_network.xml.gz";
         }
         new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
         log.info("Reading network file... Done.");
@@ -173,10 +174,10 @@ public class AccidentRateModel {
         log.info("Reading car plans file...");
         PopulationReader popReader = new PopulationReader(scenario);
         String plansFile;
-        if (this.scenario.getConfig().controler().getRunId() == null || this.scenario.getConfig().controler().getRunId().equals("")) {
-            plansFile = this.scenario.getConfig().controler().getOutputDirectory() + "car/" + "output_plans.xml.gz";
+        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
+            plansFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + "output_plans.xml.gz";
         } else {
-            plansFile = this.scenario.getConfig().controler().getOutputDirectory() + "car/" + this.scenario.getConfig().controler().getRunId() + ".output_plans.xml.gz";
+            plansFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + this.scenario.getConfig().controller().getRunId() + ".output_plans.xml.gz";
         }
         popReader.readFile(plansFile);
         log.info("Reading car plans file... Done.");
@@ -185,10 +186,10 @@ public class AccidentRateModel {
 
         log.info("Reading bikePed plans file...");
         String plansFileBikePed;
-        if (this.scenario.getConfig().controler().getRunId() == null || this.scenario.getConfig().controler().getRunId().equals("")) {
-            plansFileBikePed = this.scenario.getConfig().controler().getOutputDirectory() + "bikePed/" + "output_plans.xml.gz";
+        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
+            plansFileBikePed = this.scenario.getConfig().controller().getOutputDirectory() + "bikePed/" + "output_plans.xml.gz";
         } else {
-            plansFileBikePed = this.scenario.getConfig().controler().getOutputDirectory() + "bikePed/" + this.scenario.getConfig().controler().getRunId() + ".output_plans.xml.gz";
+            plansFileBikePed = this.scenario.getConfig().controller().getOutputDirectory() + "bikePed/" + this.scenario.getConfig().controller().getRunId() + ".output_plans.xml.gz";
         }
         popReader.readFile(plansFileBikePed);
         log.info("Reading bikePed plans file... Done.");
@@ -202,10 +203,10 @@ public class AccidentRateModel {
         EventsManager events = injector.getInstance( EventsManager.class ) ;
         MatsimEventsReader eventsReader = new MatsimEventsReader(events);
         String eventsFile;
-        if (this.scenario.getConfig().controler().getRunId() == null || this.scenario.getConfig().controler().getRunId().equals("")) {
-            eventsFile = this.scenario.getConfig().controler().getOutputDirectory() + "car/" + "output_events.xml.gz";
+        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
+            eventsFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + "output_events.xml.gz";
         } else {
-            eventsFile = this.scenario.getConfig().controler().getOutputDirectory() + "car/" + this.scenario.getConfig().controler().getRunId() + ".output_events.xml.gz";
+            eventsFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + this.scenario.getConfig().controller().getRunId() + ".output_events.xml.gz";
         }
         events.addHandler(analysisEventHandler);
         eventsReader.readFile(eventsFile); //car AADT are calculated by eventHandler
@@ -213,10 +214,10 @@ public class AccidentRateModel {
 
         log.info("Reading bike&ped events file...");
         String eventsFileBikePed;
-        if (this.scenario.getConfig().controler().getRunId() == null || this.scenario.getConfig().controler().getRunId().equals("")) {
-            eventsFileBikePed = this.scenario.getConfig().controler().getOutputDirectory() + "bikePed/" + "output_events.xml.gz";
+        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
+            eventsFileBikePed = this.scenario.getConfig().controller().getOutputDirectory() + "bikePed/" + "output_events.xml.gz";
         } else {
-            eventsFileBikePed = this.scenario.getConfig().controler().getOutputDirectory() + "bikePed/" + this.scenario.getConfig().controler().getRunId() + ".output_events.xml.gz";
+            eventsFileBikePed = this.scenario.getConfig().controller().getOutputDirectory() + "bikePed/" + this.scenario.getConfig().controller().getRunId() + ".output_events.xml.gz";
         }
         eventsReader.readFile(eventsFileBikePed); //car, bike, ped AADT are calculated by eventHandler
         log.info("Reading bike&ped events file... Done.");
@@ -317,10 +318,10 @@ public class AccidentRateModel {
 
         log.info("Reading network file...");
         String networkFile;
-        if (this.scenario.getConfig().controler().getRunId() == null || this.scenario.getConfig().controler().getRunId().equals("")) {
-            networkFile = this.scenario.getConfig().controler().getOutputDirectory() + "car/" + "output_network.xml.gz";
+        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
+            networkFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + "output_network.xml.gz";
         } else {
-            networkFile = this.scenario.getConfig().controler().getOutputDirectory() + "car/" + this.scenario.getConfig().controler().getRunId() + ".output_network.xml.gz";
+            networkFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + this.scenario.getConfig().controller().getRunId() + ".output_network.xml.gz";
         }
         new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
         log.info("Reading network file... Done.");
@@ -332,10 +333,10 @@ public class AccidentRateModel {
         EventsManager events = injector.getInstance( EventsManager.class ) ;
         MatsimEventsReader eventsReader = new MatsimEventsReader(events);
         String eventsFile;
-        if (this.scenario.getConfig().controler().getRunId() == null || this.scenario.getConfig().controler().getRunId().equals("")) {
-            eventsFile = this.scenario.getConfig().controler().getOutputDirectory() + "car/" + "output_events.xml.gz";
+        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
+            eventsFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + "output_events.xml.gz";
         } else {
-            eventsFile = this.scenario.getConfig().controler().getOutputDirectory() + "car/" + this.scenario.getConfig().controler().getRunId() + ".output_events.xml.gz";
+            eventsFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + this.scenario.getConfig().controller().getRunId() + ".output_events.xml.gz";
         }
         events.addHandler(analysisEventHandler);
         eventsReader.readFile(eventsFile); //car AADT are calculated by eventHandler
@@ -343,10 +344,10 @@ public class AccidentRateModel {
 
         log.info("Reading bike&ped events file...");
         String eventsFileBikePed;
-        if (this.scenario.getConfig().controler().getRunId() == null || this.scenario.getConfig().controler().getRunId().equals("")) {
-            eventsFileBikePed = this.scenario.getConfig().controler().getOutputDirectory() + "bikePed/" + "output_events.xml.gz";
+        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
+            eventsFileBikePed = this.scenario.getConfig().controller().getOutputDirectory() + "bikePed/" + "output_events.xml.gz";
         } else {
-            eventsFileBikePed = this.scenario.getConfig().controler().getOutputDirectory() + "bikePed/" + this.scenario.getConfig().controler().getRunId() + ".output_events.xml.gz";
+            eventsFileBikePed = this.scenario.getConfig().controller().getOutputDirectory() + "bikePed/" + this.scenario.getConfig().controller().getRunId() + ".output_events.xml.gz";
         }
         eventsReader.readFile(eventsFileBikePed); //car, bike, ped AADT are calculated by eventHandler
         log.info("Reading bike&ped events file... Done.");
@@ -541,7 +542,7 @@ public class AccidentRateModel {
     }
 
     public void writeOut () throws FileNotFoundException {
-        String outputRisk = scenario.getConfig().controler().getOutputDirectory() + "injuryRisk.csv";
+        String outputRisk = scenario.getConfig().controller().getOutputDirectory() + "injuryRisk.csv";
         StringBuilder risk = new StringBuilder();
 
         //write header
@@ -563,7 +564,7 @@ public class AccidentRateModel {
     }
 
     public void writeOutCasualtyRate () throws FileNotFoundException {
-        String outputRisk = scenario.getConfig().controler().getOutputDirectory() + "casualtyRate.csv";
+        String outputRisk = scenario.getConfig().controller().getOutputDirectory() + "casualtyRate.csv";
         StringBuilder risk = new StringBuilder();
 
         //write header
@@ -599,7 +600,7 @@ public class AccidentRateModel {
     }
 
     public void writeOutCrashFrequency () throws FileNotFoundException {
-        String outputRisk = scenario.getConfig().controler().getOutputDirectory() + "crashRate.csv";
+        String outputRisk = scenario.getConfig().controller().getOutputDirectory() + "crashRate.csv";
         StringBuilder risk = new StringBuilder();
 
         //write header
@@ -634,7 +635,7 @@ public class AccidentRateModel {
     }
 
     public void writeOutExposure () throws FileNotFoundException {
-        String outputRisk = scenario.getConfig().controler().getOutputDirectory() + "linkExposure.csv";
+        String outputRisk = scenario.getConfig().controller().getOutputDirectory() + "linkExposure.csv";
         StringBuilder risk = new StringBuilder();
 
         //write header

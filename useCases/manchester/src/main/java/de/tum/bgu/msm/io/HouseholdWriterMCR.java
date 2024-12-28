@@ -6,7 +6,8 @@ import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.io.output.DefaultHouseholdWriter;
 import de.tum.bgu.msm.io.output.HouseholdWriter;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.jboss.logging.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.PrintWriter;
 
@@ -14,7 +15,7 @@ public class HouseholdWriterMCR implements HouseholdWriter {
 
     private final HouseholdDataManager householdData;
     private final RealEstateDataManager realEstateData;
-    private final static  Logger logger = Logger.getLogger(DefaultHouseholdWriter.class);
+    private final static Logger logger = LogManager.getLogger(DefaultHouseholdWriter.class);
 
     public HouseholdWriterMCR(HouseholdDataManager householdData, RealEstateDataManager realEstateData) {
         this.householdData = householdData;

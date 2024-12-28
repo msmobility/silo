@@ -15,7 +15,8 @@ import de.tum.bgu.msm.models.modeChoice.CommuteModeChoice;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoiceMapping;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Scenario;
@@ -34,7 +35,7 @@ import java.util.Random;
 
 public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimScenarioAssembler {
 
-    private final static Logger logger = Logger.getLogger(SimpleMatsimScenarioAssembler.class);
+    private final static Logger logger = LogManager.getLogger(SimpleMatsimScenarioAssembler.class);
 
     private final DataContainer dataContainer;
     private final Properties properties;

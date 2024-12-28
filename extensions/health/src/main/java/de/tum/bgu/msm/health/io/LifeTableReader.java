@@ -2,7 +2,8 @@ package de.tum.bgu.msm.health.io;
 
 // Reads life tables in .csv format from www.destatis.de
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -13,7 +14,7 @@ import java.util.Locale;
 
 public class LifeTableReader {
 
-    private final static Logger logger = Logger.getLogger(LifeTableReader.class);
+    private final static Logger logger = LogManager.getLogger(LifeTableReader.class);
     private final static NumberFormat nf = NumberFormat.getInstance(Locale.GERMANY);
 
     private final static String SEP = ";";

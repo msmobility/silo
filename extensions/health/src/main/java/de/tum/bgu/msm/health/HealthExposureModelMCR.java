@@ -16,7 +16,8 @@ import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
@@ -50,7 +51,7 @@ import java.util.stream.Collectors;
 public class HealthExposureModelMCR extends AbstractModel implements ModelUpdateListener {
     private int latestMatsimYear = -1;
     private int latestMITOYear = -1;
-    private static final Logger logger = Logger.getLogger(HealthExposureModelMCR.class);
+    private static final Logger logger = LogManager.getLogger(HealthExposureModelMCR.class);
     private Map<Integer, Trip> mitoTrips = new HashMap<>();
     private final Config initialMatsimConfig;
     private MutableScenario scenario;
@@ -174,8 +175,8 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 + properties.main.scenarioName + "/matsim/" + latestMatsimYear;
 
         scenario = ScenarioUtils.createMutableScenario(initialMatsimConfig);
-        scenario.getConfig().plansCalcRoute().setRoutingRandomness(0);
-        scenario.getConfig().controler().setOutputDirectory(outputDirectoryRoot);
+        scenario.getConfig().routing().setRoutingRandomness(0);
+        scenario.getConfig().controller().setOutputDirectory(outputDirectoryRoot);
 
         calculateTripHealthIndicator(new ArrayList<>(mitoTrips.values()), day, mode);
     }
@@ -195,14 +196,14 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         switch (mode){
             case autoDriver:
             case autoPassenger:
-                String eventsFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + latestMatsimYear + ".output_events.xml.gz";
-                networkFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/car/" + latestMatsimYear + ".output_network.xml.gz";
+                String eventsFile = scenario.getConfig().controller().getOutputDirectory() + "/" + day + "/car/" + latestMatsimYear + ".output_events.xml.gz";
+                networkFile = scenario.getConfig().controller().getOutputDirectory() + "/" + day + "/car/" + latestMatsimYear + ".output_network.xml.gz";
                 new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
                 travelTime = TravelTimeUtils.createTravelTimesFromEvents(scenario.getNetwork(),scenario.getConfig(), eventsFile);
                 travelDisutility = ControlerDefaults.createDefaultTravelDisutilityFactory(scenario).createTravelDisutility(travelTime);
                 break;
             case walk:
-                networkFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/bikePed/" + latestMatsimYear + ".output_network.xml.gz";
+                networkFile = scenario.getConfig().controller().getOutputDirectory() + "/" + day + "/bikePed/" + latestMatsimYear + ".output_network.xml.gz";
                 new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
                 WalkConfigGroup walkConfigGroup = new WalkConfigGroup();
                 fillConfigWithWalkStandardValue(walkConfigGroup);
@@ -210,7 +211,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 travelDisutility = new WalkTravelDisutilityPreCalc(scenario.getNetwork(),purposes,walkConfigGroup,travelTime);
                 break;
             case bicycle:
-                networkFile = scenario.getConfig().controler().getOutputDirectory() + "/" + day + "/bikePed/" + latestMatsimYear + ".output_network.xml.gz";
+                networkFile = scenario.getConfig().controller().getOutputDirectory() + "/" + day + "/bikePed/" + latestMatsimYear + ".output_network.xml.gz";
                 new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
                 BicycleConfigGroup bicycleConfigGroup = new BicycleConfigGroup();
                 fillConfigWithBikeStandardValue(bicycleConfigGroup);

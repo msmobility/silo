@@ -35,7 +35,9 @@ import de.tum.bgu.msm.utils.SampleException;
 import de.tum.bgu.msm.utils.Sampler;
 import de.tum.bgu.msm.utils.SeededRandomPointsBuilder;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.geotools.api.feature.simple.SimpleFeature;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -44,7 +46,6 @@ import org.locationtech.jts.shape.random.RandomPointsBuilder;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.core.utils.geometry.geotools.MGC;
 import org.matsim.core.utils.gis.ShapeFileReader;
-import org.opengis.feature.simple.SimpleFeature;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -67,7 +68,7 @@ public class SyntheticPopUs implements SyntheticPopI {
     public static final String PROPERTIES_PUMS_PP_FILE_NAME = "pums.pp";
 
 
-    protected transient Logger logger = Logger.getLogger(SyntheticPopUs.class);
+    protected transient Logger logger = LogManager.getLogger(SyntheticPopUs.class);
 
     private int microLocCounter = 0;
 

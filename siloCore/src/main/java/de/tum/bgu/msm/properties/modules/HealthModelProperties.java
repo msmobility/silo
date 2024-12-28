@@ -31,6 +31,7 @@ public class HealthModelProperties {
     public final Boolean adjustByRelativeRisk;
     public final String baseExposureFile;
     public final List<Integer> exposureModelYears;
+    public final String bus_network;
 
 
     public HealthModelProperties(ResourceBundle bundle) {
@@ -73,6 +74,9 @@ public class HealthModelProperties {
         baseExposureFile = PropertiesUtil.getStringProperty(bundle, "base.exposure.file", null);
 
         exposureModelYears = Arrays.stream((PropertiesUtil.getIntPropertyArray(bundle, "exposure.model.years", new int[]{2030,2040,2050}))).boxed().collect(Collectors.toList());
+
+        bus_network = PropertiesUtil.getStringProperty(bundle, "matsim.network.bus", "input/mito/trafficAssignment/network_transit_hbefa.xml");
+
     }
 
 }

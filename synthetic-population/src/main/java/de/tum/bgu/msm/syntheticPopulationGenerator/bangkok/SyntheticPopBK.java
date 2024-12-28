@@ -24,7 +24,8 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.bangkok.preparation.Preparati
 import de.tum.bgu.msm.syntheticPopulationGenerator.optimizationIPU.optimization.Optimization;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Collection;
 
@@ -37,7 +38,7 @@ import java.util.Collection;
  */
 public class SyntheticPopBK implements SyntheticPopI {
 
-    public static final Logger logger = Logger.getLogger(SyntheticPopBK.class);
+    public static final Logger logger = LogManager.getLogger(SyntheticPopBK.class);
     private final DataSetSynPop dataSetSynPop;
     private Properties properties;
 

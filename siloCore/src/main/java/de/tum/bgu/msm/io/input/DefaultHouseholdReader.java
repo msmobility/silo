@@ -4,7 +4,8 @@ import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -12,7 +13,7 @@ import java.io.IOException;
 
 public class DefaultHouseholdReader implements HouseholdReader{
 
-    private final static Logger logger = Logger.getLogger(DefaultHouseholdReader.class);
+    private final static Logger logger = LogManager.getLogger(DefaultHouseholdReader.class);
     private final HouseholdDataManager householdData;
     private final HouseholdFactory factory;
 

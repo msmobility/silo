@@ -7,7 +7,8 @@ import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.resources.Resources;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.core.config.Config;
@@ -19,7 +20,7 @@ import java.util.Random;
 
 public class AccidentModel extends AbstractModel implements ModelUpdateListener {
     private int latestMatsimYear = -1;
-    private static final Logger logger = Logger.getLogger(AccidentModel.class);
+    private static final Logger logger = LogManager.getLogger(AccidentModel.class);
 
     public AccidentModel(DataContainer dataContainer, Properties properties, Random random) {
         super(dataContainer, properties, random);
@@ -56,8 +57,8 @@ public class AccidentModel extends AbstractModel implements ModelUpdateListener 
             final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/"
                     + properties.main.scenarioName + "/matsim/" + latestMatsimYear + "/" + day + "/";
             Config config = ConfigUtils.createConfig();
-            config.controler().setOutputDirectory(outputDirectoryRoot);
-            config.controler().setRunId(String.valueOf(latestMatsimYear));
+            config.controller().setOutputDirectory(outputDirectoryRoot);
+            config.controller().setRunId(String.valueOf(latestMatsimYear));
             final MutableScenario scenario = ScenarioUtils.createMutableScenario(config);
             scenario.getConfig().travelTimeCalculator().setTraveltimeBinSize(3600);
             float scalingFactor = (float) (properties.main.scaleFactor * Double.parseDouble(Resources.instance.getString(de.tum.bgu.msm.resources.Properties.TRIP_SCALING_FACTOR)));

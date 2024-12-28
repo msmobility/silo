@@ -10,7 +10,8 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.utils.SiloUtil;
 import junitx.framework.FileAssert;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,8 +26,8 @@ import org.matsim.utils.eventsfilecomparison.EventsFileComparator;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
+import static org.matsim.utils.eventsfilecomparison.ComparisonResult.FILES_ARE_EQUAL;
+
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -42,10 +43,9 @@ public class SiloMatsimMucTest {
     private static final boolean CLEANUP_AFTER_TEST = true;
 
 
-    @Rule
     public MatsimTestUtils utils = new MatsimTestUtils();
 
-    private static final Logger log = Logger.getLogger(SiloMatsimMucTest.class);
+    private static final Logger log = LogManager.getLogger(SiloMatsimMucTest.class);
 
     @Test
 	public final void testMain() {
@@ -79,7 +79,7 @@ public class SiloMatsimMucTest {
         File dir = new File("./test/muc/scenOutput/test/");
 
         config.global().setNumberOfThreads(1);
-        config.parallelEventHandling().setNumberOfThreads(1);
+        config.global().setNumberOfThreads(1);
         config.qsim().setNumberOfThreads(1);
 
         Properties properties = SiloUtil.siloInitialization(path);
@@ -99,7 +99,7 @@ public class SiloMatsimMucTest {
         log.info("Checking MATSim events file ...");
         final String eventsFilenameReference = "./test/muc/refOutput/matsim/test_2013/2013.output_events.xml.gz";
         final String eventsFilenameNew = "./test/muc/scenOutput/test/matsim/2013/2013.output_events.xml.gz";
-        assertEquals("Different event files.", EventsFileComparator.Result.FILES_ARE_EQUAL, EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew));
+        assertEquals("Different event files.", FILES_ARE_EQUAL, EventsFileComparator.compare(eventsFilenameReference, eventsFilenameNew));
     }
 
     private void checkPlans() {

@@ -7,7 +7,8 @@ import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.health.data.LinkInfo;
 import de.tum.bgu.msm.health.data.Trip;
 import de.tum.bgu.msm.util.MitoUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.contrib.emissions.Pollutant;
 
 import java.io.PrintWriter;
@@ -15,7 +16,7 @@ import java.util.Map;
 
 public class TripExposureWriter {
 
-    private final static Logger logger = Logger.getLogger(TripExposureWriter.class);
+    private final static Logger logger = LogManager.getLogger(TripExposureWriter.class);
     public void writeMitoTrips(Map<Integer, Trip> mitoTrips, String path) {
         logger.info("  Writing trip health indicators file");
         PrintWriter pwh = MitoUtil.openFileForSequentialWriting(path, false);
