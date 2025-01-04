@@ -113,7 +113,7 @@ public final class MatsimTransportModelMCRHealth implements TransportModel {
 
         if (properties.transportModel.matsimInitialEventsFile == null) {
             //TODO: comment out for longitudinal simulation. need to make it more general
-            //runTransportModel(properties.main.startYear);
+            runTransportModel(properties.main.startYear);
         } else {
             String eventsFile = properties.main.baseDirectory + properties.transportModel.matsimInitialEventsFile;
             replayFromEvents(eventsFile);

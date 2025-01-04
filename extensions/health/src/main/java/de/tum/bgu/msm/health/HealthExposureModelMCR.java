@@ -340,6 +340,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
                 // PHYSICAL ACTIVITY
                 double linkMarginalMet = PhysicalActivity.getMMet(mode, linkLength, linkTime, link);
+                //TODO: convert matsim link time to moving only
                 linkMarginalMetHours = linkMarginalMet * linkTime / 3600.;
 
                 // AIR POLLUTION Concentration
