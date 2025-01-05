@@ -40,6 +40,7 @@ import org.matsim.contrib.dvrp.trafficmonitoring.TravelTimeUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.QSimConfigGroup;
+import org.matsim.core.config.groups.RoutingConfigGroup;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.ControlerDefaults;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
@@ -209,11 +210,13 @@ public final class MatsimTransportModelMCRHealth implements TransportModel {
             VehicleType walk = VehicleUtils.getFactory().createVehicleType(Id.create(TransportMode.walk, VehicleType.class));
             walk.setMaximumVelocity(properties.healthData.MAX_WALKSPEED / 3.6);
             walk.setPcuEquivalents(0.);
+            walk.setNetworkMode(TransportMode.walk);
             matsimScenario.getVehicles().addVehicleType(walk);
 
             VehicleType bicycle = VehicleUtils.getFactory().createVehicleType(Id.create(TransportMode.bike, VehicleType.class));
             bicycle.setMaximumVelocity(properties.healthData.MAX_CYCLESPEED / 3.6);
             bicycle.setPcuEquivalents(0.);
+            bicycle.setNetworkMode(TransportMode.bike);
             matsimScenario.getVehicles().addVehicleType(bicycle);
 
             matsimScenario.getConfig().qsim().setVehiclesSource(QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData);
@@ -310,11 +313,13 @@ public final class MatsimTransportModelMCRHealth implements TransportModel {
             VehicleType car = VehicleUtils.getFactory().createVehicleType(Id.create(TransportMode.car, VehicleType.class));
             car.setPcuEquivalents(1.);
             car.setLength(7.5);
+            car.setNetworkMode(TransportMode.car);
             matsimScenario.getVehicles().addVehicleType(car);
 
             VehicleType truck = VehicleUtils.getFactory().createVehicleType(Id.create(TransportMode.truck, VehicleType.class));
             truck.setPcuEquivalents(2.5);
             truck.setLength(15.);
+            truck.setNetworkMode(TransportMode.truck);
             matsimScenario.getVehicles().addVehicleType(truck);
 
             matsimScenario.getConfig().qsim().setVehiclesSource(QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData);
@@ -437,6 +442,7 @@ public final class MatsimTransportModelMCRHealth implements TransportModel {
         mainModeList.add("truck");
         config.qsim().setMainModes(mainModeList);
         config.routing().setNetworkModes(mainModeList);
+        config.routing().setAccessEgressType(RoutingConfigGroup.AccessEgressType.accessEgressModeToLink);
 
         ModeParams carParams = config.scoring().getOrCreateModeParams(TransportMode.car);
         ModeParams truckParams = new ModeParams(TransportMode.truck);
