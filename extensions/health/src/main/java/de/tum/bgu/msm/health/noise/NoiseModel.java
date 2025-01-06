@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.health.noise;
 
 import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.Day;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
@@ -21,6 +22,8 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 public class NoiseModel extends AbstractModel implements ModelUpdateListener {
@@ -33,13 +36,14 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
     private int latestMatsimYear = -1;
 
     private final NoiseReceiverPoints noiseReceiverPoints;
-
+    private List<Day> simulatedDays;
 
     public NoiseModel(DataContainer data, Properties properties, Random random, Config initialConfig) {
         super(data, properties, random);
         this.initialConfig = initialConfig;
         this.realEstateDataManager = data.getRealEstateDataManager();
         this.noiseReceiverPoints = new NoiseReceiverPoints();
+        simulatedDays = Arrays.asList(Day.saturday,Day.sunday);
     }
 
     @Override
@@ -81,15 +85,18 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
 //        this.noiseReceiverPoints.putAll(existingNoiseReceiverPoints);
 
         //Temoparary
-
-        readBuidlingFile();
-
         if(properties.main.startYear == year) {
             latestMatsimYear = year;
-            calculateNoiseOffline(noiseReceiverPoints);
+            for(Day day : simulatedDays){
+                logger.info("Updating noise immisisons for year " + year + " day " + day + ".");
+                this.noiseReceiverPoints.clear();
+                readBuidlingFile();
+                calculateNoiseOffline(noiseReceiverPoints, day);
+                writeNoiseImission(day);
+            }
         }
 
-        writeNoiseImission();
+
         /*int counter65 = 0;
         int counter55 = 0;
         for (Dwelling dwelling : dataContainer.getRealEstateDataManager().getDwellings()) {
@@ -116,9 +123,9 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
 
 
 
-    private void calculateNoiseOffline(NoiseReceiverPoints noiseReceiverPoints) {
+    private void calculateNoiseOffline(NoiseReceiverPoints noiseReceiverPoints, Day day) {
         final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/"
-                + properties.main.scenarioName + "/matsim/" + latestMatsimYear + "/thursday/car/";
+                + properties.main.scenarioName + "/matsim/" + latestMatsimYear + "/" + day + "/car/";
 
         Config config = ConfigUtils.loadConfig(initialConfig.getContext());
         config.controller().setOutputDirectory(outputDirectoryRoot);
@@ -141,15 +148,14 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
         noiseParameters.setWriteOutputIteration(1);
         double scalingFactor = properties.healthData.matsim_scale_factor_car;
         noiseParameters.setScaleFactor(1./scalingFactor);
-        config.addModule(noiseParameters);
 
         config.qsim().setEndTime(24 * 60 * 60);
-
         noiseParameters.setConsiderNoiseBarriers(true);
-        noiseParameters.setConsiderNoiseReflection(true);
+        noiseParameters.setConsiderNoiseReflection(false);
         noiseParameters.setNoiseBarriersFilePath("/home/qin/models/manchester/input/buildingShapefile/mrcBuildings.geojson");
         noiseParameters.setNoiseBarriersSourceCRS("EPSG:27700");
         config.global().setCoordinateSystem("EPSG:27700");
+        config.addModule(noiseParameters);
 
         NoiseOfflineCalculation noiseOfflineCalculation = new NoiseOfflineCalculation(scenario, outputDirectoryRoot);
         noiseOfflineCalculation.run();
@@ -157,7 +163,7 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
     }
 
     private void readBuidlingFile() {
-        String fileName = "/home/qin/models/manchester/input/buildingShapefile/dwelling_salford.csv";
+        String fileName = "/home/qin/models/manchester/input/buildingShapefile/mcrBuildings.csv";
 
         String recString = "";
         int recCount = 0;
@@ -190,15 +196,16 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
         logger.info("Finished reading " + recCount + " dwellings.");
     }
 
-    private void writeNoiseImission() {
+    private void writeNoiseImission(Day day) {
         int counter65 = 0;
         int counter55 = 0;
 
         final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName +"/";
         String path = outputDirectory
                 + properties.realEstate.dwellingsFinalFileName
-                + "Noise_salford"
-                + "2021"
+                + "_noise_"
+                + day
+                + "_2021"
                 + ".csv";
 
         logger.info("  Writing noise imission file to " + path);

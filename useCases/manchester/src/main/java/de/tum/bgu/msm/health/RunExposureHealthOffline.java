@@ -66,16 +66,17 @@ public class RunExposureHealthOffline {
         for(Link link : scenario.getNetwork().getLinks().values()){
             linkInfoMap.put(link.getId(), new LinkInfo(link.getId()));
         }
-        ((DataContainerHealth)dataContainer).setLinkInfo(linkInfoMap);
-        logger.info("Initialized Link Info for " + ((DataContainerHealth)dataContainer).getLinkInfo().size() + " links ");
+        dataContainer.setLinkInfo(linkInfoMap);
+        logger.info("Initialized Link Info for " + dataContainer.getLinkInfo().size() + " links ");
 
         for(Zone zone : dataContainer.getGeoData().getZones().values()){
             Map<Pollutant, OpenIntFloatHashMap> pollutantMap = new HashMap<>();
-            ((DataContainerHealth)dataContainer).getZoneExposure2Pollutant2TimeBin().put(zone, pollutantMap);
+            dataContainer.getZoneExposure2Pollutant2TimeBin().put(zone, pollutantMap);
         }
 
-        //noiseModel.endYear(2021);
-        airPollutantModel.endYear(2021);
+
+        //airPollutantModel.endYear(2021);
+        noiseModel.endYear(2021);
         //exposureModelMCR.endYear(2021);
         //diseaseModelMCR.setup();
         //diseaseModelMCR.endYear(2021);

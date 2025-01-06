@@ -72,7 +72,7 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
         logger.warn("Air pollutant exposure model end year:" + year);
         if(properties.main.startYear == year) {
             //car truck emission
-            /*for(Day day : simulatedDays){
+            for(Day day : simulatedDays){
                 latestMatsimYear = year;
                 final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/"
                         + properties.main.scenarioName + "/matsim/" + latestMatsimYear;
@@ -91,7 +91,7 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
                 updateConfig(day, vehicleFileWithEmissionType);
                 scenario = ScenarioUtils.loadScenario(scenario.getConfig());
                 createEmissionEventsOffline(eventFileWithoutEmissions,eventFileWithEmissions);
-            }*/
+            }
 
             //car truck concentration
             for(Day day : simulatedDays){
@@ -113,42 +113,6 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
                 new LinkInfoWriter().writeData((DataContainerHealth) dataContainer, outputDirectory, day, "carTruck");
                 System.gc();
             }
-
-            //bus emission and concentration
-         /*   for(Day day : simulatedDays){
-                latestMatsimYear = year;
-                final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/"
-                        + properties.main.scenarioName + "/matsim/" + latestMatsimYear;
-                Config config = ConfigUtils.loadConfig(initialMatsimConfig.getContext());
-
-                scenario = ScenarioUtils.createMutableScenario(config);
-                scenario.getConfig().controller().setOutputDirectory(outputDirectoryRoot);
-                prepareConfig();
-                String eventFileWithoutEmissions = scenario.getConfig().controller().getOutputDirectory() + "/" + day + "/bus/" + year + ".output_events_bus.xml.gz";
-                String eventFileWithEmissions = scenario.getConfig().controller().getOutputDirectory() + "/" + day + "/bus/" + year + ".output_events_emission.xml.gz";
-                String vehicleFile = scenario.getConfig().controller().getOutputDirectory() + "/" + day + "/bus/" + year + ".output_transitVehicles.xml.gz";
-                String vehicleFileWithEmissionType = scenario.getConfig().controller().getOutputDirectory() + "/" + day + "/bus/" + year + ".vehicles_emission.xml.gz";
-                CreateVehicles createVehicles = new CreateVehicles(scenario);
-                createVehicles.runVehicleType();
-                createVehicles.runVehicle(vehicleFile, vehicleFileWithEmissionType);
-
-                scenario.getConfig().vehicles().setVehiclesFile(vehicleFileWithEmissionType);
-                scenario.getConfig().network().setInputFile(properties.healthData.bus_network);
-                scenario = ScenarioUtils.loadScenario(scenario.getConfig());
-                ((EmissionsConfigGroup)scenario.getConfig().getModules().get("emissions")).setHandlesHighAverageSpeeds(TRUE);
-                createEmissionEventsOffline(eventFileWithoutEmissions,eventFileWithEmissions);
-
-                //need to use bus network for dispersion, need to have hbefa type for emission model
-                String networkFile = properties.main.baseDirectory + properties.healthData.network_for_airPollutant_model;
-                scenario.getConfig().network().setInputFile(networkFile);
-                scenario = ScenarioUtils.loadScenario(scenario.getConfig());
-                double scalingFactor = properties.main.scaleFactor * 1.0;
-                runEmissionGridAnalyzer(year,day, eventFileWithEmissions, scalingFactor);
-
-                String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/";
-                new LinkInfoWriter().writeData((DataContainerHealth) dataContainer, outputDirectory, day, "bus");
-                System.gc();
-            }*/
         }
     }
 
