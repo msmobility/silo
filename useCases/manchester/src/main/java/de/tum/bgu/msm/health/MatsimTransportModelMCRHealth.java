@@ -442,7 +442,7 @@ public final class MatsimTransportModelMCRHealth implements TransportModel {
         mainModeList.add("truck");
         config.qsim().setMainModes(mainModeList);
         config.routing().setNetworkModes(mainModeList);
-        config.routing().setAccessEgressType(RoutingConfigGroup.AccessEgressType.accessEgressModeToLink);
+        config.routing().setAccessEgressType(RoutingConfigGroup.AccessEgressType.none);
 
         ModeParams carParams = config.scoring().getOrCreateModeParams(TransportMode.car);
         ModeParams truckParams = new ModeParams(TransportMode.truck);
