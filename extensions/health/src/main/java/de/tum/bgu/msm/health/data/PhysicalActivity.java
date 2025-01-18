@@ -45,7 +45,7 @@ public class PhysicalActivity {
     private static double getCycleMMet(double metres, double seconds, Link link) {
 
         double groundResistance = DEFAULT_GROUND_RESISTANCE / getSurfaceFactor(link);
-        double gradient = Math.max(0.,Math.min(0.1,getGradient(link)));
+        double gradient = Math.max(-0.1,Math.min(0.1,getGradient(link)));
         double speed = metres / seconds;
         double speedMoving = speed / (1 - STATIONARY_TIME_PROPORTION);
         double speedAir = speedMoving;
@@ -56,10 +56,10 @@ public class PhysicalActivity {
         double oxygenLitersPerMin = 0.01141 * power + 0.435;
         double kCalPerMin = oxygenLitersPerMin * 5;
         double met = kCalPerMin * 60 / PERSON_KG;
-        if(gradient > 0.002) {
+        if(gradient > 0.) {
             met /= (1 - STATIONARY_TIME_PROPORTION);
         }
-        return met - 1;
+        return Math.max(0.,met - 1);
     }
 
     private static double getGradient(Link link) {
