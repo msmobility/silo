@@ -6,7 +6,7 @@ out
 *.project
 /bin/
 *.settings/
-/target/
+**/target/
 .idea/
 *.iml
 /Makefile
