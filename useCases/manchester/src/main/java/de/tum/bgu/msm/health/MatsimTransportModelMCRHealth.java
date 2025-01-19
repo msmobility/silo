@@ -20,8 +20,12 @@ package de.tum.bgu.msm.health;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Day;
+import de.tum.bgu.msm.data.MitoGender;
+import de.tum.bgu.msm.data.Mode;
+import de.tum.bgu.msm.data.Purpose;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.matsim.MatsimData;
 import de.tum.bgu.msm.matsim.MatsimScenarioAssembler;
 import de.tum.bgu.msm.matsim.MatsimTravelTimesAndCosts;
@@ -29,18 +33,19 @@ import de.tum.bgu.msm.matsim.SiloMatsimUtils;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
+import io.SpeedsReader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.contrib.dvrp.trafficmonitoring.TravelTimeUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.groups.QSimConfigGroup;
-import org.matsim.core.config.groups.RoutingConfigGroup;
+import org.matsim.core.config.groups.*;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.ControlerDefaults;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
@@ -51,15 +56,23 @@ import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.vehicles.Vehicle;
 import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleUtils;
+import org.matsim.vehicles.VehiclesFactory;
 import routing.BicycleConfigGroup;
 import routing.BicycleModule;
 import routing.WalkConfigGroup;
 import routing.WalkModule;
+import routing.components.Gradient;
+import routing.components.JctStress;
+import routing.components.LinkAmbience;
+import routing.components.LinkStress;
 
 import java.io.File;
 import java.util.*;
+import java.util.function.Function;
+import java.util.function.ToDoubleFunction;
 
 import static org.matsim.core.config.groups.ScoringConfigGroup.ModeParams;
 
@@ -199,27 +212,50 @@ public final class MatsimTransportModelMCRHealth implements TransportModel {
             Config bikePedConfig = ConfigUtils.loadConfig(initialMatsimConfig.getContext());
             bikePedConfig.addModule(new BicycleConfigGroup());
             bikePedConfig.addModule(new WalkConfigGroup());
-            finalizeBikePedConfig(bikePedConfig, year, day);
+            fillBikePedConfig(bikePedConfig, year, day);
 
             //initialize scenario
             MutableScenario matsimScenario = (MutableScenario) ScenarioUtils.loadScenario(bikePedConfig);
             matsimScenario.setPopulation(populationBikePed);
             logger.info("total population " + day + " | Bike Walk: " + populationBikePed.getPersons().size());
 
-            //set vehicle types
-            VehicleType walk = VehicleUtils.getFactory().createVehicleType(Id.create(TransportMode.walk, VehicleType.class));
-            walk.setMaximumVelocity(properties.healthData.MAX_WALKSPEED / 3.6);
-            walk.setPcuEquivalents(0.);
-            walk.setNetworkMode(TransportMode.walk);
-            matsimScenario.getVehicles().addVehicleType(walk);
+            // set vehicles
+            EnumMap<Mode, EnumMap<MitoGender, Map<Integer,Double>>> allSpeeds = ((DataContainerHealth)dataContainer).getAvgSpeeds();
+            VehiclesFactory fac = VehicleUtils.getFactory();
+            for(MitoGender gender : MitoGender.values()) {
+                for(int age = 0 ; age <= 100 ; age++) {
+                    VehicleType walk = fac.createVehicleType(Id.create(TransportMode.walk + gender + age, VehicleType.class));
+                    walk.setMaximumVelocity(allSpeeds.get(Mode.walk).get(gender).get(age));
+                    walk.setNetworkMode(TransportMode.walk);
+                    walk.setPcuEquivalents(0.);
+                    matsimScenario.getVehicles().addVehicleType(walk);
 
-            VehicleType bicycle = VehicleUtils.getFactory().createVehicleType(Id.create(TransportMode.bike, VehicleType.class));
-            bicycle.setMaximumVelocity(properties.healthData.MAX_CYCLESPEED / 3.6);
-            bicycle.setPcuEquivalents(0.);
-            bicycle.setNetworkMode(TransportMode.bike);
-            matsimScenario.getVehicles().addVehicleType(bicycle);
+                    VehicleType bicycle = fac.createVehicleType(Id.create(TransportMode.bike + gender + age, VehicleType.class));
+                    bicycle.setMaximumVelocity(allSpeeds.get(Mode.bicycle).get(gender).get(age));
+                    bicycle.setNetworkMode(TransportMode.bike);
+                    bicycle.setPcuEquivalents(0.);
+                    matsimScenario.getVehicles().addVehicleType(bicycle);
+                }
+            }
 
-            matsimScenario.getConfig().qsim().setVehiclesSource(QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData);
+            // Create vehicle for each person (i.e., trip)
+            for(Person person : matsimScenario.getPopulation().getPersons().values()) {
+                MitoGender gender = (MitoGender) person.getAttributes().getAttribute("sex");
+                int age = (int) person.getAttributes().getAttribute("age");
+                String mode = (String) person.getAttributes().getAttribute("mode");
+                Id<Vehicle> vehicleId = Id.createVehicleId(person.getId().toString());
+                VehicleType vehicleType = matsimScenario.getVehicles().getVehicleTypes().get(Id.create(mode + gender + age, VehicleType.class));
+                Vehicle veh = fac.createVehicle(vehicleId,vehicleType);
+                Map<String,Id<Vehicle>> modeToVehicle = new HashMap<>();
+                modeToVehicle.put(mode,vehicleId);
+                VehicleUtils.insertVehicleIdsIntoPersonAttributes(person,modeToVehicle);
+                matsimScenario.getVehicles().addVehicle(veh);
+            }
+
+            matsimScenario.getConfig().qsim().setVehiclesSource(QSimConfigGroup.VehiclesSource.fromVehiclesData);
+            matsimScenario.getConfig().qsim().setVehicleBehavior(QSimConfigGroup.VehicleBehavior.teleport);
+            matsimScenario.getConfig().qsim().setUsePersonIdForMissingVehicleId(true);
+
 
             //set up controler
             final Controler controlerBikePed = new Controler(matsimScenario);
@@ -339,16 +375,15 @@ public final class MatsimTransportModelMCRHealth implements TransportModel {
         }
     }
 
-
-    private void finalizeBikePedConfig(Config bikePedConfig, int year, Day day) {
+    private void fillBikePedConfig(Config bikePedConfig, int year, Day day) {
         // set active mode networks
         bikePedConfig.network().setInputFile(properties.main.baseDirectory + properties.healthData.activeModeNetworkFile);
 
-        // set basic controler settings
-        bikePedConfig.controller().setLastIteration(1);
+        // set input file and basic controler settings
         final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
         String outputDirectory = outputDirectoryRoot + "/matsim/" + year + "/" + day + "/bikePed/";
         bikePedConfig.controller().setOutputDirectory(outputDirectory);
+        bikePedConfig.controller().setLastIteration(1);
         bikePedConfig.controller().setRunId(String.valueOf(year));
         bikePedConfig.controller().setWritePlansInterval(Math.max(bikePedConfig.controller().getLastIteration(), 1));
         bikePedConfig.controller().setWriteEventsInterval(Math.max(bikePedConfig.controller().getLastIteration(), 1));
@@ -359,9 +394,9 @@ public final class MatsimTransportModelMCRHealth implements TransportModel {
         bikePedConfig.qsim().setStorageCapFactor(properties.main.scaleFactor * properties.healthData.matsim_scale_factor_bikePed);
         logger.info("Flow Cap Factor for bikePed: " + bikePedConfig.qsim().getFlowCapFactor());
         logger.info("Storage Cap Factor for bikePed: " + bikePedConfig.qsim().getStorageCapFactor());
-
         bikePedConfig.qsim().setEndTime(24*60*60);
         bikePedConfig.qsim().setLinkDynamics(QSimConfigGroup.LinkDynamics.PassingQ);
+
 
         // set routing modes
         List<String> mainModeList = new ArrayList<>();
@@ -369,28 +404,87 @@ public final class MatsimTransportModelMCRHealth implements TransportModel {
         mainModeList.add(TransportMode.walk);
         bikePedConfig.qsim().setMainModes(mainModeList);
         bikePedConfig.routing().setNetworkModes(mainModeList);
-
-        // set walk/bike routing parameters
-        BicycleConfigGroup bicycleConfigGroup = (BicycleConfigGroup) bikePedConfig.getModules().get(BicycleConfigGroup.GROUP_NAME);
-        bicycleConfigGroup.getMarginalCostGradient().put("commute",66.8);
-        bicycleConfigGroup.getMarginalCostVgvi().put("commute",0.);
-        bicycleConfigGroup.getMarginalCostLinkStress().put("commute",6.3);
-        bicycleConfigGroup.getMarginalCostJctStress().put("commute",0.);
-        bicycleConfigGroup.getMarginalCostGradient().put("nonCommute",63.45);
-        bicycleConfigGroup.getMarginalCostVgvi().put("nonCommute",0.);
-        bicycleConfigGroup.getMarginalCostLinkStress().put("nonCommute",1.59);
-        bicycleConfigGroup.getMarginalCostJctStress().put("nonCommute",0.);
+        bikePedConfig.routing().removeModeRoutingParams("bike");
+        bikePedConfig.routing().removeModeRoutingParams("walk");
+        bikePedConfig.routing().removeModeRoutingParams("pt");
 
 
+        // BIKE ATTRIBUTES
+        List<ToDoubleFunction<Link>> bikeAttributes = new ArrayList<>();
+        bikeAttributes.add(l -> Math.max(Math.min(Gradient.getGradient(l),0.5),0.));
+        bikeAttributes.add(l -> LinkStress.getStress(l,TransportMode.bike));
+
+        // Bike weights
+        Function<Person,double[]> bikeWeights = p -> {
+            switch((Purpose) p.getAttributes().getAttribute("purpose")) {
+                case HBW -> {
+                    if(p.getAttributes().getAttribute("sex").equals(MitoGender.FEMALE)) {
+                        return new double[] {35.9032908,2.3084587 + 2.7762033};
+                    } else {
+                        return new double[] {35.9032908,2.3084587};
+                    }
+                }
+                case HBE -> {
+                    return new double[] {0,4.3075357};
+                }
+                case HBS, HBR, HBO -> {
+                    if((int) p.getAttributes().getAttribute("age") < 15) {
+                        return new double[] {57.0135325,1.2411983 + 6.4243251};
+                    } else {
+                        return new double[] {57.0135325,1.2411983};
+                    }
+                }
+                default -> {
+                    return null;
+                }
+            }
+        };
+
+        // Bicycle config group
+        BicycleConfigGroup bicycle = (BicycleConfigGroup) bikePedConfig.getModules().get(BicycleConfigGroup.GROUP_NAME);
+        bicycle.setAttributes(bikeAttributes);
+        bicycle.setWeights(bikeWeights);
+
+        // WALK ATTRIBUTES
+        List<ToDoubleFunction<Link>> walkAttributes = new ArrayList<>();
+        walkAttributes.add(l -> Math.max(0.,0.81 - LinkAmbience.getVgviFactor(l)));
+        walkAttributes.add(l -> Math.min(1.,l.getFreespeed() / 22.35));
+        walkAttributes.add(l -> JctStress.getStressProp(l,TransportMode.walk));
+
+        // Walk weights
+        Function<Person,double[]> walkWeights = p -> {
+            switch ((Purpose) p.getAttributes().getAttribute("purpose")) {
+                case HBW -> {
+                    return new double[]{0.3307472, 0, 4.9887390};
+                }
+                case HBE -> {
+                    return new double[]{0, 0, 1.0037846};
+                }
+                case HBS, HBR, HBO -> {
+                    if ((int) p.getAttributes().getAttribute("age") < 15) {
+                        return new double[]{0.7789561, 0.4479527 + 2.0418898, 5.8219067};
+                    } else if ((int) p.getAttributes().getAttribute("age") >= 65) {
+                        return new double[]{0.7789561, 0.4479527 + 0.3715017, 5.8219067};
+                    } else {
+                        return new double[]{0.7789561, 0.4479527, 5.8219067};
+                    }
+                }
+                case HBA -> {
+                    return new double[]{0.6908324, 0, 0};
+                }
+                case NHBO -> {
+                    return new double[]{0, 3.4485883, 0};
+                }
+                default -> {
+                    return null;
+                }
+            }
+        };
+
+        // Walk config group
         WalkConfigGroup walkConfigGroup = (WalkConfigGroup) bikePedConfig.getModules().get(WalkConfigGroup.GROUP_NAME);
-        walkConfigGroup.getMarginalCostGradient().put("commute",0.);
-        walkConfigGroup.getMarginalCostVgvi().put("commute",0.);
-        walkConfigGroup.getMarginalCostLinkStress().put("commute",0.);
-        walkConfigGroup.getMarginalCostJctStress().put("commute",4.27);
-        walkConfigGroup.getMarginalCostGradient().put("nonCommute",0.);
-        walkConfigGroup.getMarginalCostVgvi().put("nonCommute",0.62);
-        walkConfigGroup.getMarginalCostLinkStress().put("nonCommute",0.);
-        walkConfigGroup.getMarginalCostJctStress().put("nonCommute",14.34);
+        walkConfigGroup.setAttributes(walkAttributes);
+        walkConfigGroup.setWeights(walkWeights);
 
         // set scoring parameters
         ModeParams bicycleParams = new ModeParams(TransportMode.bike);
@@ -407,8 +501,49 @@ public final class MatsimTransportModelMCRHealth implements TransportModel {
         walkParams.setMonetaryDistanceRate(0. );
         bikePedConfig.scoring().addModeParams(walkParams);
 
+        ScoringConfigGroup.ActivityParams homeActivity = new ScoringConfigGroup.ActivityParams("home").setTypicalDuration(12 * 60 * 60);
+        bikePedConfig.scoring().addActivityParams(homeActivity);
+
+        ScoringConfigGroup.ActivityParams workActivity = new ScoringConfigGroup.ActivityParams("work").setTypicalDuration(8 * 60 * 60);
+        bikePedConfig.scoring().addActivityParams(workActivity);
+
+        ScoringConfigGroup.ActivityParams educationActivity = new ScoringConfigGroup.ActivityParams("education").setTypicalDuration(8 * 60 * 60);
+        bikePedConfig.scoring().addActivityParams(educationActivity);
+
+        ScoringConfigGroup.ActivityParams shoppingActivity = new ScoringConfigGroup.ActivityParams("shopping").setTypicalDuration(1 * 60 * 60);
+        bikePedConfig.scoring().addActivityParams(shoppingActivity);
+
+        ScoringConfigGroup.ActivityParams recreationActivity = new ScoringConfigGroup.ActivityParams("recreation").setTypicalDuration(1 * 60 * 60);
+        bikePedConfig.scoring().addActivityParams(recreationActivity);
+
+        ScoringConfigGroup.ActivityParams otherActivity = new ScoringConfigGroup.ActivityParams("other").setTypicalDuration(1 * 60 * 60);
+        bikePedConfig.scoring().addActivityParams(otherActivity);
+
+        ScoringConfigGroup.ActivityParams airportActivity = new ScoringConfigGroup.ActivityParams("airport").setTypicalDuration(1 * 60 * 60);
+        bikePedConfig.scoring().addActivityParams(airportActivity);
+
+        //Set strategy
+        bikePedConfig.replanning().setMaxAgentPlanMemorySize(5);
+        {
+            ReplanningConfigGroup.StrategySettings strategySettings = new ReplanningConfigGroup.StrategySettings();
+            strategySettings.setStrategyName("ChangeExpBeta");
+            strategySettings.setWeight(0.8);
+            bikePedConfig.replanning().addStrategySettings(strategySettings);
+        }
+
+        {
+            ReplanningConfigGroup.StrategySettings strategySettings = new ReplanningConfigGroup.StrategySettings();
+            strategySettings.setStrategyName("ReRoute");
+            strategySettings.setWeight(0.2);
+            bikePedConfig.replanning().addStrategySettings(strategySettings);
+        }
+
+
         bikePedConfig.transit().setUsingTransitInMobsim(false);
+        bikePedConfig.controller().setRoutingAlgorithmType(ControllerConfigGroup.RoutingAlgorithmType.Dijkstra);
+
     }
+
 
     private void finalizeCarTruckConfig(Config config, int year, Day day) {
         // Set basic setting

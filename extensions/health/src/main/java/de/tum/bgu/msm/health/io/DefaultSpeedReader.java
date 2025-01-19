@@ -1,11 +1,10 @@
-package de.tum.bgu.msm.io.input;
+package de.tum.bgu.msm.health.io;
 
 import de.tum.bgu.msm.data.MitoGender;
 import de.tum.bgu.msm.data.Mode;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.matsim.api.core.v01.TransportMode;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

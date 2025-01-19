@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.io.input;
+package de.tum.bgu.msm.health.io;
 
 import de.tum.bgu.msm.data.MitoGender;
 import de.tum.bgu.msm.data.Mode;

@@ -20,6 +20,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.PopulationFactory;
@@ -38,14 +39,20 @@ import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ScenarioUtils;
 import routing.BicycleConfigGroup;
 import routing.WalkConfigGroup;
-import routing.travelDisutility.BikeTravelDisutilityPreCalc;
-import routing.travelDisutility.WalkTravelDisutilityPreCalc;
-import routing.travelTime.BicycleTravelTimeFast;
+import routing.components.Gradient;
+import routing.components.JctStress;
+import routing.components.LinkAmbience;
+import routing.components.LinkStress;
+import routing.travelDisutility.ActiveDisutilityPrecalc;
+import routing.travelTime.BicycleLinkSpeedCalculatorImpl;
+import routing.travelTime.BicycleTravelTime;
+import routing.travelTime.WalkLinkSpeedCalculatorImpl;
 import routing.travelTime.WalkTravelTime;
-import routing.travelTime.speed.BicycleLinkSpeedCalculatorDefaultImpl;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
 
 public class HealthExposureModelMCR extends AbstractModel implements ModelUpdateListener {
@@ -207,16 +214,18 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
                 WalkConfigGroup walkConfigGroup = new WalkConfigGroup();
                 fillConfigWithWalkStandardValue(walkConfigGroup);
-                travelTime = new WalkTravelTime();
-                travelDisutility = new WalkTravelDisutilityPreCalc(scenario.getNetwork(),purposes,walkConfigGroup,travelTime);
+                scenario.getConfig().addModule(walkConfigGroup);
+                travelTime = new WalkTravelTime(new WalkLinkSpeedCalculatorImpl(scenario.getConfig()));
+                travelDisutility = new ActiveDisutilityPrecalc(scenario.getNetwork(),walkConfigGroup,travelTime);
                 break;
             case bicycle:
                 networkFile = scenario.getConfig().controller().getOutputDirectory() + "/" + day + "/bikePed/" + latestMatsimYear + ".output_network.xml.gz";
                 new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
                 BicycleConfigGroup bicycleConfigGroup = new BicycleConfigGroup();
                 fillConfigWithBikeStandardValue(bicycleConfigGroup);
-                travelTime = new BicycleTravelTimeFast(new BicycleLinkSpeedCalculatorDefaultImpl(bicycleConfigGroup), scenario.getNetwork(),null);
-                travelDisutility = new BikeTravelDisutilityPreCalc(scenario.getNetwork(),purposes,bicycleConfigGroup,travelTime);
+                scenario.getConfig().addModule(bicycleConfigGroup);
+                travelTime = new BicycleTravelTime(new BicycleLinkSpeedCalculatorImpl(scenario.getConfig()));
+                travelDisutility = new ActiveDisutilityPrecalc(scenario.getNetwork(),bicycleConfigGroup,travelTime);
                 break;
             default:
                 travelTime = null;
@@ -323,13 +332,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             double linkExposurePm25 = 0.;
             double linkExposureNo2 = 0.;
 
-            double linkTime;
-            if(mode.equals(Mode.walk) || mode.equals(Mode.bicycle)) {
-                //TODO: adjust time by age-sex-specified speed?
-                linkTime = travelTime.getLinkTravelTime(link,enterTimeInSecond,null,null);
-            } else {
-                linkTime = travelTime.getLinkTravelTime(link, enterTimeInSecond, null, null);
-            }
+            double linkTime = travelTime.getLinkTravelTime(link,enterTimeInSecond,null,null);
 
             LinkInfo linkInfo = ((DataContainerHealth)dataContainer).getLinkInfo().get(link.getId());
             if(linkInfo!=null) {
@@ -340,7 +343,6 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
                 // PHYSICAL ACTIVITY
                 double linkMarginalMet = PhysicalActivity.getMMet(mode, linkLength, linkTime, link);
-                //TODO: convert matsim link time to moving only
                 linkMarginalMetHours = linkMarginalMet * linkTime / 3600.;
 
                 // AIR POLLUTION Concentration
@@ -505,60 +507,84 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         }
     }
     private void fillConfigWithWalkStandardValue(WalkConfigGroup walkConfigGroup) {
-        walkConfigGroup.getMarginalCostGradient().put("commute",0.);
-        walkConfigGroup.getMarginalCostVgvi().put("commute",0.);
-        walkConfigGroup.getMarginalCostLinkStress().put("commute",0.);
-        walkConfigGroup.getMarginalCostJctStress().put("commute",4.27);
-        walkConfigGroup.getMarginalCostSpeed().put("commute",0.);
-        walkConfigGroup.getMarginalCostGradient().put("discretionary",0.);
-        walkConfigGroup.getMarginalCostVgvi().put("discretionary",0.62);
-        walkConfigGroup.getMarginalCostLinkStress().put("discretionary",0.);
-        walkConfigGroup.getMarginalCostJctStress().put("discretionary",14.34);
-        walkConfigGroup.getMarginalCostSpeed().put("discretionary",0.);
-        walkConfigGroup.getMarginalCostGradient().put("HBA",0.);
-        walkConfigGroup.getMarginalCostVgvi().put("HBA",0.691);
-        walkConfigGroup.getMarginalCostLinkStress().put("HBA",0.);
-        walkConfigGroup.getMarginalCostJctStress().put("HBA",0.);
-        walkConfigGroup.getMarginalCostSpeed().put("HBA",0.);
-        walkConfigGroup.getMarginalCostGradient().put("NHBO",0.);
-        walkConfigGroup.getMarginalCostVgvi().put("NHBO",0.);
-        walkConfigGroup.getMarginalCostLinkStress().put("NHBO",0.);
-        walkConfigGroup.getMarginalCostJctStress().put("NHBO",0.);
-        walkConfigGroup.getMarginalCostSpeed().put("NHBO",3.449);
-        walkConfigGroup.getMarginalCostGradient().put("NHBW",0.);
-        walkConfigGroup.getMarginalCostVgvi().put("NHBW",0.);
-        walkConfigGroup.getMarginalCostLinkStress().put("NHBW",0.);
-        walkConfigGroup.getMarginalCostJctStress().put("NHBW",0.);
-        walkConfigGroup.getMarginalCostSpeed().put("NHBW",0.);
+        // WALK ATTRIBUTES
+        List<ToDoubleFunction<Link>> walkAttributes = new ArrayList<>();
+        walkAttributes.add(l -> Math.max(0.,0.81 - LinkAmbience.getVgviFactor(l)));
+        walkAttributes.add(l -> Math.min(1.,l.getFreespeed() / 22.35));
+        walkAttributes.add(l -> JctStress.getStressProp(l,TransportMode.walk));
+
+        // Walk weights
+        Function<org.matsim.api.core.v01.population.Person,double[]> walkWeights = p -> {
+            switch ((Purpose) p.getAttributes().getAttribute("purpose")) {
+                case HBW -> {
+                    return new double[]{0.3307472, 0, 4.9887390};
+                }
+                case HBE -> {
+                    return new double[]{0, 0, 1.0037846};
+                }
+                case HBS, HBR, HBO -> {
+                    if ((int) p.getAttributes().getAttribute("age") < 15) {
+                        return new double[]{0.7789561, 0.4479527 + 2.0418898, 5.8219067};
+                    } else if ((int) p.getAttributes().getAttribute("age") >= 65) {
+                        return new double[]{0.7789561, 0.4479527 + 0.3715017, 5.8219067};
+                    } else {
+                        return new double[]{0.7789561, 0.4479527, 5.8219067};
+                    }
+                }
+                case HBA -> {
+                    return new double[]{0.6908324, 0, 0};
+                }
+                case NHBO -> {
+                    return new double[]{0, 3.4485883, 0};
+                }
+                default -> {
+                    return null;
+                }
+            }
+        };
+
+        // Walk config group
+        walkConfigGroup.setAttributes(walkAttributes);
+        walkConfigGroup.setWeights(walkWeights);
 
     }
 
     private void fillConfigWithBikeStandardValue(BicycleConfigGroup bicycleConfigGroup) {
-        bicycleConfigGroup.getMarginalCostGradient().put("commute",66.8);
-        bicycleConfigGroup.getMarginalCostVgvi().put("commute",0.);
-        bicycleConfigGroup.getMarginalCostLinkStress().put("commute",6.3);
-        bicycleConfigGroup.getMarginalCostJctStress().put("commute",0.);
-        bicycleConfigGroup.getMarginalCostSpeed().put("commute",0.);
-        bicycleConfigGroup.getMarginalCostGradient().put("discretionary",63.45);
-        bicycleConfigGroup.getMarginalCostVgvi().put("discretionary",0.);
-        bicycleConfigGroup.getMarginalCostLinkStress().put("discretionary",1.59);
-        bicycleConfigGroup.getMarginalCostJctStress().put("discretionary",0.);
-        bicycleConfigGroup.getMarginalCostSpeed().put("discretionary",0.);
-        bicycleConfigGroup.getMarginalCostGradient().put("HBA",0.);
-        bicycleConfigGroup.getMarginalCostVgvi().put("HBA",0.);
-        bicycleConfigGroup.getMarginalCostLinkStress().put("HBA",0.);
-        bicycleConfigGroup.getMarginalCostJctStress().put("HBA",0.);
-        bicycleConfigGroup.getMarginalCostSpeed().put("HBA",0.);
-        bicycleConfigGroup.getMarginalCostGradient().put("NHBO",0.);
-        bicycleConfigGroup.getMarginalCostVgvi().put("NHBO",0.);
-        bicycleConfigGroup.getMarginalCostLinkStress().put("NHBO",0.);
-        bicycleConfigGroup.getMarginalCostJctStress().put("NHBO",0.);
-        bicycleConfigGroup.getMarginalCostSpeed().put("NHBO",0.);
-        bicycleConfigGroup.getMarginalCostGradient().put("NHBW",0.);
-        bicycleConfigGroup.getMarginalCostVgvi().put("NHBW",0.);
-        bicycleConfigGroup.getMarginalCostLinkStress().put("NHBW",0.);
-        bicycleConfigGroup.getMarginalCostJctStress().put("NHBW",0.);
-        bicycleConfigGroup.getMarginalCostSpeed().put("NHBW",0.);
+        // BIKE ATTRIBUTES
+        List<ToDoubleFunction<Link>> bikeAttributes = new ArrayList<>();
+        bikeAttributes.add(l -> Math.max(Math.min(Gradient.getGradient(l),0.5),0.));
+        bikeAttributes.add(l -> LinkStress.getStress(l, TransportMode.bike));
+
+        // Bike weights
+        Function<org.matsim.api.core.v01.population.Person,double[]> bikeWeights = p -> {
+            switch((Purpose) p.getAttributes().getAttribute("purpose")) {
+                case HBW -> {
+                    if(p.getAttributes().getAttribute("sex").equals(MitoGender.FEMALE)) {
+                        return new double[] {35.9032908,2.3084587 + 2.7762033};
+                    } else {
+                        return new double[] {35.9032908,2.3084587};
+                    }
+                }
+                case HBE -> {
+                    return new double[] {0,4.3075357};
+                }
+                case HBS, HBR, HBO -> {
+                    if((int) p.getAttributes().getAttribute("age") < 15) {
+                        return new double[] {57.0135325,1.2411983 + 6.4243251};
+                    } else {
+                        return new double[] {57.0135325,1.2411983};
+                    }
+                }
+                default -> {
+                    return null;
+                }
+            }
+        };
+
+        // Bicycle config group
+        bicycleConfigGroup.setAttributes(bikeAttributes);
+        bicycleConfigGroup.setWeights(bikeWeights);
+
     }
 
 }

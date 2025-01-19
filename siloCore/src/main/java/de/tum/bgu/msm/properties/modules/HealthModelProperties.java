@@ -65,7 +65,7 @@ public class HealthModelProperties {
 
         diseaseLookupTable = PropertiesUtil.getStringProperty(bundle, "disease.outcome.lookup", "disease_outcomes_lookup.csv");
 
-        avgSpeedFile = PropertiesUtil.getStringProperty(bundle, "avg.speed.file", "input/avgSpeeds.csv");
+        avgSpeedFile = PropertiesUtil.getStringProperty(bundle, "avg.speed.file", "input/maxSpeeds.csv");
 
         healthTransitionData = PropertiesUtil.getStringProperty(bundle, "health.transition.data", "input/health/health_transitions_manchester.csv");
 
