@@ -59,7 +59,9 @@ public class SiloMCRAWS {
         logger.info("Finished SILO.");
 
         // Upload files to S3
-        uploadToS3(outputDir, bucketName, folderName, region);
+        //Note that: File size larger than 5 GB is not allowed for single PUT uploading in AWS S3. It is possible to upload it via terminal
+        //TODO: now we copy scenOutput to S3 via terminal, later can improve it by adapting the code to implement Multipart upload
+        //uploadToS3(outputDir, bucketName, folderName, region);
         // Stop the EC2 instance
         stopEC2Instance(region, instanceId);
     }
@@ -73,7 +75,10 @@ public class SiloMCRAWS {
             System.out.println("The specified directory does not exist or is not a directory: " + outputDir);
             return;
         }        uploadDirectoryRecursively(folder, bucketName, folderName, s3Client);        s3Client.close();
-    }    private static void uploadDirectoryRecursively(File folder, String bucketName, String folderName, S3Client s3Client) {
+    }
+
+
+    private static void uploadDirectoryRecursively(File folder, String bucketName, String folderName, S3Client s3Client) {
         for (File file : folder.listFiles()) {
             if (file.isFile()) {
                 // Generate the full key for the file in S3 (include subfolder structure)
