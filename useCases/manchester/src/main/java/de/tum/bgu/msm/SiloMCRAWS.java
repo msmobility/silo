@@ -30,7 +30,7 @@ import java.nio.file.Path;
 public class SiloMCRAWS {
 
     private final static Logger logger = LogManager.getLogger(SiloMCRAWS.class);
-    private final static String outputDir = "/home/ubuntu/manchester/scenOutput/base"; // Replace with your output directory
+    private final static String outputDir = "/home/ubuntu/manchester/scenOutput/base/"; // Replace with your output directory
     private final static String bucketName = "phmlandusetransportmatsimhealthdata";// Replace with your S3 bucket name
     private final static String folderName = "manchester/simulationResults/base/"; //Replace with your target folder name in S3 bucket
     private final static String region = "ap-southeast-2";// Replace with your AWS region (e.g., “us-east-1")
@@ -64,31 +64,35 @@ public class SiloMCRAWS {
         stopEC2Instance(region, instanceId);
     }
 
-    private static void uploadToS3(String outputDir, String bucketName, String folderName, String region) {
+    public static void uploadToS3(String outputDir, String bucketName, String folderName, String region) {
         S3Client s3Client = S3Client.builder()
                 .region(Region.of(region))
                 .credentialsProvider(InstanceProfileCredentialsProvider.create())
                 .build();
-        File folder = new File(outputDir);
-        File[] files = folder.listFiles();
-        if (files == null || files.length == 0) {
-            System.out.println("No files found in the directory: " + outputDir);
+        File folder = new File(outputDir);        if (!folder.exists() || !folder.isDirectory()) {
+            System.out.println("The specified directory does not exist or is not a directory: " + outputDir);
             return;
-        }
-        for (File file : files) {
+        }        uploadDirectoryRecursively(folder, bucketName, folderName, s3Client);        s3Client.close();
+    }    private static void uploadDirectoryRecursively(File folder, String bucketName, String folderName, S3Client s3Client) {
+        for (File file : folder.listFiles()) {
             if (file.isFile()) {
-                String keyName = file.getName();
-                System.out.println("Uploading file: " + keyName);
+                // Generate the full key for the file in S3 (include subfolder structure)
+                String keyName = folderName + (folderName.endsWith("/") ? "" : "/") + file.getPath()
+                        .replace(outputDir, "");
+                keyName = keyName.startsWith("/") ? keyName.substring(1) : keyName;                System.out.println("Uploading file: " + keyName);
                 PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                         .bucket(bucketName)
-                        .key(folderName + keyName)
+                        .key(keyName)
                         .build();
                 s3Client.putObject(putObjectRequest, Path.of(file.getAbsolutePath()));
                 System.out.println("Uploaded " + keyName + " to bucket " + bucketName);
+            } else if (file.isDirectory()) {
+                // Recursively process subdirectories
+                uploadDirectoryRecursively(file, bucketName, folderName, s3Client);
             }
         }
-        s3Client.close();
     }
+
     private static void stopEC2Instance(String region, String instanceId) {
         Ec2Client ec2Client = Ec2Client.builder()
                 .region(Region.of(region))
