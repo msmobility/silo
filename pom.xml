@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>de.tum.bgu.msm</groupId>
+	<groupId>de.tum.bgu.msm.silo</groupId>
 	<artifactId>silo-parent</artifactId>
 	<packaging>pom</packaging>
 
@@ -24,11 +24,11 @@
 	<distributionManagement>
 		<snapshotRepository>
 			<id>msm</id>
-			<url>https://maven.cloudsmith.io/msmobility/msm/</url>
+			<url>https://maven.cloudsmith.io/msmobility/silo/</url>
 		</snapshotRepository>
 		<repository>
 			<id>msm-snapshots</id>
-			<url>https://maven.cloudsmith.io/msmobility/msm/</url>
+			<url>https://maven.cloudsmith.io/msmobility/silo/</url>
 		</repository>
 	</distributionManagement>
 
@@ -48,6 +48,18 @@
 		<repository>
 			<id>mito</id>
 			<url>https://dl.cloudsmith.io/public/msmobility/mito/maven/</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>silo</id>
+			<url>https://dl.cloudsmith.io/public/msmobility/silo/maven/</url>
 			<releases>
 				<enabled>true</enabled>
 				<updatePolicy>always</updatePolicy>
@@ -171,5 +183,6 @@
 		<geotools.version>31.3</geotools.version>
 		<matsimVersion>2025.0-PR3643</matsimVersion>
 		<jackson.version>2.9.5</jackson.version>
+		<junit.version>5.10.3</junit.version>
 	</properties>
 </project>

@@ -1,14 +1,10 @@
 package de.tum.bgu.msm.transportModel.mstm;
 
-import de.tum.bgu.msm.data.MitoTrip;
 import de.tum.bgu.msm.transportModel.SiloTestUtils;
 import junitx.framework.FileAssert;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.rules.TestRule.*;
 import org.junit.Test;
 import org.matsim.testcases.MatsimTestUtils;
 import de.tum.bgu.msm.run.SiloMstm;

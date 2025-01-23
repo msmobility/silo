@@ -23,9 +23,8 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import omx.OmxFile;
 import omx.OmxLookup;
-import org.apache.commons.math.MathException;
-import org.apache.commons.math.distribution.GammaDistributionImpl;
-import org.apache.commons.math.stat.Frequency;
+import org.apache.commons.math3.distribution.GammaDistribution;
+import org.apache.commons.math3.stat.Frequency;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -2058,7 +2057,7 @@ public class SyntheticPopCTrace implements SyntheticPopI {
     }
 
 
-    private static double translateIncome (int incomeClass, double[] incomeThresholds, GammaDistributionImpl q) throws MathException {
+    private static double translateIncome (int incomeClass, double[] incomeThresholds, GammaDistribution q) throws Exception {
         //provide the income value for each person give the income class.
         //income follows a gamma distribution that was calibrated using the microdata. Income thresholds are calculated for the stiches
         double income;

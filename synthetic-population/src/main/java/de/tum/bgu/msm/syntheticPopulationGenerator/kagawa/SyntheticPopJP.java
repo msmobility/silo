@@ -22,13 +22,13 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
 import omx.OmxFile;
 import omx.OmxLookup;
-import org.apache.commons.math.MathException;
-import org.apache.commons.math.distribution.GammaDistributionImpl;
-import org.apache.commons.math.stat.Frequency;
+import org.apache.commons.math3.distribution.GammaDistribution;
+import org.apache.commons.math3.stat.Frequency;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.util.*;
-import java.util.logging.Logger;
 
 public class SyntheticPopJP implements SyntheticPopI {
 
@@ -1033,7 +1033,7 @@ public class SyntheticPopJP implements SyntheticPopI {
         double incomeShape = ResourceUtil.getDoubleProperty(rb,PROPERTIES_INCOME_GAMMA_SHAPE);
         double incomeRate = ResourceUtil.getDoubleProperty(rb,PROPERTIES_INCOME_GAMMA_RATE);
         double[] incomeProbability = ResourceUtil.getDoubleArray(rb,PROPERTIES_INCOME_GAMMA_PROBABILITY);
-        GammaDistributionImpl gammaDist = new GammaDistributionImpl(incomeShape, 1/incomeRate);
+        GammaDistribution gammaDist = new GammaDistribution(incomeShape, 1/incomeRate);
 
 
         //Create a map to store the household IDs by municipality
@@ -1192,7 +1192,7 @@ public class SyntheticPopJP implements SyntheticPopI {
                             try {
                                 income = (int) translateIncome((int) Math.random()*10,incomeProbability, gammaDist)
                                         * 12;  //convert monthly income to yearly income
-                            } catch (MathException e) {
+                            } catch (Exception e) {
                                 e.printStackTrace();
                             }
                         }
@@ -1332,7 +1332,7 @@ public class SyntheticPopJP implements SyntheticPopI {
     }
 
 
-    private static double translateIncome (int incomeClass, double[] incomeThresholds, GammaDistributionImpl q) throws MathException, MathException {
+    private static double translateIncome (int incomeClass, double[] incomeThresholds, GammaDistribution q) throws Exception {
         //provide the income value for each person give the income class.
         //income follows a gamma distribution that was calibrated using the microdata. Income thresholds are calculated for the stiches
         double income;
@@ -2112,7 +2112,7 @@ public class SyntheticPopJP implements SyntheticPopI {
         double incomeShape = ResourceUtil.getDoubleProperty(rb,PROPERTIES_INCOME_GAMMA_SHAPE);
         double incomeRate = ResourceUtil.getDoubleProperty(rb,PROPERTIES_INCOME_GAMMA_RATE);
         double[] incomeProbability = ResourceUtil.getDoubleArray(rb,PROPERTIES_INCOME_GAMMA_PROBABILITY);
-        GammaDistributionImpl gammaDist = new GammaDistributionImpl(incomeShape, 1/incomeRate);
+        GammaDistribution gammaDist = new GammaDistribution(incomeShape, 1/incomeRate);
         String pumsFileName = Properties.get().main.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_MICRODATA_2010_PATH);
         String recString = "";
         int recCount = 0;
@@ -2226,7 +2226,7 @@ public class SyntheticPopJP implements SyntheticPopI {
                         int income = (int) microPersons.getValueAt(personCount,"ppIncome");
                         try{
                             microPersons.setValueAt(personCount,"ppIncome",(int) translateIncome(income, incomeProbability, gammaDist));
-                        } catch (MathException e){
+                        } catch (Exception e){
                             e.printStackTrace();
                         }
                         int education = (int) microPersons.getValueAt(personCount,"ppEducation");

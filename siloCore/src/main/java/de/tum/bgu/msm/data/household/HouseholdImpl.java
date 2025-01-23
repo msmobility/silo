@@ -121,7 +121,7 @@ public class HouseholdImpl implements Household {
     }
 
     @Override
-    public void setAttribute(String key, Object value) {
+    public synchronized void setAttribute(String key, Object value) {
         attributes.putAttribute(key, value);
     }
 

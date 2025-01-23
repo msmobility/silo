@@ -3,25 +3,22 @@ package run;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.events.EventsUtils;
 import org.matsim.core.population.PopulationUtils;
-import org.matsim.core.utils.io.IOUtils;
 import org.matsim.testcases.MatsimTestUtils;
 import org.matsim.utils.eventsfilecomparison.ComparisonResult;
-import org.matsim.utils.eventsfilecomparison.EventsFileComparator;
-
-import java.net.URL;
 
 import static org.matsim.utils.eventsfilecomparison.ComparisonResult.FILES_ARE_EQUAL;
 
+@ExtendWith(MatsimTestUtils.class)
 public class RunFabilandTest{
 	private static final Logger log = LogManager.getLogger( RunFabilandTest.class );
-	@Rule public MatsimTestUtils utils = new MatsimTestUtils();
+
+	public MatsimTestUtils utils = new MatsimTestUtils();
 
 	@Test
 	public void testMain(){

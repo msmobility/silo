@@ -1,7 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.properties;
 
 import de.tum.bgu.msm.common.datafile.TableDataSet;
-import org.apache.commons.math.distribution.GammaDistributionImpl;
+import org.apache.commons.math3.distribution.GammaDistribution;
 
 public abstract class AbstractPropertiesSynPop {
     public boolean runSyntheticPopulation;
@@ -58,7 +58,7 @@ public abstract class AbstractPropertiesSynPop {
     public TableDataSet marginalsBorough;
     public boolean boroughIPU;
     public TableDataSet selectedBoroughs;
-    public GammaDistributionImpl incomeGammaDistribution;
+    public GammaDistribution incomeGammaDistribution;
     public TableDataSet buildingLocationlist;
     public TableDataSet jobLocationlist;
     public TableDataSet schoolLocationlist;

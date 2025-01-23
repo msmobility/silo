@@ -6,8 +6,8 @@ import junitx.framework.FileAssert;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
@@ -28,10 +28,11 @@ import static org.matsim.utils.eventsfilecomparison.ComparisonResult.FILES_ARE_E
 /**
  * @author dziemke, nagel
  */
+@ExtendWith(MatsimTestUtils.class)
 public class SiloMatsimWarmStartTest {
     private static final Logger log = LogManager.getLogger(SiloMatsimTest.class);
 
-    @Rule public MatsimTestUtils utils = new MatsimTestUtils();
+    public MatsimTestUtils utils = new MatsimTestUtils();
 
     @Test
     public final void testMain() {

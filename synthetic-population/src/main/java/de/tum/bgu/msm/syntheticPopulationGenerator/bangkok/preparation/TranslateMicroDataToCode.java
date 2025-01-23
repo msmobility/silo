@@ -5,7 +5,6 @@ import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.commons.math.MathException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -412,7 +411,7 @@ public class TranslateMicroDataToCode {
         try {
             income = PropertiesSynPop.get().main.incomeGammaDistribution.inverseCumulativeProbability(cummulativeProb);
             valueCode = (int) income;
-        } catch (MathException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return valueCode;

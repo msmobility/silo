@@ -6,11 +6,10 @@
     <artifactId>useCases</artifactId>
     <packaging>pom</packaging>
     <version>0.1.0-SNAPSHOT</version>
-    <name>SILO-use-cases</name>
 
     <parent>
         <artifactId>silo-parent</artifactId>
-        <groupId>de.tum.bgu.msm</groupId>
+        <groupId>de.tum.bgu.msm.silo</groupId>
         <version>0.1.0-SNAPSHOT</version>
     </parent>
 
@@ -28,12 +27,12 @@
 
     <dependencies>
         <dependency>
-            <groupId>de.tum.bgu.msm</groupId>
+            <groupId>de.tum.bgu.msm.silo</groupId>
             <artifactId>siloCore</artifactId>
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>de.tum.bgu.msm</groupId>
+            <groupId>de.tum.bgu.msm.silo</groupId>
             <artifactId>matsim2silo</artifactId>
             <version>0.1.0-SNAPSHOT</version>
             <scope>compile</scope>
