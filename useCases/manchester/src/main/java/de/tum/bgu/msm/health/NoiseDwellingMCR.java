@@ -8,10 +8,11 @@ import org.locationtech.jts.geom.Coordinate;
 
 import java.util.Optional;
 
-public class NoiseDwellingMCR implements NoiseDwelling {
+public class NoiseDwellingMCR implements Dwelling {
 
     private final Dwelling delegate;
     private double immission;
+    private long microBuildingId;
 
     public NoiseDwellingMCR(Dwelling delegate) {
         this.delegate = delegate;
@@ -127,13 +128,19 @@ public class NoiseDwellingMCR implements NoiseDwelling {
         return delegate.equals(o);
     }
 
-    @Override
     public void setNoiseImmision(double lden) {
         this.immission = lden;
     }
 
-    @Override
     public double getNoiseImmission() {
         return this.immission;
+    }
+
+    public long getMicroBuildingId() {
+        return microBuildingId;
+    }
+
+    public void setMicroBuildingId(long microBuildingId) {
+        this.microBuildingId = microBuildingId;
     }
 }

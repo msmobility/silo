@@ -29,17 +29,17 @@ public class ManchesterDwellingTypes implements DwellingTypes {
          */
         SFD (0.25f,0.03f),
         /**
-         * single-family house attached or townhouse
+         * other house: semi-detached, terraced/end of terrace
          */
         SFA(0.22f,0.03f),
         /**
-         * duplexes and buildings 2-4 units (not including those that fit Attached or Townhouse definition)
+         * flat
          */
-        MF234(0.07f,0.04f),
+        FLAT(0.05f,0.04f),
         /**
-         * Multi-family houses with 5+ units (flat and other)
+         * mobile home
          */
-        MF5plus(0.03f,0.05f);
+        MH(0.015f,0.03f);
 
         private final float acresNeeded;
         private final float structuralVacancy;
@@ -71,9 +71,9 @@ public class ManchesterDwellingTypes implements DwellingTypes {
                 case 2:
                     return SFA;
                 case 3:
-                    return MF234;
+                    return FLAT;
                 case 4:
-                    return MF5plus;
+                    return MH;
                 default:
                     throw new IllegalArgumentException(String.format("Code %d not valid.", code));
             }
@@ -81,8 +81,8 @@ public class ManchesterDwellingTypes implements DwellingTypes {
 
         public int getsizeOfDwelling(){
             switch(this){
-                case MF5plus: return 50;
-                case MF234: return 80;
+                case MH: return 30;
+                case FLAT: return 60;
                 case SFA: return 120;
                 case SFD: return 200;
                 default: throw new RuntimeException("Housing Type not found: " + this);

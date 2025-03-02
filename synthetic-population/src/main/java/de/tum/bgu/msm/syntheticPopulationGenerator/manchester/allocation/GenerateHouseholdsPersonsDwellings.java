@@ -1,16 +1,14 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.manchester.allocation;
 
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.ManchesterDwellingUsage;
-import de.tum.bgu.msm.data.PersonFactoryMCR;
-import de.tum.bgu.msm.data.PersonMCR;
+import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.person.*;
-import de.tum.bgu.msm.data.ManchesterDwellingTypes;
+import de.tum.bgu.msm.health.DwellingFactoryMCR;
 import de.tum.bgu.msm.run.data.dwelling.BangkokDwellingTypes;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.manchester.DataSetSynPopMCR;
@@ -58,12 +56,15 @@ public class GenerateHouseholdsPersonsDwellings {
 
     private HouseholdDataManager householdData;
 
+    private DwellingFactory dwellingFactory;
+
 
     public GenerateHouseholdsPersonsDwellings(DataContainer dataContainer, DataSetSynPop dataSetSynPop, HashMap<Person, Integer> educationalLevel){
         this.dataContainer = dataContainer;
         this.dataSetSynPop = dataSetSynPop;
         this.educationalLevel = educationalLevel;
         microDataManager = new MicroDataManager(dataSetSynPop);
+        this.dwellingFactory = new DwellingFactoryMCR(new DwellingFactoryImpl());
     }
 
     public void run(){
@@ -129,6 +130,8 @@ public class GenerateHouseholdsPersonsDwellings {
             PersonRole personRole = microDataManager.translatePersonRole((int)dataSetSynPop.getPersonDataSet().getValueAt(personSelected, "personRole"));
             int school = microDataManager.guessSchoolType(occupation, age);
             PersonMCR pers = factory.createPerson(id, age, gender, occupation,personRole, 0, monthlyIncome*12); //(int id, int age, int gender, Race race, int occupation, int workplace, int income)
+            Ethnic ethnic = microDataManager.translateEthnic((int) dataSetSynPop.getPersonDataSet().getValueAt(personSelected, "ethnic"));
+            pers.setEthnic(ethnic);
             pers.setDriverLicense(license);
             pers.setSchoolType(school);
             householdData.addPerson(pers);
@@ -154,7 +157,7 @@ public class GenerateHouseholdsPersonsDwellings {
         int ddType = (int) dataSetSynPop.getHouseholdDataSet().getValueAt(hhSelected, "ddTypeCode");
         DwellingType type = ManchesterDwellingTypes.DwellingTypeManchester.valueOf(ddType);
         int bedRooms = (int) dataSetSynPop.getHouseholdDataSet().getValueAt(hhSelected, "bedroom");
-        Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, tazSelected, null, idHousehold, type , bedRooms, 1, 0, year);
+        Dwelling dwell = dwellingFactory.createDwelling(newDdId, tazSelected, null, idHousehold, type , bedRooms, 1, 0, year);
         realEstate.addDwelling(dwell);
         dwell.setFloorSpace(floorSpace);
         dwell.setUsage(usage);
@@ -174,8 +177,8 @@ public class GenerateHouseholdsPersonsDwellings {
             case SFA:
                 logPrice += -0.194;
                 break;
-            case MF234:
-            case MF5plus:
+            case FLAT:
+            case MH:
                 logPrice += -0.107;
                 break;
             default:
@@ -348,8 +351,8 @@ public class GenerateHouseholdsPersonsDwellings {
         zonalSummary.get(municipality).put("hh4+", (double) householdMap.values().stream().filter(x ->x.getHhSize() >= 4).count());
         zonalSummary.get(municipality).put("detached", (double) dwellingMap.values().stream().filter(x ->x.getType().equals(ManchesterDwellingTypes.DwellingTypeManchester.SFD)).count());
         zonalSummary.get(municipality).put("attached", (double) dwellingMap.values().stream().filter(x ->x.getType().equals(ManchesterDwellingTypes.DwellingTypeManchester.SFA)).count());
-        zonalSummary.get(municipality).put("flat", (double) dwellingMap.values().stream().filter(x ->x.getType().equals(ManchesterDwellingTypes.DwellingTypeManchester.MF234)).count());
-        zonalSummary.get(municipality).put("mobileHome", (double) dwellingMap.values().stream().filter(x ->x.getType().equals(ManchesterDwellingTypes.DwellingTypeManchester.MF5plus)).count());
+        zonalSummary.get(municipality).put("flat", (double) dwellingMap.values().stream().filter(x ->x.getType().equals(ManchesterDwellingTypes.DwellingTypeManchester.FLAT)).count());
+        zonalSummary.get(municipality).put("mobileHome", (double) dwellingMap.values().stream().filter(x ->x.getType().equals(ManchesterDwellingTypes.DwellingTypeManchester.MH)).count());
 
         zonalSummary.get(municipality).put("own", (double) dwellingMap.values().stream().filter(x ->x.getUsage().equals(DwellingUsage.OWNED)).count());
         zonalSummary.get(municipality).put("rent", (double) dwellingMap.values().stream().filter(x ->x.getUsage().equals(DwellingUsage.RENTED)).count());

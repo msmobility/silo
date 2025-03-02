@@ -130,7 +130,8 @@ public class ReadZonalData {
             float probability = zoneAttributes.getValueAt(i, "population");
 
             int capacityPrimarySchool = (int)zoneAttributes.getValueAt(i,"primaryEdu");
-            int capacitySecondarySchool = (int)zoneAttributes.getValueAt(i,"secondaryEdu");
+            //TODO: verify the school capacity data. school capacity of secondary school < number of secondary school student in SP. so far simply scale up the capacity by 1.5
+            int capacitySecondarySchool = (int)zoneAttributes.getValueAt(i,"secondaryEdu_scaled");
             int capacityHigherEducation = (int)zoneAttributes.getValueAt(i,"higherEdu");
 
             float households = zoneAttributes.getValueAt(i, "households");

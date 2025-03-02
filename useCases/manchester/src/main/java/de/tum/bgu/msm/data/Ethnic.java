@@ -1,12 +1,12 @@
 package de.tum.bgu.msm.data;
 
 public enum Ethnic {
-    white (0),
-    mix (1),
-    asia (2),
-    black(3),
+    white (1),
+    mix (2),
+    asia (3),
+    black(4),
 
-    other(4);
+    other(5);
 
     private final int ethnicCode;
 

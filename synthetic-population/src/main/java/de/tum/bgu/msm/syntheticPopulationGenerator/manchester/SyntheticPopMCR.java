@@ -10,6 +10,7 @@ import de.tum.bgu.msm.schools.SchoolsWriter;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import de.tum.bgu.msm.syntheticPopulationGenerator.manchester.allocation.Allocation;
+import de.tum.bgu.msm.syntheticPopulationGenerator.manchester.microlocation.Microlocation;
 import de.tum.bgu.msm.syntheticPopulationGenerator.manchester.preparation.Preparation;
 import de.tum.bgu.msm.syntheticPopulationGenerator.optimizationIPU.optimization.Optimization;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -42,7 +43,7 @@ public class SyntheticPopMCR implements SyntheticPopI {
         createDirectoryForOutput();
 
         DataContainerWithSchools dataContainer = DataBuilder.getModelDataForMuc(properties, null);
-        GeoDataReader reader =  new GeoDataReaderManchester(dataContainer.getGeoData());
+//        GeoDataReader reader =  new GeoDataReaderManchester(dataContainer.getGeoData());
 //        String pathShp = PropertiesSynPop.get().main.zoneShapeFile;
 //        String fileName = PropertiesSynPop.get().main.zoneFilename;
 //        reader.readZoneCsv(fileName);
@@ -59,7 +60,7 @@ public class SyntheticPopMCR implements SyntheticPopI {
         new Allocation(dataSetSynPop, dataContainer).run();
 
         logger.info("Running Module: Microlocation");
-        //new Microlocation(dataSetSynPop,dataContainer).run();
+        new Microlocation(dataSetSynPop,dataContainer).run();
 
         logger.info("Summary of the synthetic population");
         summarizeData(dataContainer);

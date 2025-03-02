@@ -74,6 +74,8 @@ public class AssignSchools {
                 Map<Integer, Integer> weight = schoolByZoneByType.get(schooltaz).get(schoolType);
                 int schoolId = SiloUtil.select(weight);
                 ((PersonMCR)pp).setSchoolId(schoolId);
+            }else {
+                logger.warn(" cannot find school for person " + pp.getId() + " school type " + schoolType + " live in " + hometaz);
             }
             if (assignedStudents == logging){
                 logger.info("   Assigned " + assignedStudents + " schools.");
@@ -137,9 +139,10 @@ public class AssignSchools {
             Iterator<Integer> iterator = schoolCapacityMap.get(schoolType).keySet().iterator();
             while (iterator.hasNext()) {
                 Integer zone = iterator.next();
-                if (distanceImpedancePrimarySecondary.getValueAt(hometaz, zone) < minDistance) {
+                float dist = distanceImpedancePrimarySecondary.getValueAt(hometaz, zone);
+                if (dist < minDistance) {
                     schooltaz = zone;
-                    minDistance = distanceImpedancePrimarySecondary.getValueAt(hometaz, zone);
+                    minDistance = dist;
                 }
             }
             int remainingCapacity = schoolCapacityMap.get(schoolType).get(schooltaz) - 1;
@@ -150,6 +153,7 @@ public class AssignSchools {
             }
             numberOfVacantPlacesByType.put(schoolType, numberOfVacantPlacesByType.get(schoolType) - 1);
         }
+
         assignedStudents++;
         return schooltaz;
     }
@@ -263,7 +267,8 @@ public class AssignSchools {
             int zone = (int) PropertiesSynPop.get().main.schoolLocationlist.getValueAt(row,"oaID");
             float xCoordinate = PropertiesSynPop.get().main.schoolLocationlist.getValueAt(row,"X");
             float yCoordinate = PropertiesSynPop.get().main.schoolLocationlist.getValueAt(row,"Y");
-            int schoolCapacity = (int) PropertiesSynPop.get().main.schoolLocationlist.getValueAt(row,"capacity_imputed");
+            //TODO: verify the school capacity data. school capacity of secondary school < number of secondary school student in SP. so far simply scale up the capacity by 1.5
+            int schoolCapacity = (int) PropertiesSynPop.get().main.schoolLocationlist.getValueAt(row,"capacity_imputed_scaled");
             int schoolType = (int) PropertiesSynPop.get().main.schoolLocationlist.getValueAt(row,"type");
 
             Coordinate coordinate = new Coordinate(xCoordinate,yCoordinate);

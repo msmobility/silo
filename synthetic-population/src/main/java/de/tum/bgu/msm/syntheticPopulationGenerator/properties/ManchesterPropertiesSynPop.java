@@ -91,7 +91,7 @@ public class ManchesterPropertiesSynPop extends AbstractPropertiesSynPop {
 
         if (runMicrolocation) {
             buildingLocationlist = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle, "buildingLocation.list", "input/syntheticPopulation/buildingLocation.csv"));
-            jobLocationlist = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle, "jobLocation.list", "input/syntheticPopulation/jobLocation.csv"));
+            //jobLocationlist = SiloUtil.readCSVfile(PropertiesUtil.getStringProperty(bundle, "jobLocation.list", "input/syntheticPopulation/jobLocation.csv"));
         } else {
             buildingLocationlist = null;
             jobLocationlist = null;
@@ -111,6 +111,9 @@ public class ManchesterPropertiesSynPop extends AbstractPropertiesSynPop {
         commuteFlowFile = PropertiesUtil.getStringProperty(bundle, "commute.flow", "input/syntheticPopulation/commuteflow_inside.csv");
 
         carOwnershipFile = PropertiesUtil.getStringProperty(bundle, "car.ownership", "input/syntheticPopulation/carOwnership_lsoa.csv");
+
+        microDwellingsFileName = PropertiesUtil.getStringProperty(bundle, "buildingLocation.list", "input/syntheticPopulation/microDwellings.csv");
+
     }
 
 }
