@@ -43,7 +43,7 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
         this.initialConfig = initialConfig;
         this.realEstateDataManager = data.getRealEstateDataManager();
         this.noiseReceiverPoints = new NoiseReceiverPoints();
-        simulatedDays = Arrays.asList(Day.saturday,Day.sunday);
+        simulatedDays = Arrays.asList(Day.thursday,Day.saturday,Day.sunday);
     }
 
     @Override
@@ -152,7 +152,7 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
         config.qsim().setEndTime(24 * 60 * 60);
         noiseParameters.setConsiderNoiseBarriers(true);
         noiseParameters.setConsiderNoiseReflection(false);
-        noiseParameters.setNoiseBarriersFilePath("/home/qin/models/manchester/input/buildingShapefile/mrcBuildings.geojson");
+        noiseParameters.setNoiseBarriersFilePath(properties.healthData.noiseBarriersFile);
         noiseParameters.setNoiseBarriersSourceCRS("EPSG:27700");
         config.global().setCoordinateSystem("EPSG:27700");
         config.addModule(noiseParameters);
@@ -163,7 +163,7 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
     }
 
     private void readBuidlingFile() {
-        String fileName = "/home/qin/models/manchester/input/buildingShapefile/mcrBuildings.csv";
+        String fileName = properties.healthData.microBuildingFile;
 
         String recString = "";
         int recCount = 0;
@@ -173,15 +173,15 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
 
             // read header
             String[] header = recString.split(",");
-            int posId = SiloUtil.findPositionInArray("id", header);
-            int posCoordX = SiloUtil.findPositionInArray("coordX", header);
-            int posCoordY = SiloUtil.findPositionInArray("coordY", header);
+            int posId = SiloUtil.findPositionInArray("ref_no", header);
+            int posCoordX = SiloUtil.findPositionInArray("X", header);
+            int posCoordY = SiloUtil.findPositionInArray("Y", header);
 
             // read line
             while ((recString = in.readLine()) != null) {
                     recCount++;
                     String[] lineElements = recString.split(",");
-                    int index = Integer.parseInt(lineElements[posId]);
+                    long index = Long.parseLong(lineElements[posId]);
                     double xCoordinate = Double.parseDouble(lineElements[posCoordX]);
                     double yCoordinate = Double.parseDouble(lineElements[posCoordY]);
 
