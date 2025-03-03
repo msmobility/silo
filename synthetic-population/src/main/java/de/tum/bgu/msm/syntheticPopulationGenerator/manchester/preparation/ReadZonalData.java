@@ -4,6 +4,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.common.matrix.Matrix;
+import de.tum.bgu.msm.data.ManchesterDwellingTypes;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.manchester.DataSetSynPopMCR;
@@ -115,6 +116,7 @@ public class ReadZonalData {
         //TAZ attributes
         HashMap<Integer, int[]> cityTAZ = new HashMap<>();
         Map<Integer, Map<Integer, Float>> probabilityZone = new HashMap<>();
+        Map<Integer, Map<ManchesterDwellingTypes.DwellingTypeManchester, Map<Integer, Float>>> probabilityZoneByDdType = new HashMap<>();
         Table<Integer, Integer, Integer> schoolCapacity = HashBasedTable.create();
         Map<Integer, Map<DwellingType, Integer>> dwellingPriceByTypeAndZone = new HashMap<>();
 
@@ -127,7 +129,7 @@ public class ReadZonalData {
             int city = (int) zoneAttributes.getValueAt(i,"lsoaID");
             int taz = (int) zoneAttributes.getValueAt(i,"oaID");
             tazCity.put(taz,city);
-            float probability = zoneAttributes.getValueAt(i, "population");
+            float population = zoneAttributes.getValueAt(i, "population");
 
             int capacityPrimarySchool = (int)zoneAttributes.getValueAt(i,"primaryEdu");
             //TODO: verify the school capacity data. school capacity of secondary school < number of secondary school student in SP. so far simply scale up the capacity by 1.5
@@ -137,6 +139,10 @@ public class ReadZonalData {
             float households = zoneAttributes.getValueAt(i, "households");
             float totEmpWeight = zoneAttributes.getValueAt(i, "totEmp_poiWeight");
             float wpPop = zoneAttributes.getValueAt(i, "wpPop_scaled2LsoaJob");
+            float households_SFD = zoneAttributes.getValueAt(i, "hh_SFD");
+            float households_SFA = zoneAttributes.getValueAt(i, "hh_SFA");
+            float households_FLAT = zoneAttributes.getValueAt(i, "hh_FLAT");
+            float households_MH = zoneAttributes.getValueAt(i, "hh_MH");
 
             if (!tazs.contains(taz)) {
                 tazs.add(taz);
@@ -146,14 +152,27 @@ public class ReadZonalData {
                 previousTaz = SiloUtil.expandArrayByOneElement(previousTaz, taz);
                 cityTAZ.put(city, previousTaz);
                 Map<Integer, Float> probabilities = probabilityZone.get(city);
-                probabilities.put(taz, probability);
+                probabilities.put(taz, population);
             } else {
                 int[] previousTaz = {taz};
                 cityTAZ.put(city,previousTaz);
                 Map<Integer, Float> probabilities = new HashMap<>();
-                probabilities.put(taz, probability);
+                probabilities.put(taz, population);
                 probabilityZone.put(city, probabilities);
             }
+
+            if(!probabilityZoneByDdType.containsKey(city)){
+                probabilityZoneByDdType.put(city, new HashMap<>() );
+                for(ManchesterDwellingTypes.DwellingTypeManchester ddType : ManchesterDwellingTypes.DwellingTypeManchester.values()){
+                    probabilityZoneByDdType.get(city).put(ddType, new HashMap<>());
+                }
+            }
+
+            probabilityZoneByDdType.get(city).get(ManchesterDwellingTypes.DwellingTypeManchester.SFD).put(taz, households_SFD);
+            probabilityZoneByDdType.get(city).get(ManchesterDwellingTypes.DwellingTypeManchester.SFA).put(taz, households_SFA);
+            probabilityZoneByDdType.get(city).get(ManchesterDwellingTypes.DwellingTypeManchester.FLAT).put(taz, households_FLAT);
+            probabilityZoneByDdType.get(city).get(ManchesterDwellingTypes.DwellingTypeManchester.MH).put(taz, households_MH);
+
             schoolCapacity.put(taz,1,capacityPrimarySchool);
             schoolCapacity.put(taz,2,capacitySecondarySchool);
             schoolCapacity.put(taz,3,capacityHigherEducation);
@@ -166,6 +185,7 @@ public class ReadZonalData {
         ((DataSetSynPopMCR)dataSetSynPop).setTazMunicipality(tazCity);
         dataSetSynPop.setAreas(SiloUtil.convertArrayListToFloatArray(areas));
         dataSetSynPop.setProbabilityZone(probabilityZone);
+        ((DataSetSynPopMCR)dataSetSynPop).setProbabilityZoneByDdType(probabilityZoneByDdType);
         dataSetSynPop.setTazByMunicipality(cityTAZ);
         dataSetSynPop.setSchoolCapacity(schoolCapacity);
         dataSetSynPop.setTazs(tazs);

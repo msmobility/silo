@@ -13,6 +13,7 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.manchester.allocation.Allocat
 import de.tum.bgu.msm.syntheticPopulationGenerator.manchester.microlocation.Microlocation;
 import de.tum.bgu.msm.syntheticPopulationGenerator.manchester.preparation.Preparation;
 import de.tum.bgu.msm.syntheticPopulationGenerator.optimizationIPU.optimization.Optimization;
+import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -43,11 +44,11 @@ public class SyntheticPopMCR implements SyntheticPopI {
         createDirectoryForOutput();
 
         DataContainerWithSchools dataContainer = DataBuilder.getModelDataForMuc(properties, null);
-//        GeoDataReader reader =  new GeoDataReaderManchester(dataContainer.getGeoData());
-//        String pathShp = PropertiesSynPop.get().main.zoneShapeFile;
-//        String fileName = PropertiesSynPop.get().main.zoneFilename;
-//        reader.readZoneCsv(fileName);
-//        reader.readZoneShapefile(pathShp);
+        GeoDataReader reader =  new GeoDataReaderManchester(dataContainer.getGeoData());
+        String pathShp = PropertiesSynPop.get().main.zoneShapeFile;
+        String fileName = PropertiesSynPop.get().main.zoneFilename;
+        reader.readZoneCsv(fileName);
+        reader.readZoneShapefile(pathShp);
         long startTime = System.nanoTime();
 
         logger.info("Running Module: Reading inputs");

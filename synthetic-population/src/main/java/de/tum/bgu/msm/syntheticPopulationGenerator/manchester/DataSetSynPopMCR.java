@@ -5,6 +5,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.common.matrix.Matrix;
+import de.tum.bgu.msm.data.ManchesterDwellingTypes;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import org.apache.logging.log4j.LogManager;
@@ -43,6 +44,8 @@ public class DataSetSynPopMCR extends DataSetSynPop {
     private int[] countyIDs;
     private int[] tazIDs;
     private Map<Integer, Map<Integer, Float>> probabilityZone;
+    private Map<Integer, Map<ManchesterDwellingTypes.DwellingTypeManchester, Map<Integer, Float>>> probabilityZoneByDdType = new HashMap<>();
+
     private Map<Integer, Map<DwellingType, Integer>> dwellingPriceByTypeAndZone;
     private Table<Integer, Integer, Integer> schoolCapacity = HashBasedTable.create();
     private Table<Integer, String, Integer> zoneCoordinates = HashBasedTable.create();
@@ -492,5 +495,13 @@ public class DataSetSynPopMCR extends DataSetSynPop {
 
     public void setCarOwnershipProbabilityByHhsizeAndLSOA(Map<Integer, Map<Integer, Map<Integer,Float>>> carOwnershipProbabilityByHhsizeAndLSOA) {
         this.carOwnershipProbabilityByHhsizeAndLSOA = carOwnershipProbabilityByHhsizeAndLSOA;
+    }
+
+    public Map<Integer, Map<ManchesterDwellingTypes.DwellingTypeManchester, Map<Integer, Float>>> getProbabilityZoneByDdType() {
+        return probabilityZoneByDdType;
+    }
+
+    public void setProbabilityZoneByDdType(Map<Integer, Map<ManchesterDwellingTypes.DwellingTypeManchester, Map<Integer, Float>>> probabilityZoneByDdType) {
+        this.probabilityZoneByDdType = probabilityZoneByDdType;
     }
 }

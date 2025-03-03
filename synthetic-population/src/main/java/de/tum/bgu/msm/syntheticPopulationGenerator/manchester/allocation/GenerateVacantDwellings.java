@@ -2,6 +2,7 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.manchester.allocation;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.*;
+import de.tum.bgu.msm.health.DwellingFactoryMCR;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.manchester.DataSetSynPopMCR;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.MicroDataManager;
@@ -31,12 +32,14 @@ public class GenerateVacantDwellings {
     private final DataContainer dataContainer;
     private RealEstateDataManager realEstateData;
     private Map<Integer, List<Dwelling>> occupiedDwellings = new HashMap<>();
+    private DwellingFactory dwellingFactory;
 
 
     public GenerateVacantDwellings(DataContainer dataContainer, DataSetSynPop dataSetSynPop){
         this.dataContainer = dataContainer;
         this.dataSetSynPop = dataSetSynPop;
         microDataManager = new MicroDataManager(dataSetSynPop);
+        this.dwellingFactory = new DwellingFactoryMCR(new DwellingFactoryImpl());
     }
 
     public void run(){
@@ -90,7 +93,7 @@ public class GenerateVacantDwellings {
                     int bedRooms = idDwellingToCopy.getBedrooms();
                     int quality = idDwellingToCopy.getQuality();
                     int price = idDwellingToCopy.getPrice();
-                    Dwelling dwell = DwellingUtils.getFactory().createDwelling(newDdId, tazSelected, null, -1, type, bedRooms, quality, price, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
+                    Dwelling dwell = dwellingFactory.createDwelling(newDdId, tazSelected, null, -1, type, bedRooms, quality, price, year); //newDwellingId, raster cell, HH Id, ddType, bedRooms, quality, price, restriction, construction year
                     realEstateData.addDwelling(dwell);
                     dwell.setUsage(DwellingUsage.VACANT);
                     dwell.setFloorSpace(floorSpace);

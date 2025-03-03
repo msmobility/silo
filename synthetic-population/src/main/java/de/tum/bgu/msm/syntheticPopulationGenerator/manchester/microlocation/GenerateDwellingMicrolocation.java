@@ -3,9 +3,7 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.manchester.microlocation;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.ManchesterDwellingTypes;
 import de.tum.bgu.msm.data.Zone;
-import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.data.job.Job;
-import de.tum.bgu.msm.data.job.JobFactory;
+import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.health.NoiseDwellingMCR;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
@@ -18,13 +16,14 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class GenerateDwellingMicrolocation {
 
     private static final Logger logger = LogManager.getLogger(GenerateDwellingMicrolocation.class);
     private final DataContainer dataContainer;
-    private Map<Long, Coordinate> buildingCoord = new HashMap<>();
-    private Map<Integer, Map<String, List<Long>>> zone2ddType2buildingIdMap = new HashMap<>();
+    private final Map<Long, Coordinate> buildingCoord = new HashMap<>();
+    private final Map<Integer, Map<String, List<Long>>> zone2ddType2buildingIdMap = new HashMap<>();
     Map<Long, Integer> buildingZone = new HashMap<>();
 
     public GenerateDwellingMicrolocation(DataContainer dataContainer, DataSetSynPop dataSetSynPop){
@@ -39,36 +38,47 @@ public class GenerateDwellingMicrolocation {
         //Select the building to allocate the dwelling
         int missingType = 0;
         int errorBuilding = 0;
-        for (Dwelling dd: dataContainer.getRealEstateDataManager().getDwellings()) {
-            int zoneID = dd.getZoneId();
-            String ddtype = dd.getType().toString();
-            Zone zone = dataContainer.getGeoData().getZones().get(zoneID);
-            if (zone2ddType2buildingIdMap.get(zoneID) == null){
-                dd.setCoordinate(zone.getRandomCoordinate(SiloUtil.getRandomObject()));
-                errorBuilding++;
-                continue;
-            }
 
-            long selectedBuildingID;
-            List<Long> buildingIds = zone2ddType2buildingIdMap.get(zoneID).get(ddtype);
+        Map<Integer, Map<DwellingType, List<NoiseDwellingMCR>>> groupedDwellings = dataContainer.getRealEstateDataManager()
+                .getDwellings()
+                .stream()
+                .filter(d -> d instanceof NoiseDwellingMCR) // Ensure only NoiseDwellingMCR instances
+                .map(d -> (NoiseDwellingMCR) d) // Cast to NoiseDwellingMCR
+                .collect(Collectors.groupingBy(
+                        NoiseDwellingMCR::getZoneId,
+                        Collectors.groupingBy(NoiseDwellingMCR::getType)
+                ));
 
-            if (buildingIds == null || buildingIds.isEmpty()) {
-                missingType++;
-                ddtype = "Dwelling";
-                buildingIds = zone2ddType2buildingIdMap.get(zoneID).get(ddtype);
-                if (buildingIds == null || buildingIds.isEmpty()) {
-                   errorBuilding++;
-                   logger.warn("No dwelling type: " + ddtype + " found in zone: " + zoneID);
-                   continue;
+        for (int zoneID: groupedDwellings.keySet()) {
+            for(DwellingType ddtype: groupedDwellings.get(zoneID).keySet()) {
+                List<NoiseDwellingMCR> dwellings = groupedDwellings.get(zoneID).get(ddtype);
+
+                Map<String, List<Long>> buildingMap = zone2ddType2buildingIdMap.getOrDefault(zoneID, Collections.emptyMap());
+                List<Long> buildings = getBuildingsForType(buildingMap, ddtype);
+
+                if (buildings == null || buildings.isEmpty()) {
+                    logger.warn("Zone " + zoneID + " has no buildings for type " + ddtype);
+                    missingType++;
+                    Zone zone = dataContainer.getGeoData().getZones().get(zoneID);
+                    for (NoiseDwellingMCR dd : dwellings){
+                        dd.setCoordinate(zone.getRandomCoordinate(SiloUtil.getRandomObject()));
+                        dd.setMicroBuildingId(-1);
+                        errorBuilding++;
+                    }
+                    continue;
                 }
 
+                List<Long> selectedBuildingIDs = selectBuildings(buildings, dwellings.size());
+
+                for (int index = 0; index < dwellings.size(); index++) {
+                    NoiseDwellingMCR dd = dwellings.get(index);
+                    long selectedBuildingID = selectedBuildingIDs.get(index);
+                    dd.setCoordinate(buildingCoord.get(selectedBuildingID));
+                    dd.setMicroBuildingId(selectedBuildingID);
+                }
             }
 
-            selectedBuildingID = buildingIds.get(SiloUtil.getRandomObject().nextInt(buildingIds.size()));
-            zone2ddType2buildingIdMap.get(zoneID).get(ddtype).remove(selectedBuildingID);
-
-            dd.setCoordinate(buildingCoord.get(selectedBuildingID));
-            ((NoiseDwellingMCR) dd).setMicroBuildingId(selectedBuildingID);
+            logger.info("Zone " + zoneID +  " dwelling microlocation assigned.");
         }
 
         logger.warn( errorBuilding +"   Dwellings cannot find specific building location. Their coordinates are assigned randomly in TAZ" );
@@ -77,6 +87,50 @@ public class GenerateDwellingMicrolocation {
         logger.info("   Finished dwelling microlocation.");
     }
 
+    private List<Long> getBuildingsForType(Map<String, List<Long>> buildingMap, DwellingType ddType) {
+        List<Long> buildings = Optional.ofNullable(buildingMap.get(ddType.toString()))
+                .orElse(Collections.emptyList());
+
+        if (!buildings.isEmpty()) return buildings;
+
+        // Fallback logic based on ManchesterDwellingTypes
+        if (ddType instanceof ManchesterDwellingTypes.DwellingTypeManchester) {
+            return switch ((ManchesterDwellingTypes.DwellingTypeManchester) ddType) {
+                case SFD -> Optional.ofNullable(buildingMap.get("SFA"))
+                        .orElseGet(() -> buildingMap.getOrDefault("Dwelling", Collections.emptyList()));
+                case SFA -> Optional.ofNullable(buildingMap.get("SFD"))
+                        .orElseGet(() -> buildingMap.getOrDefault("Dwelling", Collections.emptyList()));
+                case FLAT -> buildingMap.getOrDefault("Dwelling", Collections.emptyList());
+                case MH -> Optional.ofNullable(buildingMap.get("Dwelling"))
+                        .orElseGet(() -> buildingMap.getOrDefault("FLAT", Collections.emptyList()));
+            };
+        }
+        return Collections.emptyList();
+    }
+
+
+    public List<Long> selectBuildings(List<Long> buildings, int n) {
+        Random random = new Random();
+        List<Long> selectedBuildings = new ArrayList<>();
+
+        if (buildings.size() >= n) {
+            // Select `n` unique buildings
+            Collections.shuffle(buildings); // Shuffle to get randomness
+            selectedBuildings = buildings.subList(0, n);
+        } else {
+            // Select all buildings in random order
+            List<Long> shuffledBuildings = new ArrayList<>(buildings);
+            Collections.shuffle(shuffledBuildings);
+            selectedBuildings.addAll(shuffledBuildings);
+
+            // Fill up with random duplicates
+            while (selectedBuildings.size() < n) {
+                selectedBuildings.add(buildings.get(random.nextInt(buildings.size())));
+            }
+        }
+
+        return selectedBuildings;
+    }
 
     private void readBuidlingFile(String fileName) {
         //parse buildings information to hashmap

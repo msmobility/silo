@@ -19,11 +19,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.PrintWriter;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 public class GenerateHouseholdsPersonsDwellings {
 
@@ -75,23 +73,38 @@ public class GenerateHouseholdsPersonsDwellings {
         realEstate = dataContainer.getRealEstateDataManager();
         firstHouseholdMunicipality = 1;
         //for (int municipality = 1; municipality < 3; municipality++){
-        for (int municipality : dataSetSynPop.getMunicipalities()){
+        for (int municipality : dataSetSynPop.getMunicipalities()) {
             initializeMunicipalityData(municipality);
-            double logging = 2;
-            int it = 12;
+
             int[] hhSelection = selectMultipleHouseholds(totalHouseholds);
-            int[] tazSelection = selectMultipleTAZ(totalHouseholds);
-            for (int draw = 0; draw < totalHouseholds; draw++) {
-                int hhSelected = hhSelection[draw];
-                int tazSelected = tazSelection[draw];
-                Household household = generateHousehold();
-                generatePersons(hhSelected, household);
-                generateDwelling(hhSelected, household.getId(), tazSelected, municipality);
-                incomeByMunicipality = incomeByMunicipality + HouseholdUtil.getAnnualHhIncome(household);
-                if (draw == logging & draw > 2) {
-                    logger.info("   Municipality " + municipality + ". Generated household " + draw);
-                    it++;
-                    logging = Math.pow(2, it);
+
+            for (ManchesterDwellingTypes.DwellingTypeManchester ddType : ManchesterDwellingTypes.DwellingTypeManchester.values()) {
+
+                List<Integer> hhSelectionForDdType = Arrays.stream(hhSelection)
+                        .filter(hhIndex -> {
+                            int ddTypeIndex = (int) dataSetSynPop.getHouseholdDataSet().getValueAt(hhIndex, "ddTypeCode");
+                            return ManchesterDwellingTypes.DwellingTypeManchester.valueOf(ddTypeIndex)
+                                    .equals(ddType);
+                        })
+                        .boxed()  // Convert int to Integer
+                        .collect(Collectors.toList());
+
+                if(hhSelectionForDdType.isEmpty()){
+                    continue;
+                }
+
+                initializeMunicipalityZoneProbData(municipality, ddType);
+
+                int[] hhSelectionForDdTypeArray = hhSelectionForDdType.stream().mapToInt(Integer::intValue).toArray();
+                int[] tazSelection = selectMultipleTAZ(hhSelectionForDdTypeArray.length);
+
+                for (int draw = 0; draw < hhSelectionForDdTypeArray.length; draw++) {
+                    int hhSelected = hhSelectionForDdTypeArray[draw];
+                    int tazSelected = tazSelection[draw];
+                    Household household = generateHousehold();
+                    generatePersons(hhSelected, household);
+                    generateDwelling(hhSelected, household.getId(), tazSelected, municipality);
+                    incomeByMunicipality = incomeByMunicipality + HouseholdUtil.getAnnualHhIncome(household);
                 }
             }
 
@@ -267,12 +280,11 @@ public class GenerateHouseholdsPersonsDwellings {
         return hhSelected;
     }
 
-
-
-
     private void initializeMunicipalityData(int municipality){
 
         logger.info("   Municipality " + municipality + ". Starting to generate households and persons");
+
+
         totalHouseholds = (int) PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, "hh");
 
         probMicroData = new HashMap<>();
@@ -288,6 +300,35 @@ public class GenerateHouseholdsPersonsDwellings {
             ids[i] = (int) dataSetSynPop.getWeights().getValueAt(i+1, "ID");
         }
 
+        idTAZs = dataSetSynPop.getProbabilityZone().get(municipality).keySet().stream().mapToInt(Number::intValue).toArray();
+        sumTAZs = dataSetSynPop.getProbabilityZone().get(municipality).values().stream().mapToDouble(Number::doubleValue).sum();
+
+
+        personCounter = 0;
+        householdCounter = 0;
+        firstHouseholdMunicipality = Math.max(householdData.getHighestHouseholdIdInUse(), 1); //the
+
+    }
+
+
+    private void initializeMunicipalityZoneProbData(int municipality, ManchesterDwellingTypes.DwellingTypeManchester ddType){
+        probabilityTAZ = new double[((DataSetSynPopMCR) dataSetSynPop).getProbabilityZoneByDdType().get(municipality).get(ddType).keySet().size()];
+        sumTAZs = 0;
+        probabilityTAZ = ((DataSetSynPopMCR) dataSetSynPop).getProbabilityZoneByDdType().get(municipality).get(ddType).values().stream().mapToDouble(Number::doubleValue).toArray();
+        double sum = 0.;
+        for (int i = 0; i < probabilityTAZ.length; i++){
+            sum += probabilityTAZ[i];
+        }
+
+        for (int i = 0; i < probabilityTAZ.length; i++){
+            probabilityTAZ[i] = probabilityTAZ[i]/sum;
+        }
+    }
+
+
+    private void initializeMunicipalityZoneProbData(int municipality){
+
+
         probabilityTAZ = new double[dataSetSynPop.getProbabilityZone().get(municipality).keySet().size()];
         sumTAZs = 0;
         probabilityTAZ = dataSetSynPop.getProbabilityZone().get(municipality).values().stream().mapToDouble(Number::doubleValue).toArray();
@@ -300,13 +341,6 @@ public class GenerateHouseholdsPersonsDwellings {
             probabilityTAZ[i] = probabilityTAZ[i]/sum;
         }
 
-        idTAZs = dataSetSynPop.getProbabilityZone().get(municipality).keySet().stream().mapToInt(Number::intValue).toArray();
-        sumTAZs = dataSetSynPop.getProbabilityZone().get(municipality).values().stream().mapToDouble(Number::doubleValue).sum();
-
-
-        personCounter = 0;
-        householdCounter = 0;
-        firstHouseholdMunicipality = Math.max(householdData.getHighestHouseholdIdInUse(), 1); //the
 
     }
 
