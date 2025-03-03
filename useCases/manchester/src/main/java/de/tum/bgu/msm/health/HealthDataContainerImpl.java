@@ -112,9 +112,9 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     public void endSimulation() {
         delegate.endSimulation();
         writeDwellingsWithNoise(properties.main.endYear);
-        //writePersonExposureData(properties.main.endYear);
-        //writePersonRelativeRiskData(properties.main.endYear);
-        //writePersonDiseaseTrackData(properties.main.endYear);
+        writePersonExposureData(properties.main.endYear);
+        writePersonRelativeRiskData(properties.main.endYear);
+        writePersonDiseaseTrackData(properties.main.endYear);
     }
 
     private void writePersonDiseaseTrackData(int year) {
