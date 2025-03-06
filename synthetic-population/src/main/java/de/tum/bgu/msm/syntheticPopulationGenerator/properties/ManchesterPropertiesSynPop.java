@@ -113,6 +113,7 @@ public class ManchesterPropertiesSynPop extends AbstractPropertiesSynPop {
         carOwnershipFile = PropertiesUtil.getStringProperty(bundle, "car.ownership", "input/syntheticPopulation/carOwnership_lsoa.csv");
 
         microDwellingsFileName = PropertiesUtil.getStringProperty(bundle, "buildingLocation.list", "input/syntheticPopulation/microDwellings.csv");
+        microJobsFileName =PropertiesUtil.getStringProperty(bundle, "jobLocation.list", "input/syntheticPopulation/microDestinationAtttraction.csv");
 
     }
 

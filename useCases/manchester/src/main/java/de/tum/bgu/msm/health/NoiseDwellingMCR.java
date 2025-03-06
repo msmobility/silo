@@ -3,7 +3,6 @@ package de.tum.bgu.msm.health;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.dwelling.DwellingUsage;
-import de.tum.bgu.msm.health.noise.NoiseDwelling;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.util.Optional;
@@ -12,7 +11,6 @@ public class NoiseDwellingMCR implements Dwelling {
 
     private final Dwelling delegate;
     private double immission;
-    private long microBuildingId;
 
     public NoiseDwellingMCR(Dwelling delegate) {
         this.delegate = delegate;
@@ -134,13 +132,5 @@ public class NoiseDwellingMCR implements Dwelling {
 
     public double getNoiseImmission() {
         return this.immission;
-    }
-
-    public long getMicroBuildingId() {
-        return microBuildingId;
-    }
-
-    public void setMicroBuildingId(long microBuildingId) {
-        this.microBuildingId = microBuildingId;
     }
 }

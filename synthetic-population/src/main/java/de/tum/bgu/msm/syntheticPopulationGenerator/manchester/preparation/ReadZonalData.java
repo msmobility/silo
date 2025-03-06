@@ -61,14 +61,11 @@ public class ReadZonalData {
 
         for (int row = 1; row <= PropertiesSynPop.get().main.selectedMunicipalities.getRowCount(); row++) {
             int city = (int) PropertiesSynPop.get().main.selectedMunicipalities.getValueAt(row, "lsoaID");
-            float primaryJobs = PropertiesSynPop.get().main.selectedMunicipalities.getValueAt(row, "pri");
-            float secondaryJobs = PropertiesSynPop.get().main.selectedMunicipalities.getValueAt(row, "sec");
-            float tertiaryJobs = PropertiesSynPop.get().main.selectedMunicipalities.getValueAt(row, "ter");
+            float totalJobs = PropertiesSynPop.get().main.selectedMunicipalities.getValueAt(row, "tot");
             float percentageVacantDwellings = PropertiesSynPop.get().main.selectedMunicipalities.getValueAt(row, "percentageVacantDwellings");
 
             HashMap<String, Float> attributes = new HashMap<>();
-            float totalJob = primaryJobs + secondaryJobs + tertiaryJobs;
-            attributes.put("tot", totalJob);
+            attributes.put("tot", totalJobs);
             attributes.put("percentageVacantDwellings", percentageVacantDwellings);
 
             attributesLSOA.put(city, attributes);
@@ -128,6 +125,8 @@ public class ReadZonalData {
         for (int i = 1; i <= zoneAttributes.getRowCount(); i++){
             int city = (int) zoneAttributes.getValueAt(i,"lsoaID");
             int taz = (int) zoneAttributes.getValueAt(i,"oaID");
+            float popCentroid_x = zoneAttributes.getValueAt(i,"popCentroid_x");
+            float popCentroid_y = zoneAttributes.getValueAt(i,"popCentroid_y");
             tazCity.put(taz,city);
             float population = zoneAttributes.getValueAt(i, "population");
 
@@ -137,8 +136,8 @@ public class ReadZonalData {
             int capacityHigherEducation = (int)zoneAttributes.getValueAt(i,"higherEdu");
 
             float households = zoneAttributes.getValueAt(i, "households");
-            float totEmpWeight = zoneAttributes.getValueAt(i, "totEmp_poiWeight");
-            float wpPop = zoneAttributes.getValueAt(i, "wpPop_scaled2LsoaJob");
+            float totEmpPOIWeight = zoneAttributes.getValueAt(i, "totEmp_poiWeight");
+            float commuteInflow = zoneAttributes.getValueAt(i, "commuteInflow_scaled2lsoa11Job");
             float households_SFD = zoneAttributes.getValueAt(i, "hh_SFD");
             float households_SFA = zoneAttributes.getValueAt(i, "hh_SFA");
             float households_FLAT = zoneAttributes.getValueAt(i, "hh_FLAT");
@@ -179,7 +178,9 @@ public class ReadZonalData {
 
             HashMap<String, Float> Attributes = new HashMap<>();
             Attributes.put("households", households);
-            Attributes.put("tot",wpPop);
+            Attributes.put("tot",commuteInflow);
+            Attributes.put("popCentroid_x",popCentroid_x);
+            Attributes.put("popCentroid_y",popCentroid_y);
             attributesZone.put(taz, Attributes);
         }
         ((DataSetSynPopMCR)dataSetSynPop).setTazMunicipality(tazCity);

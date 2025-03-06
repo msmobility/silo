@@ -70,7 +70,7 @@ public class DataBuilderHealth {
                 new ManchesterDwellingTypes(), dwellingData, householdData, geoData, new DwellingFactoryMCR(new DwellingFactoryImpl()), properties);
 
         JobDataManager jobDataManager = new JobDataManagerImpl(
-                properties, new JobFactoryImpl(), jobData, geoData, travelTimes, commutingTimeProbability);
+                properties, new JobFactoryMCR(), jobData, geoData, travelTimes, commutingTimeProbability);
 
         final HouseholdFactoryImpl hhFactory = new HouseholdFactoryImpl();
         HouseholdDataManager householdDataManager = new HouseholdDataManagerImpl(

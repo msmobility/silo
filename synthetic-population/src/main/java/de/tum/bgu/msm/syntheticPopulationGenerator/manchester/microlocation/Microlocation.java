@@ -28,8 +28,7 @@ public class Microlocation extends ModuleSynPop {
 
         if (PropertiesSynPop.get().main.runMicrolocation) {
             generateDwellingMicrolocation();
-            //TODO: job microlocation for Manchester
-            //generateJobMicrolocation();
+            generateJobMicrolocation();
         }
 
         logger.info("   Completed microlocation model.");

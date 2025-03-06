@@ -69,7 +69,8 @@ public class GenerateVacantDwellings {
             int[] tazSelection = selectMultipleTAZ(vacantDwellings);
             for (int draw = 0; draw < vacantDwellings; draw++){
                 int tazSelected = tazSelection[draw];
-                int newDdId = highestDwellingIdInUse++;
+                //++highestDwellingIdInUse pre-increment
+                int newDdId = ++highestDwellingIdInUse;
                 int floorSpace = microDataManager.guessFloorSpace(SiloUtil.select(probVacantFloor));
                 int buildingYearSize = SiloUtil.select(probVacantBuildingSize);
                 int year = microDataManager.dwellingYearfromBracket(extractYear(buildingYearSize));

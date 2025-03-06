@@ -4,6 +4,7 @@ import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.job.JobFactory;
+import de.tum.bgu.msm.data.job.JobMCR;
 import de.tum.bgu.msm.io.input.JobReader;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.logging.log4j.LogManager;
@@ -43,9 +44,11 @@ public class JobReaderMCR implements JobReader {
             int posWorker = SiloUtil.findPositionInArray("personId", header);
             int posType = SiloUtil.findPositionInArray("type", header);
 
+            int posMicroBuildingId = -1;
             int posCoordX = -1;
             int posCoordY = -1;
             try {
+                posMicroBuildingId = SiloUtil.findPositionInArray("microBuildingID", header);
                 posCoordX = SiloUtil.findPositionInArray("coordX", header);
                 posCoordY = SiloUtil.findPositionInArray("coordY", header);
             } catch (Exception e) {
@@ -76,6 +79,13 @@ public class JobReaderMCR implements JobReader {
                 }
 
                 Job jj = factory.createJob(id, zoneId, coordinate, worker, type);
+
+                if(posMicroBuildingId>=0){
+                    ((JobMCR)jj).setMicroBuildingId(Long.parseLong(lineElements[posMicroBuildingId]));
+                }else {
+                    ((JobMCR)jj).setMicroBuildingId(-1);
+                }
+
 
                 jobData.addJob(jj);
                 if (id == SiloUtil.trackJj) {

@@ -22,12 +22,14 @@ public class GenerateDwellingMicrolocation {
 
     private static final Logger logger = LogManager.getLogger(GenerateDwellingMicrolocation.class);
     private final DataContainer dataContainer;
+    private final DataSetSynPop dataSetSynPop;
     private final Map<Long, Coordinate> buildingCoord = new HashMap<>();
     private final Map<Integer, Map<String, List<Long>>> zone2ddType2buildingIdMap = new HashMap<>();
     Map<Long, Integer> buildingZone = new HashMap<>();
 
     public GenerateDwellingMicrolocation(DataContainer dataContainer, DataSetSynPop dataSetSynPop){
         this.dataContainer = dataContainer;
+        this.dataSetSynPop = dataSetSynPop;
     }
 
     public void run() {
@@ -59,10 +61,10 @@ public class GenerateDwellingMicrolocation {
                 if (buildings == null || buildings.isEmpty()) {
                     logger.warn("Zone " + zoneID + " has no buildings for type " + ddtype);
                     missingType++;
-                    Zone zone = dataContainer.getGeoData().getZones().get(zoneID);
                     for (NoiseDwellingMCR dd : dwellings){
-                        dd.setCoordinate(zone.getRandomCoordinate(SiloUtil.getRandomObject()));
-                        dd.setMicroBuildingId(-1);
+                        float coordX = dataSetSynPop.getTazAttributes().get(zoneID).get("popCentroid_x");
+                        float coordY = dataSetSynPop.getTazAttributes().get(zoneID).get("popCentroid_y");
+                        dd.setCoordinate(new Coordinate(coordX, coordY));
                         errorBuilding++;
                     }
                     continue;
@@ -74,7 +76,6 @@ public class GenerateDwellingMicrolocation {
                     NoiseDwellingMCR dd = dwellings.get(index);
                     long selectedBuildingID = selectedBuildingIDs.get(index);
                     dd.setCoordinate(buildingCoord.get(selectedBuildingID));
-                    dd.setMicroBuildingId(selectedBuildingID);
                 }
             }
 
