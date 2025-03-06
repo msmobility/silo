@@ -37,12 +37,6 @@ public class RunExposureHealthOffline {
     public static void main(String[] args) {
 
         Properties properties = SiloUtil.siloInitialization(args[0]);
-        /*Properties properties = Properties.initializeProperties(args[0]);
-        final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
-        createDirectoryIfNotExistingYet(outputDirectory);
-        initializeRandomNumber(properties.main.randomSeed);
-        trackingFile("open");
-        loadHdf5Lib();*/
 
         Config config = null;
         if (args.length > 1 && args[1] != null) {
@@ -52,7 +46,6 @@ public class RunExposureHealthOffline {
         HealthDataContainerImpl dataContainer = DataBuilderHealth.getModelDataForManchester(properties, config);
         DataBuilderHealth.read(properties, dataContainer);
 
-        //Resources.initializeResources(Objects.requireNonNull(properties.main.baseDirectory + properties.transportModel.mitoPropertiesPath));
         AirPollutantModel airPollutantModel = new AirPollutantModel(dataContainer, properties, SiloUtil.provideNewRandom(),config);
         NoiseModel noiseModel = new NoiseModel(dataContainer,properties, SiloUtil.provideNewRandom(),config);
         HealthExposureModelMCR exposureModelMCR = new HealthExposureModelMCR(dataContainer, properties, SiloUtil.provideNewRandom(),config);
@@ -75,11 +68,11 @@ public class RunExposureHealthOffline {
         }
 
 
-        //airPollutantModel.endYear(2021);
+        airPollutantModel.endYear(2021);
         noiseModel.endYear(2021);
-        //exposureModelMCR.endYear(2021);
-        //diseaseModelMCR.setup();
-        //diseaseModelMCR.endYear(2021);
+        exposureModelMCR.endYear(2021);
+        diseaseModelMCR.setup();
+        diseaseModelMCR.endYear(2021);
         dataContainer.endSimulation();
 
         logger.info("Finished SILO.");

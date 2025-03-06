@@ -5,6 +5,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.math.LongMath;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.health.airPollutant.AirPollutantModel;
 import de.tum.bgu.msm.health.data.*;
@@ -37,6 +38,10 @@ import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.vehicles.Vehicle;
+import org.matsim.vehicles.VehicleType;
+import org.matsim.vehicles.VehicleUtils;
+import org.matsim.vehicles.VehiclesFactory;
 import routing.BicycleConfigGroup;
 import routing.WalkConfigGroup;
 import routing.components.Gradient;
@@ -85,7 +90,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
     @Override
     public void endYear(int year) {
-        if(properties.healthData.exposureModelYears.contains(year)) {
+        if(year == properties.main.startYear || properties.healthData.exposureModelYears.contains(year)) {
             logger.warn("Health model end year:" + year);
             TreeSet<Integer> sortedYears = new TreeSet<>(properties.transportModel.transportModelYears);
             latestMatsimYear = sortedYears.floor(year);
@@ -172,7 +177,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             ((DataContainerHealth)dataContainer).getZoneExposure2Pollutant2TimeBin().put(zone, pollutantMap);
         }
 
-        new LinkInfoReader().readData( ((DataContainerHealth)dataContainer), outputDirectory, day);
+        new LinkInfoReader().readData( ((DataContainerHealth)dataContainer), outputDirectory, day,"carTruck");
     }
 
     private void healthDataAssembler(int year, Day day, Mode mode) {
@@ -198,8 +203,9 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         TravelTime travelTime;
         TravelDisutility travelDisutility;
         String networkFile;
+        EnumMap<Mode, EnumMap<MitoGender, Map<Integer,Double>>> allSpeeds = ((DataContainerHealth)dataContainer).getAvgSpeeds();
+        VehiclesFactory fac = VehicleUtils.getFactory();
 
-        String[] purposes = new String[]{"commute","discretionary","HBA","NHBO","NHBW"};
         switch (mode){
             case autoDriver:
             case autoPassenger:
@@ -214,7 +220,19 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
                 WalkConfigGroup walkConfigGroup = new WalkConfigGroup();
                 fillConfigWithWalkStandardValue(walkConfigGroup);
+                //without remove, throw run time exception "Module xx exists already".
+                scenario.getConfig().removeModule("walk");
                 scenario.getConfig().addModule(walkConfigGroup);
+                // set vehicles
+                for(MitoGender gender : MitoGender.values()) {
+                    for(int age = 0 ; age <= 100 ; age++) {
+                        VehicleType walk = fac.createVehicleType(Id.create(TransportMode.walk + gender + age, VehicleType.class));
+                        walk.setMaximumVelocity(allSpeeds.get(Mode.walk).get(gender).get(age));
+                        walk.setNetworkMode(TransportMode.walk);
+                        walk.setPcuEquivalents(0.);
+                        scenario.getVehicles().addVehicleType(walk);
+                    }
+                }
                 travelTime = new WalkTravelTime(new WalkLinkSpeedCalculatorImpl(scenario.getConfig()));
                 travelDisutility = new ActiveDisutilityPrecalc(scenario.getNetwork(),walkConfigGroup,travelTime);
                 break;
@@ -223,7 +241,18 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
                 BicycleConfigGroup bicycleConfigGroup = new BicycleConfigGroup();
                 fillConfigWithBikeStandardValue(bicycleConfigGroup);
+                scenario.getConfig().removeModule("bike");
                 scenario.getConfig().addModule(bicycleConfigGroup);
+                // set vehicles
+                for(MitoGender gender : MitoGender.values()) {
+                    for(int age = 0 ; age <= 100 ; age++) {
+                        VehicleType bicycle = fac.createVehicleType(Id.create(TransportMode.bike + gender + age, VehicleType.class));
+                        bicycle.setMaximumVelocity(allSpeeds.get(Mode.bicycle).get(gender).get(age));
+                        bicycle.setNetworkMode(TransportMode.bike);
+                        bicycle.setPcuEquivalents(0.);
+                        scenario.getVehicles().addVehicleType(bicycle);
+                    }
+                }
                 travelTime = new BicycleTravelTime(new BicycleLinkSpeedCalculatorImpl(scenario.getConfig()));
                 travelDisutility = new ActiveDisutilityPrecalc(scenario.getNetwork(),bicycleConfigGroup,travelTime);
                 break;
@@ -261,9 +290,23 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                         // Calculate exposures for outbound path
                         int outboundDepartureTimeInSeconds = trip.getDepartureTimeInMinutes()*60;
                         org.matsim.api.core.v01.population.Person person = factory.createPerson(Id.createPersonId(trip.getId()));
-                        person.getAttributes().putAttribute("purpose",convertTripPurpose(trip));
+                        person.getAttributes().putAttribute("purpose",trip.getTripPurpose());
+                        Person siloPerson = dataContainer.getHouseholdDataManager().getPersonFromId(trip.getPerson());
+                        person.getAttributes().putAttribute("sex",siloPerson.getGender().toString());
+                        person.getAttributes().putAttribute("age",siloPerson.getAge());
 
-                        LeastCostPathCalculator.Path outboundPath = pathCalculator.calcLeastCostPath(originNode, destinationNode,outboundDepartureTimeInSeconds,person,null);
+                        // Create vehicle for each person (i.e., trip) for active traveller
+                        Vehicle vehicle = null;
+                        if(mode.equals(Mode.walk)||mode.equals(Mode.bicycle)) {
+                            MitoGender gender = MitoGender.valueOf((String) person.getAttributes().getAttribute("sex"));
+                            int age = (int) person.getAttributes().getAttribute("age");
+                            Id<Vehicle> vehicleId = Id.createVehicleId(person.getId().toString());
+                            String key = (mode.equals(Mode.walk)? TransportMode.walk : TransportMode.bike) + gender + age;
+                            VehicleType vehicleType = scenario.getVehicles().getVehicleTypes().get(Id.create(key, VehicleType.class));
+                            vehicle = fac.createVehicle(vehicleId,vehicleType);
+                        }
+
+                        LeastCostPathCalculator.Path outboundPath = pathCalculator.calcLeastCostPath(originNode, destinationNode,outboundDepartureTimeInSeconds,person,vehicle);
                         if(outboundPath == null){
                             logger.warn("trip id: " + trip.getId() + ", trip depart time: " + trip.getDepartureTimeInMinutes() +
                                     "origin coord: [" + trip.getTripOrigin().getX() + "," + trip.getTripOrigin().getY() + "], " +
@@ -277,7 +320,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                         // Calculate exposures for activity & return trip (home-based trips only)
                         if(trip.isHomeBased()) {
                             int returnDepartureTimeInSeconds = trip.getDepartureReturnInMinutes()*60;
-                            LeastCostPathCalculator.Path returnPath = pathCalculator.calcLeastCostPath(destinationNode, originNode,returnDepartureTimeInSeconds,person,null);
+                            LeastCostPathCalculator.Path returnPath = pathCalculator.calcLeastCostPath(destinationNode, originNode,returnDepartureTimeInSeconds,person,vehicle);
                             if(returnPath == null){
                                 logger.warn("trip id: " + trip.getId() + ", trip depart time: " + trip.getDepartureTimeInMinutes() +
                                         "origin coord: [" + trip.getTripOrigin().getX() + "," + trip.getTripOrigin().getY() + "], " +
@@ -484,17 +527,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         }
     }
 
-    private double getAvgCycleSpeed(PersonHealth person) {
-        return ((DataContainerHealth)dataContainer).getAvgSpeeds().get(Mode.bicycle).
-                get(MitoGender.valueOf(person.getGender().name())).get(Math.min(person.getAge(),105)) / 3.6;
-    }
-
-    private double getAvgWalkSpeed(PersonHealth person) {
-        return ((DataContainerHealth)dataContainer).getAvgSpeeds().get(Mode.walk).
-                get(MitoGender.valueOf(person.getGender().name())).get(Math.min(person.getAge(),105)) / 3.6;
-    }
-
-    private String convertTripPurpose(Trip trip) {
+   /* private String convertTripPurpose(Trip trip) {
         Purpose purpose = trip.getTripPurpose();
         if (purpose.equals(Purpose.HBW)){
             return "commute";
@@ -505,7 +538,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         } else {
             return purpose.name();
         }
-    }
+    }*/
     private void fillConfigWithWalkStandardValue(WalkConfigGroup walkConfigGroup) {
         // WALK ATTRIBUTES
         List<ToDoubleFunction<Link>> walkAttributes = new ArrayList<>();
@@ -559,7 +592,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         Function<org.matsim.api.core.v01.population.Person,double[]> bikeWeights = p -> {
             switch((Purpose) p.getAttributes().getAttribute("purpose")) {
                 case HBW -> {
-                    if(p.getAttributes().getAttribute("sex").equals(MitoGender.FEMALE)) {
+                    if(p.getAttributes().getAttribute("sex").equals(Gender.FEMALE)) {
                         return new double[] {35.9032908,2.3084587 + 2.7762033};
                     } else {
                         return new double[] {35.9032908,2.3084587};

@@ -21,9 +21,9 @@ public class LinkInfoReader {
 
     private final static Logger logger = LogManager.getLogger(LinkInfoReader.class);
 
-    public void readData(DataContainerHealth dataContainer, String outputDirectory, Day day){
-        readLinkConcentrationData(dataContainer,outputDirectory + "linkConcentration_" + day + ".csv");
-        readZoneConcentrationData(dataContainer,outputDirectory + "zoneConcentration_" + day + ".csv");
+    public void readData(DataContainerHealth dataContainer, String outputDirectory, Day day, String sourceMode){
+        readLinkConcentrationData(dataContainer,outputDirectory + "linkConcentration_" + day +  "_" + sourceMode + ".csv");
+        readZoneConcentrationData(dataContainer,outputDirectory + "zoneConcentration_" + day + "_" + sourceMode + ".csv");
     }
     private void readLinkConcentrationData(DataContainerHealth dataContainer, String path) {
         logger.info("Reading link concentration data from csv file");

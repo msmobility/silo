@@ -32,6 +32,8 @@ public class HealthModelProperties {
     public final String baseExposureFile;
     public final List<Integer> exposureModelYears;
     public final String bus_network;
+    public final String microBuildingFile;
+    public final String noiseBarriersFile;
 
 
     public HealthModelProperties(ResourceBundle bundle) {
@@ -77,6 +79,8 @@ public class HealthModelProperties {
 
         bus_network = PropertiesUtil.getStringProperty(bundle, "matsim.network.bus", "input/mito/trafficAssignment/network_transit_hbefa.xml");
 
+        microBuildingFile = PropertiesUtil.getStringProperty(bundle, "micro.destination.attraction", "microData/microDestinationAttraction.csv");
+        noiseBarriersFile = PropertiesUtil.getStringProperty(bundle, "noise.barriers.file", "input/buildingShapefile/mrcBuildings.geojson");
     }
 
 }

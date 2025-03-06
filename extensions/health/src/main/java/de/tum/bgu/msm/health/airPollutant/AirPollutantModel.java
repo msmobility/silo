@@ -289,7 +289,7 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
                         middleNodeCellExposure = middleNodeCell.getValue().get(pollutant);
                     }
                 }
-                double avg = (toNodeCellExposure + fromNodeCellExposure + middleNodeCellExposure)/3;
+                double avg = (toNodeCellExposure + fromNodeCellExposure + middleNodeCellExposure * 2)/4;
                 if(exposure2Pollutant2TimeBin.get(pollutant)==null){
                     OpenIntFloatHashMap exposureByTimeBin = new OpenIntFloatHashMap();
                     exposureByTimeBin.put(startTime, (float) avg);
