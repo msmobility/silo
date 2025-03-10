@@ -5,6 +5,7 @@ import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.health.airPollutant.AirPollutantModel;
 import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.health.data.LinkInfo;
+import de.tum.bgu.msm.health.data.ReceiverPointInfo;
 import de.tum.bgu.msm.health.noise.NoiseModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -48,6 +49,7 @@ public class RunExposureHealthOffline {
 
         AirPollutantModel airPollutantModel = new AirPollutantModel(dataContainer, properties, SiloUtil.provideNewRandom(),config);
         NoiseModel noiseModel = new NoiseModel(dataContainer,properties, SiloUtil.provideNewRandom(),config);
+        SportPAModelMCR sportPAModelMCR = new SportPAModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
         HealthExposureModelMCR exposureModelMCR = new HealthExposureModelMCR(dataContainer, properties, SiloUtil.provideNewRandom(),config);
         DiseaseModelMCR diseaseModelMCR = new DiseaseModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
 
@@ -62,14 +64,15 @@ public class RunExposureHealthOffline {
         dataContainer.setLinkInfo(linkInfoMap);
         logger.info("Initialized Link Info for " + dataContainer.getLinkInfo().size() + " links ");
 
+        Map<String, ReceiverPointInfo> receiverPointInfo = new HashMap<>();
         for(Zone zone : dataContainer.getGeoData().getZones().values()){
-            Map<Pollutant, OpenIntFloatHashMap> pollutantMap = new HashMap<>();
-            dataContainer.getZoneExposure2Pollutant2TimeBin().put(zone, pollutantMap);
+            receiverPointInfo.put("zone"+zone.getId(),new ReceiverPointInfo("zone"+zone.getId(),zone.getPopCentroidCoord()));
         }
+        dataContainer.setReceiverPointInfo(receiverPointInfo);
 
-
-        airPollutantModel.endYear(2021);
-        noiseModel.endYear(2021);
+        //airPollutantModel.endYear(2021);
+        //noiseModel.endYear(2021);
+        sportPAModelMCR.endYear(2021);
         exposureModelMCR.endYear(2021);
         diseaseModelMCR.setup();
         diseaseModelMCR.endYear(2021);

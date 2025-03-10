@@ -27,13 +27,13 @@ public interface DataContainerHealth extends DataContainer {
 
     void setLinkInfo(Map<Id<Link>, LinkInfo> linkInfo);
 
+    Map<String, ReceiverPointInfo> getReceiverPointInfo();
+
+    void setReceiverPointInfo(Map<String, ReceiverPointInfo> receiverPointInfo);
+
     Set<Pollutant> getPollutantSet();
 
     void setPollutantSet(Set<Pollutant> pollutantSet);
-
-    Map<Zone, Map<Pollutant, OpenIntFloatHashMap>> getZoneExposure2Pollutant2TimeBin();
-
-    void setZoneExposure2Pollutant2TimeBin(Map<Zone, Map<Pollutant, OpenIntFloatHashMap>> zoneExposure2Pollutant2TimeBin);
 
     EnumMap<Mode, EnumMap<MitoGender, Map<Integer, Double>>> getAvgSpeeds();
 

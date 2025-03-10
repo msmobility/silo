@@ -203,7 +203,7 @@ public class PersonHealthMuc implements PersonWithSchool, PersonHealth {
 
     public float getWeeklyHomeMinutes() { return weeklyHomeMinutes; }
 
-    public float getWeeklyExposureByPollutant(String pollutant) {
+    public Float[] getWeeklyExposureByPollutant(String pollutant) {
         return weeklyExposureByPollutant.get(pollutant);
     }
 

@@ -81,6 +81,12 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
                     case AIR_POLLUTION_NO2:
                         rr = RelativeRisksDisease.calculateForNO2((PersonHealth)person, (DataContainerHealth) dataContainer);
                         break;
+                    case NOISE:
+                        rr = RelativeRisksDisease.calculateForNoise((PersonHealth)person, (DataContainerHealth) dataContainer);
+                        break;
+                    case NDVI:
+                        rr = RelativeRisksDisease.calculateForNDVI((PersonHealth)person, (DataContainerHealth) dataContainer);
+                        break;
                     default:
                         logger.error("Unknown exposures " + exposures);
                 }
@@ -108,6 +114,10 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
                     continue;
                 }
 
+                if(diseases.equals(Diseases.breast_cancer) & person.getGender().equals(Gender.MALE)){
+                    continue;
+                }
+
                 int zoneId = dataContainer.getRealEstateDataManager().getDwelling(person.getHousehold().getDwellingId()).getZoneId();
                 String location = ((ZoneMCR)dataContainer.getGeoData().getZones().get(zoneId)).getLsoaCode();
                 String compositeKey = ((DataContainerHealth) dataContainer).createTransitionLookupIndex(Math.min(person.getAge(), 100), person.getGender(), location);
@@ -117,14 +127,15 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
                 }
 
                 //the age cap should be 100 for all diseases and all-cause-mortality
-                double sickProb = ((DataContainerHealth) dataContainer).getHealthTransitionData().get(diseases).get(compositeKey);
+                double sickRate = ((DataContainerHealth) dataContainer).getHealthTransitionData().get(diseases).get(compositeKey);
 
+                double sickProb = 0;
                 if(adjustByRelativeRisk){
                     for(HealthExposures exposures : HealthExposures.values()){
-                        sickProb *= ((PersonHealth) person).getRelativeRisksByDisease().get(exposures).getOrDefault(diseases, 1.f);
+                        sickRate *= ((PersonHealth) person).getRelativeRisksByDisease().get(exposures).getOrDefault(diseases, 1.f);
                     }
                 }
-
+                sickProb = 1- Math.exp(-sickRate);
                 ((PersonHealth)person).getCurrentDiseaseProb().put(diseases, (float) sickProb);
             }
         }
@@ -152,6 +163,7 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
                     continue;
                 }
 
+                //TODO: control random number? survival equation
                 if(random.nextFloat()<(personHealth.getCurrentDiseaseProb().get(diseases))){
                     if(!personHealth.getCurrentDisease().contains(diseases)){
                         personHealth.getCurrentDisease().add(diseases);

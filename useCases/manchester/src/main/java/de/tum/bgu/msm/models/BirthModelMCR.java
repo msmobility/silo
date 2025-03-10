@@ -133,7 +133,9 @@ public class BirthModelMCR extends AbstractModel implements BirthModel {
         exposureMap.put("pm2.5", 0.f);
         exposureMap.put("no2", 0.f);
 
-        ((PersonHealthMCR)child).updateWeeklyPollutionExposures(exposureMap);
+        ((PersonHealthMCR)child).setWeeklyExposureByPollutantNormalised(exposureMap);
+        ((PersonHealthMCR)child).setWeeklyNoiseExposuresNormalised(0.f);
+        ((PersonHealthMCR)child).setWeeklyGreenExposuresNormalised(0.f);
 
         for (HealthExposures exposures : HealthExposures.values()){
             EnumMap<Diseases, Float> rr = new EnumMap<>(Diseases.class);

@@ -55,8 +55,9 @@ public class LinkInfoWriter {
         PrintWriter pwh = MitoUtil.openFileForSequentialWriting(path, false);
         pwh.println("zoneId,pollutant,timebin,value");
         //order of Set is not fixed
-        for (Zone zone : dataContainer.getZoneExposure2Pollutant2TimeBin().keySet()) {
-            Map<Pollutant, OpenIntFloatHashMap> exposure2Pollutant2TimeBin =  ((DataContainerHealth)dataContainer).getZoneExposure2Pollutant2TimeBin().get(zone);
+        for (Zone zone : dataContainer.getGeoData().getZones().values()) {
+            String rpId = "zone"+zone.getId();
+            Map<Pollutant, OpenIntFloatHashMap> exposure2Pollutant2TimeBin =  dataContainer.getReceiverPointInfo().get(rpId).getExposure2Pollutant2TimeBin();
             for (Pollutant pollutant : exposure2Pollutant2TimeBin.keySet()) {
                 for (int timebin : exposure2Pollutant2TimeBin.get(pollutant).keys().elements()) {
                     pwh.print(zone.getZoneId());

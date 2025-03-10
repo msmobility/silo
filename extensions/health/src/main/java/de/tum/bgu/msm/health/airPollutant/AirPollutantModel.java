@@ -308,7 +308,8 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
         logger.warn("Updating Zonal air pollutant exposure for year: " + year + "| day of week: " + day + "| time of day: " + gridEmissionMap.getFirst() + ".");
 
         for(Zone zone :dataContainer.getGeoData().getZones().values()){
-            Map<Pollutant, OpenIntFloatHashMap> exposure2Pollutant2TimeBin =  ((DataContainerHealth)dataContainer).getZoneExposure2Pollutant2TimeBin().getOrDefault(zone, new HashMap<>());
+            String rpId = "zone"+zone.getId();
+            Map<Pollutant, OpenIntFloatHashMap> exposure2Pollutant2TimeBin =  ((DataContainerHealth)dataContainer).getReceiverPointInfo().get(rpId).getExposure2Pollutant2TimeBin();
 
             Coordinate coordinate = ((Geometry) zone.getZoneFeature().getDefaultGeometry())
                     .getCentroid().getCoordinate();
@@ -324,8 +325,6 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
                     exposure2Pollutant2TimeBin.get(pollutant).put(startTime, zoneCell.getValue().getOrDefault(pollutant,0.f));
                 }
             }
-
-            ((DataContainerHealth)dataContainer).getZoneExposure2Pollutant2TimeBin().put(zone, exposure2Pollutant2TimeBin);
         }
 
         logger.warn("Updating Zonal air pollutant exposure for year: " + year + "| day of week: " + day + "| time of day: " + gridEmissionMap.getFirst() + "finished.");

@@ -15,9 +15,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TripReaderMucHealth {
+public class TripReaderHealth {
 
-    private final static Logger logger = LogManager.getLogger(TripReaderMucHealth.class);
+    private final static Logger logger = LogManager.getLogger(TripReaderHealth.class);
 
 
     public Map<Integer, Trip> readData(String path) {
@@ -34,10 +34,15 @@ public class TripReaderMucHealth {
             String[] header = recString.split(",");
             int posId = SiloUtil.findPositionInArray("t.id", header);
             int posPurpose = SiloUtil.findPositionInArray("t.purpose", header);
-            int posOriginZone = SiloUtil.findPositionInArray("origin", header);
+            int posOriginZone = SiloUtil.findPositionInArray("originZone", header);
+            int posOriginType = SiloUtil.findPositionInArray("originType", header);
+            int posOriginMicroId = SiloUtil.findPositionInArray("originId", header);
             int posOriginX = SiloUtil.findPositionInArray("originX", header);
             int posOriginY = SiloUtil.findPositionInArray("originY", header);
-            int posDestinationZone = SiloUtil.findPositionInArray("destination", header);
+
+            int posDestinationZone = SiloUtil.findPositionInArray("destinationZone", header);
+            int posDestinationType = SiloUtil.findPositionInArray("destinationType", header);
+            int posDestinationMicroId = SiloUtil.findPositionInArray("destinationId", header);
             int posDestinationX = SiloUtil.findPositionInArray("destinationX", header);
             int posDestinationY = SiloUtil.findPositionInArray("destinationY", header);
 
@@ -67,8 +72,21 @@ public class TripReaderMucHealth {
                 }
 
                 mitoTrip.setTripOriginZone(Integer.parseInt(lineElements[posOriginZone]));
-                mitoTrip.setTripDestinationZone(Integer.parseInt(lineElements[posDestinationZone]));
+                mitoTrip.setTripOriginType(lineElements[posOriginType]);
+                if(lineElements[posOriginType].equals("zoneCentroid")){
+                    mitoTrip.setTripOriginMicroId(mitoTrip.getTripOriginZone());
+                }else {
+                    mitoTrip.setTripOriginMicroId(Integer.parseInt(lineElements[posOriginMicroId]));
+                }
                 mitoTrip.setTripOrigin(CoordUtils.createCoord(Double.parseDouble(lineElements[posOriginX]),Double.parseDouble(lineElements[posOriginY])));
+
+                mitoTrip.setTripDestinationZone(Integer.parseInt(lineElements[posDestinationZone]));
+                mitoTrip.setTripDestinationType(lineElements[posDestinationType]);
+                if(lineElements[posDestinationType].equals("zoneCentroid")){
+                    mitoTrip.setTripDestinationMicroId(mitoTrip.getTripDestinationZone());
+                }else {
+                    mitoTrip.setTripDestinationMicroId(Integer.parseInt(lineElements[posDestinationMicroId]));
+                }
                 mitoTrip.setTripDestination(CoordUtils.createCoord(Double.parseDouble(lineElements[posDestinationX]),Double.parseDouble(lineElements[posDestinationY])));
 
                 mitoTrip.setTripMode(Mode.valueOf(lineElements[posMode]));

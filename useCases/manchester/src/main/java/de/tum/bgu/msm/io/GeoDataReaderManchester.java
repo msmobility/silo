@@ -41,6 +41,7 @@ public class GeoDataReaderManchester implements GeoDataReader {
         double[] popCentroid_x = zonalData.getColumnAsDouble("popCentroid_x");
         double[] popCentroid_y = zonalData.getColumnAsDouble("popCentroid_y");
         String[] lsoaCode = zonalData.getColumnAsString("lsoa21cd");
+        int[] imd10 = zonalData.getColumnAsInt("imd10");
 
         //TODO: check where region is used. then to define it should be msoa, lad or losa
         int[] regionColumn = zonalData.getColumnAsInt("msoaID");
@@ -58,6 +59,7 @@ public class GeoDataReaderManchester implements GeoDataReader {
             ZoneMCR zone = new ZoneMCR(zoneIds[i], 0, type,new Coordinate(popCentroid_x[i], popCentroid_y[i], 0.),region);
             region.addZone(zone);
             zone.setLsoaCode(lsoaCode[i]);
+            zone.setImd10(imd10[i]);
             geoDataMcr.addZone(zone);
         }
     }

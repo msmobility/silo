@@ -5,17 +5,23 @@ import com.google.common.collect.Iterables;
 import com.google.common.math.LongMath;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.*;
+import de.tum.bgu.msm.data.dwelling.Dwelling;
+import de.tum.bgu.msm.data.job.JobMCR;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Person;
-import de.tum.bgu.msm.health.airPollutant.AirPollutantModel;
 import de.tum.bgu.msm.health.data.*;
 import de.tum.bgu.msm.health.injury.AccidentType;
 import de.tum.bgu.msm.health.io.LinkInfoReader;
+import de.tum.bgu.msm.health.io.ReceiverPointInfoReader;
 import de.tum.bgu.msm.health.io.TripExposureWriter;
-import de.tum.bgu.msm.health.io.TripReaderMucHealth;
+import de.tum.bgu.msm.health.io.TripReaderHealth;
+import de.tum.bgu.msm.health.noise.NoiseMetrics;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
+import de.tum.bgu.msm.schools.DataContainerWithSchools;
+import de.tum.bgu.msm.schools.School;
+import de.tum.bgu.msm.schools.SchoolImpl;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -70,12 +76,6 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
     private List<Day> simulatedDays;
     private List<Day> weekdays = Arrays.asList(Day.monday,Day.tuesday,Day.wednesday,Day.thursday,Day.friday);
 
-    private final double FATAL_CAR_DRIVER = 0.077;
-    private final double FATAL_BIKECAR_BIKE = 0.024;
-    private final double FATAL_BIKEBIKE_BIKE = 0.051;
-    private final double FATAL_PED_PED = 0.073;
-
-
     public HealthExposureModelMCR(DataContainer dataContainer, Properties properties, Random random, Config config) {
         super(dataContainer, properties, random);
         this.initialMatsimConfig = config;
@@ -96,7 +96,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             latestMatsimYear = sortedYears.floor(year);
             latestMITOYear = year;
 
-            Map<Integer, Trip> mitoTripsAll = new TripReaderMucHealth().readData(properties.main.baseDirectory + "scenOutput/"
+            Map<Integer, Trip> mitoTripsAll = new TripReaderHealth().readData(properties.main.baseDirectory + "scenOutput/"
                     + properties.main.scenarioName + "/" + latestMITOYear + "/microData/trips.csv");
 
             //clear the health data from last exposure model year
@@ -104,10 +104,12 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 ((PersonHealth) person).resetHealthData();
             }
 
+            // assemble travel-activity health exposure data
             for(Day day : simulatedDays){
                 logger.warn("Health model setup for " + day);
 
                 replyLinkInfoFromFile(day);
+                replyReceiverPointInfoFromFile(day);
 
                 logger.warn("Run health exposure model for " + day);
 
@@ -146,9 +148,16 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 ((DataContainerHealth)dataContainer).reset();
                 System.gc();
             }
-            //TODO: read zonal concentration info from CSV, use Thursday exposure as average?
-            replyLinkInfoFromFile(Day.thursday);
-            calculatePersonHealthExposuresAtHome();
+
+            // assemble home location health exposure data
+            for(Day day : Day.values()){
+                replyReceiverPointInfoFromFile(weekdays.contains(day) ? Day.thursday : day);
+                calculatePersonHealthExposuresAtHome(day);
+                ((DataContainerHealth)dataContainer).reset();
+            }
+
+            // normalize person-level home-travel-activity exposure
+            calculatePersonHealthExposureMetrics();
         }
 
     }
@@ -167,17 +176,46 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
         Map<Id<Link>, LinkInfo> linkInfoMap = new HashMap<>();
         for(Link link : scenario.getNetwork().getLinks().values()){
-            linkInfoMap.put(link.getId(), new LinkInfo(link.getId()));
+            linkInfoMap.computeIfAbsent(link.getId(), id -> new LinkInfo(id))
+                    .setNdvi((Double) link.getAttributes().getAttribute("ndvi"));
         }
         ((DataContainerHealth)dataContainer).setLinkInfo(linkInfoMap);
-        logger.info("Initialized Link Info for " + ((DataContainerHealth)dataContainer).getLinkInfo().size() + " links ");
 
-        for(Zone zone : dataContainer.getGeoData().getZones().values()){
-            Map<Pollutant, OpenIntFloatHashMap> pollutantMap = new HashMap<>();
-            ((DataContainerHealth)dataContainer).getZoneExposure2Pollutant2TimeBin().put(zone, pollutantMap);
+        new LinkInfoReader().readConcentrationData(((DataContainerHealth)dataContainer), outputDirectory, day,"carTruck");
+
+        new LinkInfoReader().readNoiseLevelData(((DataContainerHealth)dataContainer), outputDirectory + "matsim/" + latestMatsimYear, day);
+
+        logger.info("Initialized Link Info for " + ((DataContainerHealth)dataContainer).getLinkInfo().size() + " links ");
+    }
+
+    private void replyReceiverPointInfoFromFile(Day day) {
+        String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/";
+
+        //currently the receiver points consist of all dwelling location, school location, zone centroid, and poi location
+        Map<String, ReceiverPointInfo> receiverPointInfoMap = new HashMap<>();
+        for(Dwelling dd : dataContainer.getRealEstateDataManager().getDwellingData().getDwellings()){
+            receiverPointInfoMap.put("dd"+dd.getId(),new ReceiverPointInfo(("dd"+dd.getId()), dd.getCoordinate()));
         }
 
-        new LinkInfoReader().readData( ((DataContainerHealth)dataContainer), outputDirectory, day,"carTruck");
+        for(School ss : ((DataContainerWithSchools)dataContainer).getSchoolData().getSchools()){
+            receiverPointInfoMap.put("ss"+ss.getId(),new ReceiverPointInfo(("ss"+ss.getId()),((SchoolImpl)ss).getCoordinate()));
+        }
+
+        for(Zone zone : dataContainer.getGeoData().getZones().values()){
+            receiverPointInfoMap.put("zone"+zone.getId(),new ReceiverPointInfo(("zone"+zone.getId()),zone.getPopCentroidCoord()));
+            for (int poi : ((ZoneMCR) zone).getMicroDestinations().keySet()){
+                receiverPointInfoMap.put("poi"+poi,new ReceiverPointInfo(("poi"+poi),((ZoneMCR) zone).getMicroDestinations().get(poi)));
+            }
+        }
+
+        ((DataContainerHealth)dataContainer).setReceiverPointInfo(receiverPointInfoMap);
+        logger.info("Initialized Receiver point Info for " + ((DataContainerHealth)dataContainer).getReceiverPointInfo().size() + " points ");
+
+        ReceiverPointInfoReader reader = new ReceiverPointInfoReader();
+        reader.readConcentrationData(((DataContainerHealth)dataContainer), outputDirectory, day,"carTruck");
+        reader.readNoiseLevelData(((DataContainerHealth)dataContainer), outputDirectory + "matsim/" + latestMatsimYear, day);
+        reader.processNdviData(((DataContainerHealth)dataContainer), scenario.getNetwork());
+
     }
 
     private void healthDataAssembler(int year, Day day, Mode mode) {
@@ -190,7 +228,15 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         scenario.getConfig().routing().setRoutingRandomness(0);
         scenario.getConfig().controller().setOutputDirectory(outputDirectoryRoot);
 
-        calculateTripHealthIndicator(new ArrayList<>(mitoTrips.values()), day, mode);
+        if(mode.equals(Mode.pt)){
+            calculateTripHealthIndicatorNoRoute(new ArrayList<>(mitoTrips.values()), day, mode);
+        }else{
+            calculateTripHealthIndicator(new ArrayList<>(mitoTrips.values()), day, mode);
+        }
+    }
+
+    private void calculateTripHealthIndicatorNoRoute(ArrayList<Trip> trips, Day day, Mode mode) {
+        //TODO
     }
 
     private void calculateTripHealthIndicator(List<Trip> trips, Day day, Mode mode) {
@@ -318,6 +364,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                         }
 
                         // Calculate exposures for activity & return trip (home-based trips only)
+                        // TODO: exposure for activity of non-home-based trips, currently we do not know the activity duration of non-home-based trips
                         if(trip.isHomeBased()) {
                             int returnDepartureTimeInSeconds = trip.getDepartureReturnInMinutes()*60;
                             LeastCostPathCalculator.Path returnPath = pathCalculator.calcLeastCostPath(destinationNode, originNode,returnDepartureTimeInSeconds,person,vehicle);
@@ -353,81 +400,116 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
         Mode mode = trip.getTripMode();
 
-        double enterTimeInSecond;
         double pathLength = 0;
         double pathTime = 0;
         double pathMarginalMetHours = 0;
-        double pathConcMetersPm25 = 0.;
-        double pathConcMetersNo2 = 0.;
-        double pathExposurePm25 = 0.;
-        double pathExposureNo2 = 0.;
+        float[] pathExposurePm25 = new float[24*7];
+        float[] pathExposureNo2 = new float[24*7];
+        float[] pathExposureNoise = new float[24*7];
+        double pathExposureGreen = 0.;
         double pathSevereInjuryRisk = 0;
         double pathFatalityRisk = 0;
+        float[] hourOccupied = new float[24*7];
 
         for(Link link : path.links) {
-            enterTimeInSecond = (double) departureTimeInSecond + pathTime;
+            double enterTimeInSecond = (double) departureTimeInSecond + pathTime;
             double linkLength = link.getLength();
-            double linkSevereInjuryRisk = 0.;
-            double linkFatalityRisk = 0.;
-            double linkMarginalMetHours = 0.;
-            double linkConcentrationPm25 = 0.;
-            double linkConcentrationNo2 = 0.;
-            double linkExposurePm25 = 0.;
-            double linkExposureNo2 = 0.;
-
             double linkTime = travelTime.getLinkTravelTime(link,enterTimeInSecond,null,null);
 
+            double linkSevereInjuryRisk = 0.;
+            double linkFatalityRisk = 0.;
+            double linkMarginalMetHour = 0.;
+            double linkExposureGreen = 0.;
+
             LinkInfo linkInfo = ((DataContainerHealth)dataContainer).getLinkInfo().get(link.getId());
+
+            // INJURY
+            //double[] severeFatalRisk = getLinkSevereFatalInjuryRisk(mode, (int) (enterTimeInSecond / 3600.), linkInfo);
+            //linkSevereInjuryRisk = severeFatalRisk[0];
+            //linkFatalityRisk = severeFatalRisk[1];
+
+            // PHYSICAL ACTIVITY
+            double linkMarginalMet = PhysicalActivity.getMMet(mode, linkLength, linkTime, link);
+            linkMarginalMetHour = linkMarginalMet * linkTime / 3600.;
+
+            // NDVI
+            linkExposureGreen = linkInfo.getNdvi() * linkTime / 3600.;
+
             if(linkInfo!=null) {
-                // INJURY
-                //double[] severeFatalRisk = getLinkSevereFatalInjuryRisk(mode, (int) (enterTimeInSecond / 3600.), linkInfo);
-                //linkSevereInjuryRisk = severeFatalRisk[0];
-                //linkFatalityRisk = severeFatalRisk[1];
 
-                // PHYSICAL ACTIVITY
-                double linkMarginalMet = PhysicalActivity.getMMet(mode, linkLength, linkTime, link);
-                linkMarginalMetHours = linkMarginalMet * linkTime / 3600.;
+                int dayCode = trip.getDepartureDay().getDayCode();
+                double startDayHour = enterTimeInSecond / 3600.;
+                double endDayHour = (enterTimeInSecond + linkTime)/ 3600.;
 
-                // AIR POLLUTION Concentration
-                int timeBin = (int) (AirPollutantModel.EMISSION_TIME_BIN_SIZE*(Math.floor(Math.abs(enterTimeInSecond/AirPollutantModel.EMISSION_TIME_BIN_SIZE))));
-                linkConcentrationPm25 = linkInfo.getExposure2Pollutant2TimeBin().getOrDefault(Pollutant.PM2_5,new OpenIntFloatHashMap()).get(timeBin) +
-                        linkInfo.getExposure2Pollutant2TimeBin().getOrDefault(Pollutant.PM2_5_non_exhaust,new OpenIntFloatHashMap()).get(timeBin);
-                linkConcentrationNo2 = linkInfo.getExposure2Pollutant2TimeBin().getOrDefault(Pollutant.NO2,new OpenIntFloatHashMap()).get(timeBin);
+                for(double currentDayHour = startDayHour; currentDayHour < endDayHour;) {
+                    int exactDayHour = (int) currentDayHour;
+                    int exactWeekHour = exactDayHour + 24 * dayCode;
 
-                linkExposurePm25 = PollutionExposure.getLinkExposurePm25(mode, linkConcentrationPm25, linkTime, linkMarginalMet);
-                linkExposureNo2 = PollutionExposure.getLinkExposureNo2(mode, linkConcentrationPm25, linkTime, linkMarginalMet);
+                    if(exactWeekHour > 167){
+                        break;
+                    }
+
+                    int nextDayHour = exactDayHour + 1;
+                    double durationInThisHour = Math.min(endDayHour, nextDayHour) - currentDayHour;
+
+                    hourOccupied[exactWeekHour] = (float) durationInThisHour;
+
+                    // AIR POLLUTION
+                    double linkConcentrationPm25 = linkInfo.getExposure2Pollutant2TimeBin().getOrDefault(Pollutant.PM2_5,new OpenIntFloatHashMap()).get(exactDayHour) +
+                            linkInfo.getExposure2Pollutant2TimeBin().getOrDefault(Pollutant.PM2_5_non_exhaust,new OpenIntFloatHashMap()).get(exactDayHour);
+                    double linkConcentrationNo2 = linkInfo.getExposure2Pollutant2TimeBin().getOrDefault(Pollutant.NO2,new OpenIntFloatHashMap()).get(exactDayHour);
+
+                    pathExposurePm25[exactWeekHour] += PollutionExposure.getLinkExposurePm25(mode, linkConcentrationPm25, durationInThisHour * 3600, linkMarginalMet);
+                    pathExposureNo2[exactWeekHour] += PollutionExposure.getLinkExposureNo2(mode, linkConcentrationNo2, durationInThisHour * 3600, linkMarginalMet);
+
+                    //TODO: bike/walk-only link has no noise emission (noise produced on that link). currently we assume 0 noise level while travelling on those links.
+                    // Later, we can do geo-spatialling and associate these link to nearest car link? or Instead of using noise emission, we consider each link as noise receivers and do proper noise exposure
+                    if(!linkInfo.getNoiseLevel2TimeBin().isEmpty()){
+                        pathExposureNoise[exactWeekHour] += linkInfo.getNoiseLevel2TimeBin().get(exactDayHour) * durationInThisHour;
+                    }
+
+                    currentDayHour = nextDayHour;
+                }
+
+            } else{
+                logger.warn("No link info found for link id " + link.getId());
             }
 
             pathLength += linkLength;
             pathTime += linkTime;
             pathSevereInjuryRisk += linkSevereInjuryRisk - (pathSevereInjuryRisk * linkSevereInjuryRisk);
             pathFatalityRisk += linkFatalityRisk - (pathFatalityRisk * linkFatalityRisk);
-            pathMarginalMetHours += linkMarginalMetHours;
-            pathConcMetersPm25 += linkConcentrationPm25 * linkLength;
-            pathConcMetersNo2 += linkConcentrationNo2 * linkLength;
-            pathExposurePm25 += linkExposurePm25;
-            pathExposureNo2 += linkExposureNo2;
+            pathMarginalMetHours += linkMarginalMetHour;
+            pathExposureGreen += linkExposureGreen;
         }
-
-        Map<String, Float> accidentRiskMap = new HashMap<>();
-        accidentRiskMap.put("severeInjury", (float) pathSevereInjuryRisk);
-        accidentRiskMap.put("fatality", (float) pathFatalityRisk);
-
-        Map<String, Float> exposureMap = new HashMap<>();
-        exposureMap.put("pm2.5", (float) pathExposurePm25);
-        exposureMap.put("no2", (float) pathExposureNo2);
 
         trip.updateMatsimTravelDistance(pathLength);
         trip.updateMatsimTravelTime(pathTime);
-        trip.updateMarginalMetHours(pathMarginalMetHours);
-        trip.updateTravelRiskMap(accidentRiskMap);
-        trip.updateTravelExposureMap(exposureMap);
         trip.updateMatsimLinkCount(path.links.size());
-        trip.updateMatsimConcMetersPm25(pathConcMetersPm25);
-        trip.updateMatsimConcMetersNo2(pathConcMetersNo2);
+
+        trip.updateMarginalMetHours(pathMarginalMetHours);
+        trip.updateTravelRiskMap(Map.of(
+                "severeInjury", (float) pathSevereInjuryRisk,
+                "fatality", (float) pathFatalityRisk
+        ));
+        trip.updateTravelExposureMapByHour(Map.of(
+                "pm2.5", pathExposurePm25,
+                "no2", pathExposureNo2
+        ));
+        trip.updateTravelNoiseExposure(pathExposureNoise);
+        trip.updateTravelNdviExposure(pathExposureGreen);
+        ((PersonHealth)dataContainer.getHouseholdDataManager().getPersonFromId(trip.getPerson())).updateWeeklyTravelActivityHourOccupied(hourOccupied);
     }
 
     private void calculateActivityExposures(Trip trip) {
+
+        float[] exposurePM25 = new float[24*7];
+        float[] exposureNo2 = new float[24*7];
+        float[] activityNoiseExposure = new float[24*7];
+        double activityGreenExposure = 0.;
+        float[] hourOccupied = new float[24*7];
+
+
         double activityArrivalTime = trip.getDepartureTimeInMinutes() + trip.getMatsimTravelTime()/60.;
         double activityDepartureTime = trip.getDepartureReturnInMinutes();
         double activityDuration = activityDepartureTime - activityArrivalTime;
@@ -435,23 +517,247 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             activityDuration += 1440.;
         }
 
-        int timeBin = (int) (AirPollutantModel.EMISSION_TIME_BIN_SIZE*(Math.floor(Math.abs(activityArrivalTime/AirPollutantModel.EMISSION_TIME_BIN_SIZE))));
+        int dayCode = trip.getDepartureDay().getDayCode();
+        double startDayHour = activityArrivalTime / 60.;
+        double endDayHour = activityDepartureTime/ 60.;
 
-        Zone zone = dataContainer.getGeoData().getZones().get(trip.getTripDestinationZone());
-        double zonalIncrementalPM25 = ((DataContainerHealth)dataContainer).getZoneExposure2Pollutant2TimeBin().get(zone).get(Pollutant.PM2_5).get(timeBin)+
-                ((DataContainerHealth)dataContainer).getZoneExposure2Pollutant2TimeBin().get(zone).get(Pollutant.PM2_5_non_exhaust).get(timeBin);
-        double zonalIncrementalNO2 = ((DataContainerHealth)dataContainer).getZoneExposure2Pollutant2TimeBin().get(zone).get(Pollutant.NO2).get(timeBin);
 
-        // todo: consider location-specific exposures & occupation-specific METs for work activities
-        Map<String, Float> exposureMap = new HashMap<>();
-        exposureMap.put("pm2.5", (float) PollutionExposure.getActivityExposurePm25(activityDuration, zonalIncrementalPM25));
-        exposureMap.put("no2", (float) PollutionExposure.getActivityExposureNo2(activityDuration, zonalIncrementalNO2));
+
+        for(double currentDayHour = startDayHour; currentDayHour < endDayHour;) {
+            int exactDayHour = (int) currentDayHour;
+            int exactWeekHour = exactDayHour + 24 * dayCode;
+
+            if(exactWeekHour > 167){
+                break;
+            }
+
+            int nextDayHour = exactDayHour + 1;
+            double durationInThisHour = Math.min(endDayHour, nextDayHour) - currentDayHour;
+
+            hourOccupied[exactWeekHour] = (float) durationInThisHour;
+
+            //Air pollutant
+            String rpId = ("zone" + trip.getTripDestinationZone());
+            ReceiverPointInfo receiverPointInfo = ((DataContainerHealth)dataContainer).getReceiverPointInfo().get(rpId);
+
+            if(receiverPointInfo != null) {
+
+                double zonalIncrementalPM25 = receiverPointInfo.getExposure2Pollutant2TimeBin().get(Pollutant.PM2_5).get(exactDayHour)+
+                        receiverPointInfo.getExposure2Pollutant2TimeBin().get(Pollutant.PM2_5_non_exhaust).get(exactDayHour);
+                double zonalIncrementalNO2 = receiverPointInfo.getExposure2Pollutant2TimeBin().get(Pollutant.NO2).get(exactDayHour);
+
+                exposurePM25[exactWeekHour] = (float) PollutionExposure.getActivityExposurePm25(durationInThisHour * 60, zonalIncrementalPM25);
+                exposureNo2[exactWeekHour] = (float) PollutionExposure.getActivityExposureNo2(durationInThisHour * 60, zonalIncrementalNO2);
+
+            }else{
+                logger.warn("No receiver point info found for rpId: " + rpId + " tripId: " + trip.getTripId());
+            }
+
+
+            // Noise and green level
+            rpId = getReceiverPointId(trip.getTripDestinationType(), trip.getTripDestinationMicroId());
+            receiverPointInfo = ((DataContainerHealth)dataContainer).getReceiverPointInfo().get(rpId);
+
+            if(receiverPointInfo != null) {
+                if(!receiverPointInfo.getNoiseLevel2TimeBin().isEmpty()){
+                    activityNoiseExposure[exactWeekHour] = (float) (receiverPointInfo.getNoiseLevel2TimeBin().get(exactDayHour) * durationInThisHour);
+                }
+
+                //TODO: should we eliminate ndvi exposure in night?
+                activityGreenExposure += receiverPointInfo.getNdvi() * durationInThisHour;
+            }
+
+            currentDayHour = nextDayHour;
+        }
 
         trip.setActivityDuration(activityDuration);
-        trip.setActivityExposureMap(exposureMap);
+        trip.setActivityExposureMapByHour(Map.of(
+                "pm2.5", exposurePM25,
+                "no2", exposureNo2
+        ));
+        trip.setActivityNoiseExposureByHour(activityNoiseExposure);
+        trip.setActivityNdviExposure(activityGreenExposure);
+        ((PersonHealth)dataContainer.getHouseholdDataManager().getPersonFromId(trip.getPerson())).updateWeeklyTravelActivityHourOccupied(hourOccupied);
+    }
+
+    private void calculatePersonHealthExposures() {
+        int missingPerson = 0;
+        for (Trip mitoTrip : mitoTrips.values()) {
+            Person siloPerson = dataContainer.getHouseholdDataManager().getPersonFromId(mitoTrip.getPerson());
+            if (siloPerson == null) {
+                missingPerson++;
+                continue;
+            }
+
+            ((PersonHealth) siloPerson).updateWeeklyTravelSeconds((float) mitoTrip.getMatsimTravelTime());
+            ((PersonHealth) siloPerson).updateWeeklyAccidentRisks(mitoTrip.getTravelRiskMap());
+            ((PersonHealth) siloPerson).updateWeeklyMarginalMetHours(mitoTrip.getTripMode(), (float) mitoTrip.getMarginalMetHours());
+            ((PersonHealth) siloPerson).updateWeeklyPollutionExposuresByHour(mitoTrip.getTravelExposureMapByHour());
+            ((PersonHealth) siloPerson).updateWeeklyNoiseExposuresByHour(mitoTrip.getTravelNoiseExposureByHour());
+            ((PersonHealth) siloPerson).updateWeeklyGreenExposures((float) mitoTrip.getTravelNdviExposure());
+
+            // Activity details (home-based trips only)
+            if (mitoTrip.isHomeBased()) {
+                ((PersonHealth) siloPerson).updateWeeklyActivityMinutes((float) mitoTrip.getActivityDuration());
+                ((PersonHealth) siloPerson).updateWeeklyPollutionExposuresByHour(mitoTrip.getActivityExposureMapByHour());
+                ((PersonHealth) siloPerson).updateWeeklyNoiseExposuresByHour(mitoTrip.getActivityNoiseExposureByHour());
+                ((PersonHealth) siloPerson).updateWeeklyGreenExposures((float) mitoTrip.getActivityNdviExposure());
+            }
+        }
+        logger.warn("total dismatched person: " + missingPerson);
+    }
+
+    private void calculatePersonHealthExposuresAtHome(Day day) {
+        for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
+
+            double minutesAtHome = 0.;
+            float[] exposurePM25 = new float[24*7];
+            float[] exposureNo2 = new float[24*7];
+            float[] exposureNoise = new float[24*7];
+            double ndviExposure = 0.;
+
+            float[] hourOccupied = ((PersonHealth) person).getWeeklyTravelActivityHourOccupied();
+
+            for(int dayHour = 0; dayHour < 24; dayHour++) {
+                int weekHour = dayHour + 24 * day.getDayCode();
+                float remainingHour = 1.f - hourOccupied[weekHour];
+                minutesAtHome += remainingHour * 60;
+
+                if (remainingHour <= 0.) {
+                    continue;
+                }
+
+                //Air pollutant
+                int zoneId = dataContainer.getRealEstateDataManager().getDwelling(person.getHousehold().getDwellingId()).getZoneId();
+                String rpId = ("zone" + zoneId);
+                ReceiverPointInfo receiverPointInfo = ((DataContainerHealth)dataContainer).getReceiverPointInfo().get(rpId);
+
+                if(receiverPointInfo != null) {
+                    double zonalIncrementalPM25 = receiverPointInfo.getExposure2Pollutant2TimeBin().get(Pollutant.PM2_5).get(dayHour)+
+                            receiverPointInfo.getExposure2Pollutant2TimeBin().get(Pollutant.PM2_5_non_exhaust).get(dayHour);
+                    double zonalIncrementalNO2 = receiverPointInfo.getExposure2Pollutant2TimeBin().get(Pollutant.NO2).get(dayHour);
+
+                    exposurePM25[weekHour] = (float) PollutionExposure.getHomeExposurePm25(remainingHour * 60, zonalIncrementalPM25);
+                    exposureNo2[weekHour] = (float) PollutionExposure.getHomeExposureNo2(remainingHour * 60, zonalIncrementalNO2);
+                }else{
+                    logger.warn("No receiver point info found for rpId: " + rpId + " personId: " + person.getId());
+                }
+
+
+                // Noise and green level
+                rpId = ("dd" + person.getHousehold().getDwellingId());
+                receiverPointInfo = ((DataContainerHealth)dataContainer).getReceiverPointInfo().get(rpId);
+
+                if(receiverPointInfo != null) {
+                    if(!receiverPointInfo.getNoiseLevel2TimeBin().isEmpty()){
+                        exposureNoise[weekHour] = receiverPointInfo.getNoiseLevel2TimeBin().get(dayHour) * remainingHour;
+                    }
+
+                    ndviExposure = receiverPointInfo.getNdvi() * remainingHour;
+
+                }else{
+                    logger.warn("No receiver point info found for rpId: " + rpId + " personId: " + person.getId());
+                }
+            }
+
+
+            ((PersonHealth) person).setWeeklyHomeMinutes((float) minutesAtHome);
+            ((PersonHealth) person).updateWeeklyPollutionExposuresByHour(Map.of(
+                    "pm2.5", exposurePM25,
+                    "no2", exposureNo2
+            ));
+            ((PersonHealth) person).updateWeeklyNoiseExposuresByHour(exposureNoise);
+            ((PersonHealth) person).updateWeeklyGreenExposures((float) ndviExposure);
+
+        }
+    }
+
+    private void calculatePersonHealthExposureMetrics() {
+        for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
+            float sumHour = 0.f;
+            float sumNightHour = 0.f;
+            float weightedSumExposurePM25 = 0.f;
+            float weightedSumExposureNo2 = 0.f;
+            float weightedSumExposureNoise = 0.f;
+            float weightedSumExposureNoiseNight = 0.f;
+            float weightedSumExposureNdvi = 0.f;
+
+            Map<String, float[]> weeklyPollutionExposures = ((PersonHealth) person).getWeeklyPollutionExposures();
+            float[] weeklyNoiseExposureByHour = ((PersonHealth) person).getWeeklyNoiseExposureByHour();
+            float[] hourOccupied = ((PersonHealth) person).getWeeklyTravelActivityHourOccupied();
+
+
+            for (int weekHour = 0;  weekHour < hourOccupied.length; weekHour++) {
+
+                sumHour += Math.max(1, hourOccupied[weekHour]);
+                weightedSumExposurePM25 += weeklyPollutionExposures.get("pm2.5")[weekHour]/Math.max(1, hourOccupied[weekHour]);
+                weightedSumExposureNo2 += weeklyPollutionExposures.get("no2")[weekHour]/Math.max(1, hourOccupied[weekHour]);
+
+                int dayHour = weekHour % 24;
+                float hourlyNoiseLevel = (float) NoiseMetrics.getHourlyNoiseLevel(dayHour, weeklyNoiseExposureByHour[weekHour]/Math.max(1, hourOccupied[weekHour]));
+                weightedSumExposureNoise += hourlyNoiseLevel;
+
+                if (dayHour <= 7  || dayHour > 23 ){
+                    sumNightHour += Math.max(1, hourOccupied[weekHour]);
+                    weightedSumExposureNoiseNight += hourlyNoiseLevel;
+                }
+            }
+
+
+            // todo: make not hardcoded...
+            // 1.49/3 is the "minimum" weekly ventilation rate (8hr sleep + 16hr rest per day)
+            ((PersonHealth) person).setWeeklyExposureByPollutantNormalised(
+                    Map.of(
+                            "pm2.5", (float) (weightedSumExposurePM25 / (sumHour * (1.49/3.))),
+                            "no2", (float) (weightedSumExposureNo2 / (sumHour * (1.49/3.)))
+                    )
+            );
+
+            float Lden = (float) (10 * Math.log10(weightedSumExposureNoise / sumHour));
+            ((PersonHealth) person).setWeeklyNoiseExposuresNormalised (Lden);
+            ((PersonHealth) person).setWeeklyGreenExposuresNormalised(weightedSumExposureNdvi / sumHour);
+
+            float Lnight = (float) (10 * Math.log10(weightedSumExposureNoiseNight / sumNightHour));
+            ((PersonHealthMCR) person).setNoiseHighAnnoyedPercentage((float) NoiseMetrics.getHighAnnoyedPercentage(Lden));
+            ((PersonHealthMCR) person).setNoiseHighSleepDisturbancePercentage((float) NoiseMetrics.getHighSleepDisturbancePercentage(Lnight));
+
+        }
+    }
+
+    private String getReceiverPointId(String tripDestinationType, int tripDestinationMicroId) {
+        if("household".equals(tripDestinationType)){
+            int ddId = dataContainer.getHouseholdDataManager().getHouseholdFromId(tripDestinationMicroId).getDwellingId();
+            return "dd" + ddId;
+        }else if ("vacantDwelling".equals(tripDestinationType)){
+            return "dd" + tripDestinationMicroId;
+        }else if ("job".equals(tripDestinationType)){
+            JobMCR job = (JobMCR)dataContainer.getJobDataManager().getJobFromId(tripDestinationMicroId);
+            if(job != null) {
+                if("poi".equals(job.getMicrolocationType())) {
+                    return "poi" + job.getMicroBuildingId();
+                }else if("zoneCentroid".equals(job.getMicrolocationType())) {
+                    return "zone" + job.getMicroBuildingId();
+                }
+            }
+        }else if ("poi".equals(tripDestinationType)){
+            return "poi" + tripDestinationMicroId;
+        }else if ("zoneCentroid".equals(tripDestinationType)){
+            return "zone" + tripDestinationMicroId;
+        }else if ("school".equals(tripDestinationType)){
+            return "ss" + tripDestinationMicroId;
+        }else {
+            logger.warn("Unknown receiver point type: " + tripDestinationType);
+        }
+
+        return null;
     }
 
     private double[] getLinkSevereFatalInjuryRisk(Mode mode, int hour, LinkInfo linkInfo) {
+        double FATAL_CAR_DRIVER = 0.077;
+        double FATAL_BIKECAR_BIKE = 0.024;
+        double FATAL_BIKEBIKE_BIKE = 0.051;
+        double FATAL_PED_PED = 0.073;
+
         double severeInjuryRisk;
         double fatalityRisk;
         Map<AccidentType, OpenIntFloatHashMap> exposure = linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime();
@@ -479,66 +785,6 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         return new double[]{severeInjuryRisk,fatalityRisk};
     }
 
-    //TODO: concurrent
-    private void calculatePersonHealthExposures() {
-        int missingPerson = 0;
-        for(Trip mitoTrip :  mitoTrips.values()){
-            Person siloPerson = dataContainer.getHouseholdDataManager().getPersonFromId(mitoTrip.getPerson());
-            if(siloPerson == null){
-                missingPerson++;
-                continue;
-            }
-
-            ((PersonHealth) siloPerson).updateWeeklyAccidentRisks(mitoTrip.getTravelRiskMap());
-            ((PersonHealth) siloPerson).updateWeeklyMarginalMetHours(mitoTrip.getTripMode(), (float) mitoTrip.getMarginalMetHours());
-            ((PersonHealth) siloPerson).updateWeeklyPollutionExposures(mitoTrip.getTravelExposureMap());
-            ((PersonHealth) siloPerson).updateWeeklyTravelSeconds((float) mitoTrip.getMatsimTravelTime());
-
-            // Activity details (home-based trips only)
-            if(mitoTrip.isHomeBased()) {
-                ((PersonHealth) siloPerson).updateWeeklyActivityMinutes((float) mitoTrip.getActivityDuration());
-                ((PersonHealth) siloPerson).updateWeeklyPollutionExposures(mitoTrip.getActivityExposureMap());
-
-            }
-        }
-        logger.warn("total dismatched person: " + missingPerson);
-    }
-
-    private void calculatePersonHealthExposuresAtHome() {
-        for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
-            double minutesAtHome = Math.max(0., 10080. - (((PersonHealth) person).getWeeklyTravelSeconds() / 60.) - (((PersonHealth) person).getWeeklyActivityMinutes()));
-
-            //TODO: check, assume people usually at home at night (6 pm?)
-            int timeBin = (int) (AirPollutantModel.EMISSION_TIME_BIN_SIZE*(Math.floor(Math.abs(3600*18/AirPollutantModel.EMISSION_TIME_BIN_SIZE))));
-
-            int zoneId = dataContainer.getRealEstateDataManager().getDwelling(person.getHousehold().getDwellingId()).getZoneId();
-            Zone zone = dataContainer.getGeoData().getZones().get(zoneId);
-            double zonalIncrementalPM25 = ((DataContainerHealth)dataContainer).getZoneExposure2Pollutant2TimeBin().get(zone).get(Pollutant.PM2_5).get(timeBin)+
-                    ((DataContainerHealth)dataContainer).getZoneExposure2Pollutant2TimeBin().get(zone).get(Pollutant.PM2_5_non_exhaust).get(timeBin);
-            double zonalIncrementalNO2 = ((DataContainerHealth)dataContainer).getZoneExposure2Pollutant2TimeBin().get(zone).get(Pollutant.NO2).get(timeBin);
-
-
-            Map<String, Float> exposureMap = new HashMap<>();
-            exposureMap.put("pm2.5", (float) PollutionExposure.getHomeExposurePm25(minutesAtHome, zonalIncrementalPM25));
-            exposureMap.put("no2", (float) PollutionExposure.getHomeExposureNo2(minutesAtHome, zonalIncrementalNO2));
-
-            ((PersonHealth) person).setWeeklyHomeMinutes((float) minutesAtHome);
-            ((PersonHealth) person).updateWeeklyPollutionExposures(exposureMap);
-        }
-    }
-
-   /* private String convertTripPurpose(Trip trip) {
-        Purpose purpose = trip.getTripPurpose();
-        if (purpose.equals(Purpose.HBW)){
-            return "commute";
-        } else if (purpose.equals(Purpose.HBE)){
-            return "commute";
-        } else if (purpose.equals(Purpose.HBS)|purpose.equals(Purpose.HBO)|purpose.equals(Purpose.HBR)|purpose.equals(Purpose.RRT)){
-            return "discretionary";
-        } else {
-            return purpose.name();
-        }
-    }*/
     private void fillConfigWithWalkStandardValue(WalkConfigGroup walkConfigGroup) {
         // WALK ATTRIBUTES
         List<ToDoubleFunction<Link>> walkAttributes = new ArrayList<>();

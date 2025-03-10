@@ -37,6 +37,8 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
 
     private final NoiseReceiverPoints noiseReceiverPoints;
     private List<Day> simulatedDays;
+    public static final int NOISE_TIME_BIN_SIZE = 3600;
+
 
     public NoiseModel(DataContainer data, Properties properties, Random random, Config initialConfig) {
         super(data, properties, random);
@@ -173,15 +175,15 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
 
             // read header
             String[] header = recString.split(",");
-            int posId = SiloUtil.findPositionInArray("ref_no", header);
-            int posCoordX = SiloUtil.findPositionInArray("X", header);
-            int posCoordY = SiloUtil.findPositionInArray("Y", header);
+            int posId = SiloUtil.findPositionInArray("index", header);
+            int posCoordX = SiloUtil.findPositionInArray("coordX", header);
+            int posCoordY = SiloUtil.findPositionInArray("coordY", header);
 
             // read line
             while ((recString = in.readLine()) != null) {
                     recCount++;
                     String[] lineElements = recString.split(",");
-                    long index = Long.parseLong(lineElements[posId]);
+                    String index = lineElements[posId];
                     double xCoordinate = Double.parseDouble(lineElements[posCoordX]);
                     double yCoordinate = Double.parseDouble(lineElements[posCoordY]);
 

@@ -1,15 +1,9 @@
 package de.tum.bgu.msm.health.io;
 
-import cern.colt.map.tfloat.OpenIntFloatHashMap;
-import de.tum.bgu.msm.data.Day;
-import de.tum.bgu.msm.data.Zone;
-import de.tum.bgu.msm.health.data.DataContainerHealth;
-import de.tum.bgu.msm.health.data.LinkInfo;
 import de.tum.bgu.msm.health.data.Trip;
 import de.tum.bgu.msm.util.MitoUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.matsim.contrib.emissions.Pollutant;
 
 import java.io.PrintWriter;
 import java.util.Map;
@@ -22,8 +16,10 @@ public class TripExposureWriter {
         PrintWriter pwh = MitoUtil.openFileForSequentialWriting(path, false);
         pwh.println("t.id,t.mode,t.matsimTravelTime_s,t.matsimTravelDistance_m,t.activityDuration_min," +
                 "t.mmetHours,t.lightInjuryRisk,t.severeInjuryRisk,t.fatalityRisk," +
-                "t.links,t.avgConcentrationPm25,t.avgConcentrationNo2," +
-                "t.exposurePm25,t.exposureNo2,t.activityExposurePm25,t.activityExposureNo2");
+                "t.links," +
+                "t.exposurePm25,t.exposureNo2,t.activityExposurePm25,t.activityExposureNo2,"+
+                "t.exposureNoise,t.activityExposureNoise,"+
+                "t.exposureNdvi,t.activityExposureNdvi");
 
         for (Trip trip : mitoTrips.values()) {
             pwh.print(trip.getId());
@@ -46,17 +42,22 @@ public class TripExposureWriter {
             pwh.print(",");
             pwh.print(trip.getMatsimLinkCount());
             pwh.print(",");
-            pwh.print(trip.getMatsimConcMetersPm25() / trip.getMatsimTravelDistance());
+            pwh.print(trip.getTravelExposureSum("pm2.5"));
             pwh.print(",");
-            pwh.print(trip.getMatsimConcMetersNo2() / trip.getMatsimTravelDistance());
+            pwh.print(trip.getTravelExposureSum("no2"));
             pwh.print(",");
-            pwh.print(trip.getTravelExposureMap().get("pm2.5"));
+            pwh.print(trip.getActivityExposureSum("pm2.5"));
             pwh.print(",");
-            pwh.print(trip.getTravelExposureMap().get("no2"));
+            pwh.print(trip.getActivityExposureSum("no2"));
             pwh.print(",");
-            pwh.print(trip.getActivityExposureMap().get("pm2.5"));
+            pwh.print(trip.getTravelNoiseExposureSum());
             pwh.print(",");
-            pwh.println(trip.getActivityExposureMap().get("no2"));
+            pwh.print(trip.getActivityNoiseExposureSum());
+            pwh.print(",");
+            pwh.print(trip.getTravelNdviExposure());
+            pwh.print(",");
+            pwh.print(trip.getActivityNdviExposure());
+            pwh.println();
         }
         pwh.close();
     }

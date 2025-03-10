@@ -1,9 +1,9 @@
 package de.tum.bgu.msm.io;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
+import de.tum.bgu.msm.health.NoiseDwellingMCR;
 import de.tum.bgu.msm.io.output.DefaultDwellingWriter;
 import de.tum.bgu.msm.io.output.DwellingWriter;
-import de.tum.bgu.msm.health.noise.NoiseDwelling;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -50,7 +50,7 @@ public class NoiseDwellingWriter implements DwellingWriter {
                 pwd.print("NULL,NULL");
             }
             pwd.print(",");
-            pwd.print(((NoiseDwelling)dd).getNoiseImmission());
+            pwd.print(((NoiseDwellingMCR)dd).getNoiseImmission());
             pwd.println();
             if (dd.getId() == SiloUtil.trackDd) {
                 SiloUtil.trackingFile("Writing dd " + dd.getId() + " to micro data file.");

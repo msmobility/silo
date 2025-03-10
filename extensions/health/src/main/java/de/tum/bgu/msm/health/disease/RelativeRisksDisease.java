@@ -60,6 +60,30 @@ public class RelativeRisksDisease {
         return relativeRisksByDisease;
     }
 
+    public static EnumMap<Diseases, Float> calculateForNoise(PersonHealth personMRC, DataContainerHealth dataContainer) {
+        double total_noiseLevel = personMRC.getWeeklyNoiseExposuresNormalised();
+        EnumMap<Diseases, Float> relativeRisksByDisease = new EnumMap<>(Diseases.class);
 
+        for(Diseases diseases : dataContainer.getDoseResponseData().get(HealthExposures.NOISE).keySet()){
+            double rr = LinearInterpolation.interpolate(dataContainer.getDoseResponseData().get(HealthExposures.NOISE).get(diseases).getColumnAsDouble("dose"),
+                    dataContainer.getDoseResponseData().get(HealthExposures.NOISE).get(diseases).getColumnAsDouble("RR"), total_noiseLevel);
+            relativeRisksByDisease.put(diseases, (float) rr);
+        }
+
+        return relativeRisksByDisease;
+    }
+
+    public static EnumMap<Diseases, Float> calculateForNDVI(PersonHealth personMRC, DataContainerHealth dataContainer) {
+        double total_ndvi = personMRC.getWeeklyGreenExposuresNormalised();
+        EnumMap<Diseases, Float> relativeRisksByDisease = new EnumMap<>(Diseases.class);
+
+        for(Diseases diseases : dataContainer.getDoseResponseData().get(HealthExposures.NDVI).keySet()){
+            double rr = LinearInterpolation.interpolate(dataContainer.getDoseResponseData().get(HealthExposures.NDVI).get(diseases).getColumnAsDouble("dose"),
+                    dataContainer.getDoseResponseData().get(HealthExposures.NDVI).get(diseases).getColumnAsDouble("RR"), total_ndvi);
+            relativeRisksByDisease.put(diseases, (float) rr);
+        }
+
+        return relativeRisksByDisease;
+    }
 
 }

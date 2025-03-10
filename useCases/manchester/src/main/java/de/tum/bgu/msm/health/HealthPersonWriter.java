@@ -37,6 +37,10 @@ public class HealthPersonWriter implements PersonWriter {
         pwp.print(",");
         pwp.print("schoolId");
         pwp.print(",");
+        pwp.print("ethnicity");
+        pwp.print(",");
+        pwp.print("zone");
+        pwp.print(",");
         pwp.print("totalTravelTime_sec");
         pwp.print(",");
         pwp.print("totalActivityTime_min");
@@ -55,13 +59,17 @@ public class HealthPersonWriter implements PersonWriter {
         pwp.print(",");
         pwp.print("mmetHr_otherSport");
         pwp.print(",");
-        pwp.print("exposure_pm25");
-        pwp.print(",");
-        pwp.print("exposure_no2");
-        pwp.print(",");
         pwp.print("exposure_normalised_pm25");
         pwp.print(",");
         pwp.print("exposure_normalised_no2");
+        pwp.print(",");
+        pwp.print("exposure_normalised_noise_Lden");
+        pwp.print(",");
+        pwp.print("exposure_normalised_ndvi");
+        pwp.print(",");
+        pwp.print("exposure_noise_HA");
+        pwp.print(",");
+        pwp.print("exposure_noise_HSD");
         pwp.println();
 
         for (Person pp : householdData.getPersons()) {
@@ -72,10 +80,10 @@ public class HealthPersonWriter implements PersonWriter {
             pwp.print(pp.getAge());
             pwp.print(",");
             pwp.print(pp.getGender().getCode());
-            pwp.print(",\"");
+            pwp.print(",");
             String role = pp.getRole().toString();
             pwp.print(role);
-            pwp.print("\",");
+            pwp.print(",");
             pwp.print(pp.getOccupation().getCode());
             pwp.print(",");
             pwp.print(pp.hasDriverLicense());
@@ -85,6 +93,10 @@ public class HealthPersonWriter implements PersonWriter {
             pwp.print(pp.getAnnualIncome());
             pwp.print(",");
             pwp.print(((PersonHealthMCR)pp).getSchoolId());
+            pwp.print(",");
+            pwp.print(((PersonHealthMCR)pp).getEthnic().toString());
+            pwp.print(",");
+            pwp.print(dataContainer.getRealEstateDataManager().getDwelling(pp.getHousehold().getDwellingId()).getZoneId());
             pwp.print(",");
             pwp.print(((PersonHealthMCR)pp).getWeeklyTravelSeconds());
             pwp.print(",");
@@ -104,13 +116,17 @@ public class HealthPersonWriter implements PersonWriter {
             pwp.print(",");
             pwp.print(((PersonHealthMCR)pp).getWeeklyMarginalMetHoursSport());
             pwp.print(",");
-            pwp.print((((PersonHealthMCR) pp).getWeeklyExposureByPollutant("pm2.5")));
-            pwp.print(",");
-            pwp.print((((PersonHealthMCR) pp).getWeeklyExposureByPollutant("no2")));
-            pwp.print(",");
             pwp.print((((PersonHealthMCR) pp).getWeeklyExposureByPollutantNormalised("pm2.5")));
             pwp.print(",");
             pwp.print((((PersonHealthMCR) pp).getWeeklyExposureByPollutantNormalised("no2")));
+            pwp.print(",");
+            pwp.print((((PersonHealthMCR) pp).getWeeklyNoiseExposuresNormalised()));
+            pwp.print(",");
+            pwp.print((((PersonHealthMCR) pp).getWeeklyGreenExposuresNormalised()));
+            pwp.print(",");
+            pwp.print((((PersonHealthMCR) pp).getNoiseHighAnnoyedPercentage()));
+            pwp.print(",");
+            pwp.print((((PersonHealthMCR) pp).getNoiseHighSleepDisturbancePercentage()));
             pwp.println();
             if (pp.getId() == SiloUtil.trackPp) {
                 SiloUtil.trackingFile("Writing pp " + pp.getId() + " to micro data file.");
@@ -128,6 +144,11 @@ public class HealthPersonWriter implements PersonWriter {
         pwp.print("id,hhid,age,gender,relationShip,occupation,driversLicense,workplace,income");
         pwp.print(",");
         pwp.print("schoolId");
+        pwp.print(",");
+        pwp.print("ethnicity");
+        pwp.print(",");
+        pwp.print("zone");
+
 
         for(HealthExposures exposures : HealthExposures.values()){
             for(Diseases diseases : ((DataContainerHealth)dataContainer).getDoseResponseData().get(exposures).keySet()){
@@ -158,6 +179,10 @@ public class HealthPersonWriter implements PersonWriter {
             pwp.print(pp.getAnnualIncome());
             pwp.print(",");
             pwp.print(((PersonHealthMCR)pp).getSchoolId());
+            pwp.print(",");
+            pwp.print(((PersonHealthMCR)pp).getEthnic().toString());
+            pwp.print(",");
+            pwp.print(dataContainer.getRealEstateDataManager().getDwelling(pp.getHousehold().getDwellingId()).getZoneId());
 
             for(HealthExposures exposures : HealthExposures.values()){
                 for(Diseases diseases : ((DataContainerHealth)dataContainer).getDoseResponseData().get(exposures).keySet()){

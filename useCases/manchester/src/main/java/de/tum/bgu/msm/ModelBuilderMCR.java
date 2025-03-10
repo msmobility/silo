@@ -121,6 +121,8 @@ public class ModelBuilderMCR {
 
         //modelContainer.registerModelUpdateListener(new UpdateCarOwnershipModelMuc(dataContainer, properties, SiloUtil.provideNewRandom()));
 
+        modelContainer.registerModelUpdateListener(new SportPAModelMCR(dataContainer, properties, SiloUtil.provideNewRandom()));
+
         modelContainer.registerModelUpdateListener(new HealthExposureModelMCR(dataContainer, properties, SiloUtil.provideNewRandom(),config));
 
         modelContainer.registerModelUpdateListener(new DiseaseModelMCR(dataContainer, properties, SiloUtil.provideNewRandom()));

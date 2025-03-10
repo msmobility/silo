@@ -11,40 +11,57 @@ import java.util.Map;
 
 public interface PersonHealth extends Person {
 
-
-    float getWeeklyMarginalMetHours(Mode mode);
-    float getWeeklyMarginalMetHoursSport();
-    void updateWeeklyMarginalMetHours(Mode mode, float mmetHours);
-
     void updateWeeklyTravelSeconds(float seconds);
-    void updateWeeklyActivityMinutes(float minutes);
 
     float getWeeklyTravelSeconds();
+
+    void updateWeeklyActivityMinutes(float minutes);
+
     float getWeeklyActivityMinutes();
 
-    void setWeeklyHomeMinutes(float hours);
+    void setWeeklyHomeMinutes(float minutes);
 
     float getWeeklyHomeMinutes();
 
-    float getWeeklyExposureByPollutant(String pollutant);
+    float getWeeklyMarginalMetHoursSport();
 
-    // todo: make not hardcoded...
-    // 1.49/3 is the "minimum" weekly ventilation rate (8hr sleep + 16hr rest per day)
+    float getWeeklyMarginalMetHours(Mode mode);
+
+    void updateWeeklyMarginalMetHours(Mode mode, float mmetHours);
+
+    Map<String, float[]> getWeeklyPollutionExposures();
+
+    void updateWeeklyPollutionExposuresByHour(Map<String, float[]> newExposures);
+   
     float getWeeklyExposureByPollutantNormalised(String pollutant);
+
+    void setWeeklyExposureByPollutantNormalised(Map<String, Float> exposureMap);
 
     float getWeeklyAccidentRisk(String type);
 
     void updateWeeklyAccidentRisks(Map<String, Float> newRisks);
 
-    void updateWeeklyPollutionExposures(Map<String, Float> newExposures);
+    float[] getWeeklyNoiseExposureByHour();
+
+    void updateWeeklyNoiseExposuresByHour(float[] newExposure);
+
+    float getWeeklyNoiseExposuresNormalised();
+
+    void setWeeklyNoiseExposuresNormalised(float noiseExposureNormalised);
+
+    void updateWeeklyGreenExposures(float newExposure);
+
+    float getWeeklyGreenExposuresNormalised();
+
+    void updateWeeklyTravelActivityHourOccupied(float[] hourOccupied);
+
+    void setWeeklyGreenExposuresNormalised(float greenExposureNormalised);
+
+    float[] getWeeklyTravelActivityHourOccupied();
 
     float getAllCauseRR();
 
-    void setAllCauseRR(float rr);
-
     float getRelativeRiskByType(String type);
-
-    void setRelativeRisks(Map<String, Float> relativeRisks);
 
     EnumMap<HealthExposures, EnumMap<Diseases, Float>> getRelativeRisksByDisease();
 
@@ -55,4 +72,11 @@ public interface PersonHealth extends Person {
     Map<Diseases, Float> getCurrentDiseaseProb();
 
     void resetHealthData();
+
+    //TODO: these are methods currently used for Munich health, need to adapt Munich health model
+    void updateWeeklyPollutionExposures(Map<String, Float> exposureMap);
+
+    void setRelativeRisks(Map<String, Float> relativeRisks);
+
+    void setAllCauseRR(Float reduce);
 }

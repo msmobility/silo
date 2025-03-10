@@ -44,10 +44,12 @@ public class JobReaderMCR implements JobReader {
             int posWorker = SiloUtil.findPositionInArray("personId", header);
             int posType = SiloUtil.findPositionInArray("type", header);
 
+            int posMicrolocationType = -1;
             int posMicroBuildingId = -1;
             int posCoordX = -1;
             int posCoordY = -1;
             try {
+                posMicrolocationType = SiloUtil.findPositionInArray("microlocationType", header);
                 posMicroBuildingId = SiloUtil.findPositionInArray("microBuildingID", header);
                 posCoordX = SiloUtil.findPositionInArray("coordX", header);
                 posCoordY = SiloUtil.findPositionInArray("coordY", header);
@@ -79,6 +81,12 @@ public class JobReaderMCR implements JobReader {
                 }
 
                 Job jj = factory.createJob(id, zoneId, coordinate, worker, type);
+
+                if(posMicrolocationType>=0){
+                    ((JobMCR)jj).setMicrolocationType(lineElements[posMicrolocationType]);
+                }else {
+                    ((JobMCR)jj).setMicrolocationType("null");
+                }
 
                 if(posMicroBuildingId>=0){
                     ((JobMCR)jj).setMicroBuildingId(Long.parseLong(lineElements[posMicroBuildingId]));

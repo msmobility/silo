@@ -1,4 +1,4 @@
-package de.tum.bgu.msm.health;
+package de.tum.bgu.msm.scenarios.healthMuc;
 
 import cern.colt.map.tfloat.OpenIntFloatHashMap;
 import com.google.common.collect.Iterables;
@@ -12,7 +12,7 @@ import de.tum.bgu.msm.health.airPollutant.AirPollutantModel;
 import de.tum.bgu.msm.health.data.*;
 import de.tum.bgu.msm.health.injury.AccidentModel;
 import de.tum.bgu.msm.health.injury.AccidentType;
-import de.tum.bgu.msm.health.io.TripReaderMucHealth;
+import de.tum.bgu.msm.health.io.TripReaderHealth;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
@@ -93,7 +93,7 @@ public class HealthModelMuc extends AbstractModel implements ModelUpdateListener
                         case autoPassenger:
                         case bicycle:
                         case walk:
-                            mitoTrips = new TripReaderMucHealth().readData(properties.main.baseDirectory + "scenOutput/"
+                            mitoTrips = new TripReaderHealth().readData(properties.main.baseDirectory + "scenOutput/"
                                     + properties.main.scenarioName + "/" + latestMatsimYear + "/microData/trips_" + day + "_" + mode + ".csv");
                             healthDataAssembler(latestMatsimYear, day, mode);
                             calculatePersonHealthExposures();
@@ -131,7 +131,7 @@ public class HealthModelMuc extends AbstractModel implements ModelUpdateListener
                         case autoPassenger:
                         case bicycle:
                         case walk:
-                            mitoTrips = new TripReaderMucHealth().readData(properties.main.baseDirectory + "scenOutput/"
+                            mitoTrips = new TripReaderHealth().readData(properties.main.baseDirectory + "scenOutput/"
                                     + properties.main.scenarioName + "/" + latestMatsimYear + "/microData/trips_" + day + "_" + mode + ".csv");
                             healthDataAssembler(latestMatsimYear, day, mode);
                             calculatePersonHealthExposures();

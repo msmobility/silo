@@ -15,6 +15,7 @@ import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.health.data.LinkInfo;
+import de.tum.bgu.msm.health.data.ReceiverPointInfo;
 import de.tum.bgu.msm.health.disease.Diseases;
 import de.tum.bgu.msm.health.disease.HealthExposures;
 import de.tum.bgu.msm.io.NoiseDwellingWriter;
@@ -35,8 +36,8 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     private final DataContainerWithSchools delegate;
     private final Properties properties;
     private Map<Id<Link>, LinkInfo> linkInfo = new HashMap<>();
+    private Map<String, ReceiverPointInfo> receiverPointInfo = new HashMap<>();
     private Set<Pollutant> pollutantSet = new HashSet<>();
-    private Map<Zone, Map<Pollutant, OpenIntFloatHashMap>> zoneExposure2Pollutant2TimeBin = new HashMap<>();
     private EnumMap<Mode, EnumMap<MitoGender,Map<Integer,Double>>> avgSpeeds;
     private EnumMap<Diseases, Map<String, Double>> healthTransitionData;
     private EnumMap<HealthExposures, EnumMap<Diseases, TableDataSet>> doseResponseData;
@@ -168,6 +169,16 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     }
 
     @Override
+    public Map<String, ReceiverPointInfo> getReceiverPointInfo() {
+        return receiverPointInfo;
+    }
+
+    @Override
+    public void setReceiverPointInfo(Map<String, ReceiverPointInfo> receiverPointInfo) {
+        this.receiverPointInfo = receiverPointInfo;
+    }
+
+    @Override
     public Set<Pollutant> getPollutantSet() {
         return pollutantSet;
     }
@@ -198,19 +209,11 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     @Override
     public void reset(){
         linkInfo.clear();
-        zoneExposure2Pollutant2TimeBin.clear();
+        receiverPointInfo.clear();
     }
 
     public Map<Integer, Map<Integer, List<String>>> getHealthDiseaseTrackerRemovedPerson() {
         return healthDiseaseTrackerRemovedPerson;
-    }
-
-    public Map<Zone, Map<Pollutant, OpenIntFloatHashMap>> getZoneExposure2Pollutant2TimeBin() {
-        return zoneExposure2Pollutant2TimeBin;
-    }
-
-    public void setZoneExposure2Pollutant2TimeBin(Map<Zone, Map<Pollutant, OpenIntFloatHashMap>> zoneExposure2Pollutant2TimeBin) {
-        this.zoneExposure2Pollutant2TimeBin = zoneExposure2Pollutant2TimeBin;
     }
 
     @Override

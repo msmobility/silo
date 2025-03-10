@@ -34,6 +34,7 @@ public class HealthModelProperties {
     public final String bus_network;
     public final String microBuildingFile;
     public final String noiseBarriersFile;
+    public final String sportPAmodel;
 
 
     public HealthModelProperties(ResourceBundle bundle) {
@@ -81,6 +82,9 @@ public class HealthModelProperties {
 
         microBuildingFile = PropertiesUtil.getStringProperty(bundle, "micro.destination.attraction", "microData/microDestinationAttraction.csv");
         noiseBarriersFile = PropertiesUtil.getStringProperty(bundle, "noise.barriers.file", "input/buildingShapefile/mrcBuildings.geojson");
+
+        sportPAmodel = PropertiesUtil.getStringProperty(bundle, "sportPA.model", "input/health/sportPAmodel.csv");
+
     }
 
 }

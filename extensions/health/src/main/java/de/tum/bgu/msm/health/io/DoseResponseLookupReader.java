@@ -62,6 +62,8 @@ public class DoseResponseLookupReader {
             int posAirPollutantPM = SiloUtil.findPositionInArray("air_pollution_pm25", header);
             int posAirPollutantNO = SiloUtil.findPositionInArray("air_pollution_no2", header);
             int posPhysicalActivity = SiloUtil.findPositionInArray("physical_activity", header);
+            int posNoise = SiloUtil.findPositionInArray("noise", header);
+            int posNdvi = SiloUtil.findPositionInArray("ndvi", header);
             int posOutcome = SiloUtil.findPositionInArray("outcome", header);
 
             // read line
@@ -72,6 +74,8 @@ public class DoseResponseLookupReader {
                 int airPollutantPM = Integer.parseInt(lineElements[posAirPollutantPM]);
                 int airPollutantNO = Integer.parseInt(lineElements[posAirPollutantNO]);
                 int physicalActivity = Integer.parseInt(lineElements[posPhysicalActivity]);
+                int noise = Integer.parseInt(lineElements[posNoise]);
+                int ndvi = Integer.parseInt(lineElements[posNdvi]);
                 String outcome = lineElements[posOutcome];
 
                 diseaseOutcomeTypeLookup.put(diseases, outcome);
@@ -86,6 +90,14 @@ public class DoseResponseLookupReader {
 
                 if (physicalActivity == 1) {
                     doseResponseData.get(HealthExposures.PHYSICAL_ACTIVITY).put(diseases, new TableDataSet());
+                }
+
+                if (noise == 1) {
+                    doseResponseData.get(HealthExposures.NOISE).put(diseases, new TableDataSet());
+                }
+
+                if (ndvi == 1) {
+                    doseResponseData.get(HealthExposures.NDVI).put(diseases, new TableDataSet());
                 }
 
             }

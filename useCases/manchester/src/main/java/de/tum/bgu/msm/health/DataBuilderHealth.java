@@ -16,14 +16,11 @@ import de.tum.bgu.msm.health.diseaseModelOffline.HealthExposuresReader;
 import de.tum.bgu.msm.health.io.DefaultSpeedReader;
 import de.tum.bgu.msm.health.io.DoseResponseLookupReader;
 import de.tum.bgu.msm.health.io.HealthTransitionTableReader;
-import de.tum.bgu.msm.io.DwellingReaderMCR;
-import de.tum.bgu.msm.io.JobReaderMCR;
-import de.tum.bgu.msm.io.MicroDataScaler;
+import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.io.input.*;
 import de.tum.bgu.msm.matsim.MatsimTravelTimesAndCosts;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.*;
-import de.tum.bgu.msm.io.GeoDataReaderManchester;
 import org.matsim.core.config.Config;
 
 public class DataBuilderHealth {
@@ -91,6 +88,8 @@ public class DataBuilderHealth {
         String fileName = properties.main.baseDirectory + properties.geo.zonalDataFile;
         reader.readZoneCsv(fileName);
         reader.readZoneShapefile(pathShp);
+
+        new PoiReader(dataContainer).readData(properties.main.baseDirectory + properties.geo.poiFileName);
 
         int year = properties.main.startYear;
         String householdFile = properties.main.baseDirectory + properties.householdData.householdFileName;
