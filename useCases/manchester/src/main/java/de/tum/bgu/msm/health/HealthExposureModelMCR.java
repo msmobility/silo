@@ -191,6 +191,12 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
     private void replyReceiverPointInfoFromFile(Day day) {
         String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/";
 
+        //need to initialize link info and zone exposure map everytime, because to save memory, dataContainer.reset for each day/mode assembler
+        Scenario scenario = ScenarioUtils.createMutableScenario(initialMatsimConfig);
+        //need to use full network (include all car, active mode links) for dispersion
+        String networkFile = properties.main.baseDirectory + properties.healthData.network_for_airPollutant_model;
+        new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
+
         //currently the receiver points consist of all dwelling location, school location, zone centroid, and poi location
         Map<String, ReceiverPointInfo> receiverPointInfoMap = new HashMap<>();
         for(Dwelling dd : dataContainer.getRealEstateDataManager().getDwellingData().getDwellings()){
