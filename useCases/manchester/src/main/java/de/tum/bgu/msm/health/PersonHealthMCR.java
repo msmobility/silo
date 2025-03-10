@@ -8,6 +8,7 @@ import de.tum.bgu.msm.health.data.PersonHealth;
 import de.tum.bgu.msm.health.disease.Diseases;
 import de.tum.bgu.msm.health.disease.HealthExposures;
 import de.tum.bgu.msm.schools.PersonWithSchool;
+import it.unimi.dsi.fastutil.BigArrays;
 
 import java.util.*;
 
@@ -257,6 +258,17 @@ public class PersonHealthMCR implements PersonWithSchool, PersonHealth {
     @Override
     public void setWeeklyExposureByPollutantNormalised(Map<String, Float> exposureMap) {
         this.weeklyExposureByPollutantNormalised = exposureMap;
+    }
+
+    //TODO: for test
+
+    private Map<String, Float> weeklyExposureByPollutantNormalisedNoOverlap;
+    public float getWeeklyExposureByPollutantNormalisedNoOverlap(String pollutant) {
+        return weeklyExposureByPollutantNormalisedNoOverlap.get(pollutant);
+    }
+
+    public void setWeeklyExposureByPollutantNormalisedNoOverlap(Map<String, Float> exposureMap) {
+        this.weeklyExposureByPollutantNormalisedNoOverlap = exposureMap;
     }
 
     @Override

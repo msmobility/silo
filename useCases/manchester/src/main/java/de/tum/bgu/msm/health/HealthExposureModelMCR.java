@@ -680,7 +680,6 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             float weightedSumExposureNo2 = 0.f;
             float weightedSumExposureNoise = 0.f;
             float weightedSumExposureNoiseNight = 0.f;
-            float weightedSumExposureNdvi = 0.f;
 
             Map<String, float[]> weeklyPollutionExposures = ((PersonHealth) person).getWeeklyPollutionExposures();
             float[] weeklyNoiseExposureByHour = ((PersonHealth) person).getWeeklyNoiseExposureByHour();
@@ -713,9 +712,17 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                     )
             );
 
+            //TODO: for test
+            ((PersonHealthMCR) person).setWeeklyExposureByPollutantNormalisedNoOverlap(
+                    Map.of(
+                            "pm2.5", (float) (weightedSumExposurePM25 / (168 * (1.49/3.))),
+                            "no2", (float) (weightedSumExposureNo2 / (168 * (1.49/3.)))
+                    )
+            );
+
             float Lden = (float) (10 * Math.log10(weightedSumExposureNoise / sumHour));
             ((PersonHealth) person).setWeeklyNoiseExposuresNormalised (Lden);
-            ((PersonHealth) person).setWeeklyGreenExposuresNormalised(weightedSumExposureNdvi / sumHour);
+            ((PersonHealth) person).setWeeklyGreenExposuresNormalised(((PersonHealthMCR) person).getWeeklyNdviExposure() / sumHour);
 
             float Lnight = (float) (10 * Math.log10(weightedSumExposureNoiseNight / sumNightHour));
             ((PersonHealthMCR) person).setNoiseHighAnnoyedPercentage((float) NoiseMetrics.getHighAnnoyedPercentage(Lden));
