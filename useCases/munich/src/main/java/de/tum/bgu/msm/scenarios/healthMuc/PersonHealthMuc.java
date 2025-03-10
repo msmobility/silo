@@ -188,6 +188,16 @@ public class PersonHealthMuc implements PersonWithSchool, PersonHealth {
         weeklyMarginalMetHours.put(mode, weeklyMarginalMetHours.getOrDefault(mode, 0.f) + mmetHours);
     }
 
+    @Override
+    public Map<String, float[]> getWeeklyPollutionExposures() {
+        return Map.of();
+    }
+
+    @Override
+    public void updateWeeklyPollutionExposuresByHour(Map<String, float[]> newExposures) {
+
+    }
+
     public void updateWeeklyTravelSeconds(float seconds) {
         weeklyTravelSeconds += seconds;
     }
@@ -203,7 +213,7 @@ public class PersonHealthMuc implements PersonWithSchool, PersonHealth {
 
     public float getWeeklyHomeMinutes() { return weeklyHomeMinutes; }
 
-    public Float[] getWeeklyExposureByPollutant(String pollutant) {
+    public Float getWeeklyExposureByPollutant(String pollutant) {
         return weeklyExposureByPollutant.get(pollutant);
     }
 
@@ -213,12 +223,62 @@ public class PersonHealthMuc implements PersonWithSchool, PersonHealth {
         return (float) (weeklyExposureByPollutant.get(pollutant) / (168.* (1.49/3.)));
     }
 
+    @Override
+    public void setWeeklyExposureByPollutantNormalised(Map<String, Float> exposureMap) {
+
+    }
+
     public float getWeeklyAccidentRisk(String type) {
         return weeklyAccidentRisks.getOrDefault(type, 0.f);
     }
 
     public void updateWeeklyAccidentRisks(Map<String, Float> newRisks) {
         newRisks.forEach((k, v) -> weeklyAccidentRisks.merge(k, v, (v1, v2) -> v1 + v2 - v1*v2));
+    }
+
+    @Override
+    public float[] getWeeklyNoiseExposureByHour() {
+        return new float[0];
+    }
+
+    @Override
+    public void updateWeeklyNoiseExposuresByHour(float[] newExposure) {
+
+    }
+
+    @Override
+    public float getWeeklyNoiseExposuresNormalised() {
+        return 0;
+    }
+
+    @Override
+    public void setWeeklyNoiseExposuresNormalised(float noiseExposureNormalised) {
+
+    }
+
+    @Override
+    public void updateWeeklyGreenExposures(float newExposure) {
+
+    }
+
+    @Override
+    public float getWeeklyGreenExposuresNormalised() {
+        return 0;
+    }
+
+    @Override
+    public void updateWeeklyTravelActivityHourOccupied(float[] hourOccupied) {
+
+    }
+
+    @Override
+    public void setWeeklyGreenExposuresNormalised(float greenExposureNormalised) {
+
+    }
+
+    @Override
+    public float[] getWeeklyTravelActivityHourOccupied() {
+        return new float[0];
     }
 
     public void updateWeeklyPollutionExposures(Map<String, Float> newExposures) {
@@ -235,6 +295,11 @@ public class PersonHealthMuc implements PersonWithSchool, PersonHealth {
 
     public void setRelativeRisks(Map<String, Float> relativeRisks) {
         this.relativeRisks = relativeRisks;
+    }
+
+    @Override
+    public void setAllCauseRR(Float reduce) {
+
     }
 
     @Override
