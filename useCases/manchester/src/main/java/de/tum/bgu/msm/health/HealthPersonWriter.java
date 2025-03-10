@@ -70,10 +70,6 @@ public class HealthPersonWriter implements PersonWriter {
         pwp.print("exposure_noise_HA");
         pwp.print(",");
         pwp.print("exposure_noise_HSD");
-        pwp.print(",");
-        pwp.print("exposure_normalised_pm25_noOverlap");
-        pwp.print(",");
-        pwp.print("exposure_normalised_no2_noOverlap");
         pwp.println();
 
         for (Person pp : householdData.getPersons()) {
@@ -131,10 +127,6 @@ public class HealthPersonWriter implements PersonWriter {
             pwp.print((((PersonHealthMCR) pp).getNoiseHighAnnoyedPercentage()));
             pwp.print(",");
             pwp.print((((PersonHealthMCR) pp).getNoiseHighSleepDisturbancePercentage()));
-            pwp.print(",");
-            pwp.print((((PersonHealthMCR) pp).getWeeklyExposureByPollutantNormalisedNoOverlap("pm2.5")));
-            pwp.print(",");
-            pwp.print((((PersonHealthMCR) pp).getWeeklyExposureByPollutantNormalisedNoOverlap("no2")));
             pwp.println();
             if (pp.getId() == SiloUtil.trackPp) {
                 SiloUtil.trackingFile("Writing pp " + pp.getId() + " to micro data file.");

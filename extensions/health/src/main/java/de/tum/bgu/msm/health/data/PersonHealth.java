@@ -21,6 +21,8 @@ public interface PersonHealth extends Person {
 
     void setWeeklyHomeMinutes(float minutes);
 
+    void updateWeeklyHomeMinutes(float minutes);
+
     float getWeeklyHomeMinutes();
 
     float getWeeklyMarginalMetHoursSport();

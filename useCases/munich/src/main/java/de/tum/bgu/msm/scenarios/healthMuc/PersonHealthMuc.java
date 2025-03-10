@@ -211,6 +211,11 @@ public class PersonHealthMuc implements PersonWithSchool, PersonHealth {
 
     public void setWeeklyHomeMinutes(float hours) { this.weeklyHomeMinutes = hours; }
 
+    @Override
+    public void updateWeeklyHomeMinutes(float minutes) {
+
+    }
+
     public float getWeeklyHomeMinutes() { return weeklyHomeMinutes; }
 
     public Float getWeeklyExposureByPollutant(String pollutant) {

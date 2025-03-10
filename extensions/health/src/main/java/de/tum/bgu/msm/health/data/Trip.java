@@ -46,12 +46,12 @@ public class Trip implements Id {
 
     private double marginalMetHours = 0.;
     private Map<String, Float> travelRiskMap = new HashMap<>();
-    private Map<String, float[]> travelExposureMapByHour = new HashMap<>();
-    private float[] travelNoiseExposureByHour = new float[24*7];
+    private Map<String, Float> travelExposureMap = new HashMap<>();
+    private double travelNoiseExposure = 0.;
     private double travelNdviExposure = 0.;
 
-    private Map<String, float[]> activityExposureMapByHour = new HashMap<>();
-    private float[] activityNoiseExposureByHour = new float[24*7];
+    private Map<String, Float> activityExposureMap = new HashMap<>();
+    private double activityNoiseExposure = 0.;
     private double activityNdviExposure = 0.;
 
     public Trip(int tripId, Purpose tripPurpose) {
@@ -127,22 +127,12 @@ public class Trip implements Id {
         this.marginalMetHours += mmetHours;
     }
 
-    public float[] getTravelNoiseExposureByHour() {
-        return travelNoiseExposureByHour;
+    public double getTravelNoiseExposure() {
+        return travelNoiseExposure;
     }
 
-    public float getTravelNoiseExposureSum() {
-        float sum = 0;
-        for (float num : travelNoiseExposureByHour) {
-            sum += num;
-        }
-        return sum;
-    }
-
-    public void updateTravelNoiseExposure(float[] travelNoiseExposure) {
-        for(int i=0; i< travelNoiseExposure.length; i++) {
-            this.travelNoiseExposureByHour[i] += travelNoiseExposure[i];
-        }
+    public void updateTravelNoiseExposure(double travelNoiseExposure) {
+        this.travelNoiseExposure += travelNoiseExposure;
     }
 
     public double getTravelNdviExposure() {
@@ -159,60 +149,22 @@ public class Trip implements Id {
         newRisks.forEach((k, v) -> travelRiskMap.merge(k, v, (v1, v2) -> v1 + v2 - v1*v2));
     }
 
-    public Map<String, float[]> getTravelExposureMapByHour() { return travelExposureMapByHour; }
+    public Map<String, Float> getTravelExposureMap() { return travelExposureMap; }
 
-    public void updateTravelExposureMapByHour(Map<String, float[]> newExposures) {
-        for (String key : newExposures.keySet()) {
-            if (!travelExposureMapByHour.containsKey(key)) {
-                travelExposureMapByHour.put(key, newExposures.get(key));
-            }else {
-                for(int i = 0; i< travelExposureMapByHour.get(key).length; i++) {
-                    this.travelExposureMapByHour.get(key)[i] += newExposures.get(key)[i];
-                }
-            }
-        }
+    public void updateTravelExposureMap(Map<String, Float> newExposures) {
+        newExposures.forEach((k, v) -> travelExposureMap.merge(k, v, (v1, v2) -> v1 + v2));
     }
 
-    public float getTravelExposureSum(String pollutant) {
-        float sum = 0;
-        for (float num : travelExposureMapByHour.get(pollutant)) {
-            sum += num;
-        }
-        return sum;
+    public Map<String, Float> getActivityExposureMap() { return activityExposureMap; }
+
+    public void setActivityExposureMap(Map<String, Float> exposureMap) {
+        this.activityExposureMap = exposureMap;
     }
 
-    public Map<String, float[]> getActivityExposureMapByHour() { return activityExposureMapByHour; }
+    public double getActivityNoiseExposure() { return activityNoiseExposure; }
 
-    public void setActivityExposureMapByHour(Map<String, float[]> newExposures) {
-        this.activityExposureMapByHour = newExposures;
-    }
-
-    public float getActivityExposureSum(String pollutant) {
-        if(activityExposureMapByHour.get(pollutant)==null || activityExposureMapByHour.get(pollutant).length==0) {
-            return 0;
-        }
-
-        float sum = 0;
-        for (float num : activityExposureMapByHour.get(pollutant)) {
-            sum += num;
-        }
-        return sum;
-    }
-
-    public float[] getActivityNoiseExposureByHour() {
-        return activityNoiseExposureByHour;
-    }
-
-    public float getActivityNoiseExposureSum() {
-        float sum = 0;
-        for (float num : activityNoiseExposureByHour) {
-            sum += num;
-        }
-        return sum;
-    }
-
-    public void setActivityNoiseExposureByHour(float[] activityNoiseExposureByHour) {
-        this.activityNoiseExposureByHour = activityNoiseExposureByHour;
+    public void setActivityNoiseExposure(double activityNoiseExposure) {
+        this.activityNoiseExposure = activityNoiseExposure;
     }
 
     public double getActivityNdviExposure() {
@@ -340,17 +292,4 @@ public class Trip implements Id {
     public void setTripDestinationMicroId(int tripDestinationMicroId) {
         this.tripDestinationMicroId = tripDestinationMicroId;
     }
-
-
-    //TODO: these are methods currently used for Munich health, need to adapt Munich health model
-    public void updateTravelExposureMap(Map<String, Float> exposureMap) {
-    }
-
-    public void setActivityExposureMap(Map<String, Float> exposureMap) {
-    }
-
-    public Map<String, Float> getTravelExposureMap() { return null; }
-
-    public Map<String, Float> getActivityExposureMap() { return null; }
-
 }
