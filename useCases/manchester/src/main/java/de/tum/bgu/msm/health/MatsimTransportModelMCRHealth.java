@@ -448,7 +448,7 @@ public final class MatsimTransportModelMCRHealth implements TransportModel {
         // WALK ATTRIBUTES
         List<ToDoubleFunction<Link>> walkAttributes = new ArrayList<>();
         walkAttributes.add(l -> Math.max(0.,0.81 - LinkAmbience.getVgviFactor(l)));
-        walkAttributes.add(l -> Math.min(1.,l.getFreespeed() / 22.35));
+        walkAttributes.add(l -> Math.min(1.,((double) l.getAttributes().getAttribute("speedLimitMPH")) / 50.));
         walkAttributes.add(l -> JctStress.getStressProp(l,TransportMode.walk));
 
         // Walk weights
