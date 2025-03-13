@@ -1,12 +1,10 @@
+# SILO - Simple Integrated Land-Use Orchestrator
 
-![CI status](https://github.com/msmobility/silo/workflows/Java%20CI/badge.svg)
-[![Cloudsmith Deployment](https://github.com/msmobility/silo/actions/workflows/deployment.yml/badge.svg?branch=master)](https://github.com/msmobility/silo/actions/workflows/deployment.yml)
-[![Hosted By: Cloudsmith](https://img.shields.io/badge/OSS%20hosting%20by-cloudsmith-blue?logo=cloudsmith&style=for-the-badge)](https://cloudsmith.com)
+This repository contains a JIBE-specific implementation of the Java-based [SILO](https://github.com/msmobility/silo) software for modelling travel demand.  
 
-Package repository hosting is graciously provided by  [Cloudsmith](https://cloudsmith.com).
-Cloudsmith is the only fully hosted, cloud-native, universal package management solution, that
-enables your organization to create, store and share packages in any format, to any place, with total
-confidence.
+The main branch has [merged code](https://github.com/msmobility/silo/tree/transportHealthIntegrationModel_jibe) developed by Dr Qin Zhang and Dr Corin Staves for the JIBE project's [Manchester](https://github.com/jibeproject/silo/tree/main/useCases/manchester/src/main/java/de/tum/bgu/msm) implementation and will be further developed for the Melbourne implementation ([TO DO](https://github.com/jibeproject/silo/issues/9)).
+
+Please see [the wiki](https://wiki.tum.de/display/msmmodels/MITO) for documentation.
 
 
 # siloCode
