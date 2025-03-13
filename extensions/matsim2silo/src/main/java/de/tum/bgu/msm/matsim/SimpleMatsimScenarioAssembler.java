@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.matsim;
 
 import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.Day;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
@@ -13,7 +14,8 @@ import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.data.vehicle.VehicleType;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
@@ -29,9 +31,10 @@ import org.matsim.core.scenario.ScenarioUtils;
 
 import java.util.Collection;
 import java.util.Random;
+import java.util.Map;
 
 public class SimpleMatsimScenarioAssembler implements MatsimScenarioAssembler {
-    private final static Logger logger = Logger.getLogger(SimpleMatsimScenarioAssembler.class);
+    private final static Logger logger = LogManager.getLogger(SimpleMatsimScenarioAssembler.class);
     private final DataContainer dataContainer;
     private final Properties properties;
 //    private final boolean newRandomSeed = false;
@@ -142,5 +145,10 @@ public class SimpleMatsimScenarioAssembler implements MatsimScenarioAssembler {
         }
         logger.info("Finished creating MATSim scenario.");
         return scenario;
+    }
+
+    @Override
+    public Map<Day, Scenario> assembleMultiScenarios(Config initialMatsimConfig, int year, TravelTimes travelTimes) {
+        return null;
     }
 }

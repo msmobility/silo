@@ -42,6 +42,7 @@ public final class Properties {
     public final MovesProperties moves;
     public final TrackProperties track;
     public final SchoolDataProperties schoolData;
+    public final HealthModelProperties healthData;
     private final String path;
 
     private Properties(String path) {
@@ -71,6 +72,7 @@ public final class Properties {
         moves = new MovesProperties(bundle);
         track = new TrackProperties(bundle);
         schoolData = new SchoolDataProperties(bundle);
+        healthData = new HealthModelProperties(bundle);
 
 
 

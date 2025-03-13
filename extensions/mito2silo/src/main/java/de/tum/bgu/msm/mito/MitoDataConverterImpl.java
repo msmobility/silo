@@ -1,17 +1,20 @@
 package de.tum.bgu.msm.mito;
 
 import de.tum.bgu.msm.container.DataContainer;
+
 import de.tum.bgu.msm.data.*;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.Job;
-import de.tum.bgu.msm.data.jobTypes.munich.MunichJobType;
+import de.tum.bgu.msm.data.jobTypes.JobType;
+import de.tum.bgu.msm.data.jobTypes.MunichJobType;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.vehicle.VehicleType;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 
@@ -28,7 +31,7 @@ import java.util.Map;
  */
 public class MitoDataConverterImpl implements MitoDataConverter {
 
-    private final Logger logger = Logger.getLogger(MitoDataConverterImpl.class);
+    private final Logger logger = LogManager.getLogger(MitoDataConverterImpl.class);
 
     @Override
     public DataSet convertData(DataContainer dataContainer) {
@@ -36,7 +39,7 @@ public class MitoDataConverterImpl implements MitoDataConverter {
                 "\t 1) all zones are considered as CORE-CITY" +
                 "\2 2) no schools (no predefined education destinations)" +
                 "\t 3) job types need to match default mito values:" + Arrays.toString(MunichJobType.values()));
-        DataSet dataSet = new DataSet();
+        DataSet dataSet = new DataSetImpl();
         convertZones(dataSet, dataContainer);
         fillMitoZoneEmployees(dataSet, dataContainer);
         convertHhs(dataSet, dataContainer);
@@ -71,7 +74,7 @@ public class MitoDataConverterImpl implements MitoDataConverter {
             MitoHousehold household = new MitoHousehold(
                     siloHousehold.getId(),
                     HouseholdUtil.getAnnualHhIncome(siloHousehold) / 12,
-                    (int) siloHousehold.getVehicles().stream().filter(vv -> vv.getType().equals(VehicleType.CAR)).count());
+                    (int) siloHousehold.getVehicles().stream().filter(vv -> vv.getType().equals(VehicleType.CAR)).count(),Boolean.TRUE);
             household.setHomeZone(zone);
 
             Coordinate coordinate;
@@ -85,10 +88,10 @@ public class MitoDataConverterImpl implements MitoDataConverter {
             //todo if there are housholds without adults they cannot be processed
             if (siloHousehold.getPersons().values().stream().anyMatch(p -> p.getAge() >= 18)) {
                 household.setHomeLocation(coordinate);
-                zone.addHousehold();
+                zone.addHousehold(household);
                 dataSet.addHousehold(household);
                 for (Person person : siloHousehold.getPersons().values()) {
-                    MitoPerson mitoPerson = convertToMitoPp(person, dataSet, dataContainer);
+                    MitoPerson mitoPerson = convertToMitoPp(person, household, dataSet, dataContainer);
                     household.addPerson(mitoPerson);
                     dataSet.addPerson(mitoPerson);
                 }
@@ -103,15 +106,17 @@ public class MitoDataConverterImpl implements MitoDataConverter {
     }
 
 
-    private MitoPerson convertToMitoPp(Person person, DataSet dataSet, DataContainer dataContainer) {
+    private MitoPerson convertToMitoPp(Person person, MitoHousehold household, DataSet dataSet, DataContainer dataContainer) {
         final MitoGender mitoGender = MitoGender.valueOf(person.getGender().name());
         final MitoOccupationStatus mitoOccupationStatus = MitoOccupationStatus.valueOf(person.getOccupation().getCode());
 
         MitoOccupation mitoOccupation = null;
+        String jobType = null;
         switch (mitoOccupationStatus) {
             case WORKER:
                 if (person.getJobId() > 0) {
                     Job job = dataContainer.getJobDataManager().getJobFromId(person.getJobId());
+                    jobType = job.getType();
                     MitoZone zone = dataSet.getZones().get(job.getZoneId());
                     final Coordinate coordinate;
                     if (job instanceof MicroLocation) {
@@ -128,8 +133,9 @@ public class MitoDataConverterImpl implements MitoDataConverter {
                 break;
         }
 
-        return new MitoPerson(
+        return new MitoPersonImpl(
                 person.getId(),
+                household,
                 mitoOccupationStatus,
                 mitoOccupation,
                 person.getAge(),
@@ -145,6 +151,7 @@ public class MitoDataConverterImpl implements MitoDataConverter {
             final MitoZone zone = zones.get(jj.getZoneId());
             final String type = jj.getType().toUpperCase();
             try {
+                //TODO: shouldn't use MunichJobType, need to implement JobTypeImpl in MITO
                 de.tum.bgu.msm.data.jobTypes.JobType mitoJobType = MunichJobType.valueOf(type);
                 zone.addEmployeeForType(mitoJobType);
             } catch (IllegalArgumentException e) {

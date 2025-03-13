@@ -6,7 +6,8 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.MicroDataManager;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -14,7 +15,7 @@ import java.util.Map;
 
 public class GenerateVacantDwellings {
 
-    private static final Logger logger = Logger.getLogger(GenerateVacantDwellings.class);
+    private static final Logger logger = LogManager.getLogger(GenerateVacantDwellings.class);
 
     private final DataSetSynPop dataSetSynPop;
     private final MicroDataManager microDataManager;
@@ -68,7 +69,8 @@ public class GenerateVacantDwellings {
             int[] tazSelection = selectMultipleTAZ(vacantDwellings);
             for (int draw = 0; draw < vacantDwellings; draw++){
                 int tazSelected = tazSelection[draw];
-                int newDdId = highestDwellingIdInUse++;
+                //++highestDwellingIdInUse pre-increment
+                int newDdId = ++highestDwellingIdInUse;
                 int floorSpace = microDataManager.guessFloorSpace(SiloUtil.select(probVacantFloor));
                 int buildingYearSize = SiloUtil.select(probVacantBuildingSize);
                 int year = microDataManager.dwellingYearfromBracket(extractYear(buildingYearSize));

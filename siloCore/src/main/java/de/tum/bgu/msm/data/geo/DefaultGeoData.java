@@ -3,7 +3,8 @@ package de.tum.bgu.msm.data.geo;
 
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -11,7 +12,7 @@ import java.util.Map;
 
 public class DefaultGeoData implements GeoData {
 
-    private static final Logger logger = Logger.getLogger(DefaultGeoData.class);
+    private static final Logger logger = LogManager.getLogger(DefaultGeoData.class);
 
     private final Map<Integer, Zone> zones = new LinkedHashMap<>();
     private final Map<Integer, Region> regions = new LinkedHashMap<>();

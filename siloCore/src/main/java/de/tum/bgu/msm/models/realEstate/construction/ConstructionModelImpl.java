@@ -14,7 +14,8 @@ import de.tum.bgu.msm.events.impls.realEstate.ConstructionEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.io.PrintWriter;
@@ -30,7 +31,7 @@ import java.util.stream.Collectors;
  **/
 public class ConstructionModelImpl extends AbstractModel implements ConstructionModel {
 
-    private final static Logger logger = Logger.getLogger(ConstructionModelImpl.class);
+    private final static Logger logger = LogManager.getLogger(ConstructionModelImpl.class);
 
     private final GeoData geoData;
     private final DwellingFactory factory;

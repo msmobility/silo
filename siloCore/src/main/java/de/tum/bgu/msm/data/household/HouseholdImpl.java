@@ -19,6 +19,7 @@ package de.tum.bgu.msm.data.household;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.vehicle.*;
 import org.matsim.utils.objectattributes.attributable.Attributes;
+import org.matsim.utils.objectattributes.attributable.AttributesImpl;
 
 import java.util.*;
 
@@ -38,7 +39,7 @@ public class HouseholdImpl implements Household {
 
     private final Map<Integer, Person> persons;
 
-    private final Attributes attributes = new Attributes();
+    private final Attributes attributes = new AttributesImpl();
 
     private final List<Vehicle> vehicles = new ArrayList<>();
 
@@ -120,7 +121,7 @@ public class HouseholdImpl implements Household {
     }
 
     @Override
-    public void setAttribute(String key, Object value) {
+    public synchronized void setAttribute(String key, Object value) {
         attributes.putAttribute(key, value);
     }
 

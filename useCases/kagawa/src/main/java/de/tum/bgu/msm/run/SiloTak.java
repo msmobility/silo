@@ -7,7 +7,8 @@ import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.io.output.*;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 
@@ -19,7 +20,7 @@ import java.util.Set;
  */
 public class SiloTak {
 
-    private final static Logger logger = Logger.getLogger(SiloTak.class);
+    private final static Logger logger = LogManager.getLogger(SiloTak.class);
 
     public static void main(String[] args) {
 

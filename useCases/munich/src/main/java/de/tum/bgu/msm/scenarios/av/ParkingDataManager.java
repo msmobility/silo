@@ -13,7 +13,8 @@ import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -26,7 +27,7 @@ import java.util.stream.Collectors;
 
 public class ParkingDataManager implements ModelUpdateListener {
 
-    private final Logger logger = Logger.getLogger(ParkingDataManager.class);
+    private final Logger logger = LogManager.getLogger(ParkingDataManager.class);
     private final DataContainer dataContainer;
     private final Random random;
 

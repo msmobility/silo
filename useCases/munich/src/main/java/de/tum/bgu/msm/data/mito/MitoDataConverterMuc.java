@@ -9,16 +9,19 @@ import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobMuc;
-import de.tum.bgu.msm.data.jobTypes.munich.MunichJobType;
+import de.tum.bgu.msm.data.jobTypes.MunichJobType;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.data.vehicle.VehicleType;
 import de.tum.bgu.msm.mito.MitoDataConverter;
+import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.schools.DataContainerWithSchoolsImpl;
 import de.tum.bgu.msm.schools.School;
 import de.tum.bgu.msm.schools.SchoolImpl;
+import de.tum.bgu.msm.util.MitoUtil;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 
@@ -26,11 +29,11 @@ import java.util.Map;
 
 public class MitoDataConverterMuc implements MitoDataConverter {
 
-    private final static Logger logger = Logger.getLogger(MitoDataConverterMuc.class);
+    private final static Logger logger = LogManager.getLogger(MitoDataConverterMuc.class);
 
     @Override
     public DataSet convertData(DataContainer dataContainer) {
-        DataSet dataSet = new DataSet();
+        DataSet dataSet = new DataSetImpl();
         convertZones(dataSet, dataContainer);
         fillMitoZoneEmployees(dataSet, dataContainer);
         convertSchools(dataSet, dataContainer);
@@ -48,7 +51,7 @@ public class MitoDataConverterMuc implements MitoDataConverter {
 
     private void convertSchools(DataSet dataSet, DataContainer dataContainer) {
         Map<Integer, MitoZone> zones = dataSet.getZones();
-        for (School school : ((DataContainerWithSchoolsImpl) dataContainer).getSchoolData().getSchools()) {
+        for (School school : ((DataContainerWithSchools) dataContainer).getSchoolData().getSchools()) {
             MitoZone zone = zones.get(school.getZoneId());
             Coordinate coordinate;
             if (school instanceof SchoolImpl) {
@@ -81,7 +84,7 @@ public class MitoDataConverterMuc implements MitoDataConverter {
             MitoHousehold household = new MitoHousehold(
                     siloHousehold.getId(),
                     HouseholdUtil.getAnnualHhIncome(siloHousehold) / 12,
-                    (int) siloHousehold.getVehicles().stream().filter(vv -> vv.getType().equals(VehicleType.CAR)).count());
+                    (int) siloHousehold.getVehicles().stream().filter(vv -> vv.getType().equals(VehicleType.CAR)).count(),Boolean.TRUE);
             household.setHomeZone(zone);
 
             Coordinate coordinate;
@@ -98,7 +101,7 @@ public class MitoDataConverterMuc implements MitoDataConverter {
                 zone.addHousehold();
                 dataSet.addHousehold(household);
                 for (Person person : siloHousehold.getPersons().values()) {
-                    MitoPerson mitoPerson = convertToMitoPp((PersonMuc) person, dataSet, dataContainer);
+                    MitoPerson mitoPerson = convertToMitoPp((PersonMuc) person, household, dataSet, dataContainer);
                     household.addPerson(mitoPerson);
                     dataSet.addPerson(mitoPerson);
                 }
@@ -113,15 +116,17 @@ public class MitoDataConverterMuc implements MitoDataConverter {
     }
 
 
-    private MitoPerson convertToMitoPp(PersonMuc person, DataSet dataSet, DataContainer dataContainer) {
+    private MitoPerson convertToMitoPp(PersonMuc person, MitoHousehold household, DataSet dataSet, DataContainer dataContainer) {
         final MitoGender mitoGender = MitoGender.valueOf(person.getGender().name());
         final MitoOccupationStatus mitoOccupationStatus = MitoOccupationStatus.valueOf(person.getOccupation().getCode());
 
         MitoOccupation mitoOccupation = null;
+        String jobType = null;
         switch (mitoOccupationStatus) {
             case WORKER:
                 if (person.getJobId() > 0) {
                     JobMuc job = (JobMuc) dataContainer.getJobDataManager().getJobFromId(person.getJobId());
+                    jobType = job.getType();
                     MitoZone zone = dataSet.getZones().get(job.getZoneId());
                     final Coordinate coordinate;
                     if (job instanceof MicroLocation) {
@@ -143,8 +148,9 @@ public class MitoDataConverterMuc implements MitoDataConverter {
                 break;
         }
 
-        return new MitoPerson(
+        return new MitoPersonImpl(
                 person.getId(),
+                household,
                 mitoOccupationStatus,
                 mitoOccupation,
                 person.getAge(),

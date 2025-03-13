@@ -14,7 +14,8 @@ import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.models.realEstate.construction.ConstructionOverwrite;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.io.PrintWriter;
@@ -22,7 +23,7 @@ import java.util.*;
 
 public class ConstructionOverwriteMstm extends AbstractModel implements ConstructionOverwrite {
 
-    private final static Logger logger = Logger.getLogger(ConstructionOverwriteMstm.class);
+    private final static Logger logger = LogManager.getLogger(ConstructionOverwriteMstm.class);
     private final DwellingFactory factory;
 
     private boolean useOverwrite;

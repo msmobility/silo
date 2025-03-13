@@ -8,7 +8,8 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.GermanyPropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -16,7 +17,7 @@ import java.util.PropertyResourceBundle;
 
 public class SyntheticPopulationGeneratorGermanyMitoByState {
 
-    static Logger logger = Logger.getLogger(SyntheticPopulationGeneratorGermanyMitoByState.class);
+    static Logger logger = LogManager.getLogger(SyntheticPopulationGeneratorGermanyMitoByState.class);
     private static DataSetSynPop dataSetSynPop = new DataSetSynPop();
 
     public static void main (String[] args) {

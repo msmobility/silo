@@ -11,7 +11,8 @@ import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import de.tum.bgu.msm.utils.SampleException;
 import de.tum.bgu.msm.utils.Sampler;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.util.*;
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
  **/
 public class DraconicResettlementJobMarketUpdateTak extends AbstractModel implements JobMarketUpdate {
 
-    private final Logger LOGGER = Logger.getLogger(DraconicResettlementJobMarketUpdateTak.class);
+    private final Logger logger = LogManager.getLogger(DraconicResettlementJobMarketUpdateTak.class);
 
     private final JobDataManager jobDataManager;
     private JobFactory factory;
@@ -39,7 +40,7 @@ public class DraconicResettlementJobMarketUpdateTak extends AbstractModel implem
     public void setup() {
         if (properties.jobData.growthRateInPercentByJobType.values().stream().anyMatch(d -> d < 0)) {
             String message = "This job update implementation only works for positive job growth forecast rates. Aborting..";
-            LOGGER.error(message, new RuntimeException(message));
+            logger.error(message, new RuntimeException(message));
         }
     }
 
@@ -62,7 +63,7 @@ public class DraconicResettlementJobMarketUpdateTak extends AbstractModel implem
     private void updateJobInventoryMultiThreadedThisYear(int year) {
         // read exogenous job forecast and add or remove jobs for each zone accordingly in multi-threaded procedure
 
-        LOGGER.info("  Updating job market based on exogenous forecast for " + year + " (multi-threaded step)");
+        logger.info("  Updating job market based on exogenous forecast for " + year + " (multi-threaded step)");
 
 
         Map<String, List<Integer>> jobsAvailableForRemoval = new HashMap<>();
@@ -106,7 +107,7 @@ public class DraconicResettlementJobMarketUpdateTak extends AbstractModel implem
                         Coordinate urbanCoord = urbanZone.getRandomCoordinate(random);
                         job.relocateJob(urbanZone, urbanCoord);
                     } catch (SampleException e) {
-                        LOGGER.warn(e);
+                        logger.warn(e);
                     }
                 }
             }
@@ -130,7 +131,7 @@ public class DraconicResettlementJobMarketUpdateTak extends AbstractModel implem
                                 " was newly created in zone " + zone + " based on exogenous forecast.");
                     }
                 } catch (SampleException e) {
-                    LOGGER.warn(e);
+                    logger.warn(e);
                 }
             }
         }

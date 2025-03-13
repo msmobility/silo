@@ -15,7 +15,8 @@ import de.tum.bgu.msm.io.output.PersonWriter;
 import de.tum.bgu.msm.schools.School;
 import de.tum.bgu.msm.schools.SchoolData;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.io.PrintWriter;
@@ -24,7 +25,7 @@ import java.util.Map;
 
 public class PersonJobWriterMucMito implements PersonWriter {
 
-    private final static Logger logger = Logger.getLogger(PersonJobWriterMucMito.class);
+    private final static Logger logger = LogManager.getLogger(PersonJobWriterMucMito.class);
 
     private final HouseholdDataManager householdData;
     private final JobDataManager jobData;

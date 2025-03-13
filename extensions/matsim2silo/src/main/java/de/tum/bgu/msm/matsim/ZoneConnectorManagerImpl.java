@@ -8,7 +8,8 @@ import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
@@ -20,7 +21,7 @@ import java.util.stream.Collectors;
 
 public class ZoneConnectorManagerImpl implements ZoneConnectorManager {
 
-    private final static Logger logger = Logger.getLogger(ZoneConnectorManagerImpl.class);
+    private final static Logger logger = LogManager.getLogger(ZoneConnectorManagerImpl.class);
 
     private final Map<Integer, List<Coord>> coordsByZone;
 

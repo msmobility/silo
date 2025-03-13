@@ -9,16 +9,17 @@ import de.tum.bgu.msm.io.output.MultiFileResultsMonitor;
 import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
+import org.matsim.core.config.groups.RoutingConfigGroup;
 
 import java.util.Arrays;
 
 public class RunFabiland {
 
-    private final static Logger logger = Logger.getLogger(RunFabiland.class);
+    private final static Logger logger = LogManager.getLogger(RunFabiland.class);
 
     public static void main(String[] args) {
         // yyyy This does not run out of the box.  Presumably, it needs an argument.  Could you please add a comment that explains to make this here run?  Thanks ...  kai, jun'23
@@ -37,7 +38,7 @@ public class RunFabiland {
         // The following is obviously just a dirty quickfix until access/egress is default in MATSim
         if (properties.transportModel.includeAccessEgress) {
 //            config.plansCalcRoute().setInsertingAccessEgressWalk(true); // in matsim-12
-            config.plansCalcRoute().setAccessEgressType(PlansCalcRouteConfigGroup.AccessEgressType.accessEgressModeToLink); // in matsim-13-w37
+            config.routing().setAccessEgressType(RoutingConfigGroup.AccessEgressType.accessEgressModeToLink); // in matsim-13-w37
         }
 
         DataContainer dataContainer = DataBuilderFabiland.buildDataContainer(properties, config);

@@ -10,6 +10,7 @@ import de.tum.bgu.msm.data.geo.RegionImpl;
 import de.tum.bgu.msm.data.geo.ZoneImpl;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix2D;
+import org.geotools.api.feature.simple.SimpleFeature;
 import org.junit.Assert;
 import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
@@ -26,7 +27,6 @@ import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.vehicles.Vehicle;
-import org.opengis.feature.simple.SimpleFeature;
 
 import java.util.Map;
 import java.util.Random;
@@ -185,6 +185,11 @@ public class RegionalTravelTimesTest {
 
         @Override
         public Map<String, Object> getAttributes() {
+            return null;
+        }
+
+        @Override
+        public Coordinate getPopCentroidCoord() {
             return null;
         }
 

@@ -6,7 +6,7 @@ out
 *.project
 /bin/
 *.settings/
-/target/
+**/target/
 .idea/
 *.iml
 /Makefile
@@ -16,7 +16,8 @@ out
 /timeTracker.csv
 scenOutput
 status.csv
-test/output/*
+**/test/output/*
+**/test/scenarios/*
 test/scenarios/annapolis/null_t.csv
 *.DS_Store
 

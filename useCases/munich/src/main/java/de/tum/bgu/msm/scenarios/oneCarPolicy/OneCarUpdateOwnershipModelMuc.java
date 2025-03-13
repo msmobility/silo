@@ -13,7 +13,8 @@ import de.tum.bgu.msm.models.carOwnership.CarOwnershipJSCalculatorMuc;
 import de.tum.bgu.msm.models.carOwnership.UpdateCarOwnershipModelMuc;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 
 public class OneCarUpdateOwnershipModelMuc extends AbstractModel implements ModelUpdateListener {
 
-    private static Logger logger = Logger.getLogger(UpdateCarOwnershipModelMuc.class);
+    private static Logger logger = LogManager.getLogger(UpdateCarOwnershipModelMuc.class);
 
     // [previousCars][hhSize+][hhSize-][income+][income-][license+][changeRes][three probabilities]
     private double[][][][][][][][] carUpdateProb;

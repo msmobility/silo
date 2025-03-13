@@ -12,14 +12,15 @@ import de.tum.bgu.msm.io.output.DefaultPersonWriter;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SampleException;
 import de.tum.bgu.msm.utils.Sampler;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.matsim.core.utils.misc.Counter;
 
 import java.util.Random;
 
 public class CreatePopulation {
-    private final static Logger logger = Logger.getLogger(CreatePopulation.class);
+    private final static Logger logger = LogManager.getLogger(CreatePopulation.class);
 
     private final static String scenarioFolderRoot = "useCases/fabiland/scenario";
 

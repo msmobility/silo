@@ -19,7 +19,8 @@ import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
 import java.util.EnumMap;
@@ -30,7 +31,7 @@ import static de.tum.bgu.msm.data.dwelling.RealEstateUtils.RENT_CATEGORIES;
 
 public class CarOnlyHousingStrategyImpl implements HousingStrategy {
 
-    private final static Logger logger = Logger.getLogger(CarOnlyHousingStrategyImpl.class);
+    private final static Logger logger = LogManager.getLogger(CarOnlyHousingStrategyImpl.class);
 
     private enum Normalizer {
         /**

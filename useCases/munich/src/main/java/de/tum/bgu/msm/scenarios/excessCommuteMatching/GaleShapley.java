@@ -13,7 +13,8 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.utils.TravelTimeUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
 
 public class GaleShapley {
 
-    private static final Logger logger = Logger.getLogger(GaleShapley.class);
+    private static final Logger logger = LogManager.getLogger(GaleShapley.class);
 
     public static void main(String[] args) {
         SiloUtil.loadHdf5Lib();

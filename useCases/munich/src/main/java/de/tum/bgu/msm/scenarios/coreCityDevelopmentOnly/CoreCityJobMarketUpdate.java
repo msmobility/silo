@@ -10,13 +10,14 @@ import de.tum.bgu.msm.models.jobmography.JobMarketUpdate;
 import de.tum.bgu.msm.models.jobmography.RemoveJobsDefinition;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 
 public class CoreCityJobMarketUpdate extends AbstractModel implements JobMarketUpdate {
 
-    private final Logger LOGGER = Logger.getLogger(de.tum.bgu.msm.models.jobmography.JobMarketUpdateImpl.class);
+    private final Logger logger = LogManager.getLogger(de.tum.bgu.msm.models.jobmography.JobMarketUpdateImpl.class);
     private JobFactory factory;
 
     public CoreCityJobMarketUpdate(DataContainer dataContainer, Properties properties, Random rnd) {
@@ -46,7 +47,7 @@ public class CoreCityJobMarketUpdate extends AbstractModel implements JobMarketU
 
     private void updateJobInventoryMultiThreadedThisYear(int year) {
 
-        LOGGER.info("  Updating job market based on exogenous forecast for " + year + " (multi-threaded step)");
+        logger.info("  Updating job market based on exogenous forecast for " + year + " (multi-threaded step)");
         final int highestId = dataContainer.getGeoData().getZones().keySet()
                 .stream().mapToInt(Integer::intValue).max().getAsInt();
         int[][] jobsByZone = new int[JobType.getNumberOfJobTypes()][highestId + 1];

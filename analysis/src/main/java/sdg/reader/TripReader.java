@@ -5,7 +5,8 @@ import de.tum.bgu.msm.data.Mode;
 import de.tum.bgu.msm.data.Purpose;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import sdg.SDGCalculator;
 import sdg.data.Trip;
 
@@ -17,7 +18,7 @@ import java.util.stream.Collectors;
 
 public class TripReader {
 
-    private final static Logger logger = Logger.getLogger(TripReader.class);
+    private final static Logger logger = LogManager.getLogger(TripReader.class);
 
     public void readData(String path, DataContainer dataContainer) {
         logger.info("Reading trip data from mito trip csv");

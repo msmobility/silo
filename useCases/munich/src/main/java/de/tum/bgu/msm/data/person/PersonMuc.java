@@ -1,8 +1,11 @@
 package de.tum.bgu.msm.data.person;
 
+import de.tum.bgu.msm.data.Mode;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.schools.PersonWithSchool;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 public class PersonMuc implements PersonWithSchool {
@@ -14,6 +17,7 @@ public class PersonMuc implements PersonWithSchool {
     private int schoolType = 0;
     private int schoolPlace = 0;
     private int schoolId = -1;
+
 
     public PersonMuc(int id, int age,
                      Gender gender, Occupation occupation,
@@ -141,7 +145,7 @@ public class PersonMuc implements PersonWithSchool {
 
     @Override
     public String toString() {
-        return delegate.toString()
+        return delegate
                 +"\nNationality                  " + nationality
                 +"\nSchool type               " + schoolType
                 +"\nSchool place               " + schoolPlace

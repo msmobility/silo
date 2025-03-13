@@ -8,13 +8,14 @@ import de.tum.bgu.msm.io.output.MultiFileResultsMonitor;
 import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 
 public class SiloCT {
 
-    private final static Logger logger = Logger.getLogger(SiloCT.class);
+    private final static Logger logger = LogManager.getLogger(SiloCT.class);
 
     public static void main(String[] args) {
 

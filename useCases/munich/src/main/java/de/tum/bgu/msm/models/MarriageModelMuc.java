@@ -36,7 +36,8 @@ import de.tum.bgu.msm.models.relocation.migration.InOutMigration;
 import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 
@@ -48,7 +49,7 @@ import java.util.*;
  **/
 public class MarriageModelMuc extends AbstractModel implements MarriageModel {
 
-    private final static Logger logger = Logger.getLogger(MarriageModelMuc.class);
+    private final static Logger logger = LogManager.getLogger(MarriageModelMuc.class);
 
     private final InOutMigration iomig;
     private final MovesModelImpl movesModel;

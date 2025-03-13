@@ -5,7 +5,8 @@ import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypes;
 import de.tum.bgu.msm.io.input.DwellingReader;
 import de.tum.bgu.msm.data.dwelling.DwellingTypes;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.io.BufferedReader;
@@ -14,7 +15,7 @@ import java.io.IOException;
 
 public class DwellingReaderMuc implements DwellingReader {
 
-    private final static Logger logger = Logger.getLogger(DwellingReaderMuc.class);
+    private final static Logger logger = LogManager.getLogger(DwellingReaderMuc.class);
 
     private final DwellingData dwellingData;
 

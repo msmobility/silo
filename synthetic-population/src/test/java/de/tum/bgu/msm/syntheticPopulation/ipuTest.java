@@ -11,7 +11,8 @@ import javax.script.ScriptException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class ipuTest {
 
@@ -27,7 +28,7 @@ public class ipuTest {
     private int[] cityID;
     private int[] countyID;
     private HashMap<Integer, int[]> municipalitiesByCounty;
-    static Logger logger = Logger.getLogger(ipuTest.class);
+    static Logger logger = LogManager.getLogger(ipuTest.class);
 
     @Before
     public void setup() {

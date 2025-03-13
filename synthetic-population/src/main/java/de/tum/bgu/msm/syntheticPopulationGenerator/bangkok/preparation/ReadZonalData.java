@@ -7,7 +7,8 @@ import de.tum.bgu.msm.common.matrix.Matrix;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -18,7 +19,7 @@ import java.util.Map;
 
 public class ReadZonalData {
 
-    private static final Logger logger = Logger.getLogger(ReadZonalData.class);
+    private static final Logger logger = LogManager.getLogger(ReadZonalData.class);
 
     private final DataSetSynPop dataSetSynPop;
 
@@ -112,6 +113,7 @@ public class ReadZonalData {
         dataSetSynPop.setSchoolCapacity(schoolCapacity);
         dataSetSynPop.setTazs(tazs);
         dataSetSynPop.setTazIDs(tazs.stream().mapToInt(i -> i).toArray());
+        dataSetSynPop.setTazAttributes(attributesZone);
         dataSetSynPop.setTazAttributes(attributesZone);
 
     }

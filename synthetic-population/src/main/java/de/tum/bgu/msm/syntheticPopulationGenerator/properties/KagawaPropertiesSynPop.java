@@ -3,7 +3,7 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.properties;
 import de.tum.bgu.msm.common.util.ResourceUtil;
 import de.tum.bgu.msm.properties.PropertiesUtil;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.commons.math.distribution.GammaDistributionImpl;
+import org.apache.commons.math3.distribution.GammaDistribution;
 
 import java.util.ResourceBundle;
 
@@ -81,7 +81,7 @@ public class KagawaPropertiesSynPop extends AbstractPropertiesSynPop{
                 0.81284178,0.84682585,0.87469331,0.90418202,0.92677087,0.94770566,0.96267752,0.97337602,0.98101572,0.99313092,
                 0.99874378,0.99999464});
         //this is not a property but a variable?
-        incomeGammaDistribution = new GammaDistributionImpl(incomeShape, 1 / incomeRate);
+        incomeGammaDistribution = new GammaDistribution(incomeShape, 1 / incomeRate);
 
         weightsFileName = PropertiesUtil.getStringProperty(bundle, "weights.matrix", "microData/interimFiles/weigthsMatrix.csv");
         errorsMunicipalityFileName = PropertiesUtil.getStringProperty(bundle, "errors.IPU.municipality.matrix", "microData/interimFiles/errorsIPUmunicipality.csv");

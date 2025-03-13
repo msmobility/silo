@@ -10,7 +10,8 @@ import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -25,7 +26,7 @@ import java.util.stream.Collectors;
  */
 public class SwitchToAutonomousVehicleModelMuc extends AbstractModel implements ModelUpdateListener {
 
-    private final static Logger logger = Logger.getLogger(SwitchToAutonomousVehicleModelMuc.class);
+    private final static Logger logger = LogManager.getLogger(SwitchToAutonomousVehicleModelMuc.class);
     private SwitchToAutonomousVehicleJSCalculatorMuc calculator;
     private final Reader reader;
 

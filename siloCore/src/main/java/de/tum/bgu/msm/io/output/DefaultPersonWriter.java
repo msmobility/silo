@@ -3,13 +3,14 @@ package de.tum.bgu.msm.io.output;
 import de.tum.bgu.msm.data.household.HouseholdData;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.PrintWriter;
 
 public class DefaultPersonWriter implements PersonWriter {
 
-    private final static Logger logger = Logger.getLogger(DefaultPersonWriter.class);
+    private final static Logger logger = LogManager.getLogger(DefaultPersonWriter.class);
     private final HouseholdData householdData;
 
     public DefaultPersonWriter(HouseholdData householdData) {

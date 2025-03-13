@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.transportModel.matsim;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 
@@ -8,7 +9,7 @@ import java.io.File;
  * @author dziemke
  */
 public class SiloTestUtils {
-	private static final Logger log = Logger.getLogger(SiloTestUtils.class) ;
+	private static final Logger log = LogManager.getLogger(SiloTestUtils.class) ;
 	
 	private final static String filename_dd = "./test/scenarios/annapolis/microData_reduced/dd_2001.csv";
 	private final static String filename_hh = "./test/scenarios/annapolis/microData_reduced/hh_2001.csv";

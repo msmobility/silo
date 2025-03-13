@@ -8,7 +8,7 @@ import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.data.job.Job;
-import de.tum.bgu.msm.data.jobTypes.kagawa.JobTypeTak;
+import de.tum.bgu.msm.data.jobTypes.JobTypeTak;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.mito.MitoDataConverter;
 import de.tum.bgu.msm.schools.DataContainerWithSchoolsImpl;
@@ -16,7 +16,8 @@ import de.tum.bgu.msm.schools.PersonWithSchool;
 import de.tum.bgu.msm.schools.School;
 import de.tum.bgu.msm.schools.SchoolImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 
@@ -24,11 +25,11 @@ import java.util.Map;
 
 public class MitoDataConverterTak implements MitoDataConverter {
 
-    private final static Logger logger = Logger.getLogger(MitoDataConverterTak.class);
+    private final static Logger logger = LogManager.getLogger(MitoDataConverterTak.class);
 
     @Override
     public DataSet convertData(DataContainer dataContainer) {
-        DataSet dataSet = new DataSet();
+        DataSet dataSet = new DataSetImpl();
         convertZones(dataSet, dataContainer);
         fillMitoZoneEmployees(dataSet, dataContainer);
         convertSchools(dataSet, dataContainer);
@@ -79,7 +80,7 @@ public class MitoDataConverterTak implements MitoDataConverter {
             MitoHousehold household = new MitoHousehold(
                     siloHousehold.getId(),
                     HouseholdUtil.getAnnualHhIncome(siloHousehold) / 12,
-                    siloHousehold.getAutos());
+                    siloHousehold.getAutos(),true);
             household.setHomeZone(zone);
 
             Coordinate coordinate;
@@ -96,7 +97,7 @@ public class MitoDataConverterTak implements MitoDataConverter {
                 zone.addHousehold();
                 dataSet.addHousehold(household);
                 for (Person person : siloHousehold.getPersons().values()) {
-                    MitoPerson mitoPerson = convertToMitoPp(person, dataSet, dataContainer);
+                    MitoPerson mitoPerson = convertToMitoPp(person, household, dataSet, dataContainer);
                     household.addPerson(mitoPerson);
                     dataSet.addPerson(mitoPerson);
                 }
@@ -111,7 +112,7 @@ public class MitoDataConverterTak implements MitoDataConverter {
     }
 
 
-    private MitoPerson convertToMitoPp(Person person, DataSet dataSet, DataContainer dataContainer) {
+    private MitoPerson convertToMitoPp(Person person, MitoHousehold household, DataSet dataSet, DataContainer dataContainer) {
         final MitoGender mitoGender = MitoGender.valueOf(person.getGender().name());
         final MitoOccupationStatus mitoOccupationStatus = MitoOccupationStatus.valueOf(person.getOccupation().getCode());
 
@@ -141,8 +142,9 @@ public class MitoDataConverterTak implements MitoDataConverter {
                 throw new RuntimeException("Unrecognized Occupation!");
         }
 
-        return new MitoPerson(
+        return new MitoPersonImpl(
                 person.getId(),
+                household,
                 mitoOccupationStatus,
                 mitoOccupation,
                 person.getAge(),

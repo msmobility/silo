@@ -25,7 +25,8 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.germany.io.*;
 import de.tum.bgu.msm.syntheticPopulationGenerator.germany.preparation.ReadZonalData;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -42,7 +43,7 @@ import java.util.Map;
  */
 public class SyntheticPopGermanyMitoByState implements SyntheticPopI {
 
-    public static final Logger logger = Logger.getLogger(SyntheticPopGermanyMitoByState.class);
+    public static final Logger logger = LogManager.getLogger(SyntheticPopGermanyMitoByState.class);
     private final DataSetSynPop dataSetSynPop;
     private Properties properties;
 

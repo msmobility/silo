@@ -47,6 +47,7 @@ public class TransportModelPropertiesModule {
     public final boolean onlySimulateCarTrips;
 
     public final boolean includeAccessEgress;
+    public final String matsimInitialPlansFile;
 
     public enum TransportModelIdentifier {
         MITO_MATSIM, MATSIM, NONE;
@@ -58,6 +59,13 @@ public class TransportModelPropertiesModule {
     public enum TravelTimeImplIdentifier {
         MATSIM, SKIM;
     }
+
+    /**
+     * Scale factor for MATSim transport model.
+     */
+    public final int matsimIteration;
+
+    public final String[] matsimNetworkModes;
 
     public TransportModelPropertiesModule(ResourceBundle bundle) {
         PropertiesUtil.newPropertySubmodule("Transport model properties");
@@ -85,11 +93,19 @@ public class TransportModelPropertiesModule {
         PropertiesUtil.newPropertySubmodule("MATSim -- Scale factor for simulated MATSim populations");
         matsimScaleFactor = PropertiesUtil.getDoubleProperty(bundle, "matsim.scale.factor", 1.);
 
+        PropertiesUtil.newPropertySubmodule("MATSim -- Iteration for simulated MATSim populations");
+        matsimIteration = PropertiesUtil.getIntProperty(bundle, "matsim.iterations", 50);
+        PropertiesUtil.newPropertySubmodule("MATSim -- network modes");
+        matsimNetworkModes = PropertiesUtil.getStringPropertyArray(bundle, "matsim.network.modes", new String[]{"autoDriver"});
+
         PropertiesUtil.newPropertySubmodule("MATSim - Only simulate car trips");
         onlySimulateCarTrips = PropertiesUtil.getBooleanProperty(bundle, "matsim.simulate.car.trips.only", true);
 
         PropertiesUtil.newPropertySubmodule("MATSim - Include access and egress walks for all modes");
         includeAccessEgress = PropertiesUtil.getBooleanProperty(bundle, "matsim.include.access.egress", false);
+
+        matsimInitialPlansFile = PropertiesUtil.getStringProperty(bundle, "matsim.initial.plans", null);
+
     }
 
 }

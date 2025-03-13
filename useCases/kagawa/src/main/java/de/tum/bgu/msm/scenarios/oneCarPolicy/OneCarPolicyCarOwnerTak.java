@@ -8,7 +8,8 @@ import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Random;
 
@@ -32,7 +33,7 @@ public class OneCarPolicyCarOwnerTak extends AbstractModel implements ModelUpdat
     private static final double[] betaLicensePlus = {1.8213, 0.};
     private static final double[] betaChangeResidence = {1.1440, 0.9055};
 
-    private static Logger logger = Logger.getLogger(OneCarPolicyCarOwnerTak.class);
+    private static Logger logger = LogManager.getLogger(OneCarPolicyCarOwnerTak.class);
 
     /**
      *  [previousCars][hhSize+][hhSize-][income+][income-][license+][changeRes][three probabilities]

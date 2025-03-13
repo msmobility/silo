@@ -1,8 +1,8 @@
 package de.tum.bgu.msm.data;
 
 import de.tum.bgu.msm.data.development.Development;
+import org.geotools.api.feature.simple.SimpleFeature;
 import org.locationtech.jts.geom.Coordinate;
-import org.opengis.feature.simple.SimpleFeature;
 
 import java.util.Map;
 import java.util.Random;
@@ -27,4 +27,6 @@ public interface Zone extends Location, Id {
     void setDevelopment(Development development);
 
     Map<String, Object> getAttributes();
+
+    Coordinate getPopCentroidCoord();
 }

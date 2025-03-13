@@ -4,7 +4,8 @@ import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.matsim.MatsimScenarioAssembler;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.population.PopulationWriter;
 import org.matsim.core.config.Config;
@@ -20,7 +21,7 @@ import java.util.Objects;
 
 public class MatsimPopulationConeversorAndWriter implements ModelUpdateListener {
 
-    private Logger logger = Logger.getLogger(MatsimPopulationConeversorAndWriter.class);
+    private Logger logger = LogManager.getLogger(MatsimPopulationConeversorAndWriter.class);
 
     private final DataContainer dataContainer;
     private MatsimScenarioAssembler scenarioAssembler;

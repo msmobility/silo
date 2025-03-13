@@ -6,15 +6,16 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.ModuleSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.geotools.api.feature.simple.SimpleFeature;
 import org.matsim.core.utils.gis.ShapeFileReader;
-import org.opengis.feature.simple.SimpleFeature;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class Microlocation extends ModuleSynPop {
-    private static final Logger logger = Logger.getLogger(Microlocation.class);
+    private static final Logger logger = LogManager.getLogger(Microlocation.class);
     private final DataContainerWithSchools dataContainer;
 
     public Microlocation(DataSetSynPop dataSetSynPop, DataContainerWithSchools dataContainer){

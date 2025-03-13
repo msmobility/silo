@@ -5,13 +5,13 @@ import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.development.Development;
 import de.tum.bgu.msm.utils.SeededRandomPointsBuilder;
 import de.tum.bgu.msm.utils.SiloUtil;
+import org.geotools.api.feature.simple.SimpleFeature;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.shape.random.RandomPointsBuilder;
 import org.matsim.core.utils.geometry.geotools.MGC;
-import org.opengis.feature.simple.SimpleFeature;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -104,5 +104,10 @@ public class ZoneImpl implements Zone {
 
     public Map<String, Object> getAttributes() {
         return attributes;
+    }
+
+    @Override
+    public Coordinate getPopCentroidCoord() {
+        return null;
     }
 }

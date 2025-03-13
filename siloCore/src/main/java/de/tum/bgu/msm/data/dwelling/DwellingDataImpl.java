@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class DwellingDataImpl implements DwellingData {
 
+
     private final Map<Integer, Dwelling> dwellings = new ConcurrentHashMap<>();
 
     @Override
@@ -25,6 +26,9 @@ public class DwellingDataImpl implements DwellingData {
 
     @Override
     public void addDwelling(Dwelling dwelling) {
+        if(dwellings.get(dwelling.getId())!=null){
+
+        }
         dwellings.put(dwelling.getId(), dwelling);
     }
 }

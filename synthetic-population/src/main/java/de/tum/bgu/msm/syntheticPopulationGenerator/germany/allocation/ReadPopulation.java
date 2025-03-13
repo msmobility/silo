@@ -12,7 +12,8 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.germany.io.HouseholdReaderMuc
 import de.tum.bgu.msm.syntheticPopulationGenerator.germany.io.PersonReaderMucMito;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.io.BufferedReader;
@@ -21,7 +22,7 @@ import java.io.IOException;
 
 public class ReadPopulation {
 
-    private static final Logger logger = Logger.getLogger(ReadPopulation.class);
+    private static final Logger logger = LogManager.getLogger(ReadPopulation.class);
     private final DataContainer dataContainer;
 
     ReadPopulation(DataContainer dataContainer){
