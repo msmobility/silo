@@ -44,7 +44,7 @@ public class SyntheticPopMCR implements SyntheticPopI {
         createDirectoryForOutput();
 
         DataContainerWithSchools dataContainer = DataBuilder.getModelDataForMuc(properties, null);
-        GeoDataReader reader =  new GeoDataReaderManchester(dataContainer.getGeoData());
+        GeoDataReader reader =  new GeoDataReaderManchester(dataContainer);
         String pathShp = PropertiesSynPop.get().main.zoneShapeFile;
         String fileName = PropertiesSynPop.get().main.zoneFilename;
         reader.readZoneCsv(fileName);

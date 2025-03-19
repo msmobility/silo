@@ -1,7 +1,8 @@
 package de.tum.bgu.msm.io;
 
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.ZoneMCR;
+import de.tum.bgu.msm.health.data.ActivityLocation;
+import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -43,8 +44,8 @@ public class PoiReader {
                 double coordX = Double.parseDouble(lineElements[posCoordX]);
                 double coordY = Double.parseDouble(lineElements[posCoordY]);
 
-                ZoneMCR zone = (ZoneMCR) dataContainer.getGeoData().getZones().get(zoneId);
-                zone.addMicroDestinations(id, new Coordinate(coordX, coordY));
+                ActivityLocation activityLocation = new ActivityLocation(("poi"+id),new Coordinate(coordX,coordY));
+                ((DataContainerHealth) dataContainer).getActivityLocations().put(("poi"+id),activityLocation);
             }
 
         } catch (IOException e) {

@@ -45,10 +45,6 @@ public class LinkInfo {
         this.exposure2Pollutant2TimeBin = exposure2Pollutant2TimeBin;
     }
 
-    public void clearAccidentInfo(){
-        severeFatalCasualityExposureByAccidentTypeByTime.clear();
-    }
-
     public OpenIntFloatHashMap getNoiseLevel2TimeBin() {
         return noiseLevel2TimeBin;
     }
@@ -63,5 +59,11 @@ public class LinkInfo {
 
     public void setNdvi(double ndvi) {
         this.ndvi = ndvi;
+    }
+
+    public void reset(){
+        severeFatalCasualityExposureByAccidentTypeByTime.clear();
+        exposure2Pollutant2TimeBin.clear();
+        noiseLevel2TimeBin.clear();
     }
 }

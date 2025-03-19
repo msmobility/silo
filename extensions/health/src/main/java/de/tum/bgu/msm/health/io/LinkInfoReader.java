@@ -25,8 +25,7 @@ public class LinkInfoReader {
 
     private final static Logger logger = LogManager.getLogger(LinkInfoReader.class);
 
-    public void readConcentrationData(DataContainerHealth dataContainer, String outputDirectory, Day day, String sourceMode){
-        String path = outputDirectory + "linkConcentration_" + day +  "_" + sourceMode + ".csv";
+    public void readConcentrationData(DataContainerHealth dataContainer, String path){
 
         logger.info("Reading link concentration data from csv file");
 
@@ -63,7 +62,8 @@ public class LinkInfoReader {
                     exposureByTimeBin.put(startTime/3600, value);
                     exposure2Pollutant2TimeBin.put(pollutant, exposureByTimeBin);
                 }else {
-                    exposure2Pollutant2TimeBin.get(pollutant).put(startTime/3600, value);
+                    float oldValue = exposure2Pollutant2TimeBin.get(pollutant).get(startTime/3600);
+                    exposure2Pollutant2TimeBin.get(pollutant).put(startTime/3600, oldValue + value);
                 }
             }
         } catch (IOException e) {
@@ -112,7 +112,7 @@ public class LinkInfoReader {
                         continue;
                     }
 
-                    dataContainer.getLinkInfo().get(linkId).getNoiseLevel2TimeBin().put((int) time/3600, value);
+                    dataContainer.getLinkInfo().get(linkId).getNoiseLevel2TimeBin().put((int) (time/3600 - 1), value);
                 }
             } catch (IOException e) {
                 logger.fatal("IO Exception caught reading link noise emission file: " + path);

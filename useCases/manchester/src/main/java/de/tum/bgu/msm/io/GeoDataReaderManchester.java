@@ -1,11 +1,13 @@
 package de.tum.bgu.msm.io;
 
 import de.tum.bgu.msm.common.datafile.TableDataSet;
+import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.AreaTypes;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.ZoneMCR;
-import de.tum.bgu.msm.data.geo.ZoneImpl;
+import de.tum.bgu.msm.health.data.ActivityLocation;
+import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.io.input.GeoDataReader;
 
 
@@ -24,12 +26,14 @@ public class GeoDataReaderManchester implements GeoDataReader {
     private static Logger logger = LogManager.getLogger(GeoDataReaderManchester.class);
 
     private GeoData geoDataMcr;
+    private DataContainer dataContainer;
 
     private final String SHAPE_IDENTIFIER = "id";
     private final String ZONE_ID_COLUMN = "oaID";
 
-    public GeoDataReaderManchester(GeoData geoDataMcr) {
-        this.geoDataMcr = geoDataMcr;
+    public GeoDataReaderManchester(DataContainer dataContainer) {
+        this.geoDataMcr = dataContainer.getGeoData();
+        this.dataContainer = dataContainer;
     }
 
     @Override
@@ -61,6 +65,8 @@ public class GeoDataReaderManchester implements GeoDataReader {
             zone.setLsoaCode(lsoaCode[i]);
             zone.setImd10(imd10[i]);
             geoDataMcr.addZone(zone);
+            ActivityLocation activityLocation = new ActivityLocation(("zone"+zone.getZoneId()),zone.getPopCentroidCoord());
+            ((DataContainerHealth) dataContainer).getActivityLocations().put(("zone"+zone.getZoneId()),activityLocation);
         }
     }
 
