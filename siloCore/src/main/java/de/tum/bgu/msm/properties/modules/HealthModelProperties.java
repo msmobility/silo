@@ -14,7 +14,6 @@ public class HealthModelProperties {
 
     public final double matsim_scale_factor_car;
     public final double matsim_scale_factor_bikePed;
-    public final String activeModeNetworkFile;
     public final double MAX_WALKSPEED;
     public final double MAX_CYCLESPEED;
     public final String COLD_EMISSION_FILE;
@@ -23,7 +22,6 @@ public class HealthModelProperties {
     public final int HEALTH_MODEL_INTERVAL;
     public final double BACKGROUND_PM25;
     public final double BACKGROUND_NO2;
-    public final String network_for_airPollutant_model ;
     public final String basePath;
     public final String diseaseLookupTable;
     public final String avgSpeedFile;
@@ -35,6 +33,8 @@ public class HealthModelProperties {
     public final String microBuildingFile;
     public final String noiseBarriersFile;
     public final String sportPAmodel;
+    public String busLinkConcentration;
+    public String busLocationConcentration;
 
 
     public HealthModelProperties(ResourceBundle bundle) {
@@ -48,8 +48,6 @@ public class HealthModelProperties {
 
         matsim_scale_factor_bikePed = PropertiesUtil.getDoubleProperty(bundle, "matsim.scale.factor.bikePed", 1.0);
 
-        activeModeNetworkFile = PropertiesUtil.getStringProperty(bundle, "matsim.network.activeMode", "input/mito/trafficAssignment/network_active_cleaned.xml");
-
         MAX_WALKSPEED = PropertiesUtil.getDoubleProperty(bundle, "max.walk.speed.kph", 5.);
 
         MAX_CYCLESPEED = PropertiesUtil.getDoubleProperty(bundle, "max.cycle.speed.kph", 15.);
@@ -61,8 +59,6 @@ public class HealthModelProperties {
 
         BACKGROUND_PM25 = PropertiesUtil.getDoubleProperty(bundle, "background.pm25", 9.);//default is munich rates
         BACKGROUND_NO2 = PropertiesUtil.getDoubleProperty(bundle, "background.no2", 17.6);
-
-        network_for_airPollutant_model = PropertiesUtil.getStringProperty(bundle, "matsim.network.for.air.pollutant.model", "input/mito/trafficAssignment/network_hbefa.xml");
 
         basePath = PropertiesUtil.getStringProperty(bundle, "healthData.basePath", "input/health/");
 
@@ -84,6 +80,10 @@ public class HealthModelProperties {
         noiseBarriersFile = PropertiesUtil.getStringProperty(bundle, "noise.barriers.file", "input/buildingShapefile/mrcBuildings.geojson");
 
         sportPAmodel = PropertiesUtil.getStringProperty(bundle, "sportPA.model", "input/health/sportPAmodel.csv");
+
+        busLinkConcentration = PropertiesUtil.getStringProperty(bundle, "bus.link.concentration", "input/mito/trafficAssignment/ptSimulation/linkConcentration_bus.csv");
+
+        busLocationConcentration = PropertiesUtil.getStringProperty(bundle, "bus.location.concentration", "input/mito/trafficAssignment/ptSimulation/locationConcentration_bus.csv");
 
     }
 

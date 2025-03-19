@@ -376,9 +376,6 @@ public final class MatsimTransportModelMCRHealth implements TransportModel {
     }
 
     private void fillBikePedConfig(Config bikePedConfig, int year, Day day) {
-        // set active mode networks
-        bikePedConfig.network().setInputFile(properties.main.baseDirectory + properties.healthData.activeModeNetworkFile);
-
         // set input file and basic controler settings
         final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName;
         String outputDirectory = outputDirectoryRoot + "/matsim/" + year + "/" + day + "/bikePed/";
@@ -554,7 +551,6 @@ public final class MatsimTransportModelMCRHealth implements TransportModel {
         config.routing().setRoutingRandomness(0.);
 
         // Set scale factor
-        //TODO: check with Mahsa and Corin, if we need scale down again, or it is already incorperated in network
         config.qsim().setFlowCapFactor(properties.main.scaleFactor * properties.healthData.matsim_scale_factor_car);
         config.qsim().setStorageCapFactor(properties.main.scaleFactor * properties.healthData.matsim_scale_factor_car);
         logger.info("Flow Cap Factor for car/truck: " + config.qsim().getFlowCapFactor());
