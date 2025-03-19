@@ -16,7 +16,7 @@ public class PollutionExposure {
     private static final int SLEEP_START = 23;
     private static final int SLEEP_END = 7;
 
-    public static double getHomeExposurePm25(double minutesAtHome, int dayHour ,double zonalIncremental) {
+    public static double getHomeExposurePm25(double minutesAtHome, int dayHour ,double locationIncremental) {
         double minutesResting = 0.;
         double minutesSleeping = 0.;
 
@@ -25,10 +25,10 @@ public class PollutionExposure {
         } else {
             minutesResting = minutesAtHome;
         }
-        return (BACKGROUND_PM25 + zonalIncremental) * (REST_VENTILATION_RATE * minutesResting + SLEEP_VENTILATION_RATE * minutesSleeping) / 60.;
+        return (BACKGROUND_PM25 + locationIncremental) * (REST_VENTILATION_RATE * minutesResting + SLEEP_VENTILATION_RATE * minutesSleeping) / 60.;
     }
 
-    public static double getHomeExposureNo2(double minutesAtHome, int dayHour, double zonalIncremental) {
+    public static double getHomeExposureNo2(double minutesAtHome, int dayHour, double locationIncremental) {
         double minutesResting = 0.;
         double minutesSleeping = 0.;
 
@@ -38,15 +38,15 @@ public class PollutionExposure {
             minutesResting = minutesAtHome;
         }
 
-        return (BACKGROUND_NO2 + zonalIncremental) * (REST_VENTILATION_RATE * minutesResting + SLEEP_VENTILATION_RATE * minutesSleeping) / 60.;
+        return (BACKGROUND_NO2 + locationIncremental) * (REST_VENTILATION_RATE * minutesResting + SLEEP_VENTILATION_RATE * minutesSleeping) / 60.;
     }
 
-    public static double getActivityExposurePm25(double activityMinutes, double zonalIncremental) {
-        return (BACKGROUND_PM25 + zonalIncremental) * REST_VENTILATION_RATE * activityMinutes / 60.;
+    public static double getActivityExposurePm25(double activityMinutes, double locationIncremental) {
+        return (BACKGROUND_PM25 + locationIncremental) * REST_VENTILATION_RATE * activityMinutes / 60.;
     }
 
-    public static double getActivityExposureNo2(double activityMinutes,double zonalIncremental) {
-        return (BACKGROUND_NO2 + zonalIncremental)  * REST_VENTILATION_RATE * activityMinutes / 60.;
+    public static double getActivityExposureNo2(double activityMinutes,double locationIncremental) {
+        return (BACKGROUND_NO2 + locationIncremental)  * REST_VENTILATION_RATE * activityMinutes / 60.;
     }
 
     // Link Exposures

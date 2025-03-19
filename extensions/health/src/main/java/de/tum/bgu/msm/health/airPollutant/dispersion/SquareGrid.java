@@ -42,8 +42,8 @@ public final class SquareGrid<T> extends Grid<T> {
         super(network, centroidDistance, initialValueSupplier, bounds);
     }
 
-    public SquareGrid(Network network, List<Coordinate> receiverPoints, final double centroidDistance, final Supplier<T> initialValueSupplier, final PreparedGeometry bounds) {
-        super(network, receiverPoints, centroidDistance, initialValueSupplier, bounds);
+    public SquareGrid(List<Coordinate> receiverPoints, final double centroidDistance, final Supplier<T> initialValueSupplier, final PreparedGeometry bounds) {
+        super(receiverPoints, centroidDistance, initialValueSupplier, bounds);
     }
     @Override
     double getMinX(double forY) {
