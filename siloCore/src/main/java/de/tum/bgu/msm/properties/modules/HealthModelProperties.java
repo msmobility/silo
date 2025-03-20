@@ -33,8 +33,15 @@ public class HealthModelProperties {
     public final String microBuildingFile;
     public final String noiseBarriersFile;
     public final String sportPAmodel;
-    public String busLinkConcentration;
-    public String busLocationConcentration;
+    public final String busLinkConcentration;
+    public final String busLocationConcentration;
+    public final String ptPeakSkim;
+    public final String ptAccessTimeMatrix;
+    public final String ptEgressTimeMatrix;
+    public final String ptTotalTravelTimeMatrix;
+    public final String ptBusTimeShareMatrix;
+    public final double DEFAULT_ROAD_TRAFFIC_INCREMENTAL_PM25;
+    public final double DEFAULT_ROAD_TRAFFIC_INCREMENTAL_NO2;
 
 
     public HealthModelProperties(ResourceBundle bundle) {
@@ -57,8 +64,14 @@ public class HealthModelProperties {
 
         HEALTH_MODEL_INTERVAL = PropertiesUtil.getIntProperty(bundle, "health.model.interval", 2);
 
-        BACKGROUND_PM25 = PropertiesUtil.getDoubleProperty(bundle, "background.pm25", 9.);//default is munich rates
-        BACKGROUND_NO2 = PropertiesUtil.getDoubleProperty(bundle, "background.no2", 17.6);
+        BACKGROUND_PM25 = PropertiesUtil.getDoubleProperty(bundle, "background.pm25", 11.6);
+        BACKGROUND_NO2 = PropertiesUtil.getDoubleProperty(bundle, "background.no2", 17.3);
+
+        //TODO: no PM 2.5 urban traffic site is found in Manchester, so no reference road incremental.
+        DEFAULT_ROAD_TRAFFIC_INCREMENTAL_PM25 = PropertiesUtil.getDoubleProperty(bundle, "road.traffic.incremental.pm25", 0.);
+        //Bury Whitefield Roadside is defined as reference urban traffic site, annual average NO2 is 25.1 at this site
+        // reference road traffic incremental NO2 = 25.1 - 17.3
+        DEFAULT_ROAD_TRAFFIC_INCREMENTAL_NO2 = PropertiesUtil.getDoubleProperty(bundle, "road.traffic.incremental.no2", 7.8);
 
         basePath = PropertiesUtil.getStringProperty(bundle, "healthData.basePath", "input/health/");
 
@@ -85,6 +98,15 @@ public class HealthModelProperties {
 
         busLocationConcentration = PropertiesUtil.getStringProperty(bundle, "bus.location.concentration", "input/mito/trafficAssignment/ptSimulation/locationConcentration_bus.csv");
 
+        ptPeakSkim = PropertiesUtil.getStringProperty(bundle, "pt.peak.time", "skims/pt.omx");
+
+        ptTotalTravelTimeMatrix = PropertiesUtil.getStringProperty(bundle, "pt.total.travel.time.matrix.time", "travelTime");
+
+        ptAccessTimeMatrix = PropertiesUtil.getStringProperty(bundle, "pt.access.time.matrix.time", "accessTime");
+
+        ptEgressTimeMatrix = PropertiesUtil.getStringProperty(bundle, "pt.egress.time.matrix.time", "egressTime");
+
+        ptBusTimeShareMatrix = PropertiesUtil.getStringProperty(bundle, "pt.bus.time.share.matrix.time", "busTimeShare");
     }
 
 }

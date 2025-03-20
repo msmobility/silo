@@ -33,7 +33,7 @@ public class LinearInterpolation {
             }
         }
 
-        throw new IllegalArgumentException("Unexpected error: xout is not handled.");
+        throw new IllegalArgumentException("Unexpected error: xout: " + xout + " is not handled.");
     }
 
     /*public static void main(String[] args) {

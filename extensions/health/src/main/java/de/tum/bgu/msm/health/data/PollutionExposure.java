@@ -13,8 +13,8 @@ public class PollutionExposure {
     private static final double BASE_LEVEL_INHALATION_RATE = 1.;  // from METAHIT
     private static final double SLEEP_VENTILATION_RATE = 0.27; // from Tainio et al., 2016
     private static final double REST_VENTILATION_RATE = 0.61; // from Tainio et al., 2016
-    private static final int SLEEP_START = 23;
-    private static final int SLEEP_END = 7;
+    private static final int SLEEP_START = 24; //aligned with noise night penalty
+    private static final int SLEEP_END = 7;//aligned with noise night penalty
 
     public static double getHomeExposurePm25(double minutesAtHome, int dayHour ,double locationIncremental) {
         double minutesResting = 0.;

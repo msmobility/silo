@@ -132,6 +132,8 @@ public class DataBuilderHealth {
         }
         dataContainer.setLinkInfo(linkInfoMap);
 
+        new PtSkimsReaderMCR(dataContainer).read();
+
         dataContainer.setAvgSpeeds(new DefaultSpeedReader().readData(properties.main.baseDirectory + properties.healthData.avgSpeedFile));
         dataContainer.setHealthTransitionData(new HealthTransitionTableReader().readData(dataContainer,properties.main.baseDirectory + properties.healthData.healthTransitionData));
         DoseResponseLookupReader doseResponseReader = new DoseResponseLookupReader();
