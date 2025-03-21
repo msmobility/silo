@@ -854,10 +854,10 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
             float sumHour = 0.f;
             float sumNightHour = 0.f;
-            float weightedSumExposurePM25 = 0.f;
-            float weightedSumExposureNo2 = 0.f;
-            float weightedSumExposureNoise = 0.f;
-            float weightedSumExposureNoiseNight = 0.f;
+            float sumExposurePM25_normalized = 0.f;
+            float sumExposureNo2_normalized = 0.f;
+            float sumExposureNoise = 0.f;
+            float sumExposureNoiseNight = 0.f;
 
             Map<String, float[]> weeklyPollutionExposures = ((PersonHealth) person).getWeeklyPollutionExposures();
             float[] weeklyNoiseExposureByHour = ((PersonHealth) person).getWeeklyNoiseExposureByHour();
@@ -865,33 +865,43 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
 
             for (int weekHour = 0;  weekHour < hourOccupied.length; weekHour++) {
+                int dayHour = weekHour % 24;
 
                 sumHour += Math.max(1, hourOccupied[weekHour]);
-                weightedSumExposurePM25 += weeklyPollutionExposures.get("pm2.5")[weekHour]/Math.max(1, hourOccupied[weekHour]);
-                weightedSumExposureNo2 += weeklyPollutionExposures.get("no2")[weekHour]/Math.max(1, hourOccupied[weekHour]);
 
-                int dayHour = weekHour % 24;
+                double min_ventilation_rate = 0.;
+                if (dayHour <= 7  || dayHour > 23 ){
+                    //"minimum"  ventilation rate = 0.27 (v_sleep)
+                    min_ventilation_rate = 0.27;
+                } else {
+                    //"minimum"  ventilation rate = 0.61 (v_rest)
+                    min_ventilation_rate = 0.61;
+                }
+
+                sumExposurePM25_normalized += weeklyPollutionExposures.get("pm2.5")[weekHour]/Math.max(1, hourOccupied[weekHour])/min_ventilation_rate;
+                sumExposureNo2_normalized += weeklyPollutionExposures.get("no2")[weekHour]/Math.max(1, hourOccupied[weekHour])/min_ventilation_rate;
+
+
                 float hourlyNoiseLevel = (float) NoiseMetrics.getHourlyNoiseLevel(dayHour, (weeklyNoiseExposureByHour[weekHour]/Math.max(1, hourOccupied[weekHour])));
-                weightedSumExposureNoise += hourlyNoiseLevel;
+                sumExposureNoise += hourlyNoiseLevel;
 
                 if (dayHour <= 7  || dayHour > 23 ){
                     sumNightHour += Math.max(1, hourOccupied[weekHour]);
-                    weightedSumExposureNoiseNight += hourlyNoiseLevel;
+                    sumExposureNoiseNight += hourlyNoiseLevel;
                 }
             }
 
 
-            // todo: make not hardcoded...
-            // 1.49/3 is the "minimum" weekly ventilation rate (8hr sleep + 16hr rest per day)
+
             ((PersonHealth) person).setWeeklyExposureByPollutantNormalised(
                     Map.of(
-                            "pm2.5", (float) (weightedSumExposurePM25 / (sumHour * (1.49/3.))),
-                            "no2", (float) (weightedSumExposureNo2 / (sumHour * (1.49/3.)))
+                            "pm2.5", (float) (sumExposurePM25_normalized / 168.),
+                            "no2", (float) (sumExposureNo2_normalized / 168.)
                     )
             );
 
-            float Lden = (float) (10 * Math.log10(weightedSumExposureNoise / sumHour));
-            float Lnight = (float) (10 * Math.log10(weightedSumExposureNoiseNight / sumNightHour));
+            float Lden = (float) (10 * Math.log10(sumExposureNoise / sumHour));
+            float Lnight = (float) (10 * Math.log10(sumExposureNoiseNight / sumNightHour));
             ((PersonHealth) person).setWeeklyNoiseExposuresNormalised (Lden);
             ((PersonHealthMCR) person).setNoiseHighAnnoyedPercentage((float) NoiseMetrics.getHighAnnoyedPercentage(Lden));
             ((PersonHealthMCR) person).setNoiseHighSleepDisturbancePercentage((float) NoiseMetrics.getHighSleepDisturbancePercentage(Lnight));
