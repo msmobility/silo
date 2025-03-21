@@ -125,38 +125,6 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
 
     }
 
-    private void readBuidlingFile() {
-        String fileName = properties.healthData.microBuildingFile;
-
-        String recString = "";
-        int recCount = 0;
-        try {
-            BufferedReader in = new BufferedReader(new FileReader(fileName));
-            recString = in.readLine();
-
-            // read header
-            String[] header = recString.split(",");
-            int posId = SiloUtil.findPositionInArray("index", header);
-            int posCoordX = SiloUtil.findPositionInArray("coordX", header);
-            int posCoordY = SiloUtil.findPositionInArray("coordY", header);
-
-            // read line
-            while ((recString = in.readLine()) != null) {
-                    recCount++;
-                    String[] lineElements = recString.split(",");
-                    String index = lineElements[posId];
-                    double xCoordinate = Double.parseDouble(lineElements[posCoordX]);
-                    double yCoordinate = Double.parseDouble(lineElements[posCoordY]);
-
-                    }
-
-        } catch (IOException e) {
-            logger.fatal("IO Exception caught reading dwelling file: " + fileName, new RuntimeException());
-            logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">", new RuntimeException());
-        }
-        logger.info("Finished reading " + recCount + " dwellings.");
-    }
-
     private void writeNoiseImission(Day day) {
         int counter65 = 0;
         int counter55 = 0;
