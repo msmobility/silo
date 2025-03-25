@@ -81,7 +81,7 @@ public class HealthModelProperties {
         bus_network = PropertiesUtil.getStringProperty(bundle, "matsim.network.bus", "input/mito/trafficAssignment/network_transit_hbefa.xml");
 
         microBuildingFile = PropertiesUtil.getStringProperty(bundle, "micro.destination.attraction", "microData/microDestinationAttraction.csv");
-        noiseBarriersFile = PropertiesUtil.getStringProperty(bundle, "noise.barriers.file", "input/buildingShapefile/mrcBuildings.geojson");
+        noiseBarriersFile = PropertiesUtil.getStringProperty(bundle, "noise.barriers.file", "input/buildingShapefile/melBuildings.geojson");
 
         sportPAmodel = PropertiesUtil.getStringProperty(bundle, "sportPA.model", "input/health/sportPAmodel.csv");
 
