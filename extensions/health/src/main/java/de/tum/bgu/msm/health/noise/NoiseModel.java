@@ -116,8 +116,8 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
         noiseParameters.setConsiderNoiseBarriers(true);
         noiseParameters.setConsiderNoiseReflection(false);
         noiseParameters.setNoiseBarriersFilePath(properties.healthData.noiseBarriersFile);
-        noiseParameters.setNoiseBarriersSourceCRS("EPSG:27700");
-        config.global().setCoordinateSystem("EPSG:27700");
+        noiseParameters.setNoiseBarriersSourceCRS("EPSG:28355");
+        config.global().setCoordinateSystem("EPSG:28355");
         config.addModule(noiseParameters);
 
         NoiseOfflineCalculation noiseOfflineCalculation = new NoiseOfflineCalculation(scenario, outputDirectoryRoot);
