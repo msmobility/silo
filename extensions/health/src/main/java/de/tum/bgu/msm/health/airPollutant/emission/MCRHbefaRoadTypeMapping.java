@@ -2,27 +2,18 @@ package de.tum.bgu.msm.health.airPollutant.emission;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.api.core.v01.network.Network;
-import org.matsim.api.core.v01.network.NetworkWriter;
-import org.matsim.core.config.Config;
-import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.contrib.emissions.HbefaRoadTypeMapping;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class AssignHbefaRoadTypes {
+public class MCRHbefaRoadTypeMapping extends HbefaRoadTypeMapping {
 
-    private static final Logger logger = LogManager.getLogger(AssignHbefaRoadTypes.class);
+    private static final Logger logger = LogManager.getLogger(MCRHbefaRoadTypeMapping.class);
     private static final String OSMTYPE_NAME = "type";
     private static final List<String> minorRoadTypes = Arrays.asList("residential","access","service","living","track",
-            "unclassified","pedestrian","path","footway","bridleway","bus","cycleway","road");
-//    static String inputFile = "/home/qin/models/manchester/input/mito/trafficAssignment/network_car_calibrated.xml";
-//    static String outputFile = "/home/qin/models/manchester/input/mito/trafficAssignment/network_car_calibrated_hbefa.xml";
-    static String inputFile = "/home/qin/models/manchester/input/mito/trafficAssignment/network_bus.xml";
-    static String outputFile = "/home/qin/models/manchester/input/mito/trafficAssignment/network_bus_hbefa.xml";
+            "unclassified","pedestrian","path","footway","bridleway","bus","cycleway","road","steps");
 
     /**
      * handled OSM road types:
@@ -48,23 +39,8 @@ public class AssignHbefaRoadTypes {
      *    living;Access
      **/
 
-    public static void main(String args[]) {
-
-
-        Config config = ConfigUtils.createConfig();
-        config.network().setInputFile(inputFile);
-        Scenario scenario = ScenarioUtils.loadScenario(config);
-        Network network = scenario.getNetwork();
-
-        for (Link link : network.getLinks().values()) {
-            link.getAttributes().putAttribute("hbefa_road_type", getHbefaType(link));
-        }
-
-        new NetworkWriter(network).write(outputFile);
-
-    }
-
-    public static String getHbefaType(Link link) {
+    @Override
+    protected String determineHbefaType(Link link) {
 
         double freeFlowSpeed_kmh = link.getFreespeed()*3.6;
 
@@ -133,9 +109,6 @@ public class AssignHbefaRoadTypes {
             throw new RuntimeException("road type not known");
         }
 
-
-
         return "URB/" + type + "/" + speedRange;
     }
-
 }

@@ -186,7 +186,7 @@ public class EmissionSpatialDispersion {
         TimeBinMap.TimeBin<Map<Id<Link>, EmissionsByPollutant>> nextBin = this.timeBins.next();
         logger.info("creating grid for time bin with start time: " + nextBin.getStartTime());
 
-        Grid<Map<Pollutant, Float>> grid = writeAllLinksZonesToGrid(nextBin.getValue(),receiverPoints);
+        Grid<Map<Pollutant, Float>> grid = writeReceiverPointsToGrid(nextBin.getValue(),receiverPoints);
 
         return Tuple.of(nextBin.getStartTime(), grid);
     }
@@ -305,9 +305,9 @@ public class EmissionSpatialDispersion {
 
         return grid;
     }
-    private Grid<Map<Pollutant, Float>> writeAllLinksZonesToGrid(Map<Id<Link>, EmissionsByPollutant> linksWithEmissions, List<Coordinate> receiverPoints) {
+    private Grid<Map<Pollutant, Float>> writeReceiverPointsToGrid(Map<Id<Link>, EmissionsByPollutant> linksWithEmissions, List<Coordinate> receiverPoints) {
 
-        final var grid = createGrid(network, receiverPoints);
+        final var grid = createGrid(receiverPoints);
         final var counter = new AtomicInteger();
 
         // using stream's forEach here, instead of for each loop, to parallelize processing
@@ -329,16 +329,22 @@ public class EmissionSpatialDispersion {
     }
 
     private void processLink(Link link, EmissionsByPollutant emissions, Grid<Map<Pollutant, Float>> grid) {
-        // create a clipping area to speed up calculation time
-        // use 5*smoothing radius as longer distances result in a weighting of effectively 0
-        Geometry clip = factory.createPoint(new Coordinate(link.getCoord().getX(), link.getCoord().getY())).buffer(smoothingRadius * 5);
+        //TODO: This is to check and skip problematic "links" which to Node == from Node, and link length very small
+        // this never happens in the car network, but happens in the transit network
+        // so transit network need to be cleaned up!!!
+        // without skipping problematic links, it will return  weight == NaN
+        if (!link.getFromNode().getId().equals(link.getToNode().getId())) {
+            // create a clipping area to speed up calculation time
+            // use 5*smoothing radius as longer distances result in a weighting of effectively 0
+            Geometry clip = factory.createPoint(new Coordinate(link.getCoord().getX(), link.getCoord().getY())).buffer(smoothingRadius * 5);
 
-        for (var cell : grid.getCells(clip)) {
-            double normalizationFactor = grid.getCellArea() / (Math.PI * smoothingRadius * smoothingRadius);
-            double weight = SpatialInterpolation.calculateWeightFromLine(
-                    transformToCoordinate(link.getFromNode()), transformToCoordinate(link.getToNode()),
-                    cell.getCoordinate(), smoothingRadius);
-            processCell(cell, emissions, weight * normalizationFactor);
+            for (var cell : grid.getCells(clip)) {
+                double normalizationFactor = grid.getCellArea() / (Math.PI * smoothingRadius * smoothingRadius);
+                double weight = SpatialInterpolation.calculateWeightFromLine(
+                        transformToCoordinate(link.getFromNode()), transformToCoordinate(link.getToNode()),
+                        cell.getCoordinate(), smoothingRadius);
+                processCell(cell, emissions, weight * normalizationFactor);
+            }
         }
     }
 
@@ -382,12 +388,12 @@ public class EmissionSpatialDispersion {
             return new SquareGrid<>(network, gridSize, ConcurrentHashMap::new, bounds);
     }
 
-    private Grid<Map<Pollutant, Float>> createGrid(Network network, List<Coordinate> receiverPoints) {
+    private Grid<Map<Pollutant, Float>> createGrid(List<Coordinate> receiverPoints) {
 
         if (gridType == GridType.Hexagonal)
-            return new HexagonalGrid<>(network, receiverPoints, gridSize, ConcurrentHashMap::new, bounds);
+            return new HexagonalGrid<>(receiverPoints, gridSize, ConcurrentHashMap::new, bounds);
         else
-            return new SquareGrid<>(network, receiverPoints, gridSize, ConcurrentHashMap::new, bounds);
+            return new SquareGrid<>(receiverPoints, gridSize, ConcurrentHashMap::new, bounds);
     }
 
     private ObjectMapper createObjectMapper() {

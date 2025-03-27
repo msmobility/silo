@@ -35,7 +35,6 @@ public class Trip implements Id {
     private Day departureDay;
     private int departureInMinutes;
     private int departureReturnInMinutes;
-
     private double activityDuration;
 
     private int matsimLinks = 0;
@@ -93,6 +92,10 @@ public class Trip implements Id {
     }
 
     public void setDepartureReturnInMinutes(int departureReturnInMinutes) {
+        this.departureReturnInMinutes = departureReturnInMinutes;
+    }
+
+    public void updateDepartureReturnInMinutes(int departureReturnInMinutes) {
         this.departureReturnInMinutes = departureReturnInMinutes;
     }
 

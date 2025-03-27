@@ -14,7 +14,6 @@ public class ZoneMCR extends ZoneImpl {
     private final Coordinate popCentroidCoord;
     private String lsoaCode;
     private int imd10; //index of multiple deprivation 2010
-    private final Map<Integer, Coordinate> microDestinations = new HashMap<>();
 
     public ZoneMCR(int id, float area, AreaTypes.RType areaType, Coordinate coordinate, Region region) {
 
@@ -37,14 +36,6 @@ public class ZoneMCR extends ZoneImpl {
 
     public void setLsoaCode(String lsoaCode) {
         this.lsoaCode = lsoaCode;
-    }
-
-    public Map<Integer, Coordinate> getMicroDestinations() {
-        return microDestinations;
-    }
-
-    public void addMicroDestinations(int id, Coordinate coord) {
-        microDestinations.put(id, coord);
     }
 
     public int getImd10() {

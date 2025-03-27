@@ -1,19 +1,15 @@
 package de.tum.bgu.msm.health.data;
 
 import cern.colt.map.tfloat.OpenIntFloatHashMap;
-import de.tum.bgu.msm.health.injury.AccidentType;
 import org.locationtech.jts.geom.Coordinate;
-import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.emissions.Pollutant;
-import org.matsim.contrib.noise.ReceiverPoint;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class ReceiverPointInfo {
+public class ActivityLocation {
 
-    private final String rpId;
+    private final String locationId;
 
     private final Coordinate coordinate;
 
@@ -23,13 +19,16 @@ public class ReceiverPointInfo {
 
     private double ndvi;
 
-    public ReceiverPointInfo(String id, Coordinate coordinate) {
-        this.rpId = id;
+    /* for concentration at activity location, all dwelling, school and poi locations are used.
+    Additionally, we add zone centroid as receiver points when no specific activity location is defined.
+    */
+    public ActivityLocation(String id, Coordinate coordinate) {
+        this.locationId = id;
         this.coordinate = coordinate;
     }
 
-    public String getRpId() {
-        return rpId;
+    public String getLocationId() {
+        return locationId;
     }
 
     public Map<Pollutant, OpenIntFloatHashMap> getExposure2Pollutant2TimeBin() {
@@ -58,5 +57,10 @@ public class ReceiverPointInfo {
 
     public Coordinate getCoordinate() {
         return coordinate;
+    }
+
+    public void reset(){
+        exposure2Pollutant2TimeBin.clear();
+        noiseLevel2TimeBin.clear();
     }
 }

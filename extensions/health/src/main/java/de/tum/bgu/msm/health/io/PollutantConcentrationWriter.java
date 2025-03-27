@@ -3,32 +3,27 @@ package de.tum.bgu.msm.health.io;
 import cern.colt.map.tfloat.OpenIntFloatHashMap;
 import de.tum.bgu.msm.data.Day;
 import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.health.data.ActivityLocation;
 import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.health.data.LinkInfo;
 import de.tum.bgu.msm.util.MitoUtil;
-import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.emissions.Pollutant;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
 
-public class LinkInfoWriter {
+public class PollutantConcentrationWriter {
 
-    private final static Logger logger = LogManager.getLogger(LinkInfoWriter.class);
+    private final static Logger logger = LogManager.getLogger(PollutantConcentrationWriter.class);
 
-    public void writeData(DataContainerHealth dataContainer, String outputDirectory, Day day, String sourceMode){
-        writeLinkExposure(dataContainer,outputDirectory + "linkConcentration_" + day + "_" + sourceMode + ".csv");
-        writeZoneExposure(dataContainer,outputDirectory + "zoneConcentration_" + day + "_" + sourceMode + ".csv");
+    public void writeData(DataContainerHealth dataContainer, String outputDirectory, Day day){
+        writeLinkConcentration(dataContainer,outputDirectory + "linkConcentration_" + day + ".csv");
+        writeActivityLocationConcentration(dataContainer,outputDirectory + "locationConcentration_" + day + ".csv");
     }
-    private void writeLinkExposure(DataContainerHealth dataContainer, String path) {
-        logger.info("  Writing link exposure health indicators file");
+    private void writeLinkConcentration(DataContainerHealth dataContainer, String path) {
+        logger.info("  Writing link concentration file");
         PrintWriter pwh = MitoUtil.openFileForSequentialWriting(path, false);
         pwh.println("linkId,pollutant,timebin,value");
         //order of Set is not fixed
@@ -50,17 +45,16 @@ public class LinkInfoWriter {
         pwh.close();
     }
 
-    private void writeZoneExposure(DataContainerHealth dataContainer, String path) {
-        logger.info("  Writing zone exposure health indicators file");
+    private void writeActivityLocationConcentration(DataContainerHealth dataContainer, String path) {
+        logger.info("  Writing activity location concentration file");
         PrintWriter pwh = MitoUtil.openFileForSequentialWriting(path, false);
-        pwh.println("zoneId,pollutant,timebin,value");
+        pwh.println("id,pollutant,timebin,value");
         //order of Set is not fixed
-        for (Zone zone : dataContainer.getGeoData().getZones().values()) {
-            String rpId = "zone"+zone.getId();
-            Map<Pollutant, OpenIntFloatHashMap> exposure2Pollutant2TimeBin =  dataContainer.getReceiverPointInfo().get(rpId).getExposure2Pollutant2TimeBin();
+        for (ActivityLocation activityLocation : dataContainer.getActivityLocations().values()) {
+            Map<Pollutant, OpenIntFloatHashMap> exposure2Pollutant2TimeBin =  dataContainer.getActivityLocations().get(activityLocation.getLocationId()).getExposure2Pollutant2TimeBin();
             for (Pollutant pollutant : exposure2Pollutant2TimeBin.keySet()) {
                 for (int timebin : exposure2Pollutant2TimeBin.get(pollutant).keys().elements()) {
-                    pwh.print(zone.getZoneId());
+                    pwh.print(activityLocation.getLocationId());
                     pwh.print(",");
                     pwh.print(pollutant.name());
                     pwh.print(",");

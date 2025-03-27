@@ -1,10 +1,8 @@
 package de.tum.bgu.msm.health;
 
-import cern.colt.map.tfloat.OpenIntFloatHashMap;
 import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.data.MitoGender;
 import de.tum.bgu.msm.data.Mode;
-import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
@@ -15,7 +13,7 @@ import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.health.data.LinkInfo;
-import de.tum.bgu.msm.health.data.ReceiverPointInfo;
+import de.tum.bgu.msm.health.data.ActivityLocation;
 import de.tum.bgu.msm.health.disease.Diseases;
 import de.tum.bgu.msm.health.disease.HealthExposures;
 import de.tum.bgu.msm.io.NoiseDwellingWriter;
@@ -36,7 +34,7 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     private final DataContainerWithSchools delegate;
     private final Properties properties;
     private Map<Id<Link>, LinkInfo> linkInfo = new HashMap<>();
-    private Map<String, ReceiverPointInfo> receiverPointInfo = new HashMap<>();
+    private Map<String, ActivityLocation> activityLocationInfo = new HashMap<>();
     private Set<Pollutant> pollutantSet = new HashSet<>();
     private EnumMap<Mode, EnumMap<MitoGender,Map<Integer,Double>>> avgSpeeds;
     private EnumMap<Diseases, Map<String, Double>> healthTransitionData;
@@ -169,13 +167,13 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     }
 
     @Override
-    public Map<String, ReceiverPointInfo> getReceiverPointInfo() {
-        return receiverPointInfo;
+    public Map<String, ActivityLocation> getActivityLocations() {
+        return activityLocationInfo;
     }
 
     @Override
-    public void setReceiverPointInfo(Map<String, ReceiverPointInfo> receiverPointInfo) {
-        this.receiverPointInfo = receiverPointInfo;
+    public void setActivityLocations(Map<String, ActivityLocation> activityLocations) {
+        this.activityLocationInfo = activityLocations;
     }
 
     @Override
@@ -209,7 +207,7 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     @Override
     public void reset(){
         linkInfo.clear();
-        receiverPointInfo.clear();
+        activityLocationInfo.clear();
     }
 
     public Map<Integer, Map<Integer, List<String>>> getHealthDiseaseTrackerRemovedPerson() {

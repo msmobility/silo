@@ -12,6 +12,7 @@ import de.tum.bgu.msm.data.household.*;
 import de.tum.bgu.msm.data.job.*;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.health.data.LinkInfo;
 import de.tum.bgu.msm.health.diseaseModelOffline.HealthExposuresReader;
 import de.tum.bgu.msm.health.io.DefaultSpeedReader;
 import de.tum.bgu.msm.health.io.DoseResponseLookupReader;
@@ -21,7 +22,16 @@ import de.tum.bgu.msm.io.input.*;
 import de.tum.bgu.msm.matsim.MatsimTravelTimesAndCosts;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.*;
+import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.Scenario;
+import org.matsim.api.core.v01.network.Link;
+import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.config.Config;
+import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.scenario.ScenarioUtils;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class DataBuilderHealth {
 
@@ -81,15 +91,13 @@ public class DataBuilderHealth {
         return new HealthDataContainerImpl(delegate, properties);
     }
 
-    static public void read(Properties properties, HealthDataContainerImpl dataContainer){
+    static public void read(Properties properties, HealthDataContainerImpl dataContainer, Config config){
 
-        GeoDataReader reader = new GeoDataReaderManchester(dataContainer.getGeoData());
+        GeoDataReader reader = new GeoDataReaderManchester(dataContainer);
         String pathShp = properties.main.baseDirectory + properties.geo.zoneShapeFile;
         String fileName = properties.main.baseDirectory + properties.geo.zonalDataFile;
         reader.readZoneCsv(fileName);
         reader.readZoneShapefile(pathShp);
-
-        new PoiReader(dataContainer).readData(properties.main.baseDirectory + properties.geo.poiFileName);
 
         int year = properties.main.startYear;
         String householdFile = properties.main.baseDirectory + properties.householdData.householdFileName;
@@ -111,9 +119,20 @@ public class DataBuilderHealth {
         String jobsFile = properties.main.baseDirectory + properties.jobData.jobsFileName + "_" + year + ".csv";
         jjReader.readData(jobsFile);
 
-        SchoolReader ssReader = new SchoolReaderImpl(dataContainer.getSchoolData());
+        SchoolReader ssReader = new SchoolReaderMCR(dataContainer);
         String schoolsFile = properties.main.baseDirectory + properties.schoolData.schoolsFileName + "_" + year + ".csv";
         ssReader.readData(schoolsFile);
+
+        new PoiReader(dataContainer).readData(properties.main.baseDirectory + properties.geo.poiFileName);
+
+        Network network = NetworkUtils.readNetwork(config.network().getInputFile());
+        Map<Id<Link>, LinkInfo> linkInfoMap = new HashMap<>();
+        for(Link link : network.getLinks().values()){
+            linkInfoMap.put(link.getId(), new LinkInfo(link.getId()));
+        }
+        dataContainer.setLinkInfo(linkInfoMap);
+
+        new PtSkimsReaderMCR(dataContainer).read();
 
         dataContainer.setAvgSpeeds(new DefaultSpeedReader().readData(properties.main.baseDirectory + properties.healthData.avgSpeedFile));
         dataContainer.setHealthTransitionData(new HealthTransitionTableReader().readData(dataContainer,properties.main.baseDirectory + properties.healthData.healthTransitionData));

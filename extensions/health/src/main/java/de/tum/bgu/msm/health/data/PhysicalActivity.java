@@ -36,7 +36,12 @@ public class PhysicalActivity {
 
     // Based on ACSM's Guidelines for Exercise Testing and Prescription (Ross, n.d.)
     private static double getWalkMMet(double metres, double seconds, Link link) {
-        double gradient = Math.max(0.,Math.min(0.4,getGradient(link)));
+        double gradient = DEFAULT_GRADIENT;
+
+        if(link != null) {
+            gradient = Math.max(0.,Math.min(0.4,getGradient(link)));
+        }
+
         double speed = metres / seconds;
         return (6. * speed + 108. * speed *  gradient) / 3.5;
     }
