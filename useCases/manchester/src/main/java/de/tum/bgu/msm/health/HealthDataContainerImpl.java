@@ -136,6 +136,16 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
         new HealthPersonWriter(this).writePersonExposure(filepp);
     }
 
+    public void writePersonHomeBasedExposureData(int year) {
+        final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/";
+        String filepp = outputDirectory
+                + properties.householdData.personFinalFileName
+                + "_exposure_home_based_"
+                + year
+                + ".csv";
+        new HealthPersonWriter(this).writePersonExposure(filepp);
+    }
+
     public void writePersonRelativeRiskData(int year) {
         final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/";
         String filepp = outputDirectory
