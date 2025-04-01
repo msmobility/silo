@@ -17,6 +17,7 @@ public class PersonFactoryMCRHealth implements PersonFactory {
     @Override
     public Person giveBirth(Person parent, int id, Gender gender) {
         PersonHealthMCR pp = new PersonHealthMCR(id, 0, gender, Occupation.TODDLER, PersonRole.CHILD, 0, 0);
+        pp.setEthnic(((PersonHealthMCR)parent).getEthnic());
         return pp;
     }
 
