@@ -28,7 +28,6 @@ import de.tum.bgu.msm.data.person.PersonRole;
 import de.tum.bgu.msm.events.impls.person.BirthEvent;
 import de.tum.bgu.msm.health.PersonHealthMCR;
 import de.tum.bgu.msm.health.data.DataContainerHealth;
-import de.tum.bgu.msm.health.data.PersonHealth;
 import de.tum.bgu.msm.health.disease.Diseases;
 import de.tum.bgu.msm.health.disease.HealthExposures;
 import de.tum.bgu.msm.models.demography.birth.BirthModel;

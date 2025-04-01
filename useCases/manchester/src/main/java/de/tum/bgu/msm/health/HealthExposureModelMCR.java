@@ -10,6 +10,7 @@ import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.health.data.*;
+import de.tum.bgu.msm.health.diseaseModelOffline.HealthExposuresReader;
 import de.tum.bgu.msm.health.injury.AccidentType;
 import de.tum.bgu.msm.health.io.LinkInfoReader;
 import de.tum.bgu.msm.health.io.ActivityLocationInfoReader;
@@ -82,14 +83,19 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
     }
 
     @Override
-    public void setup() { }
+    public void setup() {
+        if (properties.healthData.baseExposureFile != null) {
+            new HealthExposuresReader().readData((HealthDataContainerImpl) dataContainer,properties.healthData.baseExposureFile);
+        }
+    }
 
     @Override
     public void prepareYear(int year) {}
 
     @Override
     public void endYear(int year) {
-        if(year == properties.main.startYear || properties.healthData.exposureModelYears.contains(year)) {
+        //TODO: clean up the code to be compatible for different simulation setting
+        if((properties.healthData.baseExposureFile ==null && year == properties.main.startYear) || properties.healthData.exposureModelYears.contains(year)) {
             logger.warn("Health model end year:" + year);
             TreeSet<Integer> sortedYears = new TreeSet<>(properties.transportModel.transportModelYears);
             latestMatsimYear = sortedYears.floor(year);
@@ -1080,4 +1086,121 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             }
         }
     }
+
+    public void calculateHomeBasedExposureOnly(int year){
+        latestMatsimYear = year;
+        processNdviData(NetworkUtils.readNetwork(initialMatsimConfig.network().getInputFile()));
+
+        //assemble person home exposure by day by hour
+        for(Day day : Day.values()) {
+            replyActivityLocationInfoFromFile(weekdays.contains(day) ? Day.thursday : day);
+            for (Person person : dataContainer.getHouseholdDataManager().getPersons()) {
+
+                double minutesAtHome = 0.;
+                float[] exposurePM25 = new float[24 * 7];
+                float[] exposureNo2 = new float[24 * 7];
+                float[] exposureNoise = new float[24 * 7];
+                double ndviExposure = 0.;
+
+                for (int dayHour = 0; dayHour < 24; dayHour++) {
+                    int weekHour = dayHour + 24 * day.getDayCode();
+                    minutesAtHome += 60;
+
+                    String rpId = ("dd" + person.getHousehold().getDwellingId());
+                    ActivityLocation activityLocation = ((DataContainerHealth) dataContainer).getActivityLocations().get(rpId);
+
+
+                    if (activityLocation != null) {
+                        //Air pollutant
+                        double locationIncrementalPM25 = activityLocation.getExposure2Pollutant2TimeBin().get(Pollutant.PM2_5).get(dayHour) +
+                                activityLocation.getExposure2Pollutant2TimeBin().get(Pollutant.PM2_5_non_exhaust).get(dayHour);
+                        double locationIncrementalNO2 = activityLocation.getExposure2Pollutant2TimeBin().get(Pollutant.NO2).get(dayHour);
+
+                        exposurePM25[weekHour] = (float) PollutionExposure.getHomeExposurePm25(60, dayHour, locationIncrementalPM25);
+                        exposureNo2[weekHour] = (float) PollutionExposure.getHomeExposureNo2(60, dayHour, locationIncrementalNO2);
+
+                        // Noise level
+                        if (!activityLocation.getNoiseLevel2TimeBin().isEmpty()) {
+                            exposureNoise[weekHour] = activityLocation.getNoiseLevel2TimeBin().get(dayHour);
+                        }
+
+                        // Green ndvi
+                        ndviExposure += activityLocation.getNdvi();
+                    } else {
+                        logger.warn("No receiver point info found for rpId: " + rpId + " personId: " + person.getId());
+                    }
+                }
+
+
+                ((PersonHealth) person).updateWeeklyHomeMinutes((float) minutesAtHome);
+                ((PersonHealth) person).updateWeeklyPollutionExposuresByHour(Map.of(
+                        "pm2.5", exposurePM25,
+                        "no2", exposureNo2
+                ));
+                ((PersonHealth) person).updateWeeklyNoiseExposuresByHour(exposureNoise);
+                ((PersonHealth) person).updateWeeklyGreenExposures((float) ndviExposure);
+
+            }
+
+            ((DataContainerHealth)dataContainer).getActivityLocations().values().forEach(activityLocation -> {activityLocation.reset();});
+            System.gc();
+        }
+
+
+        //normalized person's home exposure over a week
+        for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
+            float sumHour = 168.f;
+            float sumNightHour = 56.f;
+            float sumExposurePM25_normalized = 0.f;
+            float sumExposureNo2_normalized = 0.f;
+            float sumExposureNoise = 0.f;
+            float sumExposureNoiseNight = 0.f;
+
+            Map<String, float[]> weeklyPollutionExposures = ((PersonHealth) person).getWeeklyPollutionExposures();
+            float[] weeklyNoiseExposureByHour = ((PersonHealth) person).getWeeklyNoiseExposureByHour();
+
+            for (int weekHour = 0;  weekHour < 168; weekHour++) {
+                int dayHour = weekHour % 24;
+
+                double min_ventilation_rate = 0.;
+                if (dayHour <= 7  || dayHour > 23 ){
+                    //"minimum"  ventilation rate = 0.27 (v_sleep)
+                    min_ventilation_rate = 0.27;
+                } else {
+                    //"minimum"  ventilation rate = 0.61 (v_rest)
+                    min_ventilation_rate = 0.61;
+                }
+
+                sumExposurePM25_normalized += weeklyPollutionExposures.get("pm2.5")[weekHour]/min_ventilation_rate;
+                sumExposureNo2_normalized += weeklyPollutionExposures.get("no2")[weekHour]/min_ventilation_rate;
+
+
+                float hourlyNoiseLevel = (float) NoiseMetrics.getHourlyNoiseLevel(dayHour, (weeklyNoiseExposureByHour[weekHour]));
+                sumExposureNoise += hourlyNoiseLevel;
+
+                if (dayHour <= 7  || dayHour > 23 ){
+                    sumExposureNoiseNight += hourlyNoiseLevel;
+                }
+            }
+
+
+
+            ((PersonHealth) person).setWeeklyExposureByPollutantNormalised(
+                    Map.of(
+                            "pm2.5", (float) (sumExposurePM25_normalized / sumHour),
+                            "no2", (float) (sumExposureNo2_normalized / sumHour)
+                    )
+            );
+
+            float Lden = (float) (10 * Math.log10(sumExposureNoise / sumHour));
+            float Lnight = (float) (10 * Math.log10(sumExposureNoiseNight / sumNightHour));
+            ((PersonHealth) person).setWeeklyNoiseExposuresNormalised (Lden);
+            ((PersonHealthMCR) person).setNoiseHighAnnoyedPercentage((float) NoiseMetrics.getHighAnnoyedPercentage(Lden));
+            ((PersonHealthMCR) person).setNoiseHighSleepDisturbancePercentage((float) NoiseMetrics.getHighSleepDisturbancePercentage(Lnight));
+
+            ((PersonHealth) person).setWeeklyGreenExposuresNormalised(((PersonHealthMCR) person).getWeeklyNdviExposure() / sumHour);
+        }
+    }
+
+
 }

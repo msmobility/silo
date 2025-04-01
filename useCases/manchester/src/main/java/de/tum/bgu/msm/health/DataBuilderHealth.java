@@ -140,11 +140,6 @@ public class DataBuilderHealth {
         doseResponseReader.readData(properties.main.baseDirectory + properties.healthData.basePath);
         dataContainer.setDoseResponseData(doseResponseReader.getDoseResponseData());
 
-        //Read in person microdata with exposures
-        if(properties.healthData.baseExposureFile != null){
-            new HealthExposuresReader().readData(dataContainer,properties.healthData.baseExposureFile);
-        }
-
         MicroDataScaler microDataScaler = new MicroDataScaler(dataContainer, properties);
         microDataScaler.scale();
     }
