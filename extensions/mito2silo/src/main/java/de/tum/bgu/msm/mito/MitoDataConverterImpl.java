@@ -88,7 +88,7 @@ public class MitoDataConverterImpl implements MitoDataConverter {
             //todo if there are housholds without adults they cannot be processed
             if (siloHousehold.getPersons().values().stream().anyMatch(p -> p.getAge() >= 18)) {
                 household.setHomeLocation(coordinate);
-                zone.addHousehold();
+                zone.addHousehold(household);
                 dataSet.addHousehold(household);
                 for (Person person : siloHousehold.getPersons().values()) {
                     MitoPerson mitoPerson = convertToMitoPp(person, household, dataSet, dataContainer);
