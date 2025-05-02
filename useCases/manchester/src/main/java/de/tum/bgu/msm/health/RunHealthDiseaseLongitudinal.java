@@ -43,5 +43,7 @@ public class RunHealthDiseaseLongitudinal {
         model.runModel();
 
         logger.info("Finished SILO.");
+
+        // test
     }
 }
