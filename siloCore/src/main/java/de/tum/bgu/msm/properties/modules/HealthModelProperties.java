@@ -14,7 +14,6 @@ public class HealthModelProperties {
 
     public final double matsim_scale_factor_car;
     public final double matsim_scale_factor_bikePed;
-    public final String activeModeNetworkFile;
     public final double MAX_WALKSPEED;
     public final double MAX_CYCLESPEED;
     public final String COLD_EMISSION_FILE;
@@ -23,7 +22,6 @@ public class HealthModelProperties {
     public final int HEALTH_MODEL_INTERVAL;
     public final double BACKGROUND_PM25;
     public final double BACKGROUND_NO2;
-    public final String network_for_airPollutant_model ;
     public final String basePath;
     public final String diseaseLookupTable;
     public final String avgSpeedFile;
@@ -32,6 +30,17 @@ public class HealthModelProperties {
     public final String baseExposureFile;
     public final List<Integer> exposureModelYears;
     public final String bus_network;
+    public final String noiseBarriersFile;
+    public final String sportPAmodel;
+    public final String busLinkConcentration;
+    public final String busLocationConcentration;
+    public final String ptPeakSkim;
+    public final String ptAccessTimeMatrix;
+    public final String ptEgressTimeMatrix;
+    public final String ptTotalTravelTimeMatrix;
+    public final String ptBusTimeShareMatrix;
+    public final double DEFAULT_ROAD_TRAFFIC_INCREMENTAL_PM25;
+    public final double DEFAULT_ROAD_TRAFFIC_INCREMENTAL_NO2;
 
 
     public HealthModelProperties(ResourceBundle bundle) {
@@ -45,8 +54,6 @@ public class HealthModelProperties {
 
         matsim_scale_factor_bikePed = PropertiesUtil.getDoubleProperty(bundle, "matsim.scale.factor.bikePed", 1.0);
 
-        activeModeNetworkFile = PropertiesUtil.getStringProperty(bundle, "matsim.network.activeMode", "input/mito/trafficAssignment/network_active_cleaned.xml");
-
         MAX_WALKSPEED = PropertiesUtil.getDoubleProperty(bundle, "max.walk.speed.kph", 5.);
 
         MAX_CYCLESPEED = PropertiesUtil.getDoubleProperty(bundle, "max.cycle.speed.kph", 15.);
@@ -56,10 +63,14 @@ public class HealthModelProperties {
 
         HEALTH_MODEL_INTERVAL = PropertiesUtil.getIntProperty(bundle, "health.model.interval", 2);
 
-        BACKGROUND_PM25 = PropertiesUtil.getDoubleProperty(bundle, "background.pm25", 9.);//default is munich rates
-        BACKGROUND_NO2 = PropertiesUtil.getDoubleProperty(bundle, "background.no2", 17.6);
+        BACKGROUND_PM25 = PropertiesUtil.getDoubleProperty(bundle, "background.pm25", 11.6);
+        BACKGROUND_NO2 = PropertiesUtil.getDoubleProperty(bundle, "background.no2", 17.3);
 
-        network_for_airPollutant_model = PropertiesUtil.getStringProperty(bundle, "matsim.network.for.air.pollutant.model", "input/mito/trafficAssignment/network_hbefa.xml");
+        //TODO: no PM 2.5 urban traffic site is found in Manchester, so no reference road incremental.
+        DEFAULT_ROAD_TRAFFIC_INCREMENTAL_PM25 = PropertiesUtil.getDoubleProperty(bundle, "road.traffic.incremental.pm25", 0.);
+        //Bury Whitefield Roadside is defined as reference urban traffic site, annual average NO2 is 25.1 at this site
+        // reference road traffic incremental NO2 = 25.1 - 17.3
+        DEFAULT_ROAD_TRAFFIC_INCREMENTAL_NO2 = PropertiesUtil.getDoubleProperty(bundle, "road.traffic.incremental.no2", 7.8);
 
         basePath = PropertiesUtil.getStringProperty(bundle, "healthData.basePath", "input/health/");
 
@@ -77,6 +88,23 @@ public class HealthModelProperties {
 
         bus_network = PropertiesUtil.getStringProperty(bundle, "matsim.network.bus", "input/mito/trafficAssignment/network_transit_hbefa.xml");
 
+        noiseBarriersFile = PropertiesUtil.getStringProperty(bundle, "noise.barriers.file", "input/buildingShapefile/mrcBuildings.geojson");
+
+        sportPAmodel = PropertiesUtil.getStringProperty(bundle, "sportPA.model", "input/health/sportPAmodel.csv");
+
+        busLinkConcentration = PropertiesUtil.getStringProperty(bundle, "bus.link.concentration", "input/mito/trafficAssignment/ptSimulation/linkConcentration_bus.csv");
+
+        busLocationConcentration = PropertiesUtil.getStringProperty(bundle, "bus.location.concentration", "input/mito/trafficAssignment/ptSimulation/locationConcentration_bus.csv");
+
+        ptPeakSkim = PropertiesUtil.getStringProperty(bundle, "pt.peak.time", "skims/pt.omx");
+
+        ptTotalTravelTimeMatrix = PropertiesUtil.getStringProperty(bundle, "pt.total.travel.time.matrix.time", "travelTime");
+
+        ptAccessTimeMatrix = PropertiesUtil.getStringProperty(bundle, "pt.access.time.matrix.time", "accessTime");
+
+        ptEgressTimeMatrix = PropertiesUtil.getStringProperty(bundle, "pt.egress.time.matrix.time", "egressTime");
+
+        ptBusTimeShareMatrix = PropertiesUtil.getStringProperty(bundle, "pt.bus.time.share.matrix.time", "busTimeShare");
     }
 
 }

@@ -81,7 +81,7 @@ public class GenerateVacantDwellings {
                 Collections.shuffle(dwellingForCopy);
                 for (int draw = 0; draw < vacantDwellings; draw++){
                     int tazSelected = municipality;
-                    int newDdId = highestDwellingIdInUse++;
+                    int newDdId = ++highestDwellingIdInUse;
                     Dwelling idDwellingToCopy = dwellingForCopy.get(draw);
                     int floorSpace = idDwellingToCopy.getFloorSpace();
                     int year = idDwellingToCopy.getYearBuilt();

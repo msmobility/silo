@@ -25,7 +25,7 @@ public class PersonWriterMCR implements PersonWriter {
 
         logger.info("  Writing person file to " + path);
         PrintWriter pwp = SiloUtil.openFileForSequentialWriting(path, false);
-        pwp.print("id,hhid,age,gender,relationShip,occupation,driversLicense,workplace,income");
+        pwp.print("id,hhid,age,gender,ethnic,relationShip,occupation,driversLicense,workplace,income");
         pwp.print(",");
         pwp.print("schoolId");
 
@@ -38,10 +38,12 @@ public class PersonWriterMCR implements PersonWriter {
             pwp.print(pp.getAge());
             pwp.print(",");
             pwp.print(pp.getGender().getCode());
-            pwp.print(",\"");
+            pwp.print(",");
+            pwp.print(((PersonMCR)pp).getEthnic().toString());
+            pwp.print(",");
             String role = pp.getRole().toString();
             pwp.print(role);
-            pwp.print("\",");
+            pwp.print(",");
             pwp.print(pp.getOccupation().getCode());
             pwp.print(",");
             pwp.print(pp.hasDriverLicense());

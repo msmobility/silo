@@ -4,6 +4,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.core.config.Config;
+import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.vehicles.*;
 
 public class CreateVehicles {
@@ -18,8 +20,8 @@ public class CreateVehicles {
     //Generating vehicle type category
     private VehicleType.DoorOperationMode mode = VehicleType.DoorOperationMode.serial;
 
-    public CreateVehicles(Scenario sc) {
-        this.sc = sc;
+    public CreateVehicles(Config config) {
+        this.sc = ScenarioUtils.createScenario(config);
     }
 
     public void run(String vehicleFile, String vehicleEmissionFile){

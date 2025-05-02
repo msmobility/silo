@@ -5,6 +5,8 @@ import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.health.DwellingFactoryMCR;
 import de.tum.bgu.msm.health.NoiseDwellingMCR;
 import de.tum.bgu.msm.health.PersonFactoryMCRHealth;
+import de.tum.bgu.msm.health.data.ActivityLocation;
+import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.io.input.DwellingReader;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.logging.log4j.LogManager;
@@ -92,6 +94,10 @@ public class DwellingReaderMCR implements DwellingReader {
 
                 NoiseDwellingMCR dwelling = dwellingFactory.createDwelling(id, zoneId, coordinate, hhId, type, area, quality, price, yearBuilt);
                 dwellingData.addDwelling(dwelling);
+
+                ActivityLocation activityLocation = new ActivityLocation(("dd"+id),coordinate);
+                ((DataContainerHealth) dataContainer).getActivityLocations().put(("dd"+id),activityLocation);
+
                 if (id == SiloUtil.trackDd) {
                     SiloUtil.trackWriter.println("Read dwelling with following attributes from " + path);
                     SiloUtil.trackWriter.println(dwelling.toString());

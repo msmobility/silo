@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.health;
 
+import de.tum.bgu.msm.data.Ethnic;
 import de.tum.bgu.msm.data.Mode;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.person.*;
@@ -17,26 +18,34 @@ public class PersonHealthMCR implements PersonWithSchool, PersonHealth {
     private int schoolType = 0;
     private int schoolPlace = 0;
     private int schoolId = -1;
+    private Ethnic ethnic = null;
 
     private float weeklyTravelSeconds = 0.f;
     private float weeklyActivityMinutes = 0.f;
     private float weeklyHomeMinutes = 0.f;
+    private float[] weeklyTravelActivityHourOccupied = new float[24*7];
 
     //for exposure model
     private Map<Mode, Float> weeklyMarginalMetHours = new HashMap<>();
     private float weeklyMarginalMetHoursSport = 0.f;
     private Map<String, Float> weeklyAccidentRisks = new HashMap<>();
-    private Map<String, Float> weeklyExposureByPollutant = new HashMap<>();
+    private Map<String, float[]> weeklyExposureByPollutantByHour = new HashMap<>();
+    private Map<String, Float> weeklyExposureByPollutantNormalised;
 
-    //for all-cause health model
-    private Map<String, Float> relativeRisks;
-    private float allCauseRR;
+    private float[] weeklyNoiseExposureByHour = new float[24*7];
+    private float weeklyNoiseExposureNormalised;
+    private float noiseHighAnnoyedPercentage = 0.f;
+    private float noiseHighSleepDisturbancePercentage = 0.f;
+    private float weeklyNdviExposure = 0.f;
+    private float weeklyNdviExposureNormalised = 0.f;
+
 
     //for disease model
     private EnumMap<HealthExposures, EnumMap<Diseases, Float>> relativeRisksByDisease = new EnumMap<>(HealthExposures.class);
     private Map<Integer, List<String>> healthDiseaseTracker = new HashMap<>();
     private List<Diseases> currentDisease = new ArrayList<>();
     private Map<Diseases, Float> currentDiseaseProb = new HashMap<>();
+
 
     public PersonHealthMCR(int id, int age,
                            Gender gender, Occupation occupation,
@@ -68,7 +77,6 @@ public class PersonHealthMCR implements PersonWithSchool, PersonHealth {
     public void setSchoolId(int schoolId) {
         this.schoolId = schoolId;
     }
-
 
     @Override
     public void setHousehold(Household householdId) {
@@ -155,6 +163,14 @@ public class PersonHealthMCR implements PersonWithSchool, PersonHealth {
         return delegate.hasDriverLicense();
     }
 
+    public Ethnic getEthnic() {
+        return ethnic;
+    }
+
+    public void setEthnic(Ethnic ethnic) {
+        this.ethnic = ethnic;
+    }
+
     @Override
     public String toString() {
         return delegate
@@ -173,63 +189,43 @@ public class PersonHealthMCR implements PersonWithSchool, PersonHealth {
         delegate.setAttribute(key, value);
     }
 
+    @Override
+    public void updateWeeklyTravelSeconds(float seconds) {
+        weeklyTravelSeconds += seconds;
+    }
+
+    @Override
+    public float getWeeklyTravelSeconds() {
+        return weeklyTravelSeconds;
+    }
+
+    @Override
+    public void updateWeeklyActivityMinutes(float minutes) {
+        weeklyActivityMinutes += minutes; }
+
+    @Override
+    public float getWeeklyActivityMinutes() { return weeklyActivityMinutes; }
+
+    @Override
+    public void setWeeklyHomeMinutes(float minutes) { this.weeklyHomeMinutes = minutes; }
+
+    @Override
+    public void updateWeeklyHomeMinutes(float minutes) { this.weeklyHomeMinutes += minutes; }
+
+    @Override
+    public float getWeeklyHomeMinutes() { return weeklyHomeMinutes; }
+
+    @Override
     public float getWeeklyMarginalMetHours(Mode mode) {
         return weeklyMarginalMetHours.getOrDefault(mode, 0.f);
     }
 
+    @Override
     public void updateWeeklyMarginalMetHours(Mode mode, float mmetHours) {
         weeklyMarginalMetHours.put(mode, weeklyMarginalMetHours.getOrDefault(mode, 0.f) + mmetHours);
     }
 
-    public void updateWeeklyTravelSeconds(float seconds) {
-        weeklyTravelSeconds += seconds;
-    }
-    public void updateWeeklyActivityMinutes(float minutes) {
-        weeklyActivityMinutes += minutes; }
-
-    public float getWeeklyTravelSeconds() {
-        return weeklyTravelSeconds;
-    }
-    public float getWeeklyActivityMinutes() { return weeklyActivityMinutes; }
-
-    public void setWeeklyHomeMinutes(float hours) { this.weeklyHomeMinutes = hours; }
-
-    public float getWeeklyHomeMinutes() { return weeklyHomeMinutes; }
-
-    public float getWeeklyExposureByPollutant(String pollutant) {
-        return weeklyExposureByPollutant.get(pollutant);
-    }
-
-    // todo: make not hardcoded...
-    // 1.49/3 is the "minimum" weekly ventilation rate (8hr sleep + 16hr rest per day)
-    public float getWeeklyExposureByPollutantNormalised(String pollutant) {
-        return (float) (weeklyExposureByPollutant.get(pollutant) / (168.* (1.49/3.)));
-    }
-
-    public float getWeeklyAccidentRisk(String type) {
-        return weeklyAccidentRisks.getOrDefault(type, 0.f);
-    }
-
-    public void updateWeeklyAccidentRisks(Map<String, Float> newRisks) {
-        newRisks.forEach((k, v) -> weeklyAccidentRisks.merge(k, v, (v1, v2) -> v1 + v2 - v1*v2));
-    }
-
-    public void updateWeeklyPollutionExposures(Map<String, Float> newExposures) {
-        newExposures.forEach((k, v) -> weeklyExposureByPollutant.merge(k, v, Float::sum));
-    }
-
-    public float getAllCauseRR() {return allCauseRR;}
-
-    public void setAllCauseRR(float rr) {this.allCauseRR = rr;}
-
-    public float getRelativeRiskByType(String type) {
-        return relativeRisks.get(type);
-    }
-
-    public void setRelativeRisks(Map<String, Float> relativeRisks) {
-        this.relativeRisks = relativeRisks;
-    }
-
+    @Override
     public float getWeeklyMarginalMetHoursSport() {
         return weeklyMarginalMetHoursSport;
     }
@@ -238,6 +234,97 @@ public class PersonHealthMCR implements PersonWithSchool, PersonHealth {
         this.weeklyMarginalMetHoursSport = weeklyMarginalMetHoursSport;
     }
 
+    @Override
+    public Map<String, float[]> getWeeklyPollutionExposures() {
+        return weeklyExposureByPollutantByHour;
+    }
+
+    @Override
+    public void updateWeeklyPollutionExposuresByHour(Map<String, float[]> newExposures) {
+        for (String pollutant : newExposures.keySet()) {
+            if (!weeklyExposureByPollutantByHour.containsKey(pollutant)) {
+                weeklyExposureByPollutantByHour.put(pollutant, newExposures.get(pollutant));
+            }else {
+                for(int i = 0; i< weeklyExposureByPollutantByHour.get(pollutant).length; i++) {
+                    this.weeklyExposureByPollutantByHour.get(pollutant)[i] += newExposures.get(pollutant)[i];
+                }
+            }
+        }
+    }
+
+    @Override
+    public float getWeeklyExposureByPollutantNormalised(String pollutant) {
+        return weeklyExposureByPollutantNormalised.get(pollutant);
+    }
+
+    @Override
+    public void setWeeklyExposureByPollutantNormalised(Map<String, Float> exposureMap) {
+        this.weeklyExposureByPollutantNormalised = exposureMap;
+    }
+
+    @Override
+    public float getWeeklyAccidentRisk(String type) {
+        return weeklyAccidentRisks.getOrDefault(type, 0.f);
+    }
+
+    @Override
+    public void updateWeeklyAccidentRisks(Map<String, Float> newRisks) {
+        newRisks.forEach((k, v) -> weeklyAccidentRisks.merge(k, v, (v1, v2) -> v1 + v2 - v1*v2));
+    }
+
+    public float[] getWeeklyNoiseExposureByHour() {
+        return weeklyNoiseExposureByHour;
+    }
+
+    @Override
+    public void updateWeeklyNoiseExposuresByHour(float[] newExposure) {
+        for(int i=0; i<newExposure.length; i++) {
+            this.weeklyNoiseExposureByHour[i] += newExposure[i];
+        }
+    }
+
+    @Override
+    public float getWeeklyNoiseExposuresNormalised() {
+        return this.weeklyNoiseExposureNormalised;
+    }
+
+    @Override
+    public void setWeeklyNoiseExposuresNormalised(float noiseExposureNormalised) {
+        this.weeklyNoiseExposureNormalised = noiseExposureNormalised ;
+    }
+
+    public float getWeeklyNdviExposure() {
+        return weeklyNdviExposure;
+    }
+
+    @Override
+    public void updateWeeklyGreenExposures(float greenExposure) {
+        this.weeklyNdviExposure += greenExposure;
+    }
+
+    @Override
+    public float getWeeklyGreenExposuresNormalised() {
+        return this.weeklyNdviExposureNormalised;
+    }
+
+    @Override
+    public void setWeeklyGreenExposuresNormalised(float greenExposureNormalised) {
+        this.weeklyNdviExposureNormalised = greenExposureNormalised;
+    }
+
+    @Override
+    public float[] getWeeklyTravelActivityHourOccupied() {
+        return weeklyTravelActivityHourOccupied;
+    }
+
+    @Override
+    public void updateWeeklyTravelActivityHourOccupied(float[] travelActivityHourOccupied) {
+        for(int i=0; i<travelActivityHourOccupied.length; i++) {
+            this.weeklyTravelActivityHourOccupied[i] += travelActivityHourOccupied[i];
+        }
+    }
+
+    @Override
     public EnumMap<HealthExposures, EnumMap<Diseases, Float>> getRelativeRisksByDisease() {
         return relativeRisksByDisease;
     }
@@ -245,7 +332,6 @@ public class PersonHealthMCR implements PersonWithSchool, PersonHealth {
     public void setRelativeRisksByDisease(EnumMap<HealthExposures, EnumMap<Diseases, Float>> relativeRisksByDisease) {
         this.relativeRisksByDisease = relativeRisksByDisease;
     }
-
 
     public Map<Diseases, Float> getCurrentDiseaseProb() {
         return currentDiseaseProb;
@@ -264,6 +350,48 @@ public class PersonHealthMCR implements PersonWithSchool, PersonHealth {
         weeklyActivityMinutes = 0.f;
         weeklyMarginalMetHours.clear();
         weeklyAccidentRisks.clear();
-        weeklyExposureByPollutant.clear();
+        weeklyExposureByPollutantByHour.clear();
+        Arrays.fill(weeklyNoiseExposureByHour,0.f);
+        weeklyNdviExposure = 0.f;
+        Arrays.fill(weeklyTravelActivityHourOccupied,0.f);
     }
+
+    public float getNoiseHighAnnoyedPercentage() {
+        return noiseHighAnnoyedPercentage;
+    }
+
+    public void setNoiseHighAnnoyedPercentage(float noiseHighAnnoyedPercentage) {
+        this.noiseHighAnnoyedPercentage = noiseHighAnnoyedPercentage;
+    }
+
+    public float getNoiseHighSleepDisturbancePercentage() {
+        return noiseHighSleepDisturbancePercentage;
+    }
+
+    public void setNoiseHighSleepDisturbancePercentage(float noiseHighSleepDisturbancePercentage) {
+        this.noiseHighSleepDisturbancePercentage = noiseHighSleepDisturbancePercentage;
+    }
+
+    //For Munich
+    @Override
+    public void updateWeeklyPollutionExposures(Map<String, Float> exposureMap) {}
+
+    @Override
+    public void setRelativeRisks(Map<String, Float> relativeRisks) {}
+
+    @Override
+    public void setAllCauseRR(Float reduce) {}
+
+    @Override
+    public float getAllCauseRR() {
+        return 0;
+    }
+
+    @Override
+    public float getRelativeRiskByType(String type) {
+        return 0;
+    }
+
+
+
 }

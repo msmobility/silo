@@ -4,9 +4,6 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.ModuleSynPop;
-import de.tum.bgu.msm.syntheticPopulationGenerator.munich.microlocation.GenerateDwellingMicrolocation;
-import de.tum.bgu.msm.syntheticPopulationGenerator.munich.microlocation.GenerateJobMicrolocation;
-import de.tum.bgu.msm.syntheticPopulationGenerator.munich.microlocation.GenerateSchoolMicrolocation;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,18 +26,9 @@ public class Microlocation extends ModuleSynPop {
     public void run(){
         logger.info("   Started microlocation model.");
 
-        String zoneShapeFile = Properties.get().geo.zoneShapeFile;
-        Map<Integer, SimpleFeature> zoneFeatureMap = new HashMap<>();
-        for (SimpleFeature feature: ShapeFileReader.getAllFeatures(zoneShapeFile)) {
-            int zoneId = Integer.parseInt(feature.getAttribute("ZONE").toString());
-            zoneFeatureMap.put(zoneId,feature);
-        }
-        dataSetSynPop.setZoneFeatureMap(zoneFeatureMap);
-
         if (PropertiesSynPop.get().main.runMicrolocation) {
             generateDwellingMicrolocation();
-            //generateJobMicrolocation();
-            generateSchoolMicrolocation();
+            generateJobMicrolocation();
         }
 
         logger.info("   Completed microlocation model.");
@@ -58,8 +46,4 @@ public class Microlocation extends ModuleSynPop {
 
     }
 
-    private void generateSchoolMicrolocation() {
-        new GenerateSchoolMicrolocation(dataContainer,dataSetSynPop).run();
-
-    }
 }

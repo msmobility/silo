@@ -2,6 +2,8 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.manchester.allocation;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.job.JobDataManager;
+import de.tum.bgu.msm.data.job.JobFactory;
+import de.tum.bgu.msm.data.job.JobFactoryMCR;
 import de.tum.bgu.msm.data.job.JobUtils;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
@@ -19,11 +21,12 @@ public class GenerateJobs {
     private final DataSetSynPop dataSetSynPop;
     private Map<Integer, Float> jobsByTaz;
     private final DataContainer dataContainer;
-
+    private final JobFactory jobFactory;
 
     public GenerateJobs(DataContainer dataContainer, DataSetSynPop dataSetSynPop){
         this.dataSetSynPop = dataSetSynPop;
         this.dataContainer = dataContainer;
+        this.jobFactory = new JobFactoryMCR();
     }
 
     public void run(){
@@ -45,13 +48,16 @@ public class GenerateJobs {
             int totalJobs = (int) PropertiesSynPop.get().main.selectedMunicipalities.getIndexedValueAt(municipality, jobType);
             for (int job = 0; job < totalJobs; job++){
                 int id = jobData.getNextJobId();
+                if (SiloUtil.select(jobsByTaz)==null){
+                    logger.error("Municipality " + municipality + ". Job " + jobType + " not found. Total job " + totalJobs + " Job by taz: " + jobsByTaz.values().stream().mapToDouble(Float::doubleValue).sum());
+                }
                 int tazSelected = SiloUtil.select(jobsByTaz);
                 if (jobsByTaz.get(tazSelected) > 1){
                     jobsByTaz.put(tazSelected, jobsByTaz.get(tazSelected) - 1);
                 } else {
                     jobsByTaz.remove(tazSelected);
                 }
-                jobData.addJob(JobUtils.getFactory().createJob(id, tazSelected, null, -1, jobType));
+                jobData.addJob(jobFactory.createJob(id, tazSelected, null, -1, jobType));
             }
 
     }

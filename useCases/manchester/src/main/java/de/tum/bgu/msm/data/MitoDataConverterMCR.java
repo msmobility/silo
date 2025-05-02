@@ -58,8 +58,10 @@ public class MitoDataConverterMCR implements MitoDataConverter {
                 coordinate = zone.getRandomCoord(SiloUtil.getRandomObject());
             }
             MitoSchool mitoSchool = new MitoSchool(zones.get(school.getZoneId()), coordinate, school.getId());
-            mitoSchool.setStartTime_min((int) (school.getStartTimeInSeconds() / 60.));
-            mitoSchool.setEndTime_min((int) ((school.getStartTimeInSeconds() + school.getStudyTimeInSeconds()) / 60.));
+            if(school.getStartTimeInSeconds() > 0){
+                mitoSchool.setStartTime_min((int) (school.getStartTimeInSeconds() / 60.));
+                mitoSchool.setEndTime_min((int) ((school.getStartTimeInSeconds() + school.getStudyTimeInSeconds()) / 60.));
+            }
             zone.addSchoolEnrollment(school.getOccupancy());
             dataSet.addSchool(mitoSchool);
         }
@@ -96,7 +98,7 @@ public class MitoDataConverterMCR implements MitoDataConverter {
             //todo if there are housholds without adults they cannot be processed
             if (siloHousehold.getPersons().values().stream().anyMatch(p -> p.getAge() >= 18)) {
                 household.setHomeLocation(coordinate);
-                zone.addHousehold();
+                zone.addHousehold(household);
                 dataSet.addHousehold(household);
                 for (Person person : siloHousehold.getPersons().values()) {
                     MitoPerson mitoPerson = convertToMitoPp((PersonHealthMCR) person, household, dataSet, dataContainer);

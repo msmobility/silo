@@ -3,7 +3,7 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.bangkok.microlocation;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.job.Job;
-import de.tum.bgu.msm.data.job.JobImpl;
+import de.tum.bgu.msm.data.job.JobMCR;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -46,7 +46,7 @@ public class GenerateJobMicrolocation {
             String jobType = jj.getType();
             Zone zone = dataContainer.getGeoData().getZones().get(zoneID);
             if (zoneJobTypeDensity.get(zoneID).get(jobType)==0.0){
-                ((JobImpl)jj).setCoordinate(zone.getRandomCoordinate(SiloUtil.getRandomObject()));
+                ((JobMCR)jj).setCoordinate(zone.getRandomCoordinate(SiloUtil.getRandomObject()));
                 errorjob++;
                 continue;
             }
@@ -57,7 +57,7 @@ public class GenerateJobMicrolocation {
             } else {
                 zoneJobTypeJobLocationArea.get(zoneID).get(jobType).put(selectedJobID, 0.0f);
             }
-            ((JobImpl)jj).setCoordinate(new Coordinate(jobX.get(selectedJobID),jobY.get(selectedJobID)));
+            ((JobMCR)jj).setCoordinate(new Coordinate(jobX.get(selectedJobID),jobY.get(selectedJobID)));
         }
         logger.warn( errorjob +"   Dwellings cannot find specific building location. Their coordinates are assigned randomly in TAZ" );
         logger.info("   Finished job microlocation.");

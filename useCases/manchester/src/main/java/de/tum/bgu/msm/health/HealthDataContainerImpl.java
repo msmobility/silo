@@ -1,10 +1,8 @@
 package de.tum.bgu.msm.health;
 
-import cern.colt.map.tfloat.OpenIntFloatHashMap;
 import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.data.MitoGender;
 import de.tum.bgu.msm.data.Mode;
-import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
@@ -15,6 +13,7 @@ import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.health.data.LinkInfo;
+import de.tum.bgu.msm.health.data.ActivityLocation;
 import de.tum.bgu.msm.health.disease.Diseases;
 import de.tum.bgu.msm.health.disease.HealthExposures;
 import de.tum.bgu.msm.io.NoiseDwellingWriter;
@@ -35,8 +34,8 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     private final DataContainerWithSchools delegate;
     private final Properties properties;
     private Map<Id<Link>, LinkInfo> linkInfo = new HashMap<>();
+    private Map<String, ActivityLocation> activityLocationInfo = new HashMap<>();
     private Set<Pollutant> pollutantSet = new HashSet<>();
-    private Map<Zone, Map<Pollutant, OpenIntFloatHashMap>> zoneExposure2Pollutant2TimeBin = new HashMap<>();
     private EnumMap<Mode, EnumMap<MitoGender,Map<Integer,Double>>> avgSpeeds;
     private EnumMap<Diseases, Map<String, Double>> healthTransitionData;
     private EnumMap<HealthExposures, EnumMap<Diseases, TableDataSet>> doseResponseData;
@@ -112,9 +111,9 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     public void endSimulation() {
         delegate.endSimulation();
         writeDwellingsWithNoise(properties.main.endYear);
-        //writePersonExposureData(properties.main.endYear);
-        //writePersonRelativeRiskData(properties.main.endYear);
-        //writePersonDiseaseTrackData(properties.main.endYear);
+        writePersonExposureData(properties.main.endYear);
+        writePersonRelativeRiskData(properties.main.endYear);
+        writePersonDiseaseTrackData(properties.main.endYear);
     }
 
     private void writePersonDiseaseTrackData(int year) {
@@ -132,6 +131,16 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
         String filepp = outputDirectory
                 + properties.householdData.personFinalFileName
                 + "_exposure_"
+                + year
+                + ".csv";
+        new HealthPersonWriter(this).writePersonExposure(filepp);
+    }
+
+    public void writePersonHomeBasedExposureData(int year) {
+        final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/";
+        String filepp = outputDirectory
+                + properties.householdData.personFinalFileName
+                + "_exposure_home_based_"
                 + year
                 + ".csv";
         new HealthPersonWriter(this).writePersonExposure(filepp);
@@ -168,6 +177,16 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     }
 
     @Override
+    public Map<String, ActivityLocation> getActivityLocations() {
+        return activityLocationInfo;
+    }
+
+    @Override
+    public void setActivityLocations(Map<String, ActivityLocation> activityLocations) {
+        this.activityLocationInfo = activityLocations;
+    }
+
+    @Override
     public Set<Pollutant> getPollutantSet() {
         return pollutantSet;
     }
@@ -198,19 +217,11 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     @Override
     public void reset(){
         linkInfo.clear();
-        zoneExposure2Pollutant2TimeBin.clear();
+        activityLocationInfo.clear();
     }
 
     public Map<Integer, Map<Integer, List<String>>> getHealthDiseaseTrackerRemovedPerson() {
         return healthDiseaseTrackerRemovedPerson;
-    }
-
-    public Map<Zone, Map<Pollutant, OpenIntFloatHashMap>> getZoneExposure2Pollutant2TimeBin() {
-        return zoneExposure2Pollutant2TimeBin;
-    }
-
-    public void setZoneExposure2Pollutant2TimeBin(Map<Zone, Map<Pollutant, OpenIntFloatHashMap>> zoneExposure2Pollutant2TimeBin) {
-        this.zoneExposure2Pollutant2TimeBin = zoneExposure2Pollutant2TimeBin;
     }
 
     @Override

@@ -14,6 +14,7 @@ public class PersonMCR implements PersonWithSchool {
     private int schoolType = 0;
     private int schoolPlace = 0;
     private int schoolId = -1;
+    private Ethnic ethnic = null;
 
     public PersonMCR(int id, int age,
                      Gender gender, Occupation occupation,
@@ -147,5 +148,13 @@ public class PersonMCR implements PersonWithSchool {
     @Override
     public void setAttribute(String key, Object value) {
         delegate.setAttribute(key, value);
+    }
+
+    public Ethnic getEthnic() {
+        return ethnic;
+    }
+
+    public void setEthnic(Ethnic ethnic) {
+        this.ethnic = ethnic;
     }
 }

@@ -12,19 +12,26 @@ import de.tum.bgu.msm.data.household.*;
 import de.tum.bgu.msm.data.job.*;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
+import de.tum.bgu.msm.health.data.LinkInfo;
 import de.tum.bgu.msm.health.diseaseModelOffline.HealthExposuresReader;
 import de.tum.bgu.msm.health.io.DefaultSpeedReader;
 import de.tum.bgu.msm.health.io.DoseResponseLookupReader;
 import de.tum.bgu.msm.health.io.HealthTransitionTableReader;
-import de.tum.bgu.msm.io.DwellingReaderMCR;
-import de.tum.bgu.msm.io.JobReaderMCR;
-import de.tum.bgu.msm.io.MicroDataScaler;
+import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.io.input.*;
 import de.tum.bgu.msm.matsim.MatsimTravelTimesAndCosts;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.*;
-import de.tum.bgu.msm.io.GeoDataReaderManchester;
+import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.Scenario;
+import org.matsim.api.core.v01.network.Link;
+import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.config.Config;
+import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.scenario.ScenarioUtils;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class DataBuilderHealth {
 
@@ -70,7 +77,7 @@ public class DataBuilderHealth {
                 new ManchesterDwellingTypes(), dwellingData, householdData, geoData, new DwellingFactoryMCR(new DwellingFactoryImpl()), properties);
 
         JobDataManager jobDataManager = new JobDataManagerImpl(
-                properties, new JobFactoryImpl(), jobData, geoData, travelTimes, commutingTimeProbability);
+                properties, new JobFactoryMCR(), jobData, geoData, travelTimes, commutingTimeProbability);
 
         final HouseholdFactoryImpl hhFactory = new HouseholdFactoryImpl();
         HouseholdDataManager householdDataManager = new HouseholdDataManagerImpl(
@@ -84,9 +91,9 @@ public class DataBuilderHealth {
         return new HealthDataContainerImpl(delegate, properties);
     }
 
-    static public void read(Properties properties, HealthDataContainerImpl dataContainer){
+    static public void read(Properties properties, HealthDataContainerImpl dataContainer, Config config){
 
-        GeoDataReader reader = new GeoDataReaderManchester(dataContainer.getGeoData());
+        GeoDataReader reader = new GeoDataReaderManchester(dataContainer);
         String pathShp = properties.main.baseDirectory + properties.geo.zoneShapeFile;
         String fileName = properties.main.baseDirectory + properties.geo.zonalDataFile;
         reader.readZoneCsv(fileName);
@@ -112,20 +119,26 @@ public class DataBuilderHealth {
         String jobsFile = properties.main.baseDirectory + properties.jobData.jobsFileName + "_" + year + ".csv";
         jjReader.readData(jobsFile);
 
-        SchoolReader ssReader = new SchoolReaderImpl(dataContainer.getSchoolData());
+        SchoolReader ssReader = new SchoolReaderMCR(dataContainer);
         String schoolsFile = properties.main.baseDirectory + properties.schoolData.schoolsFileName + "_" + year + ".csv";
         ssReader.readData(schoolsFile);
+
+        new PoiReader(dataContainer).readData(properties.main.baseDirectory + properties.geo.poiFileName);
+
+        Network network = NetworkUtils.readNetwork(config.network().getInputFile());
+        Map<Id<Link>, LinkInfo> linkInfoMap = new HashMap<>();
+        for(Link link : network.getLinks().values()){
+            linkInfoMap.put(link.getId(), new LinkInfo(link.getId()));
+        }
+        dataContainer.setLinkInfo(linkInfoMap);
+
+        new PtSkimsReaderMCR(dataContainer).read();
 
         dataContainer.setAvgSpeeds(new DefaultSpeedReader().readData(properties.main.baseDirectory + properties.healthData.avgSpeedFile));
         dataContainer.setHealthTransitionData(new HealthTransitionTableReader().readData(dataContainer,properties.main.baseDirectory + properties.healthData.healthTransitionData));
         DoseResponseLookupReader doseResponseReader = new DoseResponseLookupReader();
         doseResponseReader.readData(properties.main.baseDirectory + properties.healthData.basePath);
         dataContainer.setDoseResponseData(doseResponseReader.getDoseResponseData());
-
-        //Read in person microdata with exposures
-        if(properties.healthData.baseExposureFile != null){
-            new HealthExposuresReader().readData(dataContainer,properties.healthData.baseExposureFile);
-        }
 
         MicroDataScaler microDataScaler = new MicroDataScaler(dataContainer, properties);
         microDataScaler.scale();

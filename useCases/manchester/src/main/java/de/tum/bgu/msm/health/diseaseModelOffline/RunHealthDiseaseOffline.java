@@ -31,7 +31,7 @@ public class RunHealthDiseaseOffline {
         }
         logger.info("Started SILO land use model for the Greater Manchester");
         HealthDataContainerImpl dataContainer = DataBuilderHealth.getModelDataForManchester(properties, config);
-        DataBuilderHealth.read(properties, dataContainer);
+        DataBuilderHealth.read(properties, dataContainer, config);
 
         ModelContainer modelContainer = ModelBuilderMCR.getModelContainerForManchester(dataContainer, properties, config);
 

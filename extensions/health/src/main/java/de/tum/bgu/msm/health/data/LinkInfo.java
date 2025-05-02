@@ -17,6 +17,10 @@ public class LinkInfo {
 
     private Map<Pollutant, OpenIntFloatHashMap> exposure2Pollutant2TimeBin = new HashMap<>();
 
+    private OpenIntFloatHashMap noiseLevel2TimeBin = new OpenIntFloatHashMap();
+
+    private double ndvi;
+
     public LinkInfo(Id<Link> linkId) {
         this.linkId = linkId;
     }
@@ -41,7 +45,25 @@ public class LinkInfo {
         this.exposure2Pollutant2TimeBin = exposure2Pollutant2TimeBin;
     }
 
-    public void clearAccidentInfo(){
+    public OpenIntFloatHashMap getNoiseLevel2TimeBin() {
+        return noiseLevel2TimeBin;
+    }
+
+    public void setNoiseLevel2TimeBin(OpenIntFloatHashMap noiseLevel2TimeBin) {
+        this.noiseLevel2TimeBin = noiseLevel2TimeBin;
+    }
+
+    public double getNdvi() {
+        return ndvi;
+    }
+
+    public void setNdvi(double ndvi) {
+        this.ndvi = ndvi;
+    }
+
+    public void reset(){
         severeFatalCasualityExposureByAccidentTypeByTime.clear();
+        exposure2Pollutant2TimeBin.clear();
+        noiseLevel2TimeBin.clear();
     }
 }

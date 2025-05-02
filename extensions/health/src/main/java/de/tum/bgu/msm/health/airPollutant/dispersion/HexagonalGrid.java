@@ -42,8 +42,8 @@ public final class HexagonalGrid<T> extends Grid<T> {
         super(network,horizontalCentroidDistance, initialValueSupplier, bounds);
     }
 
-    public HexagonalGrid(Network network, List<Coordinate> receiverPoints, double horizontalCentroidDistance, Supplier<T> initialValueSupplier, PreparedGeometry bounds) {
-        super(network,receiverPoints,horizontalCentroidDistance, initialValueSupplier, bounds);
+    public HexagonalGrid(List<Coordinate> receiverPoints, double horizontalCentroidDistance, Supplier<T> initialValueSupplier, PreparedGeometry bounds) {
+        super(receiverPoints,horizontalCentroidDistance, initialValueSupplier, bounds);
     }
 
     @Override

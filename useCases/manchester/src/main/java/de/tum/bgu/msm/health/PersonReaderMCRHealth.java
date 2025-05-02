@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.health;
 
+import de.tum.bgu.msm.data.Ethnic;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.person.*;
@@ -45,8 +46,8 @@ public class PersonReaderMCRHealth implements PersonReader {
             int posWorkplace = SiloUtil.findPositionInArray("workplace",header);
             int posIncome = SiloUtil.findPositionInArray("income",header);
             int posDriver = SiloUtil.findPositionInArray("driversLicense", header);
-            int posSportMMet = SiloUtil.findPositionInArray("mmetHr_otherSport", header);
             int posSchoolId = SiloUtil.findPositionInArray("schoolId", header);
+            int posEthnic = SiloUtil.findPositionInArray("ethnic", header);
 
             // read line
             while ((recString = in.readLine()) != null) {
@@ -77,10 +78,11 @@ public class PersonReaderMCRHealth implements PersonReader {
                 householdDataManager.addPerson(pp);
                 householdDataManager.addPersonToHousehold(pp, household);
                 pp.setDriverLicense(license);
-                pp.setWeeklyMarginalMetHoursSport(Float.parseFloat(lineElements[posSportMMet]));
 
                 int schoolId = Integer.parseInt(lineElements[posSchoolId]);
                 pp.setSchoolId(schoolId);
+
+                pp.setEthnic(Ethnic.valueOf(lineElements[posEthnic]));
 
                 if (id == SiloUtil.trackPp) {
                     SiloUtil.trackWriter.println("Read person with following attributes from " + path);

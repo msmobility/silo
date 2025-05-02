@@ -2,8 +2,10 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.manchester.microlocation;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Zone;
-import de.tum.bgu.msm.data.job.Job;
-import de.tum.bgu.msm.data.job.JobImpl;
+import de.tum.bgu.msm.data.dwelling.DwellingFactory;
+import de.tum.bgu.msm.data.dwelling.DwellingFactoryImpl;
+import de.tum.bgu.msm.data.job.*;
+import de.tum.bgu.msm.health.DwellingFactoryMCR;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -11,9 +13,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class GenerateJobMicrolocation {
 
@@ -21,13 +25,10 @@ public class GenerateJobMicrolocation {
     
     private final DataContainer dataContainer;
     private final DataSetSynPop dataSetSynPop;
-    private Map<Integer, Float> jobX = new HashMap<>();
-    private Map<Integer, Float> jobY = new HashMap<>();
-    Map<Integer, Integer> jobZone = new HashMap<Integer, Integer>();
-    Map<Integer, Map<String,Map<Integer,Float>>> zoneJobTypeJobLocationArea = new HashMap<>();
-    Map<Integer, Map<String,Float>> zoneJobTypeDensity = new HashMap<>();
-    Map<Integer, Map<String,Integer>> jobsByJobTypeInTAZ = new HashMap<>();
-    
+    private final Map<Integer, Coordinate> jobCoord = new HashMap<>();
+    private final Map<Integer, Map<Integer, Double>> zone2JobId2WeightMap = new HashMap<>();
+    private final Map<Integer, Double> zoneLocationJobFactor = new HashMap<>();
+
     public GenerateJobMicrolocation(DataContainer dataContainer, DataSetSynPop dataSetSynPop){
         this.dataSetSynPop = dataSetSynPop;
         this.dataContainer = dataContainer;
@@ -36,121 +37,133 @@ public class GenerateJobMicrolocation {
     public void run() {
         logger.info("   Running module: job microlocation");
         logger.info("   Start parsing jobs information to hashmap");
-        readJobFile();
-        calculateDensity();
+        readJobFile(PropertiesSynPop.get().main.microJobsFileName);
+        calculateLocationJobFactor();
         logger.info("   Start Selecting the job to allocate the job");
-        //Select the job to allocate the job
+        //Select the job to allocate the microlocation
         int errorjob = 0;
         for (Job jj: dataContainer.getJobDataManager().getJobs()) {
             int zoneID = jj.getZoneId();
-            String jobType = jj.getType();
-            Zone zone = dataContainer.getGeoData().getZones().get(zoneID);
-            if (zoneJobTypeDensity.get(zoneID).get(jobType)==0.0){
-                ((JobImpl)jj).setCoordinate(zone.getRandomCoordinate(SiloUtil.getRandomObject()));
+            if (zone2JobId2WeightMap.get(zoneID)==null || zone2JobId2WeightMap.get(zoneID).isEmpty()){
+                float coordX = dataSetSynPop.getTazAttributes().get(zoneID).get("popCentroid_x");
+                float coordY = dataSetSynPop.getTazAttributes().get(zoneID).get("popCentroid_y");
+                ((JobMCR)jj).setCoordinate(new Coordinate(coordX, coordY));
+                ((JobMCR)jj).setMicrolocationType("zoneCentroid");
+                ((JobMCR)jj).setMicroBuildingId(zoneID);
                 errorjob++;
                 continue;
             }
-            int selectedJobID = SiloUtil.select(zoneJobTypeJobLocationArea.get(zoneID).get(jobType));
-            float remainingArea = zoneJobTypeJobLocationArea.get(zoneID).get(jobType).get(selectedJobID)- zoneJobTypeDensity.get(zoneID).get(jobType);
-            if (remainingArea > 0) {
-                zoneJobTypeJobLocationArea.get(zoneID).get(jobType).put(selectedJobID, remainingArea);
+
+            int selectedJobID = SiloUtil.select(zone2JobId2WeightMap.get(zoneID));
+
+            double remainingWeight = zone2JobId2WeightMap.get(zoneID).get(selectedJobID)- zoneLocationJobFactor.get(zoneID);
+            if (remainingWeight > 0) {
+                zone2JobId2WeightMap.get(zoneID).put(selectedJobID, remainingWeight);
             } else {
-                zoneJobTypeJobLocationArea.get(zoneID).get(jobType).put(selectedJobID, 0.0f);
+                zone2JobId2WeightMap.get(zoneID).remove(selectedJobID);
             }
-            ((JobImpl)jj).setCoordinate(new Coordinate(jobX.get(selectedJobID),jobY.get(selectedJobID)));
+            ((JobMCR)jj).setCoordinate(new Coordinate(jobCoord.get(selectedJobID)));
+            ((JobMCR)jj).setMicrolocationType("poi");
+            ((JobMCR)jj).setMicroBuildingId(selectedJobID);
         }
-        logger.warn( errorjob +"   Dwellings cannot find specific building location. Their coordinates are assigned randomly in TAZ" );
+        logger.warn( errorjob +"   jobs cannot find specific building location. Their coordinates are assigned randomly in TAZ" );
         logger.info("   Finished job microlocation.");
     }
 
+    private void calculateLocationJobFactor() {
 
+        //total jobs in zone
+        Map<Integer, Integer> zoneJobCounts = new HashMap<>();
+        for(Job jj : dataContainer.getJobDataManager().getJobs()){
+            zoneJobCounts.merge(jj.getZoneId(), 1, Integer::sum);
+        }
 
-    private void readJobFile() {
 
         for (int zone : dataSetSynPop.getTazs()){
-            Map<String,Map<Integer,Float>> jobLocationListForThisJobType = new HashMap<>();
-            for (String jobType : PropertiesSynPop.get().main.jobStringType){
-                Map<Integer,Float> jobLocationAndArea = new HashMap<>();
-                jobLocationListForThisJobType.put(jobType,jobLocationAndArea);
-            }
-            zoneJobTypeJobLocationArea.put(zone,jobLocationListForThisJobType);
-        }
-        
-        for (int row = 1; row <= PropertiesSynPop.get().main.jobLocationlist.getRowCount(); row++) {
+            Map<Integer, Double> jobs = zone2JobId2WeightMap.getOrDefault(zone, Collections.emptyMap());
 
-            int id = (int) PropertiesSynPop.get().main.jobLocationlist.getValueAt(row,"OBJECTID");
-            int zone = (int) PropertiesSynPop.get().main.jobLocationlist.getValueAt(row,"zoneID");
-            float xCoordinate = PropertiesSynPop.get().main.jobLocationlist.getValueAt(row,"x");
-            float yCoordinate = PropertiesSynPop.get().main.jobLocationlist.getValueAt(row,"y");
-            float agriArea = PropertiesSynPop.get().main.jobLocationlist.getValueAt(row,"job1");
-            float mnftArea = PropertiesSynPop.get().main.jobLocationlist.getValueAt(row,"job2");
-            float utilArea = PropertiesSynPop.get().main.jobLocationlist.getValueAt(row,"job3");
-            float consArea = PropertiesSynPop.get().main.jobLocationlist.getValueAt(row,"job4");
-            float retlArea = PropertiesSynPop.get().main.jobLocationlist.getValueAt(row,"job5");
-            float trnsArea = PropertiesSynPop.get().main.jobLocationlist.getValueAt(row,"job6");
-            float fincArea = PropertiesSynPop.get().main.jobLocationlist.getValueAt(row,"job7");
-            float rlstArea = PropertiesSynPop.get().main.jobLocationlist.getValueAt(row,"job8");
-            float admnArea = PropertiesSynPop.get().main.jobLocationlist.getValueAt(row,"job9");
-            float servArea = PropertiesSynPop.get().main.jobLocationlist.getValueAt(row,"job10");
-            jobZone.put(id,zone);
-            jobX.put(id,xCoordinate);
-            jobY.put(id,yCoordinate);
-
-
-            if (zoneJobTypeJobLocationArea.get(zone) != null){
-                zoneJobTypeJobLocationArea.get(zone).get("Agri").put(id,agriArea);
-                zoneJobTypeJobLocationArea.get(zone).get("Mnft").put(id,mnftArea);
-                zoneJobTypeJobLocationArea.get(zone).get("Util").put(id,utilArea);
-                zoneJobTypeJobLocationArea.get(zone).get("Cons").put(id,consArea);
-                zoneJobTypeJobLocationArea.get(zone).get("Retl").put(id,retlArea);
-                zoneJobTypeJobLocationArea.get(zone).get("Trns").put(id,trnsArea);
-                zoneJobTypeJobLocationArea.get(zone).get("Finc").put(id,fincArea);
-                zoneJobTypeJobLocationArea.get(zone).get("Rlst").put(id,rlstArea);
-                zoneJobTypeJobLocationArea.get(zone).get("Admn").put(id,admnArea);
-                zoneJobTypeJobLocationArea.get(zone).get("Serv").put(id,servArea);
+            // Sum up the weights of all jobs in the zone
+            double totalWeight = 0.;
+            if(!jobs.isEmpty()){
+                totalWeight = jobs.values().stream().mapToDouble(Double::doubleValue).sum();
             }
 
-        }
-    }
+            int jobCounts = zoneJobCounts.getOrDefault(zone, 0);
 
-    private void calculateDensity() {
-        for (int zone : dataSetSynPop.getTazs()){
-            Map<String,Integer> jobsByJobType = new HashMap<>();
-            Map<String,Float> densityByJobType = new HashMap<>();
-            jobsByJobTypeInTAZ.put(zone,jobsByJobType);
-            zoneJobTypeDensity.put(zone,densityByJobType);
-        }
-
-        for (Job jj: dataContainer.getJobDataManager().getJobs()) {
-            int zoneID = jj.getZoneId();
-            String jobType = jj.getType();
-
-            jobsByJobTypeInTAZ.get(zoneID).putIfAbsent(jobType, 0);
-
-            int numberOfJobs = jobsByJobTypeInTAZ.get(zoneID).get(jobType);
-            jobsByJobTypeInTAZ.get(zoneID).put(jobType,numberOfJobs+1);
-
-        }
-
-        for (int zone : dataSetSynPop.getTazs()){
-            if((jobsByJobTypeInTAZ.get(zone) == null)||(zoneJobTypeJobLocationArea.get(zone) == null)){
+            if(jobCounts == 0){
                 continue;
             }
-            for (String jobType : PropertiesSynPop.get().main.jobStringType){
-                if ((zoneJobTypeJobLocationArea.get(zone).get(jobType) != null)&(jobsByJobTypeInTAZ.get(zone).get(jobType) != null)) {
-                    float density = getSum(zoneJobTypeJobLocationArea.get(zone).get(jobType).values())/jobsByJobTypeInTAZ.get(zone).get(jobType);
-                    zoneJobTypeDensity.get(zone).put(jobType, density);
-                }
+
+            if(totalWeight == 0 & jobCounts >0){
+                logger.warn("Zone "+ zone + " has " + jobCounts + " job but no weights in the micro destination file.");
             }
+
+            zoneLocationJobFactor.put(zone, totalWeight/jobCounts);
         }
     }
 
+    private void readJobFile(String fileName) {
+        //parse buildings information to hashmap
+        logger.info("Reading job micro data from csv file");
+        String recString = "";
+        int recCount = 0;
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(fileName));
+            recString = in.readLine();
 
-    private static float getSum(Collection<? extends Number> values) {
-        float sm = 0.f;
-        for (Number value : values) {
-            sm += value.doubleValue();
+            // read header
+            String[] header = recString.split(",");
+            int posType = SiloUtil.findPositionInArray("type",header);
+            int posId = SiloUtil.findPositionInArray("id", header);
+            int posZone = SiloUtil.findPositionInArray("zone", header);
+            int posWeight = SiloUtil.findPositionInArray("WEIGHT", header);
+
+            int posCoordX = -1;
+            int posCoordY = -1;
+            try {
+                posCoordX = SiloUtil.findPositionInArray("X", header);
+                posCoordY = SiloUtil.findPositionInArray("Y", header);
+            } catch (Exception e) {
+                logger.warn("No coords given in job input file. Models using microlocations will not work.");
+            }
+
+            int noCoordCounter = 0;
+
+
+            // read line
+            while ((recString = in.readLine()) != null) {
+                recCount++;
+                String[] lineElements = recString.split(",");
+                String type = lineElements[posType];
+                if (type.equals("public_open_space")){
+                    continue;
+                }
+                int id = Integer.parseInt(lineElements[posId]);
+                int zone = Integer.parseInt(lineElements[posZone]);
+                double weight = Double.parseDouble(lineElements[posWeight]);
+
+                Coordinate coordinate = null;
+                if (posCoordX >= 0 && posCoordY >= 0) {
+                    try {
+                        coordinate = new Coordinate(Double.parseDouble(lineElements[posCoordX]), Double.parseDouble(lineElements[posCoordY]));
+                    } catch (Exception e) {
+                        noCoordCounter++;
+                    }
+                }
+
+                jobCoord.put(id,coordinate);
+                //put all buildings with the same zoneID into one building list
+                zone2JobId2WeightMap.computeIfAbsent(zone, k -> new HashMap<>()).put(id, weight);
+
+            }
+            if(noCoordCounter > 0) {
+                logger.warn("There were " + noCoordCounter + " micro job without coordinates.");
+            }
+        } catch (IOException e) {
+            logger.fatal("IO Exception caught reading micro job file: " + fileName, new RuntimeException());
+            logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">", new RuntimeException());
         }
-        return sm;
+        logger.info("Finished reading " + recCount + " jobs.");
+
     }
 }

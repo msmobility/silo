@@ -3,6 +3,7 @@ package de.tum.bgu.msm.health.data;
 import de.tum.bgu.msm.data.*;
 import org.matsim.api.core.v01.Coord;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,14 +23,19 @@ public class Trip implements Id {
 
     private int tripOriginZone;
     private int tripDestinationZone;
+
+    private String tripOriginType;
+    private String tripDestinationType;
+
+    private int tripOriginMicroId;
+    private int tripDestinationMicroId;
+
     private int person;
     private Mode tripMode;
     private Day departureDay;
     private int departureInMinutes;
     private int departureReturnInMinutes;
-
     private double activityDuration;
-    private double marginalMetHours = 0.;
 
     private int matsimLinks = 0;
     private double matsimConcMetersPm25 = 0.;
@@ -37,9 +43,15 @@ public class Trip implements Id {
     private double matsimTravelTime = 0.;
     private double matsimTravelDistance = 0.;
 
+    private double marginalMetHours = 0.;
     private Map<String, Float> travelRiskMap = new HashMap<>();
     private Map<String, Float> travelExposureMap = new HashMap<>();
+    private double travelNoiseExposure = 0.;
+    private double travelNdviExposure = 0.;
+
     private Map<String, Float> activityExposureMap = new HashMap<>();
+    private double activityNoiseExposure = 0.;
+    private double activityNdviExposure = 0.;
 
     public Trip(int tripId, Purpose tripPurpose) {
         this.tripId = tripId;
@@ -83,6 +95,10 @@ public class Trip implements Id {
         this.departureReturnInMinutes = departureReturnInMinutes;
     }
 
+    public void updateDepartureReturnInMinutes(int departureReturnInMinutes) {
+        this.departureReturnInMinutes = departureReturnInMinutes;
+    }
+
     public int getDepartureReturnInMinutes() { return departureReturnInMinutes; }
 
     public int getTripId() {
@@ -114,22 +130,52 @@ public class Trip implements Id {
         this.marginalMetHours += mmetHours;
     }
 
+    public double getTravelNoiseExposure() {
+        return travelNoiseExposure;
+    }
+
+    public void updateTravelNoiseExposure(double travelNoiseExposure) {
+        this.travelNoiseExposure += travelNoiseExposure;
+    }
+
+    public double getTravelNdviExposure() {
+        return travelNdviExposure;
+    }
+
+    public void updateTravelNdviExposure(double travelNdviExposure) {
+        this.travelNdviExposure += travelNdviExposure;
+    }
+
     public Map<String, Float> getTravelRiskMap() { return travelRiskMap; }
-
-    public Map<String, Float> getTravelExposureMap() { return travelExposureMap; }
-
-    public Map<String, Float> getActivityExposureMap() { return activityExposureMap; }
 
     public void updateTravelRiskMap(Map<String, Float> newRisks) {
         newRisks.forEach((k, v) -> travelRiskMap.merge(k, v, (v1, v2) -> v1 + v2 - v1*v2));
     }
 
+    public Map<String, Float> getTravelExposureMap() { return travelExposureMap; }
+
     public void updateTravelExposureMap(Map<String, Float> newExposures) {
-        newExposures.forEach((k, v) -> travelExposureMap.merge(k, v, Float::sum));
+        newExposures.forEach((k, v) -> travelExposureMap.merge(k, v, (v1, v2) -> v1 + v2));
     }
 
-    public void setActivityExposureMap(Map<String, Float> newExposures) {
-        this.activityExposureMap = newExposures;
+    public Map<String, Float> getActivityExposureMap() { return activityExposureMap; }
+
+    public void setActivityExposureMap(Map<String, Float> exposureMap) {
+        this.activityExposureMap = exposureMap;
+    }
+
+    public double getActivityNoiseExposure() { return activityNoiseExposure; }
+
+    public void setActivityNoiseExposure(double activityNoiseExposure) {
+        this.activityNoiseExposure = activityNoiseExposure;
+    }
+
+    public double getActivityNdviExposure() {
+        return activityNdviExposure;
+    }
+
+    public void setActivityNdviExposure(double activityNdviExposure) {
+        this.activityNdviExposure = activityNdviExposure;
     }
 
     public double getActivityDuration() { return activityDuration; }
@@ -216,5 +262,37 @@ public class Trip implements Id {
 
     public void setTripDestinationZone(int tripDestinationZone) {
         this.tripDestinationZone = tripDestinationZone;
+    }
+
+    public String getTripOriginType() {
+        return tripOriginType;
+    }
+
+    public void setTripOriginType(String tripOriginType) {
+        this.tripOriginType = tripOriginType;
+    }
+
+    public String getTripDestinationType() {
+        return tripDestinationType;
+    }
+
+    public void setTripDestinationType(String tripDestinationType) {
+        this.tripDestinationType = tripDestinationType;
+    }
+
+    public int getTripOriginMicroId() {
+        return tripOriginMicroId;
+    }
+
+    public void setTripOriginMicroId(int tripOriginMicroId) {
+        this.tripOriginMicroId = tripOriginMicroId;
+    }
+
+    public int getTripDestinationMicroId() {
+        return tripDestinationMicroId;
+    }
+
+    public void setTripDestinationMicroId(int tripDestinationMicroId) {
+        this.tripDestinationMicroId = tripDestinationMicroId;
     }
 }

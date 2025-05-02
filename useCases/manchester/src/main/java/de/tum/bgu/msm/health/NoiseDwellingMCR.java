@@ -3,12 +3,11 @@ package de.tum.bgu.msm.health;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.dwelling.DwellingUsage;
-import de.tum.bgu.msm.health.noise.NoiseDwelling;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.util.Optional;
 
-public class NoiseDwellingMCR implements NoiseDwelling {
+public class NoiseDwellingMCR implements Dwelling {
 
     private final Dwelling delegate;
     private double immission;
@@ -127,12 +126,10 @@ public class NoiseDwellingMCR implements NoiseDwelling {
         return delegate.equals(o);
     }
 
-    @Override
     public void setNoiseImmision(double lden) {
         this.immission = lden;
     }
 
-    @Override
     public double getNoiseImmission() {
         return this.immission;
     }

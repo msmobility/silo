@@ -28,7 +28,6 @@ import de.tum.bgu.msm.data.person.PersonRole;
 import de.tum.bgu.msm.events.impls.person.BirthEvent;
 import de.tum.bgu.msm.health.PersonHealthMCR;
 import de.tum.bgu.msm.health.data.DataContainerHealth;
-import de.tum.bgu.msm.health.data.PersonHealth;
 import de.tum.bgu.msm.health.disease.Diseases;
 import de.tum.bgu.msm.health.disease.HealthExposures;
 import de.tum.bgu.msm.models.demography.birth.BirthModel;
@@ -133,7 +132,9 @@ public class BirthModelMCR extends AbstractModel implements BirthModel {
         exposureMap.put("pm2.5", 0.f);
         exposureMap.put("no2", 0.f);
 
-        ((PersonHealthMCR)child).updateWeeklyPollutionExposures(exposureMap);
+        ((PersonHealthMCR)child).setWeeklyExposureByPollutantNormalised(exposureMap);
+        ((PersonHealthMCR)child).setWeeklyNoiseExposuresNormalised(0.f);
+        ((PersonHealthMCR)child).setWeeklyGreenExposuresNormalised(0.f);
 
         for (HealthExposures exposures : HealthExposures.values()){
             EnumMap<Diseases, Float> rr = new EnumMap<>(Diseases.class);

@@ -17,12 +17,12 @@ public final class ConstructionLocationStrategyMCR implements ConstructionLocati
         } else if(dwellingType.equals(ManchesterDwellingTypes.DwellingTypeManchester.SFA)) {
             alpha = 0.4;
             gamma = 0.6;
-        } else if(dwellingType.equals(ManchesterDwellingTypes.DwellingTypeManchester.MF234)) {
+        } else if(dwellingType.equals(ManchesterDwellingTypes.DwellingTypeManchester.FLAT)) {
             alpha = 0.3;
             gamma = 0.7;
-        } else if(dwellingType.equals(ManchesterDwellingTypes.DwellingTypeManchester.MF5plus)) {
-            alpha = 0.25;
-            gamma = 0.75;
+        } else if(dwellingType.equals(ManchesterDwellingTypes.DwellingTypeManchester.MH)) {
+            alpha = 0.2;
+            gamma = 0.8;
         } else {
             throw new Error("Undefined dwelling type " + dwellingType + " provided!");
         }

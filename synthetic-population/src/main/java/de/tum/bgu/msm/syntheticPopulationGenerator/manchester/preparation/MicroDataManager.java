@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.syntheticPopulationGenerator.manchester.preparation;
 
 
+import de.tum.bgu.msm.data.Ethnic;
 import de.tum.bgu.msm.data.dwelling.DefaultDwellingTypes;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
 import de.tum.bgu.msm.data.dwelling.DwellingUsage;
@@ -335,12 +336,17 @@ public class MicroDataManager {
     }
 
 
-    public Race translateRace(int nationality){
-        Race race = Race.white;
-        if (nationality == 8){
-            race = Race.black;
+    public Ethnic translateEthnic(int ethnic){
+        if (ethnic == 1){
+            return Ethnic.white;
+        } else if (ethnic == 2){
+           return Ethnic.mix;
+        } else if (ethnic == 3){
+           return Ethnic.asia;
+        } else if (ethnic == 4){
+           return Ethnic.black;
+        } else {return Ethnic.other;
         }
-        return race;
     }
 
 

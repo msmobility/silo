@@ -36,9 +36,11 @@ public class HealthExposuresReader {
             int posMmetWalk = SiloUtil.findPositionInArray("mmetHr_walk", header);
             int posMmetCycle = SiloUtil.findPositionInArray("mmetHr_cycle", header);
             int posMmetSport = SiloUtil.findPositionInArray("mmetHr_otherSport", header);
-            //read in the non-converted exposures in [g], the exposure normalization will be done in code
-            int posPM2_5 = SiloUtil.findPositionInArray("exposure_pm25", header);
-            int posNO2 = SiloUtil.findPositionInArray("exposure_no2", header);
+            int posPM2_5 = SiloUtil.findPositionInArray("exposure_normalised_pm25", header);
+            int posNO2 = SiloUtil.findPositionInArray("exposure_normalised_no2", header);
+            int posNoise = SiloUtil.findPositionInArray("exposure_normalised_noise_Lden", header);
+            int posNdvi = SiloUtil.findPositionInArray("exposure_normalised_ndvi", header);
+
 
             // read line
             while ((recString = in.readLine()) != null) {
@@ -52,8 +54,9 @@ public class HealthExposuresReader {
                 Map<String, Float> exposureMap = new HashMap<>();
                 exposureMap.put("pm2.5", Float.parseFloat(lineElements[posPM2_5]));
                 exposureMap.put("no2", Float.parseFloat(lineElements[posNO2]));
-                pp.updateWeeklyPollutionExposures(exposureMap);
-
+                pp.setWeeklyExposureByPollutantNormalised(exposureMap);
+                pp.setWeeklyNoiseExposuresNormalised(Float.parseFloat(lineElements[posNoise]));
+                pp.setWeeklyGreenExposuresNormalised(Float.parseFloat(lineElements[posNdvi]));
             }
         } catch (IOException e) {
             logger.fatal("IO Exception caught reading person health exposure file: " + path);
