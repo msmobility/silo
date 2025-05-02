@@ -24,6 +24,8 @@ public class RunHealthDiseaseLongitudinal {
 
     public static void main(String[] args) {
 
+        //test
+
         Properties properties = SiloUtil.siloInitialization(args[0]);
 
         Config config = null;
@@ -44,6 +46,5 @@ public class RunHealthDiseaseLongitudinal {
 
         logger.info("Finished SILO.");
 
-        // test
     }
 }
