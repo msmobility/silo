@@ -2,8 +2,8 @@ package de.tum.bgu.msm.health;
 
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.container.ModelContainer;
-import de.tum.bgu.msm.health.diseaseModelOffline.HealthExposuresReader;
-import de.tum.bgu.msm.health.diseaseModelOffline.ModelBuilderMCR;
+//import de.tum.bgu.msm.health.diseaseModelOffline.HealthExposuresReader;
+//import de.tum.bgu.msm.health.diseaseModelOffline.ModelBuilderMCR;
 import de.tum.bgu.msm.io.output.MultiFileResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -23,8 +23,6 @@ public class RunHealthDiseaseLongitudinal {
     private final static Logger logger = LogManager.getLogger(RunHealthDiseaseLongitudinal.class);
 
     public static void main(String[] args) {
-
-        //test
 
         Properties properties = SiloUtil.siloInitialization(args[0]);
 
