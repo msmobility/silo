@@ -51,7 +51,8 @@ public class AnalysisEventHandler implements EventHandler, LinkLeaveEventHandler
 	private final Map<Id<Person>, String> personId2legMode = new HashMap<>();
 
 
-	@Inject AnalysisEventHandler(){}
+	@Inject
+	public AnalysisEventHandler(){}
 	
 	@Inject
 	private Scenario scenario;
