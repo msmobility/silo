@@ -21,6 +21,8 @@ import org.matsim.core.scenario.ScenarioByInstanceModule;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 public class AccidentRateModelMCR {
@@ -47,8 +49,21 @@ public class AccidentRateModelMCR {
     private int counterBikePed;
 
     //
-    private static final Set<String> ACCIDENT_TYPE_MCR = Set.of("CAR", "BIKECAR", "BIKEBIKE");
-    private static final Set<String> ACCIDENT_SEVERITY_MCR = Set.of("LIGHT");
+    private static final Set<AccidentType> ACCIDENT_TYPE_MCR = Set.of(AccidentType.CAR, AccidentType.BIKECAR, AccidentType.BIKEBIKE);
+    private static final Set<AccidentSeverity> ACCIDENT_SEVERITY_MCR = Set.of(AccidentSeverity.LIGHT);
+
+    //
+    public static final Set<String> MAJOR = Set.of(
+            "primary", "primary_link", "secondary", "secondary_link",
+            "tertiary", "tertiary_link", "trunk", "trunk_link",
+            "motorway", "motorway_link", "bus_guideway", "cycleway"
+    );
+
+    public static final Set<String> MINOR = Set.of(
+            "unclassified", "residential", "living_street", "service",
+            "pedestrian", "track", "footway", "bridleway", "steps",
+            "path", "road"
+    );
 
     public AccidentRateModelMCR(Scenario scenario, float scalefactor) {
         this.scenario = scenario;
@@ -116,10 +131,6 @@ public class AccidentRateModelMCR {
         log.info("Link accident frequency calculation (by type by time of day) start.");
         for (AccidentType accidentType : AccidentType.values()){
             for (AccidentSeverity accidentSeverity : AccidentSeverity.values()){
-                if(ACCIDENT_TYPE_MCR.contains(accidentType) || ACCIDENT_SEVERITY_MCR.contains(accidentSeverity)){
-                    // todo: skip if accidentType and accidentSeverity labels are not relevant to MCR
-                    continue;
-                }
                 String basePath = scenario.getScenarioElement("accidentModelFile").toString();
                 AccidentRateCalculationMCR calculator = new AccidentRateCalculationMCR(SCALEFACTOR, accidentsContext, analysisEventHandler, accidentType, accidentSeverity, basePath);
 
@@ -387,29 +398,35 @@ public class AccidentRateModelMCR {
         log.info("Initializing all agent-specific information... Done.");
 
 
-        log.info("Link accident frequency calculation (by type by time of day) start.");
+        log.info("Link casualty frequency calculation (by type by time of day) start.");
         for (AccidentType accidentType : AccidentType.values()){
+            if (ACCIDENT_TYPE_MCR.contains(accidentType)){
+                continue;
+            }
             for (AccidentSeverity accidentSeverity : AccidentSeverity.values()){
+                if(ACCIDENT_SEVERITY_MCR.contains(accidentSeverity)){
+                    continue;
+                }
+
                 String basePath = scenario.getScenarioElement("accidentModelFile").toString();
+                CasualtyRateCalculationMCR calculator = new CasualtyRateCalculationMCR(SCALEFACTOR, accidentsContext, analysisEventHandler, accidentType, accidentSeverity, basePath);
 
-                // todo: define a new CasualtyRateCalculationMCR
-
-                // todo: add condition here to check if link is major/minor - 1way/2way based on accidentType
-                // todo: if CAR_ONEWAY, CAR_TWOWAY, BIKE_MINOR, BIKE_MAJOR -> send oneway, twoway, minor, major links only otherwise send all in run()
-
-                //AccidentRateCalculationMCR calculator = new AccidentRateCalculationMCR(SCALEFACTOR, accidentsContext, analysisEventHandler, accidentType, accidentSeverity,basePath);
-                //calculator.run(this.scenario.getNetwork().getLinks().values());
+                Map<Id<Link>, Link> placeholderMap = new HashMap<>();
+                placeholderMap.putAll(extractLinkSpecific((Map<Id<Link>, Link>) this.scenario.getNetwork().getLinks(), accidentType));
+                calculator.run(placeholderMap.values());
 
                 log.info("Calculating " + accidentType + "_" + accidentSeverity + " crash rate done.");
             }
         }
-        log.info("Link accident frequency calculation completed.");
+        log.info("Link casualty frequency calculation completed.");
 
+        /*
         try {
             writeOutCrashFrequency();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+
 
         log.info("Link casualty frequency conversion (by type by time of day) start.");
         for (Link link : this.scenario.getNetwork().getLinks().values()) {
@@ -422,6 +439,51 @@ public class AccidentRateModelMCR {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+         */
+    }
+
+    private Map<Id<Link>,Link> extractLinkSpecific(Map<Id<Link>, Link> links, AccidentType accidentType) {
+        Map<Id<Link>, Link> placeholderMap = new HashMap<>();
+
+        // send only relevant links for which we want to predict casualties
+        switch(accidentType){
+            case PED:
+                placeholderMap.putAll((Map<Id<Link>, Link>) this.scenario.getNetwork().getLinks());
+                break;
+            case CAR_ONEWAY:
+                for(Link link : links.values()){
+                    if(!link.getAttributes().getAttribute("onwysmm").equals("Two Way")){
+                        placeholderMap.put(link.getId(), link);
+                    }
+                }
+                break;
+            case CAR_TWOWAY:
+                for(Link link : links.values()){
+                    if(link.getAttributes().getAttribute("onwysmm").equals("Two Way")){
+                        placeholderMap.put(link.getId(), link);
+                    }
+                }
+                break;
+            case BIKE_MINOR:
+                for(Link link : links.values()){
+                    if(MINOR.contains(link.getAttributes().getAttribute("highway"))){
+                        placeholderMap.put(link.getId(), link);
+                    }
+                }
+                break;
+            case BIKE_MAJOR:
+                for(Link link : links.values()){
+                    if(MAJOR.contains(link.getAttributes().getAttribute("highway"))){
+                        placeholderMap.put(link.getId(), link);
+                    }
+                }
+                break;
+            default:
+                // todo: better to raise error here ??
+                break;
+
+        }
+        return placeholderMap;
     }
 
     public void runAccidentRateOffline() {

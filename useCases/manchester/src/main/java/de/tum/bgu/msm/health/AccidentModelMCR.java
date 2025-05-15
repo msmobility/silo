@@ -72,8 +72,9 @@ public class AccidentModelMCR extends AbstractModel implements ModelUpdateListen
             AccidentRateModelMCR model = new AccidentRateModelMCR(scenario, 1.f/scalingFactor);
             // todo: for testing, we run it offLine
 
-            model.runAccidentRateOffline();
-            model.runAgentInjuryRiskOffline();
+            model.runCasualtyRateOffline();
+            //model.runAccidentRateOffline();
+            //model.runAgentInjuryRiskOffline();
             //model.runModelOnline();
 
             for(Id<Link> linkId : model.getAccidentsContext().getLinkId2info().keySet()){
