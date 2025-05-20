@@ -6,7 +6,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.contrib.accidents.AccidentsModule;
 import org.matsim.core.api.experimental.events.EventsManager;
@@ -17,6 +20,7 @@ import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.population.io.PopulationReader;
 import org.matsim.core.scenario.ScenarioByInstanceModule;
+import org.matsim.utils.objectattributes.attributable.Attributes;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -420,14 +424,13 @@ public class AccidentRateModelMCR {
         }
         log.info("Link casualty frequency calculation completed.");
 
-        /*
         try {
-            writeOutCrashFrequency();
+            writeOutCasualtyRate();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
-
+        /*
         log.info("Link casualty frequency conversion (by type by time of day) start.");
         for (Link link : this.scenario.getNetwork().getLinks().values()) {
             casualtyRateCalculation(link);
@@ -448,32 +451,36 @@ public class AccidentRateModelMCR {
         // send only relevant links for which we want to predict casualties
         switch(accidentType){
             case PED:
-                placeholderMap.putAll((Map<Id<Link>, Link>) this.scenario.getNetwork().getLinks());
+                for(Link link : links.values()){
+                    if(link.getAllowedModes().contains(TransportMode.walk)){
+                        placeholderMap.put(link.getId(), link);
+                    }
+                }
                 break;
             case CAR_ONEWAY:
                 for(Link link : links.values()){
-                    if(!link.getAttributes().getAttribute("onwysmm").equals("Two Way")){
+                    if(!isTwoWayRoad(this.scenario.getNetwork(), link, TransportMode.car)){
                         placeholderMap.put(link.getId(), link);
                     }
                 }
                 break;
             case CAR_TWOWAY:
                 for(Link link : links.values()){
-                    if(link.getAttributes().getAttribute("onwysmm").equals("Two Way")){
+                    if(isTwoWayRoad(this.scenario.getNetwork(), link, TransportMode.car)){
                         placeholderMap.put(link.getId(), link);
                     }
                 }
                 break;
             case BIKE_MINOR:
                 for(Link link : links.values()){
-                    if(MINOR.contains(link.getAttributes().getAttribute("highway"))){
+                    if(MINOR.contains(getStringAttribute(link.getAttributes(), "type", "residential")) && link.getAllowedModes().contains(TransportMode.bike)){
                         placeholderMap.put(link.getId(), link);
                     }
                 }
                 break;
             case BIKE_MAJOR:
                 for(Link link : links.values()){
-                    if(MAJOR.contains(link.getAttributes().getAttribute("highway"))){
+                    if(MAJOR.contains(getStringAttribute(link.getAttributes(), "type", "residential")) && link.getAllowedModes().contains(TransportMode.bike)){
                         placeholderMap.put(link.getId(), link);
                     }
                 }
@@ -484,6 +491,38 @@ public class AccidentRateModelMCR {
 
         }
         return placeholderMap;
+    }
+
+    public String getStringAttribute(Attributes attributes, String key, String defaultValue) {
+        Object value = attributes.getAttribute(key);
+        return value != null ? value.toString() : defaultValue;
+    }
+
+    /**
+     * Checks if a link is part of a two-way road for a specific transport mode.
+     * @param network The MATSim network
+     * @param link The link to check
+     * @param mode The transport mode to verify
+     * @return true if there exists a reverse link that also allows the specified mode
+     */
+
+    public boolean isTwoWayRoad(Network network, Link link, String mode) {
+        // First check if the original link allows the specified mode
+        if (!link.getAllowedModes().contains(mode)) {
+            return false;
+        }
+
+        Node fromNode = link.getFromNode();
+        Node toNode = link.getToNode();
+
+        // Check all outgoing links from the 'to' node (more efficient than scanning all links)
+        for (Link potentialReverse : toNode.getOutLinks().values()) {
+            if (potentialReverse.getToNode().equals(fromNode) &&
+                    potentialReverse.getAllowedModes().contains(mode)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void runAccidentRateOffline() {
@@ -754,24 +793,27 @@ public class AccidentRateModelMCR {
 
         for (Link link : this.scenario.getNetwork().getLinks().values()) {
             for(AccidentSeverity accidentSeverity : AccidentSeverity.values()){
-
+                if(ACCIDENT_SEVERITY_MCR.contains(accidentSeverity)){
+                    continue;
+                }
                 for(AccidentType accidentType : AccidentType.values()){
+                    if (ACCIDENT_TYPE_MCR.contains(accidentType)){
+                        continue;
+                    }
                     double totalCasualty = 0.;
-                    for(int hour = 0; hour<=24; hour++) {
-                        if(accidentSeverity.equals(AccidentSeverity.LIGHT)){
-                            totalCasualty += accidentsContext.getLinkId2info().get(link.getId()).getLightCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
-                        }else{
+                    if(accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType) != null){
+                        for(int hour = 0; hour<=24; hour++) {
                             totalCasualty += accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
                         }
+                        risk.append(link.getId());
+                        risk.append(',');
+                        risk.append(accidentSeverity.name());
+                        risk.append(',');
+                        risk.append(accidentType.name());
+                        risk.append(',');
+                        risk.append(totalCasualty);
+                        risk.append('\n');
                     }
-                    risk.append(link.getId());
-                    risk.append(',');
-                    risk.append(accidentSeverity.name());
-                    risk.append(',');
-                    risk.append(accidentType.name());
-                    risk.append(',');
-                    risk.append(totalCasualty);
-                    risk.append('\n');
                 }
 
             }

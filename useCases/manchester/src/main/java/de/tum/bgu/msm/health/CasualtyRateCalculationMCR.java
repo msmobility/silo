@@ -46,7 +46,7 @@ public class CasualtyRateCalculationMCR {
         //double finalCrashRate = meanCrash*(1-probZeroCrash);
 
         OpenIntFloatHashMap casualtyRateByTimeOfDay = new OpenIntFloatHashMap();
-        for (int hour = 0; hour < 24; hour++) {
+        for (int hour = 0; hour <= 24; hour++) {
             probZeroCrash = calculateProbability(link, hour);
             casualtyRateByTimeOfDay.put(hour, (float) probZeroCrash);
         }
@@ -62,25 +62,27 @@ public class CasualtyRateCalculationMCR {
 
     private double calculateUtility(Link link, int hour) {
         Attributes attributes = link.getAttributes();
-        double utility = binaryLogitCoef.get("(Intercept)");
+
+        double utility = 0.0;
+        utility += binaryLogitCoef.get("(Intercept)");
 
         // truck
-        double truckHourlyDemand = analzyer.getDemand(link.getId(), "truck", hour) * SCALEFACTOR;
+        double truckHourlyDemand = analzyer.getDemand(link.getId(), "truck", hour); //* SCALEFACTOR;
         utility += binaryLogitCoef.get("log1p(truck_flow)") *
                 Math.log1p(truckHourlyDemand);
 
         // pedestrian
-        double pedHourlyDemand = analzyer.getDemand(link.getId(), "walk", hour) * SCALEFACTOR;
+        double pedHourlyDemand = analzyer.getDemand(link.getId(), "walk", hour);
         utility += binaryLogitCoef.get("log1p(ped_flow)") *
                 Math.log1p(pedHourlyDemand);
 
         // car
-        double carHourlyDemand = analzyer.getDemand(link.getId(), "car", hour) * SCALEFACTOR;
+        double carHourlyDemand = analzyer.getDemand(link.getId(), "car", hour); //* SCALEFACTOR;
         utility += binaryLogitCoef.get("log1p(car_flow)") *
                 Math.log1p(carHourlyDemand);
 
         // bike
-        double bikeHourlyDemand = analzyer.getDemand(link.getId(), "bike", hour) * SCALEFACTOR;
+        double bikeHourlyDemand = analzyer.getDemand(link.getId(), "bike", hour);
         utility += binaryLogitCoef.get("log(bike_flow + 0.1)") *
                 Math.log(bikeHourlyDemand + 0.1);
 
@@ -94,14 +96,14 @@ public class CasualtyRateCalculationMCR {
                 Math.log1p(motorHourlyDemand);
 
         // length
-        utility += binaryLogitCoef.get("log(length_sum)") *
-                Math.log(getDoubleAttribute(attributes, "Length", 0.0));
+        utility += binaryLogitCoef.get("log(length_sum)") * Math.log(link.getLength());
 
         // Handle continuous variables without transformation
 
         utility += binaryLogitCoef.get("bikeStress") * LinkStress.getStress(link, "bike");
         utility += binaryLogitCoef.get("bikeStressJct") * JctStress.getStress(link, "bike");
         utility += binaryLogitCoef.get("walkStressJct") * JctStress.getStress(link, "walk");
+
         utility += binaryLogitCoef.get("width") * getDoubleAttribute(attributes, "width", 0.0);
 
         // Handle categorical variables (speed limit)
@@ -113,28 +115,17 @@ public class CasualtyRateCalculationMCR {
         }
 
         //
-        String roadType = link.getAttributes().getAttribute("roadtyp").toString();
-        //double speedLimit = Double.parseDouble(link.getAttributes().getAttribute("carSpeedLimitMPH").toString());
+        String roadType = getStringAttribute(link.getAttributes(), "type", "residential"); // todo: what should be the default
 
-        if (roadType.equals("Main Road - Cycling Allowed") || roadType.equals("Main Road Link - Cycling Allowed") ||
-                roadType.equals("Trunk Road - Cycling Allowed") || roadType.equals("Trunk Road Link - Cycling Allowed")) {
-
-            // Trunk or Primary → group into "Primary/Trunk"
-            //road = "Primary/Trunk";
+        if (roadType.equals("primary") || roadType.equals("primary_link") || roadType.equals("trunk") || roadType.equals("trunk_link")) {
             utility += binaryLogitCoef.get("roadPrimary/Trunk");
-
-        } else if (roadType.equals("Residential Road - Cycling Allowed") ||
-                roadType.equals("Other minor roads")) {
-
+        } else if ((!roadType.equals("motorway")) && (!roadType.equals("motorway_link"))) {
             if (speedLimit < 20) {
-                //road = "<20MPH";
                 utility += binaryLogitCoef.get("road<20MPH");
             } else if (speedLimit >= 20 && speedLimit < 30) {
-                //road = "20 - 29 MPH";
                 utility += binaryLogitCoef.get("road20 - 29 MPH");
             }
         }
-
         return utility;
     }
 
