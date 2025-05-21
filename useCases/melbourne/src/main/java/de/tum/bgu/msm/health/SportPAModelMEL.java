@@ -14,11 +14,11 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 
-public class SportPAModelMCR extends AbstractModel implements ModelUpdateListener {
-    private static final Logger logger = LogManager.getLogger(SportPAModelMCR.class);
+public class SportPAModelMEL extends AbstractModel implements ModelUpdateListener {
+    private static final Logger logger = LogManager.getLogger(SportPAModelMEL.class);
     private Map<String,Map<String,Double>> coef = new HashMap<>();
 
-    public SportPAModelMCR(DataContainer dataContainer, Properties properties, Random random) {
+    public SportPAModelMEL(DataContainer dataContainer, Properties properties, Random random) {
         super(dataContainer, properties, random);
         this.coef = new SportPAmodelCoefficientReader().readData(properties.healthData.sportPAmodel);
     }

@@ -29,7 +29,7 @@ public class RunHomeBasedExposureOffline {
         HealthDataContainerImpl dataContainer = DataBuilderHealth.getModelDataForMelbourne(properties, config);
         DataBuilderHealth.read(properties, dataContainer, config);
 
-        HealthExposureModelMCR exposureModelMCR = new HealthExposureModelMCR(dataContainer, properties, SiloUtil.provideNewRandom(),config);
+        HealthExposureModelMEL exposureModelMCR = new HealthExposureModelMEL(dataContainer, properties, SiloUtil.provideNewRandom(),config);
 
 
         exposureModelMCR.calculateHomeBasedExposureOnly(2021);

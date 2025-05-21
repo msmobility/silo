@@ -64,17 +64,17 @@ import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
 
-public class HealthExposureModelMCR extends AbstractModel implements ModelUpdateListener {
+public class HealthExposureModelMEL extends AbstractModel implements ModelUpdateListener {
     private int latestMatsimYear = -1;
     private int latestMITOYear = -1;
-    private static final Logger logger = LogManager.getLogger(HealthExposureModelMCR.class);
+    private static final Logger logger = LogManager.getLogger(HealthExposureModelMEL.class);
     private Map<Integer, Trip> mitoTrips = new HashMap<>();
     private final Config initialMatsimConfig;
     private MutableScenario scenario;
     private List<Day> simulatedDays;
     private List<Day> weekdays = Arrays.asList(Day.monday,Day.tuesday,Day.wednesday,Day.thursday,Day.friday);
 
-    public HealthExposureModelMCR(DataContainer dataContainer, Properties properties, Random random, Config config) {
+    public HealthExposureModelMEL(DataContainer dataContainer, Properties properties, Random random, Config config) {
         super(dataContainer, properties, random);
         this.initialMatsimConfig = config;
         simulatedDays = Arrays.asList(Day.thursday,Day.saturday,Day.sunday);
@@ -180,9 +180,9 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
         new LinkInfoReader().readConcentrationData(((DataContainerHealth)dataContainer), outputDirectory + "linkConcentration_" + day + ".csv");
 
-        //we produced concentration from bus vehicle source at link level, currently it is static over days and scenarios.
-        //So add this as an additional concentration to link
-        new LinkInfoReader().readConcentrationData(((DataContainerHealth)dataContainer), properties.healthData.busLinkConcentration);
+        // we have not produced concentration from bus vehicle source at link level.
+        // So we do not add this as an additional concentration to link
+        // new LinkInfoReader().readConcentrationData(((DataContainerHealth)dataContainer), properties.healthData.busLinkConcentration);
 
         new LinkInfoReader().readNoiseLevelData(((DataContainerHealth)dataContainer), outputDirectory + "matsim/" + latestMatsimYear, day);
 
@@ -195,9 +195,9 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         ActivityLocationInfoReader reader = new ActivityLocationInfoReader();
         reader.readConcentrationData(((DataContainerHealth)dataContainer), outputDirectory + "locationConcentration_" + day + ".csv");
 
-        //we produced concentration from bus vehicle source at location level, currently it is static over days and scenarios.
-        //So add this as an additional concentration to activity location
-        reader.readConcentrationData(((DataContainerHealth)dataContainer), properties.healthData.busLocationConcentration);
+        //we have not produced concentration from bus vehicle source at location level.
+        //So we do not add this as an additional concentration to activity location
+        // reader.readConcentrationData(((DataContainerHealth)dataContainer), properties.healthData.busLocationConcentration);
 
         reader.readNoiseLevelData(((DataContainerHealth)dataContainer), outputDirectory + "matsim/" + latestMatsimYear + "/" + day +  "/car/noise-analysis/immissions/");
     }

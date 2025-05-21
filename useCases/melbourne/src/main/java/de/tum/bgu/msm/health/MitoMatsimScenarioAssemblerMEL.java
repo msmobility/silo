@@ -23,7 +23,7 @@ import org.matsim.core.config.groups.*;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ScenarioUtils;
-import uk.cam.mrc.phm.MitoModelMCR;
+import uk.cam.mrc.phm.MitoModelMEL;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -67,7 +67,7 @@ public class MitoMatsimScenarioAssemblerMEL implements MatsimScenarioAssembler {
         DataSet dataSet = convertData(year);
 
         logger.info("  SILO data being sent to MITO");
-        MitoModelMCR mito = MitoModelMCR.initializeModelFromSilo(propertiesPath, dataSet, properties.main.scenarioName);
+        MitoModelMEL mito = MitoModelMEL.initializeModelFromSilo(propertiesPath, dataSet, properties.main.scenarioName);
         mito.setRandomNumberGenerator(SiloUtil.getRandomObject());
         mito.run();
 
