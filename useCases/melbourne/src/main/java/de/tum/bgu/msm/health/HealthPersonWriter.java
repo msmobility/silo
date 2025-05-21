@@ -92,41 +92,41 @@ public class HealthPersonWriter implements PersonWriter {
             pwp.print(",");
             pwp.print(pp.getAnnualIncome());
             pwp.print(",");
-            pwp.print(((PersonHealthMCR)pp).getSchoolId());
+            pwp.print(((PersonHealthMEL)pp).getSchoolId());
             pwp.print(",");
-            pwp.print(((PersonHealthMCR)pp).getEthnic().toString());
+            pwp.print(((PersonHealthMEL)pp).getEthnic().toString());
             pwp.print(",");
             pwp.print(dataContainer.getRealEstateDataManager().getDwelling(pp.getHousehold().getDwellingId()).getZoneId());
             pwp.print(",");
-            pwp.print(((PersonHealthMCR)pp).getWeeklyTravelSeconds());
+            pwp.print(((PersonHealthMEL)pp).getWeeklyTravelSeconds());
             pwp.print(",");
-            pwp.print(((PersonHealthMCR)pp).getWeeklyActivityMinutes());
+            pwp.print(((PersonHealthMEL)pp).getWeeklyActivityMinutes());
             pwp.print(",");
-            pwp.print(((PersonHealthMCR)pp).getWeeklyHomeMinutes());
+            pwp.print(((PersonHealthMEL)pp).getWeeklyHomeMinutes());
             pwp.print(",");
-            pwp.print(((PersonHealthMCR)pp).getWeeklyAccidentRisk("lightInjury"));
+            pwp.print(((PersonHealthMEL)pp).getWeeklyAccidentRisk("lightInjury"));
             pwp.print(",");
-            pwp.print(((PersonHealthMCR)pp).getWeeklyAccidentRisk("severeInjury"));
+            pwp.print(((PersonHealthMEL)pp).getWeeklyAccidentRisk("severeInjury"));
             pwp.print(",");
-            pwp.print(((PersonHealthMCR)pp).getWeeklyAccidentRisk("fatality"));
+            pwp.print(((PersonHealthMEL)pp).getWeeklyAccidentRisk("fatality"));
             pwp.print(",");
-            pwp.print(((PersonHealthMCR)pp).getWeeklyMarginalMetHours(Mode.walk));
+            pwp.print(((PersonHealthMEL)pp).getWeeklyMarginalMetHours(Mode.walk));
             pwp.print(",");
-            pwp.print(((PersonHealthMCR)pp).getWeeklyMarginalMetHours(Mode.bicycle));
+            pwp.print(((PersonHealthMEL)pp).getWeeklyMarginalMetHours(Mode.bicycle));
             pwp.print(",");
-            pwp.print(((PersonHealthMCR)pp).getWeeklyMarginalMetHoursSport());
+            pwp.print(((PersonHealthMEL)pp).getWeeklyMarginalMetHoursSport());
             pwp.print(",");
-            pwp.print((((PersonHealthMCR) pp).getWeeklyExposureByPollutantNormalised("pm2.5")));
+            pwp.print((((PersonHealthMEL) pp).getWeeklyExposureByPollutantNormalised("pm2.5")));
             pwp.print(",");
-            pwp.print((((PersonHealthMCR) pp).getWeeklyExposureByPollutantNormalised("no2")));
+            pwp.print((((PersonHealthMEL) pp).getWeeklyExposureByPollutantNormalised("no2")));
             pwp.print(",");
-            pwp.print((((PersonHealthMCR) pp).getWeeklyNoiseExposuresNormalised()));
+            pwp.print((((PersonHealthMEL) pp).getWeeklyNoiseExposuresNormalised()));
             pwp.print(",");
-            pwp.print((((PersonHealthMCR) pp).getWeeklyGreenExposuresNormalised()));
+            pwp.print((((PersonHealthMEL) pp).getWeeklyGreenExposuresNormalised()));
             pwp.print(",");
-            pwp.print((((PersonHealthMCR) pp).getNoiseHighAnnoyedPercentage()));
+            pwp.print((((PersonHealthMEL) pp).getNoiseHighAnnoyedPercentage()));
             pwp.print(",");
-            pwp.print((((PersonHealthMCR) pp).getNoiseHighSleepDisturbancePercentage()));
+            pwp.print((((PersonHealthMEL) pp).getNoiseHighSleepDisturbancePercentage()));
             pwp.println();
             if (pp.getId() == SiloUtil.trackPp) {
                 SiloUtil.trackingFile("Writing pp " + pp.getId() + " to micro data file.");
@@ -178,19 +178,19 @@ public class HealthPersonWriter implements PersonWriter {
             pwp.print(",");
             pwp.print(pp.getAnnualIncome());
             pwp.print(",");
-            pwp.print(((PersonHealthMCR)pp).getSchoolId());
+            pwp.print(((PersonHealthMEL)pp).getSchoolId());
             pwp.print(",");
-            pwp.print(((PersonHealthMCR)pp).getEthnic().toString());
+            pwp.print(((PersonHealthMEL)pp).getEthnic().toString());
             pwp.print(",");
             pwp.print(dataContainer.getRealEstateDataManager().getDwelling(pp.getHousehold().getDwellingId()).getZoneId());
 
             for(HealthExposures exposures : HealthExposures.values()){
                 for(Diseases diseases : ((DataContainerHealth)dataContainer).getDoseResponseData().get(exposures).keySet()){
                     pwp.print(",");
-                    if(((PersonHealthMCR) pp).getRelativeRisksByDisease().get(exposures)==null){
+                    if(((PersonHealthMEL) pp).getRelativeRisksByDisease().get(exposures)==null){
                         pwp.print(0.);
                     }else {
-                        pwp.print(((PersonHealthMCR) pp).getRelativeRisksByDisease().get(exposures).getOrDefault(diseases, 0.f));
+                        pwp.print(((PersonHealthMEL) pp).getRelativeRisksByDisease().get(exposures).getOrDefault(diseases, 0.f));
                     }
                 }
             }

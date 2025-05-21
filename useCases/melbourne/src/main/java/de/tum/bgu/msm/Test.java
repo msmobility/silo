@@ -6,7 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Implements SILO for the Great Manchester
+ * Implements SILO for the Great Melbourne
  *
  * @author Qin Zhang*/
 

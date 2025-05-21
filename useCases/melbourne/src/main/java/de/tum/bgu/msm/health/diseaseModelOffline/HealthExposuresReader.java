@@ -4,8 +4,8 @@ import de.tum.bgu.msm.data.Mode;
 import de.tum.bgu.msm.health.data.PersonHealth;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.health.HealthDataContainerImpl;
-import de.tum.bgu.msm.health.PersonFactoryMCRHealth;
-import de.tum.bgu.msm.health.PersonHealthMCR;
+import de.tum.bgu.msm.health.PersonFactoryMELHealth;
+import de.tum.bgu.msm.health.PersonHealthMEL;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -21,7 +21,7 @@ public class HealthExposuresReader {
 
     public Map<Integer, PersonHealth> readData(HealthDataContainerImpl dataContainer, String path) {
         logger.info("Reading person micro data with health exposures");
-        PersonFactoryMCRHealth ppFactory = new PersonFactoryMCRHealth();
+        PersonFactoryMELHealth ppFactory = new PersonFactoryMELHealth();
         Map<Integer, PersonHealth> persons = new HashMap<>();
 
         String recString = "";
@@ -46,19 +46,17 @@ public class HealthExposuresReader {
             while ((recString = in.readLine()) != null) {
                 recCount++;
                 String[] lineElements = recString.split(",");
-                PersonHealthMCR pp = (PersonHealthMCR) dataContainer.getHouseholdDataManager().getPersonFromId(Integer.parseInt(lineElements[posId]));
-                if(pp!=null) {
-                    pp.updateWeeklyMarginalMetHours(Mode.walk, Float.parseFloat(lineElements[posMmetWalk]));
-                    pp.updateWeeklyMarginalMetHours(Mode.bicycle, Float.parseFloat(lineElements[posMmetCycle]));
-                    pp.setWeeklyMarginalMetHoursSport(Float.parseFloat(lineElements[posMmetSport]));
+                PersonHealthMEL pp = (PersonHealthMEL) dataContainer.getHouseholdDataManager().getPersonFromId(Integer.parseInt(lineElements[posId]));
+                pp.updateWeeklyMarginalMetHours(Mode.walk, Float.parseFloat(lineElements[posMmetWalk]));
+                pp.updateWeeklyMarginalMetHours(Mode.bicycle, Float.parseFloat(lineElements[posMmetCycle]));
+                pp.setWeeklyMarginalMetHoursSport(Float.parseFloat(lineElements[posMmetSport]));
 
-                    Map<String, Float> exposureMap = new HashMap<>();
-                    exposureMap.put("pm2.5", Float.parseFloat(lineElements[posPM2_5]));
-                    exposureMap.put("no2", Float.parseFloat(lineElements[posNO2]));
-                    pp.setWeeklyExposureByPollutantNormalised(exposureMap);
-                    pp.setWeeklyNoiseExposuresNormalised(Float.parseFloat(lineElements[posNoise]));
-                    pp.setWeeklyGreenExposuresNormalised(Float.parseFloat(lineElements[posNdvi]));
-                }
+                Map<String, Float> exposureMap = new HashMap<>();
+                exposureMap.put("pm2.5", Float.parseFloat(lineElements[posPM2_5]));
+                exposureMap.put("no2", Float.parseFloat(lineElements[posNO2]));
+                pp.setWeeklyExposureByPollutantNormalised(exposureMap);
+                pp.setWeeklyNoiseExposuresNormalised(Float.parseFloat(lineElements[posNoise]));
+                pp.setWeeklyGreenExposuresNormalised(Float.parseFloat(lineElements[posNdvi]));
             }
         } catch (IOException e) {
             logger.fatal("IO Exception caught reading person health exposure file: " + path);

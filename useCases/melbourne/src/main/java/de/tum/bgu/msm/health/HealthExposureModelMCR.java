@@ -5,10 +5,9 @@ import com.google.common.collect.Iterables;
 import com.google.common.math.LongMath;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.*;
-import de.tum.bgu.msm.data.job.JobMCR;
+import de.tum.bgu.msm.data.job.JobMEL;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Person;
-import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.health.data.*;
 import de.tum.bgu.msm.health.diseaseModelOffline.HealthExposuresReader;
 import de.tum.bgu.msm.health.injury.AccidentType;
@@ -24,7 +23,6 @@ import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -909,10 +907,10 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             float Lden = (float) (10 * Math.log10(sumExposureNoise / sumHour));
             float Lnight = (float) (10 * Math.log10(sumExposureNoiseNight / sumNightHour));
             ((PersonHealth) person).setWeeklyNoiseExposuresNormalised (Lden);
-            ((PersonHealthMCR) person).setNoiseHighAnnoyedPercentage((float) NoiseMetrics.getHighAnnoyedPercentage(Lden));
-            ((PersonHealthMCR) person).setNoiseHighSleepDisturbancePercentage((float) NoiseMetrics.getHighSleepDisturbancePercentage(Lnight));
+            ((PersonHealthMEL) person).setNoiseHighAnnoyedPercentage((float) NoiseMetrics.getHighAnnoyedPercentage(Lden));
+            ((PersonHealthMEL) person).setNoiseHighSleepDisturbancePercentage((float) NoiseMetrics.getHighSleepDisturbancePercentage(Lnight));
 
-            ((PersonHealth) person).setWeeklyGreenExposuresNormalised(((PersonHealthMCR) person).getWeeklyNdviExposure() / sumHour);
+            ((PersonHealth) person).setWeeklyGreenExposuresNormalised(((PersonHealthMEL) person).getWeeklyNdviExposure() / sumHour);
         }
     }
 
@@ -923,7 +921,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         }else if ("vacantDwelling".equals(tripDestinationType)){
             return "dd" + tripDestinationMicroId;
         }else if ("job".equals(tripDestinationType)){
-            JobMCR job = (JobMCR)dataContainer.getJobDataManager().getJobFromId(tripDestinationMicroId);
+            JobMEL job = (JobMEL)dataContainer.getJobDataManager().getJobFromId(tripDestinationMicroId);
             if(job != null) {
                 if("poi".equals(job.getMicrolocationType())) {
                     return "poi" + job.getMicroBuildingId();
@@ -1195,10 +1193,10 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             float Lden = (float) (10 * Math.log10(sumExposureNoise / sumHour));
             float Lnight = (float) (10 * Math.log10(sumExposureNoiseNight / sumNightHour));
             ((PersonHealth) person).setWeeklyNoiseExposuresNormalised (Lden);
-            ((PersonHealthMCR) person).setNoiseHighAnnoyedPercentage((float) NoiseMetrics.getHighAnnoyedPercentage(Lden));
-            ((PersonHealthMCR) person).setNoiseHighSleepDisturbancePercentage((float) NoiseMetrics.getHighSleepDisturbancePercentage(Lnight));
+            ((PersonHealthMEL) person).setNoiseHighAnnoyedPercentage((float) NoiseMetrics.getHighAnnoyedPercentage(Lden));
+            ((PersonHealthMEL) person).setNoiseHighSleepDisturbancePercentage((float) NoiseMetrics.getHighSleepDisturbancePercentage(Lnight));
 
-            ((PersonHealth) person).setWeeklyGreenExposuresNormalised(((PersonHealthMCR) person).getWeeklyNdviExposure() / sumHour);
+            ((PersonHealth) person).setWeeklyGreenExposuresNormalised(((PersonHealthMEL) person).getWeeklyNdviExposure() / sumHour);
         }
     }
 

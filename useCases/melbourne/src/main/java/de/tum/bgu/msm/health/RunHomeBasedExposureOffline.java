@@ -1,7 +1,5 @@
 package de.tum.bgu.msm.health;
 
-import de.tum.bgu.msm.health.airPollutant.AirPollutantModel;
-import de.tum.bgu.msm.health.noise.NoiseModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.logging.log4j.LogManager;
@@ -10,7 +8,7 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 
 /**
- * Implements SILO for the Greater Manchester
+ * Implements SILO for the Greater Melbourne
  *
  * @author Qin Zhang*/
 
@@ -27,8 +25,8 @@ public class RunHomeBasedExposureOffline {
         if (args.length > 1 && args[1] != null) {
             config = ConfigUtils.loadConfig(args[1]);
         }
-        logger.info("Started SILO land use model for the Greater Manchester");
-        HealthDataContainerImpl dataContainer = DataBuilderHealth.getModelDataForManchester(properties, config);
+        logger.info("Started SILO land use model for the Greater Melbourne");
+        HealthDataContainerImpl dataContainer = DataBuilderHealth.getModelDataForMelbourne(properties, config);
         DataBuilderHealth.read(properties, dataContainer, config);
 
         HealthExposureModelMCR exposureModelMCR = new HealthExposureModelMCR(dataContainer, properties, SiloUtil.provideNewRandom(),config);

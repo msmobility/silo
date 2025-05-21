@@ -1,11 +1,10 @@
 package de.tum.bgu.msm.health;
 
 import de.tum.bgu.msm.container.DataContainer;
-import de.tum.bgu.msm.data.ZoneMCR;
+import de.tum.bgu.msm.data.ZoneMEL;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
-import de.tum.bgu.msm.health.data.PersonHealth;
 import de.tum.bgu.msm.health.io.SportPAmodelCoefficientReader;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
@@ -45,7 +44,7 @@ public class SportPAModelMCR extends AbstractModel implements ModelUpdateListene
 
     public void updateSportPA() {
         for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
-            PersonHealthMCR personHealth = (PersonHealthMCR) person;
+            PersonHealthMEL personHealth = (PersonHealthMEL) person;
             //zero model
             double utility = getPredictor(person, coef.get("zero"));
             double zeroProb = Math.exp(utility)/(1+Math.exp(utility));
@@ -100,9 +99,9 @@ public class SportPAModelMCR extends AbstractModel implements ModelUpdateListene
 
         // imd10
         int zoneId = dataContainer.getRealEstateDataManager().getDwelling(person.getHousehold().getDwellingId()).getZoneId();
-        ZoneMCR zoneMCR = (ZoneMCR) dataContainer.getGeoData().getZones().get(zoneId);
+        ZoneMEL zoneMEL = (ZoneMEL) dataContainer.getGeoData().getZones().get(zoneId);
 
-        predictor += zoneMCR.getImd10() * coef.get("imd10");
+        predictor += zoneMEL.getImd10() * coef.get("imd10");
 
         return predictor;
     }

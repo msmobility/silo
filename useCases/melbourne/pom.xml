@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>manchester</artifactId>
+    <artifactId>melbourne</artifactId>
     <dependencies>
         <dependency>
             <groupId>de.tum.bgu.msm.silo</groupId>
@@ -30,7 +30,7 @@
         </dependency>
         <dependency>
             <groupId>de.tum.bgu.msm.mito</groupId>
-            <artifactId>manchester</artifactId>
+            <artifactId>melbourne</artifactId>
             <version>master-SNAPSHOT</version>
             <exclusions>
                 <exclusion>

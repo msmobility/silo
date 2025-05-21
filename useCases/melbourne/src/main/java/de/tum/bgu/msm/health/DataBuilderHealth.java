@@ -1,6 +1,6 @@
 package de.tum.bgu.msm.health;
 
-import de.tum.bgu.msm.data.ManchesterDwellingTypes;
+import de.tum.bgu.msm.data.MelbourneDwellingTypes;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.accessibility.AccessibilityImpl;
 import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
@@ -13,7 +13,6 @@ import de.tum.bgu.msm.data.job.*;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.health.data.LinkInfo;
-import de.tum.bgu.msm.health.diseaseModelOffline.HealthExposuresReader;
 import de.tum.bgu.msm.health.io.DefaultSpeedReader;
 import de.tum.bgu.msm.health.io.DoseResponseLookupReader;
 import de.tum.bgu.msm.health.io.HealthTransitionTableReader;
@@ -23,12 +22,10 @@ import de.tum.bgu.msm.matsim.MatsimTravelTimesAndCosts;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.*;
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.config.Config;
 import org.matsim.core.network.NetworkUtils;
-import org.matsim.core.scenario.ScenarioUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,7 +35,7 @@ public class DataBuilderHealth {
     private DataBuilderHealth() {
     }
 
-    public static HealthDataContainerImpl getModelDataForManchester(Properties properties, Config config) {
+    public static HealthDataContainerImpl getModelDataForMelbourne(Properties properties, Config config) {
 
         HouseholdData householdData = new HouseholdDataImpl();
         JobData jobData = new JobDataImpl();
@@ -74,14 +71,14 @@ public class DataBuilderHealth {
         //jobFactory.readWorkingTimeDistributions(properties);
 
         RealEstateDataManager realEstateDataManager = new RealEstateDataManagerImpl(
-                new ManchesterDwellingTypes(), dwellingData, householdData, geoData, new DwellingFactoryMCR(new DwellingFactoryImpl()), properties);
+                new MelbourneDwellingTypes(), dwellingData, householdData, geoData, new DwellingFactoryMEL(new DwellingFactoryImpl()), properties);
 
         JobDataManager jobDataManager = new JobDataManagerImpl(
-                properties, new JobFactoryMCR(), jobData, geoData, travelTimes, commutingTimeProbability);
+                properties, new JobFactoryMEL(), jobData, geoData, travelTimes, commutingTimeProbability);
 
         final HouseholdFactoryImpl hhFactory = new HouseholdFactoryImpl();
         HouseholdDataManager householdDataManager = new HouseholdDataManagerImpl(
-                householdData, dwellingData, new PersonFactoryMCRHealth(),
+                householdData, dwellingData, new PersonFactoryMELHealth(),
                 hhFactory, properties, realEstateDataManager);
 
         SchoolData schoolData = new SchoolDataImpl(geoData, dwellingData, properties);
@@ -93,7 +90,7 @@ public class DataBuilderHealth {
 
     static public void read(Properties properties, HealthDataContainerImpl dataContainer, Config config){
 
-        GeoDataReader reader = new GeoDataReaderManchester(dataContainer);
+        GeoDataReader reader = new GeoDataReaderMelbourne(dataContainer);
         String pathShp = properties.main.baseDirectory + properties.geo.zoneShapeFile;
         String fileName = properties.main.baseDirectory + properties.geo.zonalDataFile;
         reader.readZoneCsv(fileName);
@@ -107,19 +104,19 @@ public class DataBuilderHealth {
 
         String personFile = properties.main.baseDirectory + properties.householdData.personFileName;
         personFile += "_" + year + ".csv";
-        PersonReader personReader = new PersonReaderMCRHealth(dataContainer.getHouseholdDataManager());
+        PersonReader personReader = new PersonReaderMELHealth(dataContainer.getHouseholdDataManager());
         personReader.readData(personFile);
 
-        DwellingReader ddReader = new DwellingReaderMCR(dataContainer.getRealEstateDataManager(), dataContainer);
+        DwellingReader ddReader = new DwellingReaderMEL(dataContainer.getRealEstateDataManager(), dataContainer);
         String dwellingsFile = properties.main.baseDirectory + properties.realEstate.dwellingsFileName + "_" + year + ".csv";
         ddReader.readData(dwellingsFile);
 
         new JobType(properties.jobData.jobTypes);
-        JobReader jjReader = new JobReaderMCR(dataContainer.getJobDataManager(), dataContainer);
+        JobReader jjReader = new JobReaderMEL(dataContainer.getJobDataManager(), dataContainer);
         String jobsFile = properties.main.baseDirectory + properties.jobData.jobsFileName + "_" + year + ".csv";
         jjReader.readData(jobsFile);
 
-        SchoolReader ssReader = new SchoolReaderMCR(dataContainer);
+        SchoolReader ssReader = new SchoolReaderMEL(dataContainer);
         String schoolsFile = properties.main.baseDirectory + properties.schoolData.schoolsFileName + "_" + year + ".csv";
         ssReader.readData(schoolsFile);
 
@@ -132,7 +129,7 @@ public class DataBuilderHealth {
         }
         dataContainer.setLinkInfo(linkInfoMap);
 
-        new PtSkimsReaderMCR(dataContainer).read();
+        new PtSkimsReaderMEL(dataContainer).read();
 
         dataContainer.setAvgSpeeds(new DefaultSpeedReader().readData(properties.main.baseDirectory + properties.healthData.avgSpeedFile));
         dataContainer.setHealthTransitionData(new HealthTransitionTableReader().readData(dataContainer,properties.main.baseDirectory + properties.healthData.healthTransitionData));

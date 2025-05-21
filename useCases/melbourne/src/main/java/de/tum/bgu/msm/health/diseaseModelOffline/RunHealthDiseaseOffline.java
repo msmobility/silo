@@ -12,7 +12,7 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 
 /**
- * Implements SILO for the Greater Manchester
+ * Implements SILO for the Greater Melbourne
  *
  * @author Qin Zhang*/
 
@@ -29,11 +29,11 @@ public class RunHealthDiseaseOffline {
         if (args.length > 1 && args[1] != null) {
             config = ConfigUtils.loadConfig(args[1]);
         }
-        logger.info("Started SILO land use model for the Greater Manchester");
-        HealthDataContainerImpl dataContainer = DataBuilderHealth.getModelDataForManchester(properties, config);
+        logger.info("Started SILO land use model for the Greater Melbourne");
+        HealthDataContainerImpl dataContainer = DataBuilderHealth.getModelDataForMelbourne(properties, config);
         DataBuilderHealth.read(properties, dataContainer, config);
 
-        ModelContainer modelContainer = ModelBuilderMCR.getModelContainerForManchester(dataContainer, properties, config);
+        ModelContainer modelContainer = ModelBuilderMEL.getModelContainerForMelbourne(dataContainer, properties, config);
 
         SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
 

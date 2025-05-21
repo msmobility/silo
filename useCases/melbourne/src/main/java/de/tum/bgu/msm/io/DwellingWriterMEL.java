@@ -1,37 +1,43 @@
 package de.tum.bgu.msm.io;
+
+import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
-import de.tum.bgu.msm.health.NoiseDwellingMEL;
-import de.tum.bgu.msm.io.output.DefaultDwellingWriter;
 import de.tum.bgu.msm.io.output.DwellingWriter;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.PrintWriter;
-public class NoiseDwellingWriter implements DwellingWriter {
 
-    private final static Logger logger = LogManager.getLogger(DefaultDwellingWriter.class);
-    private final RealEstateDataManager realEstateDataManager;
+public class DwellingWriterMEL implements DwellingWriter {
+    private final static Logger logger = LogManager.getLogger(DwellingWriterMEL.class);
+    private final DataContainer dataContainer;
 
-    public NoiseDwellingWriter(RealEstateDataManager realEstateDataManager) {
-        this.realEstateDataManager = realEstateDataManager;
+    public DwellingWriterMEL(DataContainer dataContainer) {
+        this.dataContainer = dataContainer;
     }
 
     @Override
     public void writeDwellings(String path) {
         logger.info("  Writing dwelling file to " + path);
         PrintWriter pwd = SiloUtil.openFileForSequentialWriting(path, false);
-        pwd.print("id,zone,type,hhID,bedrooms,quality,monthlyCost,yearBuilt,coordX,coordY,noise");
+        pwd.print("id,zone,type,hhID,bedrooms,quality,monthlyCost,yearBuilt");
+        pwd.print(",");
+        pwd.print("floor");
+        pwd.print(",");
+        pwd.print("coordX");
+        pwd.print(",");
+        pwd.print("coordY");
+
         pwd.println();
 
-        for (Dwelling dd : realEstateDataManager.getDwellings()) {
+        for (Dwelling dd : dataContainer.getRealEstateDataManager().getDwellings()) {
             pwd.print(dd.getId());
             pwd.print(",");
             pwd.print(dd.getZoneId());
-            pwd.print(",\"");
-            pwd.print(dd.getType());
-            pwd.print("\",");
+            pwd.print(",");
+            pwd.print(dd.getType().toString());
+            pwd.print(",");
             pwd.print(dd.getResidentId());
             pwd.print(",");
             pwd.print(dd.getBedrooms());
@@ -42,6 +48,8 @@ public class NoiseDwellingWriter implements DwellingWriter {
             pwd.print(",");
             pwd.print(dd.getYearBuilt());
             pwd.print(",");
+            pwd.print(dd.getFloorSpace());
+            pwd.print(",");
             if(dd.getCoordinate() != null) {
                 pwd.print(dd.getCoordinate().x);
                 pwd.print(",");
@@ -49,8 +57,6 @@ public class NoiseDwellingWriter implements DwellingWriter {
             } else {
                 pwd.print("NULL,NULL");
             }
-            pwd.print(",");
-            pwd.print(((NoiseDwellingMEL)dd).getNoiseImmission());
             pwd.println();
             if (dd.getId() == SiloUtil.trackDd) {
                 SiloUtil.trackingFile("Writing dd " + dd.getId() + " to micro data file.");
