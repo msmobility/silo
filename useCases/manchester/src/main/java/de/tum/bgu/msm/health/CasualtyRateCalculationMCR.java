@@ -11,6 +11,7 @@ import routing.components.LinkStress;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Random;
 
 public class CasualtyRateCalculationMCR {
     private static final Logger log = LogManager.getLogger(CasualtyRateCalculationMCR.class);
@@ -42,13 +43,22 @@ public class CasualtyRateCalculationMCR {
 
     private void computeLinkCasualtyFrequency(Link link) {
         double probZeroCrash = 0;
+        int val = 0;
         //double meanCrash = getMeanCrashPoisson(link);
         //double finalCrashRate = meanCrash*(1-probZeroCrash);
 
         OpenIntFloatHashMap casualtyRateByTimeOfDay = new OpenIntFloatHashMap();
         for (int hour = 0; hour <= 24; hour++) {
             probZeroCrash = calculateProbability(link, hour);
-            casualtyRateByTimeOfDay.put(hour, (float) probZeroCrash);
+
+            // sample
+            Random random = new Random();
+            if(random.nextDouble() < probZeroCrash)
+                val = 1;
+            else{
+                val = 0;
+            }
+            casualtyRateByTimeOfDay.put(hour, (float) val);
         }
 
         switch (accidentSeverity) {
@@ -87,7 +97,7 @@ public class CasualtyRateCalculationMCR {
                 Math.log(bikeHourlyDemand + 0.1);
 
         // motor
-        double motorHourlyDemand = (analzyer.getDemand(link.getId(), "car", hour) + analzyer.getDemand(link.getId(), "truck", hour)) * SCALEFACTOR;
+        double motorHourlyDemand = (analzyer.getDemand(link.getId(), "car", hour) + analzyer.getDemand(link.getId(), "truck", hour)); //* SCALEFACTOR;
         // todo: do I need to rescale truck flows
         utility += binaryLogitCoef.get("motor_flow") *
                 motorHourlyDemand;
