@@ -23,6 +23,8 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.locationtech.jts.geom.Coordinate;
+import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -743,6 +745,23 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
             String rpId = getReceiverPointId(trip.getTripDestinationType(), trip.getTripDestinationMicroId());
             ActivityLocation activityLocation = ((DataContainerHealth)dataContainer).getActivityLocations().get(rpId);
+
+            // todo: I found that new dwellings have no receiver points when we run simulations longitudinally, and given that the AP model is not run everytime
+            // take the nearest receiver point and assign it ??
+
+            /*double distMeasured = 1000000000.0;
+            double currentMeasured = 0.0;
+
+            for(Map.Entry<String, ActivityLocation> entry : ((DataContainerHealth) dataContainer).getActivityLocations().entrySet()){
+                Coord coordDest = trip.getTripDestination();
+                Coordinate coordRP = entry.getValue().getCoordinate();
+                currentMeasured = NetworkUtils.getEuclideanDistance(coordDest.getX(), coordDest.getY(), coordRP.getX(), coordRP.getY());
+                if(currentMeasured < distMeasured) {
+                    distMeasured = currentMeasured;
+                    rpId = entry.getValue().getLocationId();
+                }
+                // todo: compare coordinate, and take the nearest
+            }*/
 
             if(activityLocation != null) {
 

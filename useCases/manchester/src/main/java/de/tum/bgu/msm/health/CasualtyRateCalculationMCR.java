@@ -35,24 +35,27 @@ public class CasualtyRateCalculationMCR {
         this.timeOfDayCoef = null;
     }
 
-    protected void run(Collection<? extends Link> links) {
+    protected void run(Collection<? extends Link> links, Random random) {
         for (Link link : links) {
-            computeLinkCasualtyFrequency(link);
+            computeLinkCasualtyFrequency(link, random);
         }
     }
 
-    private void computeLinkCasualtyFrequency(Link link) {
+    private void computeLinkCasualtyFrequency(Link link, Random random) {
         double probZeroCrash = 0;
         int val = 0;
+        //Random random = new Random();
         //double meanCrash = getMeanCrashPoisson(link);
         //double finalCrashRate = meanCrash*(1-probZeroCrash);
 
         OpenIntFloatHashMap casualtyRateByTimeOfDay = new OpenIntFloatHashMap();
         for (int hour = 0; hour <= 24; hour++) {
             probZeroCrash = calculateProbability(link, hour);
+            // downscale
+            probZeroCrash = 1 - Math.pow(1 - probZeroCrash, 1.0/5); // 1300-260
+            //probZeroCrash= probZeroCrash/5; // this is the annual proba of casualty, need to divide by 365 for online simulation
 
             // sample
-            Random random = new Random();
             if(random.nextDouble() < probZeroCrash)
                 val = 1;
             else{

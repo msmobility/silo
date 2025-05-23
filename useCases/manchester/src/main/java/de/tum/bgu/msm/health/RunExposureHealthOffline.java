@@ -63,7 +63,7 @@ public class RunExposureHealthOffline {
         //HealthExposureModelMCR exposureModelMCR = new HealthExposureModelMCR(dataContainer, properties, SiloUtil.provideNewRandom(),config);
 
 
-        accidentModel.endYear(2021, Day.saturday);
+        accidentModel.endYear(2021, Day.thursday);
 
         /*
         airPollutantModel.endYear(2021);

@@ -27,6 +27,7 @@ import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 public class AccidentRateModelMCR {
@@ -356,6 +357,8 @@ public class AccidentRateModelMCR {
         } else {
             networkFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + this.scenario.getConfig().controller().getRunId() + ".output_network.xml.gz";
         }
+
+        networkFile = "/home/admin/ismail/manchester/main/scenOutput/base/matsim/2021/thursday/car/2021.output_network.xml.gz";
         new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
         log.info("Reading network file... Done.");
 
@@ -371,6 +374,7 @@ public class AccidentRateModelMCR {
         } else {
             eventsFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + this.scenario.getConfig().controller().getRunId() + ".output_events.xml.gz";
         }
+        eventsFile = "/home/admin/ismail/manchester/main/scenOutput/base/matsim/2021/thursday/car/AccidentTest/2021.output_events.xml.gz";
         events.addHandler(analysisEventHandler);
         eventsReader.readFile(eventsFile); //car AADT are calculated by eventHandler
         log.info("Reading car events file... Done.");
@@ -383,7 +387,7 @@ public class AccidentRateModelMCR {
             eventsFileBikePed = this.scenario.getConfig().controller().getOutputDirectory() + "bikePed/" + this.scenario.getConfig().controller().getRunId() + ".output_events.xml.gz";
         }
         // todo: this is a temporary fix link to pedBike volumes, just to test.
-        eventsFileBikePed = "C:/Users/saadi/Documents/Cambridge/manchester/scenOutput/base/matsim/2021/saturday/bikePed/2021.output_events_bikePed_saturday.xml.gz";
+        eventsFileBikePed = "/home/admin/ismail/manchester/main/scenOutput/base/matsim/2021/thursday/bikePed/AccidentTest/2021.output_events_bikePed_saturday.xml.gz";
         eventsReader.readFile(eventsFileBikePed); //car, bike, ped AADT are calculated by eventHandler
         log.info("Reading bike&ped events file... Done.");
 
@@ -401,7 +405,7 @@ public class AccidentRateModelMCR {
         }
         log.info("Initializing all agent-specific information... Done.");
 
-
+        Random random = new Random();
         log.info("Link casualty frequency calculation (by type by time of day) start.");
         for (AccidentType accidentType : AccidentType.values()){
             if (ACCIDENT_TYPE_MCR.contains(accidentType)){
@@ -417,7 +421,7 @@ public class AccidentRateModelMCR {
 
                 Map<Id<Link>, Link> placeholderMap = new HashMap<>();
                 placeholderMap.putAll(extractLinkSpecific((Map<Id<Link>, Link>) this.scenario.getNetwork().getLinks(), accidentType));
-                calculator.run(placeholderMap.values());
+                calculator.run(placeholderMap.values(), random);
 
                 log.info("Calculating " + accidentType + "_" + accidentSeverity + " crash rate done.");
             }
@@ -784,7 +788,7 @@ public class AccidentRateModelMCR {
     }
 
     public void writeOutCasualtyRate () throws FileNotFoundException {
-        String outputRisk = scenario.getConfig().controller().getOutputDirectory() + "casualtyRate.csv";
+        String outputRisk = scenario.getConfig().controller().getOutputDirectory() + "casualtyRateV3.csv";
         StringBuilder risk = new StringBuilder();
 
         //write header
