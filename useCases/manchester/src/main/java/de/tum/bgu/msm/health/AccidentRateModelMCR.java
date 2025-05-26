@@ -877,19 +877,29 @@ public class AccidentRateModelMCR {
                 String mode = personInfo.getLinkId2time2mode().get(linkId).get(hour);
                 switch (mode){
                     case "car":
-                        severeInjuryRisk += linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.CAR_ONEWAY).get(hour);
-                        severeInjuryRisk += linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.CAR_TWOWAY).get(hour);
+                        if(linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().containsKey(AccidentType.CAR_ONEWAY)){
+                            severeInjuryRisk += linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.CAR_ONEWAY).get(hour);
+                        }
+                        if(linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().containsKey(AccidentType.CAR_TWOWAY)){
+                            severeInjuryRisk += linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.CAR_TWOWAY).get(hour);
+                        }
                         PersonInjuryRiskByMode.put("car", PersonInjuryRiskByMode.get("car") + severeInjuryRisk);
                         severeInjuryRisk = .0;
                         break;
                     case "bike":
-                        severeInjuryRisk += linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.BIKE_MAJOR).get(hour);
-                        severeInjuryRisk += linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.BIKE_MINOR).get(hour);
+                        if(linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().containsKey(AccidentType.BIKE_MAJOR)){
+                            severeInjuryRisk += linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.BIKE_MAJOR).get(hour);
+                        }
+                        if(linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().containsKey(AccidentType.BIKE_MINOR)){
+                            severeInjuryRisk += linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.BIKE_MINOR).get(hour);
+                        }
                         PersonInjuryRiskByMode.put("bike", PersonInjuryRiskByMode.get("bike") + severeInjuryRisk);
                         severeInjuryRisk = .0;
                         break;
                     case "walk":
-                        severeInjuryRisk += linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.PED).get(hour);
+                        if(linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().containsKey(AccidentType.PED)){
+                            severeInjuryRisk += linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.PED).get(hour);
+                        }
                         PersonInjuryRiskByMode.put("walk", PersonInjuryRiskByMode.get("walk") + severeInjuryRisk);
                         severeInjuryRisk = .0;
                         break;
@@ -1225,14 +1235,16 @@ public class AccidentRateModelMCR {
 
         for (Link link : this.scenario.getNetwork().getLinks().values()) {
             for(AccidentSeverity accidentSeverity : AccidentSeverity.values()){
+                if(ACCIDENT_SEVERITY_MCR.contains(accidentSeverity)){
+                    continue;
+                }
                 for(AccidentType accidentType : AccidentType.values()){
+                    if (ACCIDENT_TYPE_MCR.contains(accidentType)){
+                        continue;
+                    }
                     double totalCasualty = 0.;
-                    for(int hour = 0; hour<24; hour++) {
-                        if(accidentSeverity.equals(AccidentSeverity.LIGHT)){
-                            totalCasualty += accidentsContext.getLinkId2info().get(link.getId()).getLightCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
-                        }else{
-                            totalCasualty += accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
-                        }
+                    for(int hour = 0; hour < 24; hour++) {
+                        totalCasualty += accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
                     }
                     risk.append(link.getId());
                     risk.append(',');
