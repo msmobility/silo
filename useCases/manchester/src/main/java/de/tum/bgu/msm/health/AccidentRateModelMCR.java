@@ -526,9 +526,14 @@ public class AccidentRateModelMCR {
 
 
 
-        // carTruck plans
+        // Plans
         log.info("Reading car plans file...");
         PopulationReader popReader = new PopulationReader(scenario);
+
+
+
+        // carTruck plans
+        /*
         String plansFile;
         if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
             plansFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + "output_plans.xml.gz";
@@ -539,8 +544,7 @@ public class AccidentRateModelMCR {
         popReader.readFile(plansFile);
         log.info("Reading car plans file... Done.");
         log.warn("Total population:" + scenario.getPopulation().getPersons().size());
-
-
+         */
 
 
 
