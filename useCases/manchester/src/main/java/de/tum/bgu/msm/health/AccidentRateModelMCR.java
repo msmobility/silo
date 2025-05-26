@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.health;
 
 import cern.colt.map.tfloat.OpenIntFloatHashMap;
+import de.tum.bgu.msm.data.Day;
 import de.tum.bgu.msm.health.injury.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -69,6 +70,11 @@ public class AccidentRateModelMCR {
             "pedestrian", "track", "footway", "bridleway", "steps",
             "path", "road"
     );
+
+    //
+    // todo: temporary, this is for testing
+    public static final String scenarioName = "safeStreet";
+    public static final String dayName = Day.sunday.toString();
 
     public AccidentRateModelMCR(Scenario scenario, float scalefactor) {
         this.scenario = scenario;
@@ -358,7 +364,9 @@ public class AccidentRateModelMCR {
             networkFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + this.scenario.getConfig().controller().getRunId() + ".output_network.xml.gz";
         }
 
-        networkFile = "/home/admin/ismail/manchester/main/scenOutput/base/matsim/2021/thursday/car/2021.output_network.xml.gz";
+
+        networkFile= "/media/admin/EXTERNAL_USB1/simulation_results_for_paper/" + scenarioName + "/matsim/2021/" + dayName + "/car/2021.output_network.xml.gz";
+        //networkFile = "/home/admin/ismail/manchester/main/scenOutput/base/matsim/2021/thursday/car/2021.output_network.xml.gz";
         new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
         log.info("Reading network file... Done.");
 
@@ -374,7 +382,7 @@ public class AccidentRateModelMCR {
         } else {
             eventsFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + this.scenario.getConfig().controller().getRunId() + ".output_events.xml.gz";
         }
-        eventsFile = "/home/admin/ismail/manchester/main/scenOutput/base/matsim/2021/thursday/car/AccidentTest/2021.output_events.xml.gz";
+        eventsFile = "/media/admin/EXTERNAL_USB1/simulation_results_for_paper/" + scenarioName + "/matsim/2021/" + dayName + "/car/2021.output_events.xml.gz";
         events.addHandler(analysisEventHandler);
         eventsReader.readFile(eventsFile); //car AADT are calculated by eventHandler
         log.info("Reading car events file... Done.");
@@ -387,7 +395,7 @@ public class AccidentRateModelMCR {
             eventsFileBikePed = this.scenario.getConfig().controller().getOutputDirectory() + "bikePed/" + this.scenario.getConfig().controller().getRunId() + ".output_events.xml.gz";
         }
         // todo: this is a temporary fix link to pedBike volumes, just to test.
-        eventsFileBikePed = "/home/admin/ismail/manchester/main/scenOutput/base/matsim/2021/thursday/bikePed/AccidentTest/2021.output_events_bikePed_saturday.xml.gz";
+        eventsFileBikePed = "/media/admin/EXTERNAL_USB1/simulation_results_for_paper/" + scenarioName + "/matsim/2021/" + dayName + "/bikePed/2021.output_events.xml.gz";
         eventsReader.readFile(eventsFileBikePed); //car, bike, ped AADT are calculated by eventHandler
         log.info("Reading bike&ped events file... Done.");
 
@@ -788,11 +796,11 @@ public class AccidentRateModelMCR {
     }
 
     public void writeOutCasualtyRate () throws FileNotFoundException {
-        String outputRisk = scenario.getConfig().controller().getOutputDirectory() + "casualtyRateV3.csv";
+        String outputRisk = scenario.getConfig().controller().getOutputDirectory() + "casualtyRatesPerDayPerLinkPerMode_" + scenarioName + "_" + dayName + ".csv";
         StringBuilder risk = new StringBuilder();
 
         //write header
-        risk.append("link,severity,accidentType,casualty");
+        risk.append("link,severity,accidentType,casualtyRate");
         risk.append('\n');
 
         for (Link link : this.scenario.getNetwork().getLinks().values()) {
