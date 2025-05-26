@@ -13,6 +13,8 @@ public class AccidentAgentInfo {
     private double lightInjuryRisk;
     private double severeInjuryRisk;
 
+    private final Map<String, Double> severeInjuryRiskByMode = new HashMap<>();
+
 
     public AccidentAgentInfo(Id<Person> id) {
         this.personId = id;
@@ -40,5 +42,18 @@ public class AccidentAgentInfo {
 
     public void setSevereInjuryRisk(double severeInjuryRisk) {
         this.severeInjuryRisk = severeInjuryRisk;
+    }
+
+    public Map<String, Double> getSevereInjuryRiskByMode() {
+        return severeInjuryRiskByMode;
+    }
+
+    public void setSevereInjuryRiskByMode(Map<String, Double> severeInjuryRiskByMode) {
+        this.severeInjuryRiskByMode.clear();
+        this.severeInjuryRiskByMode.putAll(severeInjuryRiskByMode);
+    }
+
+    public void addToSevereInjuryRiskForMode(String mode, double risk) {
+        this.severeInjuryRiskByMode.merge(mode, risk, Double::sum);
     }
 }

@@ -399,11 +399,13 @@ public class AccidentRateModelMCR {
         }
         log.info("Initializing all link-specific information... Done.");
 
+        /*
         for (Person person : this.scenario.getPopulation().getPersons().values()) {
             AccidentAgentInfo info = new AccidentAgentInfo(person.getId());
             this.accidentsContext.getPersonId2info().put(person.getId(), info);
         }
         log.info("Initializing all agent-specific information... Done.");
+         */
 
         Random random = new Random();
         log.info("Link casualty frequency calculation (by type by time of day) start.");
@@ -463,9 +465,31 @@ public class AccidentRateModelMCR {
         log.info(counterBikePed + "bikeped links have no hourly traffic volume");
         log.info("Link casualty exposure calculation completed.");
 
+
+        //only for offline todo: read matsim plans
+        log.info("Agent injury risk calculation start.");
+        for (Person pp : this.scenario.getPopulation().getPersons().values()){
+            AccidentAgentInfo personInfo = this.accidentsContext.getPersonId2info().get(pp.getId());
+            if(personInfo == null){
+                //log.warn("Person Id: " + pp.getId() + "is not analyzed in the handler!");
+                count++;
+                continue;
+            }
+            computeAgentCrashRiskMCR(personInfo);
+        }
+        log.info(count + " agents are not analyzed in the handler!");
+        log.info("Agent injury risk calculation completed.");
+
+        try {
+            writeOut();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+
+        // todo: why ??
         analysisEventHandler.reset(0);
         System.gc();
-        System.out.println("System gc is reset. Current free memory usage: " + Runtime.getRuntime().freeMemory());
     }
 
     private Map<Id<Link>,Link> extractLinkSpecific(Map<Id<Link>, Link> links, AccidentType accidentType) {
@@ -638,6 +662,53 @@ public class AccidentRateModelMCR {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    private void computeAgentCrashRiskMCR(AccidentAgentInfo personInfo) {
+
+        //double lightInjuryRisk = .0;
+        double severeInjuryRisk = .0;
+        Map<String, Double> PersonInjuryRiskByMode = new HashMap<>();
+
+        // Initialize modes
+        PersonInjuryRiskByMode.put("car", 0.0);
+        PersonInjuryRiskByMode.put("bike", 0.0);
+        PersonInjuryRiskByMode.put("walk", 0.0);
+
+        for(Id<Link> linkId : personInfo.getLinkId2time2mode().keySet()){
+            AccidentLinkInfo linkInfo = this.accidentsContext.getLinkId2info().get(linkId);
+            if(linkInfo == null){
+                log.warn(linkId + " has no Link Info.");
+                continue;
+            }
+
+            for(int hour : personInfo.getLinkId2time2mode().get(linkId).keySet()){
+                String mode = personInfo.getLinkId2time2mode().get(linkId).get(hour);
+                switch (mode){
+                    case "car":
+                        severeInjuryRisk += linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.CAR_ONEWAY).get(hour);
+                        severeInjuryRisk += linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.CAR_TWOWAY).get(hour);
+                        PersonInjuryRiskByMode.put("car", PersonInjuryRiskByMode.get("car") + severeInjuryRisk);
+                        severeInjuryRisk = .0;
+                        break;
+                    case "bike":
+                        severeInjuryRisk += linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.BIKE_MAJOR).get(hour);
+                        severeInjuryRisk += linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.BIKE_MINOR).get(hour);
+                        PersonInjuryRiskByMode.put("bike", PersonInjuryRiskByMode.get("bike") + severeInjuryRisk);
+                        severeInjuryRisk = .0;
+                        break;
+                    case "walk":
+                        severeInjuryRisk += linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.PED).get(hour);
+                        PersonInjuryRiskByMode.put("walk", PersonInjuryRiskByMode.get("walk") + severeInjuryRisk);
+                        severeInjuryRisk = .0;
+                        break;
+                    default:
+                        throw new RuntimeException("Undefined mode " + mode);
+                }
+            }
+        }
+        //personInfo.setSevereInjuryRisk(severeInjuryRisk);
+        personInfo.setSevereInjuryRiskByMode(PersonInjuryRiskByMode);
     }
 
     private void computeAgentCrashRisk(AccidentAgentInfo personInfo) {
