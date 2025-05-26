@@ -518,7 +518,7 @@ public class AccidentRateModelMCR {
             networkFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + this.scenario.getConfig().controller().getRunId() + ".output_network.xml.gz";
         }
 
-        networkFile = "/home/admin/ismail/manchester/main/scenOutput/base/matsim/2021/thursday/car/2021.output_network.xml.gz";
+        networkFile = "/media/admin/EXTERNAL_USB1/simulation_results_for_paper/base/matsim/2021/thursday/car/2021.output_network.xml.gz";
         new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
         log.info("Reading network file... Done.");
 
@@ -535,7 +535,7 @@ public class AccidentRateModelMCR {
         } else {
             plansFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + this.scenario.getConfig().controller().getRunId() + ".output_plans.xml.gz";
         }
-        plansFile = "/home/admin/ismail/manchester/main/scenOutput/base/matsim/2021/thursday/car/2021.output_plans.xml.gz";
+        plansFile = "/media/admin/EXTERNAL_USB1/simulation_results_for_paper/base/matsim/2021/thursday/car/2021.output_plans.xml.gz";
         popReader.readFile(plansFile);
         log.info("Reading car plans file... Done.");
         log.warn("Total population:" + scenario.getPopulation().getPersons().size());
@@ -552,7 +552,7 @@ public class AccidentRateModelMCR {
         } else {
             plansFileBikePed = this.scenario.getConfig().controller().getOutputDirectory() + "bikePed/" + this.scenario.getConfig().controller().getRunId() + ".output_plans.xml.gz";
         }
-        plansFileBikePed = "/home/admin/ismail/manchester/main/scenOutput/base/matsim/2021/thursday/bikePed/2021.output_plans.xml.gz";
+        plansFileBikePed = "/media/admin/EXTERNAL_USB1/simulation_results_for_paper/base/matsim/2021/thursday/bikePed/2021.output_plans.xml.gz";
         popReader.readFile(plansFileBikePed);
         log.info("Reading bikePed plans file... Done.");
         log.warn("Total population:" + scenario.getPopulation().getPersons().size());
@@ -576,7 +576,7 @@ public class AccidentRateModelMCR {
         } else {
             eventsFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + this.scenario.getConfig().controller().getRunId() + ".output_events.xml.gz";
         }
-        eventsFile = "/home/admin/ismail/manchester/main/scenOutput/base/matsim/2021/thursday/car/2021.output_events.xml.gz";
+        eventsFile = "/media/admin/EXTERNAL_USB1/simulation_results_for_paper/base/matsim/2021/thursday/car/2021.output_events.xml.gz";
         events.addHandler(analysisEventHandler);
         eventsReader.readFile(eventsFile); //car AADT are calculated by eventHandler
         log.info("Reading car events file... Done.");
@@ -590,7 +590,7 @@ public class AccidentRateModelMCR {
         } else {
             eventsFileBikePed = this.scenario.getConfig().controller().getOutputDirectory() + "bikePed/" + this.scenario.getConfig().controller().getRunId() + ".output_events.xml.gz";
         }
-        eventsFileBikePed = "/home/admin/ismail/manchester/main/scenOutput/base/matsim/2021/thursday/bikePed/2021.output_events.xml.gz";
+        eventsFileBikePed = "/media/admin/EXTERNAL_USB1/simulation_results_for_paper/base/matsim/2021/thursday/bikePed/2021.output_events.xml.gz";
         eventsReader.readFile(eventsFileBikePed); //car, bike, ped AADT are calculated by eventHandler
         log.info("Reading bike&ped events file... Done.");
 
