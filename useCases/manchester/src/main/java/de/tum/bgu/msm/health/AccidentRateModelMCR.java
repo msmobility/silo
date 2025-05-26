@@ -858,7 +858,7 @@ public class AccidentRateModelMCR {
     private void computeAgentCrashRiskMCR(AccidentAgentInfo personInfo) {
 
         //double lightInjuryRisk = .0;
-        double severeInjuryRisk = .0;
+        Double severeInjuryRisk = .0;
         Map<String, Double> PersonInjuryRiskByMode = new HashMap<>();
 
         // Initialize modes
@@ -883,7 +883,10 @@ public class AccidentRateModelMCR {
                         if(linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().containsKey(AccidentType.CAR_TWOWAY)){
                             severeInjuryRisk += linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.CAR_TWOWAY).get(hour);
                         }
-                        PersonInjuryRiskByMode.put("car", PersonInjuryRiskByMode.get("car") + severeInjuryRisk);
+                        if(severeInjuryRisk != null){
+                            PersonInjuryRiskByMode.put("car", PersonInjuryRiskByMode.get("car") + severeInjuryRisk);
+                        }
+
                         severeInjuryRisk = .0;
                         break;
                     case "bike":
@@ -893,14 +896,18 @@ public class AccidentRateModelMCR {
                         if(linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().containsKey(AccidentType.BIKE_MINOR)){
                             severeInjuryRisk += linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.BIKE_MINOR).get(hour);
                         }
-                        PersonInjuryRiskByMode.put("bike", PersonInjuryRiskByMode.get("bike") + severeInjuryRisk);
+                        if(severeInjuryRisk != null){
+                            PersonInjuryRiskByMode.put("bike", PersonInjuryRiskByMode.get("bike") + severeInjuryRisk);
+                        }
                         severeInjuryRisk = .0;
                         break;
                     case "walk":
                         if(linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().containsKey(AccidentType.PED)){
                             severeInjuryRisk += linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.PED).get(hour);
                         }
-                        PersonInjuryRiskByMode.put("walk", PersonInjuryRiskByMode.get("walk") + severeInjuryRisk);
+                        if(severeInjuryRisk != null){
+                            PersonInjuryRiskByMode.put("walk", PersonInjuryRiskByMode.get("walk") + severeInjuryRisk);
+                        }
                         severeInjuryRisk = .0;
                         break;
                     default:
