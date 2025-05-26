@@ -49,7 +49,7 @@ public class CasualtyRateCalculationMCR {
         //double finalCrashRate = meanCrash*(1-probZeroCrash);
 
         OpenIntFloatHashMap casualtyRateByTimeOfDay = new OpenIntFloatHashMap();
-        for (int hour = 0; hour <= 24; hour++) {
+        for (int hour = 0; hour < 24; hour++) {
             probZeroCrash = calculateProbability(link, hour);
             // downscale
             probZeroCrash = 1 - Math.pow(1 - probZeroCrash, 1.0/5); // 1300-260

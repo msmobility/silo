@@ -42,7 +42,7 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
     @Override
     public void endYear(int year) {
         logger.warn("Health disease model end year:" + year);
-        if(year == properties.main.startYear ||properties.healthData.exposureModelYears.contains(year)) {
+        if(year == properties.main.startYear || properties.healthData.exposureModelYears.contains(year)) {
             calculateRelativeRisk();
         }
         updateDiseaseProbability(properties.healthData.adjustByRelativeRisk);

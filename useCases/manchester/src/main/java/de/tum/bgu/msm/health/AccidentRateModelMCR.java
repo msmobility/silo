@@ -1,7 +1,6 @@
 package de.tum.bgu.msm.health;
 
 import cern.colt.map.tfloat.OpenIntFloatHashMap;
-import de.tum.bgu.msm.data.Day;
 import de.tum.bgu.msm.health.injury.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -70,11 +69,6 @@ public class AccidentRateModelMCR {
             "pedestrian", "track", "footway", "bridleway", "steps",
             "path", "road"
     );
-
-    //
-    // todo: temporary, this is for testing
-    public static final String scenarioName = "safeStreet";
-    public static final String dayName = Day.sunday.toString();
 
     public AccidentRateModelMCR(Scenario scenario, float scalefactor) {
         this.scenario = scenario;
@@ -364,9 +358,7 @@ public class AccidentRateModelMCR {
             networkFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + this.scenario.getConfig().controller().getRunId() + ".output_network.xml.gz";
         }
 
-
-        networkFile= "/media/admin/EXTERNAL_USB1/simulation_results_for_paper/" + scenarioName + "/matsim/2021/" + dayName + "/car/2021.output_network.xml.gz";
-        //networkFile = "/home/admin/ismail/manchester/main/scenOutput/base/matsim/2021/thursday/car/2021.output_network.xml.gz";
+        networkFile = "/home/admin/ismail/manchester/main/scenOutput/base/matsim/2021/thursday/car/2021.output_network.xml.gz";
         new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
         log.info("Reading network file... Done.");
 
@@ -382,7 +374,7 @@ public class AccidentRateModelMCR {
         } else {
             eventsFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + this.scenario.getConfig().controller().getRunId() + ".output_events.xml.gz";
         }
-        eventsFile = "/media/admin/EXTERNAL_USB1/simulation_results_for_paper/" + scenarioName + "/matsim/2021/" + dayName + "/car/2021.output_events.xml.gz";
+        eventsFile = "/home/admin/ismail/manchester/main/scenOutput/base/matsim/2021/thursday/car/AccidentTest/2021.output_events.xml.gz";
         events.addHandler(analysisEventHandler);
         eventsReader.readFile(eventsFile); //car AADT are calculated by eventHandler
         log.info("Reading car events file... Done.");
@@ -395,7 +387,7 @@ public class AccidentRateModelMCR {
             eventsFileBikePed = this.scenario.getConfig().controller().getOutputDirectory() + "bikePed/" + this.scenario.getConfig().controller().getRunId() + ".output_events.xml.gz";
         }
         // todo: this is a temporary fix link to pedBike volumes, just to test.
-        eventsFileBikePed = "/media/admin/EXTERNAL_USB1/simulation_results_for_paper/" + scenarioName + "/matsim/2021/" + dayName + "/bikePed/2021.output_events.xml.gz";
+        eventsFileBikePed = "/home/admin/ismail/manchester/main/scenOutput/base/matsim/2021/thursday/bikePed/AccidentTest/2021.output_events_bikePed_saturday.xml.gz";
         eventsReader.readFile(eventsFileBikePed); //car, bike, ped AADT are calculated by eventHandler
         log.info("Reading bike&ped events file... Done.");
 
@@ -455,6 +447,25 @@ public class AccidentRateModelMCR {
             e.printStackTrace();
         }
          */
+
+        log.info("Link casualty exposure calculation start.");
+        for (Link link : this.scenario.getNetwork().getLinks().values()) {
+            computeLinkCasualtyExposureMCR(link);
+        }
+
+        try {
+            writeOutExposure();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        log.info(counterCar + "car links have no hourly traffic volume");
+        log.info(counterBikePed + "bikeped links have no hourly traffic volume");
+        log.info("Link casualty exposure calculation completed.");
+
+        analysisEventHandler.reset(0);
+        System.gc();
+        System.out.println("System gc is reset. Current free memory usage: " + Runtime.getRuntime().freeMemory());
     }
 
     private Map<Id<Link>,Link> extractLinkSpecific(Map<Id<Link>, Link> links, AccidentType accidentType) {
@@ -716,6 +727,69 @@ public class AccidentRateModelMCR {
         }
     }
 
+    private void computeLinkCasualtyExposureMCR(Link link) {
+        for (AccidentType accidentType : AccidentType.values()){
+            String mode;
+            switch (accidentType){
+                case CAR_TWOWAY:
+                    mode = "car";
+                    break;
+                case CAR_ONEWAY:
+                    mode = "car";
+                    break;
+                case PED:
+                    mode = "walk";
+                    break;
+                case BIKE_MAJOR:
+                    mode = "bike";
+                    break;
+                case BIKE_MINOR:
+                    mode = "bike";
+                    break;
+                default:
+                    mode = "null";
+            }
+
+            if("null".equals(mode)){
+                // throw new RuntimeException("Undefined accident type " + accidentType);
+                // todo: adjust this error message
+                continue;
+            }
+
+            //OpenIntFloatHashMap lightCasualtyExposureByTime = new OpenIntFloatHashMap();
+            OpenIntFloatHashMap severeCasualtyExposureByTime = new OpenIntFloatHashMap(); // this includes severeFatal
+
+            for(int hour = 0; hour < 24; hour++) {
+                //float lightCasualty = this.accidentsContext.getLinkId2info().get(link.getId()).getLightCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
+                float severeCasualty = this.accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
+                //float lightCasualtyExposure =0.f;
+                float severeCasualtyExposure = 0.f;
+                if(mode.equals("car")){
+                    if(analysisEventHandler.getDemand(link.getId(), mode, hour) != 0){
+                        //lightCasualtyExposure = (float) (lightCasualty/((analysisEventHandler.getDemand(link.getId(),mode,hour))*SCALEFACTOR*1.5));
+                        severeCasualtyExposure = (float) (severeCasualty/(analysisEventHandler.getDemand(link.getId(), mode, hour) * SCALEFACTOR)); // todo: why 1.5 in Munich ?? check if SCALEFACTOR should be applied or not ?
+                    }else{
+                        //log.warn(link.getId()+mode+hour);
+                        counterCar++;
+                    }
+                }else{
+                    if(analysisEventHandler.getDemand(link.getId(), mode, hour) != 0){
+                        //lightCasualtyExposure = (float) (lightCasualty/(analysisEventHandler.getDemand(link.getId(),mode,hour)*SCALEFACTOR));
+                        severeCasualtyExposure = (float) (severeCasualty/(analysisEventHandler.getDemand(link.getId(), mode, hour))); // todo: no scale factor given that we model 100% bikePed , check ??
+                    }else{
+                        counterBikePed++;
+                    }
+                }
+
+                //lightCasualtyExposureByTime.put(hour,lightCasualtyExposure);
+                severeCasualtyExposureByTime.put(hour, severeCasualtyExposure);
+            }
+            //this.accidentsContext.getLinkId2info().get(link.getId()).getLightCasualityExposureByAccidentTypeByTime().put(accidentType,lightCasualtyExposureByTime);
+            this.accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().put(accidentType, severeCasualtyExposureByTime);
+
+        }
+    }
+
     private void computeLinkCasualtyExposure(Link link) {
         for (AccidentType accidentType : AccidentType.values()){
             String mode;
@@ -796,11 +870,11 @@ public class AccidentRateModelMCR {
     }
 
     public void writeOutCasualtyRate () throws FileNotFoundException {
-        String outputRisk = scenario.getConfig().controller().getOutputDirectory() + "casualtyRatesPerDayPerLinkPerMode_" + scenarioName + "_" + dayName + ".csv";
+        String outputRisk = scenario.getConfig().controller().getOutputDirectory() + "casualties.csv";
         StringBuilder risk = new StringBuilder();
 
         //write header
-        risk.append("link,severity,accidentType,casualtyRate");
+        risk.append("link,severity,accidentType,casualty");
         risk.append('\n');
 
         for (Link link : this.scenario.getNetwork().getLinks().values()) {
@@ -814,7 +888,7 @@ public class AccidentRateModelMCR {
                     }
                     double totalCasualty = 0.;
                     if(accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType) != null){
-                        for(int hour = 0; hour<=24; hour++) {
+                        for(int hour = 0; hour < 24; hour++) {
                             totalCasualty += accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
                         }
                         risk.append(link.getId());
@@ -830,7 +904,6 @@ public class AccidentRateModelMCR {
 
             }
         }
-
         writeToFile(outputRisk,risk.toString());
     }
 
@@ -882,7 +955,7 @@ public class AccidentRateModelMCR {
             for(AccidentSeverity accidentSeverity : AccidentSeverity.values()){
                 for(AccidentType accidentType : AccidentType.values()){
                     double totalCasualty = 0.;
-                    for(int hour = 0; hour<=24; hour++) {
+                    for(int hour = 0; hour<24; hour++) {
                         if(accidentSeverity.equals(AccidentSeverity.LIGHT)){
                             totalCasualty += accidentsContext.getLinkId2info().get(link.getId()).getLightCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
                         }else{

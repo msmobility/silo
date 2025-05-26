@@ -73,9 +73,12 @@ public class AccidentModelMCR extends AbstractModel implements ModelUpdateListen
             // todo: for testing, we run it offLine
 
             model.runCasualtyRateOffline();
-            //model.runAccidentRateOffline();
-            //model.runAgentInjuryRiskOffline();
-            //model.runModelOnline();
+            //model.computeLinkCasualtyExposureMCR();
+
+            // Qin's implementations
+            model.runAccidentRateOffline();
+            model.runAgentInjuryRiskOffline();
+            model.runModelOnline();
 
 
             /*
