@@ -919,11 +919,11 @@ public class AccidentRateModelMCR {
     }
 
     public void writeOut () throws FileNotFoundException {
-        String outputRisk = scenario.getConfig().controller().getOutputDirectory() + "injuryRisk.csv";
+        String outputRisk = scenario.getConfig().controller().getOutputDirectory() + "PersonInjuryRisk.csv";
         StringBuilder risk = new StringBuilder();
 
         //write header
-        risk.append("personId,lightInjury,severeFatalInjury");
+        risk.append("personId,severeFatalInjuryRiskCar,severeFatalInjuryRiskWalk,severeFatalInjuryRiskBike");
         risk.append('\n');
 
         //write data
@@ -931,9 +931,11 @@ public class AccidentRateModelMCR {
 
             risk.append(person.toString());
             risk.append(',');
-            risk.append(accidentsContext.getPersonId2info().get(person).getLightInjuryRisk());
+            risk.append(accidentsContext.getPersonId2info().get(person).getSevereInjuryRiskByMode().get("car"));
             risk.append(',');
-            risk.append(accidentsContext.getPersonId2info().get(person).getSevereInjuryRisk());
+            risk.append(accidentsContext.getPersonId2info().get(person).getSevereInjuryRiskByMode().get("walk"));
+            risk.append(',');
+            risk.append(accidentsContext.getPersonId2info().get(person).getSevereInjuryRiskByMode().get("bike"));
             risk.append('\n');
 
         }
