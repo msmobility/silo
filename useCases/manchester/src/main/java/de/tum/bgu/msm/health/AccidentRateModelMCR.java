@@ -25,10 +25,7 @@ import org.matsim.utils.objectattributes.attributable.Attributes;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 public class AccidentRateModelMCR {
     private static final Logger log = LogManager.getLogger( AccidentRateModelMCR.class );
@@ -1025,9 +1022,17 @@ public class AccidentRateModelMCR {
             OpenIntFloatHashMap severeCasualtyExposureByTime = new OpenIntFloatHashMap(); // this includes severeFatal
 
             for(int hour = 0; hour < 24; hour++) {
+                OpenIntFloatHashMap timeMap = this.accidentsContext.getLinkId2info()
+                        .get(link.getId())
+                        .getSevereFatalCasualityExposureByAccidentTypeByTime()
+                        .get(accidentType);
+
+                float severeCasualty = (timeMap != null) ? timeMap.get(hour) : 0.0f;
+
                 //float lightCasualty = this.accidentsContext.getLinkId2info().get(link.getId()).getLightCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
-                float severeCasualty = this.accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
+                //float severeCasualty = this.accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
                 //float lightCasualtyExposure =0.f;
+
                 float severeCasualtyExposure = 0.f;
                 if(mode.equals("car")){
                     if(analysisEventHandler.getDemand(link.getId(), mode, hour) != 0){

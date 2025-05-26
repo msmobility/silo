@@ -70,9 +70,8 @@ public class AccidentModelMCR extends AbstractModel implements ModelUpdateListen
 
             // Accident rate model
             AccidentRateModelMCR model = new AccidentRateModelMCR(scenario, 1.f/scalingFactor);
-            // todo: for testing, we run it offLine
-
             model.runCasualtyRateOffline();
+
             //model.runAgentInjuryRiskOfflineMCR();
 
             // Qin's implementations
@@ -80,7 +79,7 @@ public class AccidentModelMCR extends AbstractModel implements ModelUpdateListen
             // model.runAgentInjuryRiskOffline();
             // model.runModelOnline();
 
-
+            // todo: connection with Health exposure comes here
             /*
             for(Id<Link> linkId : model.getAccidentsContext().getLinkId2info().keySet()){
                 //((de.tum.bgu.msm.scenarios.health.HealthDataContainerImpl)dataContainer).getLinkInfoByDay().get(day).get(linkId).setLightCasualityExposureByAccidentTypeByTime(model.getAccidentsContext().getLinkId2info().get(linkId).getLightCasualityExposureByAccidentTypeByTime());
