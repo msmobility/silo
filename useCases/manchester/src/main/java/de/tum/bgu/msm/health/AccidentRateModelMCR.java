@@ -857,9 +857,21 @@ public class AccidentRateModelMCR {
 
     private void computeAgentCrashRiskMCR(AccidentAgentInfo personInfo) {
         Map<String, Double> injuryRiskByMode = new HashMap<>();
-        injuryRiskByMode.put("car", 1.0);
-        injuryRiskByMode.put("bike", 1.0);
-        injuryRiskByMode.put("walk", 1.0);
+
+        if(personInfo.getSevereInjuryRiskByMode() != null){
+            // in case another trip and same agent
+            injuryRiskByMode.putAll(personInfo.getSevereInjuryRiskByMode());
+
+            //
+            for(String key : injuryRiskByMode.keySet()){
+                injuryRiskByMode.put(key, (injuryRiskByMode.get(key)-1)*(-1));
+            }
+        }else{
+            // 1st time
+            injuryRiskByMode.put("car", 1.0);
+            injuryRiskByMode.put("bike", 1.0);
+            injuryRiskByMode.put("walk", 1.0);
+        }
 
         Set<String> allowedModes = Set.of("car", "bike", "walk");
 
