@@ -891,7 +891,8 @@ public class AccidentRateModelMCR {
             case "walk":
                 return getRisk(exposureByType, AccidentType.PED, hour);
             default:
-                throw new RuntimeException("Undefined mode: " + mode);
+                return 0.0;
+                //throw new RuntimeException("Undefined mode: " + mode);
         }
     }
 
