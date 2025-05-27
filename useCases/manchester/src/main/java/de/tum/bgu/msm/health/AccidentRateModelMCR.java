@@ -856,6 +856,52 @@ public class AccidentRateModelMCR {
     }
 
     private void computeAgentCrashRiskMCR(AccidentAgentInfo personInfo) {
+        Map<String, Double> injuryRiskByMode = new HashMap<>();
+        injuryRiskByMode.put("car", 0.0);
+        injuryRiskByMode.put("bike", 0.0);
+        injuryRiskByMode.put("walk", 0.0);
+
+        for (Id<Link> linkId : personInfo.getLinkId2time2mode().keySet()) {
+            AccidentLinkInfo linkInfo = accidentsContext.getLinkId2info().get(linkId);
+            if (linkInfo == null) {
+                log.warn("No Link Info for {}", linkId);
+                continue;
+            }
+
+            for (int hour : personInfo.getLinkId2time2mode().get(linkId).keySet()) {
+                String mode = personInfo.getLinkId2time2mode().get(linkId).get(hour);
+                double risk = calculateRiskForMode(linkInfo, mode, hour);
+                injuryRiskByMode.merge(mode, risk, Double::sum);
+            }
+        }
+
+        personInfo.setSevereInjuryRiskByMode(injuryRiskByMode);
+    }
+
+    private double calculateRiskForMode(AccidentLinkInfo linkInfo, String mode, int hour) {
+        Map<AccidentType, OpenIntFloatHashMap> exposureByType = linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime();
+
+        switch (mode) {
+            case "car":
+                return getRisk(exposureByType, AccidentType.CAR_ONEWAY, hour) +
+                        getRisk(exposureByType, AccidentType.CAR_TWOWAY, hour);
+            case "bike":
+                return getRisk(exposureByType, AccidentType.BIKE_MAJOR, hour) +
+                        getRisk(exposureByType, AccidentType.BIKE_MINOR, hour);
+            case "walk":
+                return getRisk(exposureByType, AccidentType.PED, hour);
+            default:
+                throw new RuntimeException("Undefined mode: " + mode);
+        }
+    }
+
+    private double getRisk(Map<AccidentType, OpenIntFloatHashMap> exposureByType, AccidentType type, int hour) {
+        OpenIntFloatHashMap map = exposureByType.getOrDefault(type, new OpenIntFloatHashMap());
+        return map.get(hour);
+    }
+
+    /*
+    private void computeAgentCrashRiskMCR(AccidentAgentInfo personInfo) {
 
         //double lightInjuryRisk = .0;
         Double severeInjuryRisk = .0;
@@ -918,6 +964,7 @@ public class AccidentRateModelMCR {
         //personInfo.setSevereInjuryRisk(severeInjuryRisk);
         personInfo.setSevereInjuryRiskByMode(PersonInjuryRiskByMode);
     }
+     */
 
     private void computeAgentCrashRisk(AccidentAgentInfo personInfo) {
 
