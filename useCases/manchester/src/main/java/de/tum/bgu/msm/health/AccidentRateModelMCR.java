@@ -560,6 +560,21 @@ public class AccidentRateModelMCR {
 
 
 
+        // links
+        for (Link link : this.scenario.getNetwork().getLinks().values()) {
+            AccidentLinkInfo info = new AccidentLinkInfo(link.getId());
+            this.accidentsContext.getLinkId2info().put(link.getId(), info);
+        }
+        log.info("Initializing all link-specific information... Done.");
+
+        // persons
+        for (Person person : this.scenario.getPopulation().getPersons().values()) {
+            AccidentAgentInfo info = new AccidentAgentInfo(person.getId());
+            this.accidentsContext.getPersonId2info().put(person.getId(), info);
+        }
+        log.info("Initializing all agent-specific information... Done.");
+
+
 
 
         // Read-in traffic volumes
@@ -594,21 +609,6 @@ public class AccidentRateModelMCR {
         eventsFileBikePed = "/media/admin/EXTERNAL_USB1/simulation_results_for_paper/base/matsim/2021/thursday/bikePed/2021.output_events.xml.gz";
         eventsReader.readFile(eventsFileBikePed); //car, bike, ped AADT are calculated by eventHandler
         log.info("Reading bike&ped events file... Done.");
-
-
-        // links
-        for (Link link : this.scenario.getNetwork().getLinks().values()) {
-            AccidentLinkInfo info = new AccidentLinkInfo(link.getId());
-            this.accidentsContext.getLinkId2info().put(link.getId(), info);
-        }
-        log.info("Initializing all link-specific information... Done.");
-
-        // persons
-        for (Person person : this.scenario.getPopulation().getPersons().values()) {
-            AccidentAgentInfo info = new AccidentAgentInfo(person.getId());
-            this.accidentsContext.getPersonId2info().put(person.getId(), info);
-        }
-        log.info("Initializing all agent-specific information... Done.");
 
 
         Random random = new Random();
