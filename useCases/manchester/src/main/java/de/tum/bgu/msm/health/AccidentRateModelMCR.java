@@ -857,9 +857,11 @@ public class AccidentRateModelMCR {
 
     private void computeAgentCrashRiskMCR(AccidentAgentInfo personInfo) {
         Map<String, Double> injuryRiskByMode = new HashMap<>();
-        injuryRiskByMode.put("car", 0.0);
-        injuryRiskByMode.put("bike", 0.0);
-        injuryRiskByMode.put("walk", 0.0);
+        injuryRiskByMode.put("car", 1.0);
+        injuryRiskByMode.put("bike", 1.0);
+        injuryRiskByMode.put("walk", 1.0);
+
+        Set<String> allowedModes = Set.of("car", "bike", "walk");
 
         for (Id<Link> linkId : personInfo.getLinkId2time2mode().keySet()) {
             AccidentLinkInfo linkInfo = accidentsContext.getLinkId2info().get(linkId);
@@ -870,11 +872,18 @@ public class AccidentRateModelMCR {
 
             for (int hour : personInfo.getLinkId2time2mode().get(linkId).keySet()) {
                 String mode = personInfo.getLinkId2time2mode().get(linkId).get(hour);
-                double risk = calculateRiskForMode(linkInfo, mode, hour);
-                injuryRiskByMode.merge(mode, risk, Double::sum);
+                if(allowedModes.contains(mode)){
+                    double currentRisk = calculateRiskForMode(linkInfo, mode, hour);
+                    // injuryRiskByMode.merge(mode, risk, Double::sum);
+                    injuryRiskByMode.merge(mode, currentRisk, (oldValue, risk) -> oldValue * (1-risk));
+                }
             }
         }
 
+        // to have the final person-based risk 1-(1-r1)*(1-r2)*(1-r_i)*...*(1-r_n) , where i is link_i
+        for(String key : injuryRiskByMode.keySet()){
+            injuryRiskByMode.put(key, 1-injuryRiskByMode.get(key));
+        }
         personInfo.setSevereInjuryRiskByMode(injuryRiskByMode);
     }
 
@@ -882,6 +891,7 @@ public class AccidentRateModelMCR {
         Map<AccidentType, OpenIntFloatHashMap> exposureByType = linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime();
 
         switch (mode) {
+            // todo: here normally if ONEWAY is 0 other is non-null and vice versa, same for BIKE ...
             case "car":
                 return getRisk(exposureByType, AccidentType.CAR_ONEWAY, hour) +
                         getRisk(exposureByType, AccidentType.CAR_TWOWAY, hour);
@@ -1102,7 +1112,7 @@ public class AccidentRateModelMCR {
                 if(mode.equals("car")){
                     if(analysisEventHandler.getDemand(link.getId(), mode, hour) != 0){
                         //lightCasualtyExposure = (float) (lightCasualty/((analysisEventHandler.getDemand(link.getId(),mode,hour))*SCALEFACTOR*1.5));
-                        severeCasualtyExposure = (float) (severeCasualty/(analysisEventHandler.getDemand(link.getId(), mode, hour) * SCALEFACTOR)); // todo: why 1.5 in Munich ?? check if SCALEFACTOR should be applied or not ?
+                        severeCasualtyExposure = (float) (severeCasualty/(analysisEventHandler.getDemand(link.getId(), mode, hour))); //* SCALEFACTOR)); // todo: why 1.5 in Munich ?? check if SCALEFACTOR should be applied or not ?
                     }else{
                         //log.warn(link.getId()+mode+hour);
                         counterCar++;
