@@ -663,6 +663,17 @@ public class AccidentRateModelMCR {
         //only for offline todo: read matsim plans
         int popSize = 0;
         log.info("Agent injury risk calculation start.");
+        for(Map.Entry<Id<Person>, AccidentAgentInfo> pp : this.accidentsContext.getPersonId2info().entrySet()){
+            if(pp == null){
+                //log.warn("Person Id: " + pp.getId() + "is not analyzed in the handler!");
+                count++;
+                continue;
+            }
+            computeAgentCrashRiskMCR(pp.getValue());
+            popSize++;
+        }
+
+        /*
         for (Person pp : this.scenario.getPopulation().getPersons().values()){
             AccidentAgentInfo personInfo = this.accidentsContext.getPersonId2info().get(pp.getId());
             if(personInfo == null){
@@ -673,6 +684,7 @@ public class AccidentRateModelMCR {
             computeAgentCrashRiskMCR(personInfo);
             popSize++;
         }
+         */
 
         log.info(count + " agents are not analyzed in the handler!");
         log.info("Agent injury risk calculation completed.");
@@ -1355,7 +1367,7 @@ public class AccidentRateModelMCR {
     }
 
     public static void writeToFile(String path, String building) throws FileNotFoundException {
-        PrintWriter bd = new PrintWriter(new FileOutputStream(path, true));
+        PrintWriter bd = new PrintWriter(new FileOutputStream(path, false));
         bd.write(building);
         bd.close();
     }
