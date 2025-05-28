@@ -568,11 +568,13 @@ public class AccidentRateModelMCR {
         log.info("Initializing all link-specific information... Done.");
 
         // persons
+        int nbPersons =0;
         for (Person person : this.scenario.getPopulation().getPersons().values()) {
             AccidentAgentInfo info = new AccidentAgentInfo(person.getId());
             this.accidentsContext.getPersonId2info().put(person.getId(), info);
+            nbPersons++;
         }
-        log.info("Initializing all agent-specific information... Done.");
+        log.info("Initializing all agent-specific information... Done. " + nbPersons);
 
 
 
@@ -659,6 +661,7 @@ public class AccidentRateModelMCR {
 
 
         //only for offline todo: read matsim plans
+        int popSize = 0;
         log.info("Agent injury risk calculation start.");
         for (Person pp : this.scenario.getPopulation().getPersons().values()){
             AccidentAgentInfo personInfo = this.accidentsContext.getPersonId2info().get(pp.getId());
@@ -668,9 +671,12 @@ public class AccidentRateModelMCR {
                 continue;
             }
             computeAgentCrashRiskMCR(personInfo);
+            popSize++;
         }
+
         log.info(count + " agents are not analyzed in the handler!");
         log.info("Agent injury risk calculation completed.");
+        log.info("The size of the population is " + popSize);
 
         try {
             writeOut();
@@ -858,6 +864,11 @@ public class AccidentRateModelMCR {
     private void computeAgentCrashRiskMCR(AccidentAgentInfo personInfo) {
         Map<String, Double> injuryRiskByMode = new HashMap<>();
 
+        injuryRiskByMode.put("car", 1.0);
+        injuryRiskByMode.put("bike", 1.0);
+        injuryRiskByMode.put("walk", 1.0);
+
+        /*
         if(personInfo.getSevereInjuryRiskByMode() != null){
             // in case another trip and same agent
             injuryRiskByMode.putAll(personInfo.getSevereInjuryRiskByMode());
@@ -872,6 +883,7 @@ public class AccidentRateModelMCR {
             injuryRiskByMode.put("bike", 1.0);
             injuryRiskByMode.put("walk", 1.0);
         }
+         */
 
         Set<String> allowedModes = Set.of("car", "bike", "walk");
 
@@ -896,6 +908,7 @@ public class AccidentRateModelMCR {
         for(String key : injuryRiskByMode.keySet()){
             injuryRiskByMode.put(key, 1-injuryRiskByMode.get(key));
         }
+
         personInfo.setSevereInjuryRiskByMode(injuryRiskByMode);
     }
 
