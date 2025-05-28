@@ -1221,6 +1221,8 @@ public class AccidentRateModelMCR {
         String outputRisk = scenario.getConfig().controller().getOutputDirectory() + "PersonInjuryRisk.csv";
         StringBuilder risk = new StringBuilder();
 
+        System.out.println("check -- " + accidentsContext.getPersonId2info().size());
+
         //write header
         risk.append("personId,severeFatalInjuryRiskCar,severeFatalInjuryRiskWalk,severeFatalInjuryRiskBike");
         risk.append('\n');

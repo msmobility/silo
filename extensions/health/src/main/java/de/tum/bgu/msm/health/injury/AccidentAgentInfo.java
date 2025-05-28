@@ -13,7 +13,7 @@ public class AccidentAgentInfo {
     private double lightInjuryRisk;
     private double severeInjuryRisk;
 
-    private final Map<String, Double> severeInjuryRiskByMode = new HashMap<>();
+    private Map<String, Double> severeInjuryRiskByMode = new HashMap<>();
 
 
     public AccidentAgentInfo(Id<Person> id) {
