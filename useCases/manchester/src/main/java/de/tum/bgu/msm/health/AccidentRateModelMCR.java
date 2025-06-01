@@ -515,7 +515,7 @@ public class AccidentRateModelMCR {
             networkFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + this.scenario.getConfig().controller().getRunId() + ".output_network.xml.gz";
         }
 
-        networkFile = "/media/admin/EXTERNAL_USB1/simulation_results_for_paper/base/matsim/2021/thursday/car/2021.output_network.xml.gz";
+        //networkFile = "/media/admin/EXTERNAL_USB1/simulation_results_for_paper/base/matsim/2021/thursday/car/2021.output_network.xml.gz";
         new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
         log.info("Reading network file... Done.");
 
@@ -659,7 +659,7 @@ public class AccidentRateModelMCR {
         log.info(counterBikePed + "bikeped links have no hourly traffic volume");
         log.info("Link casualty exposure calculation completed.");
 
-
+        /*
         //only for offline todo: read matsim plans
         int popSize = 0;
         log.info("Agent injury risk calculation start.");
@@ -672,6 +672,8 @@ public class AccidentRateModelMCR {
             computeAgentCrashRiskMCR(pp.getValue());
             popSize++;
         }
+
+         */
 
         /*
         for (Person pp : this.scenario.getPopulation().getPersons().values()){
@@ -686,6 +688,7 @@ public class AccidentRateModelMCR {
         }
          */
 
+        /*
         log.info(count + " agents are not analyzed in the handler!");
         log.info("Agent injury risk calculation completed.");
         log.info("The size of the population is " + popSize);
@@ -695,6 +698,7 @@ public class AccidentRateModelMCR {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+         */
 
         // todo: why ??
         analysisEventHandler.reset(0);

@@ -13,6 +13,7 @@ import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.matsim.api.core.v01.TransportMode;
 
 import java.util.*;
 
@@ -45,6 +46,11 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
         if(year == properties.main.startYear || properties.healthData.exposureModelYears.contains(year)) {
             calculateRelativeRisk();
         }
+
+        // check injuries here
+        checkTransportInjuries(year);
+
+        // transition probs and health statuses
         updateDiseaseProbability(properties.healthData.adjustByRelativeRisk);
         updateHealthDiseaseStates(year);
     }
@@ -91,6 +97,55 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
                         logger.error("Unknown exposures " + exposures);
                 }
                 ((PersonHealth)person).getRelativeRisksByDisease().put(exposures, rr);
+            }
+        }
+    }
+
+    private void checkTransportInjuries(int year) {
+        // todo: iterate over persons here
+        for(Person person : dataContainer.getHouseholdDataManager().getPersons()){
+            if (((PersonHealthMCR) person).getInjuryStatus().name().startsWith("KILLED_")) return;
+
+            for (String mode : Set.of("Car", "Walk", "Bike")) {
+                // Step 1: Check if ANY injury occurs (fatal or serious)
+                String anyInjuryKey = "severeFatalInjury" + mode;  // e.g., "severeInjuryCar"
+                float anyInjuryProb = ((PersonHealthMCR) person).getWeeklyAccidentRisk(anyInjuryKey);
+                float annualAnyInjuryProb = anyInjuryProb;
+
+                //float annualAnyInjuryProb = 1 - (float) Math.pow(1 - anyInjuryProb, 52);
+
+                if (random.nextFloat() < annualAnyInjuryProb) {
+                    // todo: read-in prob table
+                    double pFatal = 0.01;  // P(killed | injured; age, gender, mode)
+
+                    if (random.nextFloat() < pFatal) {
+                        // Killed
+                        // todo:
+                        switch (mode.toLowerCase()) {  // Case-insensitive comparison
+                            case "car":
+                                ((PersonHealthMCR) person).setInjuryStatus(InjuryStatus.KILLED_CAR);
+                                break;
+                            case "bike":
+                                ((PersonHealthMCR) person).setInjuryStatus(InjuryStatus.KILLED_BIKE);
+                                break;
+                            case "walk":
+                                ((PersonHealthMCR) person).setInjuryStatus(InjuryStatus.KILLED_WALK);
+                                break;
+                            default:
+                                throw new IllegalArgumentException("Unknown transport mode: " + mode);
+                        }
+                    }
+
+                    ((PersonHealthMCR) person).getHealthDiseaseTracker().put(year,
+                            List.of("dead", "killed_by_" + mode.toLowerCase()));
+                    return;  // Exit early
+                } else {
+                    // Seriously injured (log but don't change state)
+                    List<String> status = new ArrayList<>(((PersonHealthMCR) person).getHealthDiseaseTracker().getOrDefault(year,
+                            ((PersonHealthMCR) person).getHealthDiseaseTracker().get(year - 1)));
+                    status.add("seriously_injured_" + mode.toLowerCase());
+                    ((PersonHealthMCR) person).getHealthDiseaseTracker().put(year, status);
+                }
             }
         }
     }

@@ -564,7 +564,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
     }
 
-    private void calculatePathExposures(Trip trip,LeastCostPathCalculator.Path path,int departureTimeInSecond, TravelTime travelTime, Vehicle vehicle) {
+    private void calculatePathExposures(Trip trip, LeastCostPathCalculator.Path path, int departureTimeInSecond, TravelTime travelTime, Vehicle vehicle) {
 
         Mode mode = trip.getTripMode();
 
@@ -580,8 +580,15 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         double pathExposureNoise = 0.;
 
         double pathExposureGreen = 0.;
+
+        // Injury variables
+        // Munich
         double pathSevereInjuryRisk = 0;
         double pathFatalityRisk = 0;
+
+        // Manchester
+        double pathInjuryRisk = 1.;
+
         float[] hourOccupied = new float[24*7];
 
         for(Link link : path.links) {
@@ -589,8 +596,13 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             double linkLength = link.getLength();
             double linkTime = travelTime.getLinkTravelTime(link,enterTimeInSecond,null,vehicle);
 
+            // Munich
             double linkSevereInjuryRisk = 0.;
             double linkFatalityRisk = 0.;
+
+            // Manchester
+            double linkInjuryRisk = 0.;
+
             double linkMarginalMetHour = 0.;
             double linkExposureGreen = 0.;
             double linkExposurePm25 = 0.;
@@ -603,6 +615,11 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             //double[] severeFatalRisk = getLinkSevereFatalInjuryRisk(mode, (int) (enterTimeInSecond / 3600.), linkInfo);
             //linkSevereInjuryRisk = severeFatalRisk[0];
             //linkFatalityRisk = severeFatalRisk[1];
+            linkInjuryRisk = getLinkInjuryRisk(mode, (int) enterTimeInSecond, linkInfo);
+
+
+
+
 
             // PHYSICAL ACTIVITY
             double linkMarginalMet = PhysicalActivity.getMMet(mode, linkLength, linkTime, link);
@@ -670,8 +687,12 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
             pathLength += linkLength;
             pathTime += linkTime;
-            pathSevereInjuryRisk += linkSevereInjuryRisk - (pathSevereInjuryRisk * linkSevereInjuryRisk);
-            pathFatalityRisk += linkFatalityRisk - (pathFatalityRisk * linkFatalityRisk);
+
+            // pathSevereInjuryRisk += linkSevereInjuryRisk - (pathSevereInjuryRisk * linkSevereInjuryRisk);
+            // pathFatalityRisk += linkFatalityRisk - (pathFatalityRisk * linkFatalityRisk);
+            pathInjuryRisk *= (1 - linkInjuryRisk);
+
+
             pathMarginalMetHours += linkMarginalMetHour;
             pathExposureGreen += linkExposureGreen;
         }
@@ -681,10 +702,18 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         trip.updateMatsimLinkCount(path.links.size());
 
         trip.updateMarginalMetHours(pathMarginalMetHours);
+
+        /*
         trip.updateTravelRiskMap(Map.of(
                 "severeInjury", (float) pathSevereInjuryRisk,
                 "fatality", (float) pathFatalityRisk
         ));
+
+         */
+
+        // Manchester
+        pathInjuryRisk = 1- pathInjuryRisk;
+        trip.updateTravelRiskMap(Map.of("severeFatalInjury", (float) pathInjuryRisk));
 
         trip.updateTravelExposureMap(Map.of(
                 "pm2.5", (float) pathExposurePm25,
@@ -695,9 +724,33 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
         PersonHealth siloPerson = ((PersonHealth)dataContainer.getHouseholdDataManager().getPersonFromId(trip.getPerson()));
         siloPerson.updateWeeklyTravelSeconds((float) pathTime);
+
+        /*
         siloPerson.updateWeeklyAccidentRisks(Map.of(
                 "severeInjury", (float) pathSevereInjuryRisk,
                 "fatality", (float) pathFatalityRisk));
+
+         */
+
+        // todo: by mode ??
+        // siloPerson.updateWeeklyAccidentRisks(Map.of("severeFatalInjury", (float) pathInjuryRisk));
+
+        //
+        switch(mode){
+            case autoDriver:
+            case autoPassenger:
+                siloPerson.updateWeeklyAccidentRisks(Map.of("severeFatalInjuryCar", (float) pathInjuryRisk));
+                break;
+            case bicycle:
+                siloPerson.updateWeeklyAccidentRisks(Map.of("severeFatalInjuryWalk", (float) pathInjuryRisk));
+                break;
+            case walk:
+                siloPerson.updateWeeklyAccidentRisks(Map.of("severeFatalInjuryBike", (float) pathInjuryRisk));
+                break;
+            default:
+                throw new RuntimeException("Undefined mode " + mode);
+        }
+
         siloPerson.updateWeeklyMarginalMetHours(trip.getTripMode(), (float) pathMarginalMetHours);
 
         siloPerson.updateWeeklyPollutionExposuresByHour(Map.of(
@@ -964,7 +1017,30 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         return null;
     }
 
+    private double getLinkInjuryRisk(Mode mode, int time, LinkInfo linkInfo){
+        double linkInjuryRisk = 0.;
+        switch (mode){
+            case autoDriver:
+            case autoPassenger:
+                linkInjuryRisk = linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.CAR_ONEWAY).get((int) (time / 3600.))
+                        + linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.CAR_TWOWAY).get((int) (time / 3600.));
+                break;
+            case bicycle:
+                linkInjuryRisk = linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.BIKE_MAJOR).get((int) (time / 3600.))
+                        + linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.BIKE_MINOR).get((int) (time / 3600.));
+                break;
+            case walk:
+                linkInjuryRisk = linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.PED).get((int) (time / 3600.))
+                        + linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.PED).get((int) (time / 3600.));
+                break;
+            default:
+                throw new RuntimeException("Undefined mode " + mode);
+        }
+        return linkInjuryRisk;
+    }
+
     private double[] getLinkSevereFatalInjuryRisk(Mode mode, int hour, LinkInfo linkInfo) {
+        // Munich
         double FATAL_CAR_DRIVER = 0.077;
         double FATAL_BIKECAR_BIKE = 0.024;
         double FATAL_BIKEBIKE_BIKE = 0.051;
@@ -973,9 +1049,10 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         double severeInjuryRisk;
         double fatalityRisk;
         Map<AccidentType, OpenIntFloatHashMap> exposure = linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime();
+
         switch (mode){
-            case autoDriver:
             case autoPassenger:
+            case autoDriver:
                 fatalityRisk = exposure.get(AccidentType.CAR).get(hour) * FATAL_CAR_DRIVER;
                 severeInjuryRisk = exposure.get(AccidentType.CAR).get(hour) * (1-FATAL_CAR_DRIVER);
                 break;
@@ -992,7 +1069,6 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             default:
                 throw new RuntimeException("Undefined mode " + mode);
         }
-
 
         return new double[]{severeInjuryRisk,fatalityRisk};
     }
