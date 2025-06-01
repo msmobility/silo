@@ -2,6 +2,7 @@ package de.tum.bgu.msm.health.data;
 
 import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.Day;
 import de.tum.bgu.msm.data.MitoGender;
 import de.tum.bgu.msm.data.Mode;
 import de.tum.bgu.msm.data.person.Gender;
@@ -23,7 +24,11 @@ public interface DataContainerHealth extends DataContainer {
 
     Map<Id<Link>, LinkInfo> getLinkInfo();
 
+    Map<Id<Link>, LinkInfo> getLinkInfoByDay(Day day);
+
     void setLinkInfo(Map<Id<Link>, LinkInfo> linkInfo);
+
+    void setLinkInfoByDay(Map<Id<Link>, LinkInfo> linkInfo, Day day);
 
     Map<String, ActivityLocation> getActivityLocations();
 

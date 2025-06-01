@@ -588,6 +588,12 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
         // Manchester
         double pathInjuryRisk = 1.;
+        Day currentDay; // by default
+        if(trip.getDepartureDay().equals(Day.saturday) || trip.getDepartureDay().equals(Day.sunday)){
+            currentDay = trip.getDepartureDay();
+        }else{
+            currentDay = Day.thursday;
+        }
 
         float[] hourOccupied = new float[24*7];
 
@@ -615,11 +621,8 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             //double[] severeFatalRisk = getLinkSevereFatalInjuryRisk(mode, (int) (enterTimeInSecond / 3600.), linkInfo);
             //linkSevereInjuryRisk = severeFatalRisk[0];
             //linkFatalityRisk = severeFatalRisk[1];
-            linkInjuryRisk = getLinkInjuryRisk(mode, (int) enterTimeInSecond, linkInfo);
-
-
-
-
+            LinkInfo linkInfoByDay = ((HealthDataContainerImpl) dataContainer).getLinkInfoByDay(currentDay).get(link.getId());
+            linkInjuryRisk = getLinkInjuryRisk(mode, (int) enterTimeInSecond, linkInfoByDay);
 
             // PHYSICAL ACTIVITY
             double linkMarginalMet = PhysicalActivity.getMMet(mode, linkLength, linkTime, link);
@@ -688,6 +691,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             pathLength += linkLength;
             pathTime += linkTime;
 
+            // Injuries
             // pathSevereInjuryRisk += linkSevereInjuryRisk - (pathSevereInjuryRisk * linkSevereInjuryRisk);
             // pathFatalityRisk += linkFatalityRisk - (pathFatalityRisk * linkFatalityRisk);
             pathInjuryRisk *= (1 - linkInjuryRisk);
