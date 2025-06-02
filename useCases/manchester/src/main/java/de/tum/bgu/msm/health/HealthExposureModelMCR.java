@@ -152,7 +152,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                                     + "_" + day
                                     + "_" + mode
                                     + ".csv";
-                            new TripExposureWriter().writeMitoTrips(mitoTrips,filett);
+                            new TripExposureWriter().writeMitoTrips(mitoTrips,"TEST_" + filett);
                             break;
                         default:
                             logger.warn("No exposure model for mode: " + mode);
