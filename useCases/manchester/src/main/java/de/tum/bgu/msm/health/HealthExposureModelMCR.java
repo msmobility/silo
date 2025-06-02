@@ -190,7 +190,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
         new LinkInfoReader().readNoiseLevelData(((DataContainerHealth)dataContainer), outputDirectory + "matsim/" + latestMatsimYear, day);
 
-        logger.info("Initialized Link Info for " + ((DataContainerHealth)dataContainer).getLinkInfo().size() + " links ");
+        logger.info("Initialized Link Info for " + ((DataContainerHealth) dataContainer).getLinkInfo().size() + " links ");
         // todo: I need to initialize the link info for link-based injury risks by accidentType
     }
 
