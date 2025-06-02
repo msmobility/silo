@@ -21,6 +21,7 @@ import de.tum.bgu.msm.health.injury.AccidentModel;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Implements SILO for the Greater Manchester
@@ -47,12 +48,8 @@ public class RunExposureHealthOffline {
         HealthDataContainerImpl dataContainer = DataBuilderHealth.getModelDataForManchester(properties, config);
         DataBuilderHealth.read(properties, dataContainer, config);
 
-        AccidentModelMCR accidentModel = new AccidentModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
-
-        //AirPollutantModel airPollutantModel = new AirPollutantModel(dataContainer, properties, SiloUtil.provideNewRandom(),config);
-
-
         /*
+        // all
         AirPollutantModel airPollutantModel = new AirPollutantModel(dataContainer, properties, SiloUtil.provideNewRandom(),config);
         NoiseModel noiseModel = new NoiseModel(dataContainer,properties, SiloUtil.provideNewRandom(),config);
         SportPAModelMCR sportPAModelMCR = new SportPAModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
@@ -60,11 +57,18 @@ public class RunExposureHealthOffline {
         DiseaseModelMCR diseaseModelMCR = new DiseaseModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
         */
 
-        //SportPAModelMCR sportPAModelMCR = new SportPAModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
-        //HealthExposureModelMCR exposureModelMCR = new HealthExposureModelMCR(dataContainer, properties, SiloUtil.provideNewRandom(),config);
+        // setup
+        AccidentModelMCR accidentModel = new AccidentModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
+        DiseaseModelMCR diseaseModelMCR = new DiseaseModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
+        HealthExposureModelMCR exposureModelMCR = new HealthExposureModelMCR(dataContainer, properties, SiloUtil.provideNewRandom(),config);
 
-
-        accidentModel.endYear(2021, Day.thursday);
+        //
+        for(Day day : Set.of(Day.thursday, Day.saturday, Day.sunday)) {
+            accidentModel.endYear(2021, day);
+        }
+        exposureModelMCR.endYear(2021);
+        diseaseModelMCR.setup();
+        diseaseModelMCR.endYear(2021);
 
         /*
         airPollutantModel.endYear(2021);
