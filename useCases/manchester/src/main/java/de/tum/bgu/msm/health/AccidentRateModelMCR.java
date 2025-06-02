@@ -637,31 +637,33 @@ public class AccidentRateModelMCR {
         }
         log.info("Link casualty frequency calculation completed.");
 
+        /*
         try {
             writeOutCasualtyRate();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
+         */
 
-        /*
         // Compute link-level injury risk R=1/v (v= traffic volume)
         log.info("Link casualty exposure calculation start.");
         for (Link link : this.scenario.getNetwork().getLinks().values()) {
             computeLinkCasualtyExposureMCR(link);
         }
 
+        /*
         try {
             writeOutExposure();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
+         */
+
         log.info(counterCar + "car links have no hourly traffic volume");
         log.info(counterBikePed + "bikeped links have no hourly traffic volume");
         log.info("Link casualty exposure calculation completed.");
-
-         */
 
         /*
         //only for offline todo: read matsim plans
@@ -1176,7 +1178,6 @@ public class AccidentRateModelMCR {
             }
             //this.accidentsContext.getLinkId2info().get(link.getId()).getLightCasualityExposureByAccidentTypeByTime().put(accidentType,lightCasualtyExposureByTime);
             this.accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().put(accidentType, severeCasualtyExposureByTime);
-
         }
     }
 
