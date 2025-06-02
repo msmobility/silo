@@ -185,7 +185,7 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
 
     @Override
     public void setLinkInfoByDay(Map<Id<Link>, LinkInfo> linkInfo, Day day) {
-        this.linkInfoByDay.put(day, linkInfo);
+        this.linkInfoByDay.put(day, new HashMap<>(linkInfo));
     }
 
     @Override
