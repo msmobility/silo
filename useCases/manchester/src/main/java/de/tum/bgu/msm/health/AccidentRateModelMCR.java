@@ -646,24 +646,27 @@ public class AccidentRateModelMCR {
 
          */
 
+        /*
         // Compute link-level injury risk R=1/v (v= traffic volume)
         log.info("Link casualty exposure calculation start.");
         for (Link link : this.scenario.getNetwork().getLinks().values()) {
             computeLinkCasualtyExposureMCR(link);
         }
 
-        /*
+
         try {
             writeOutExposure();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
-         */
+
 
         log.info(counterCar + "car links have no hourly traffic volume");
         log.info(counterBikePed + "bikeped links have no hourly traffic volume");
         log.info("Link casualty exposure calculation completed.");
+
+         */
 
         /*
         //only for offline todo: read matsim plans
@@ -709,6 +712,46 @@ public class AccidentRateModelMCR {
         // todo: why ??
         analysisEventHandler.reset(0);
         System.gc();
+    }
+
+    public void computeLinkLevelInjuryRisk() {
+        // Compute link-level injury risk R=1/v (v= traffic volume)
+        log.info("Link casualty exposure calculation start.");
+        for (Link link : this.scenario.getNetwork().getLinks().values()) {
+            computeLinkCasualtyExposureMCR(link);
+        }
+        log.info("Link casualty exposure completed.");
+
+        /*
+        try {
+            writeOutExposure();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+         */
+    }
+
+    public void computePersonLevelInjuryRiskOffline(){
+        int popSize = 0;
+        log.info("Agent injury risk calculation start.");
+        for(Map.Entry<Id<Person>, AccidentAgentInfo> pp : this.accidentsContext.getPersonId2info().entrySet()){
+            if(pp == null){
+                //log.warn("Person Id: " + pp.getId() + "is not analyzed in the handler!");
+                count++;
+                continue;
+            }
+            computeAgentCrashRiskMCR(pp.getValue());
+            popSize++;
+        }
+        log.info("Agent injury risk calculation completed.");
+
+        /*
+        try {
+            writeOut();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        */
     }
 
     private Map<Id<Link>,Link> extractLinkSpecific(Map<Id<Link>, Link> links, AccidentType accidentType) {

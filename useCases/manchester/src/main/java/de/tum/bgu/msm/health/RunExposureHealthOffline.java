@@ -67,9 +67,7 @@ public class RunExposureHealthOffline {
             accidentModel.endYear(2021, day);
         }
 
-
-
-        //exposureModelMCR.endYear(2021);
+        exposureModelMCR.endYear(2021);
         //diseaseModelMCR.setup();
         //diseaseModelMCR.endYear(2021);
 

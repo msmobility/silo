@@ -68,10 +68,14 @@ public class AccidentModelMCR extends AbstractModel implements ModelUpdateListen
             float scalingFactor = (float) (properties.main.scaleFactor * Double.parseDouble(Resources.instance.getString(de.tum.bgu.msm.resources.Properties.TRIP_SCALING_FACTOR)));
             scenario.addScenarioElement("accidentModelFile",properties.main.baseDirectory+"input/accident/");
 
-            // Accident rate model
+            // Injury model
             AccidentRateModelMCR model = new AccidentRateModelMCR(scenario, 1.f/scalingFactor);
-            model.runCasualtyRateOffline();
 
+            model.runCasualtyRateOffline(); // number of casualties per link (max 1 per link, otherwise 0)
+            model.computeLinkLevelInjuryRisk(); // R=1/v where v is the traffic volume
+            model.computePersonLevelInjuryRiskOffline();
+
+            // do not use
             //model.runAgentInjuryRiskOfflineMCR();
 
             // Qin's implementations

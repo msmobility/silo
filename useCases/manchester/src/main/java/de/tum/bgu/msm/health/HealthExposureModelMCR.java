@@ -157,6 +157,10 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                     System.gc();
                 }
                 ((DataContainerHealth)dataContainer).getLinkInfo().values().forEach(linkInfo -> {linkInfo.reset();});
+
+                // todo: Is it worth resetting ?
+                // ((DataContainerHealth) dataContainer).getLinkInfoByDay(day).values().forEach(linkInfo -> {linkInfo.reset();});
+
                 ((DataContainerHealth)dataContainer).getActivityLocations().values().forEach(activityLocation -> {activityLocation.reset();});
                 System.gc();
             }
