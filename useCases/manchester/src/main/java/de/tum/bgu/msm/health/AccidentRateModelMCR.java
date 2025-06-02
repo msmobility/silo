@@ -643,6 +643,8 @@ public class AccidentRateModelMCR {
             e.printStackTrace();
         }
 
+
+        /*
         // Compute link-level injury risk R=1/v (v= traffic volume)
         log.info("Link casualty exposure calculation start.");
         for (Link link : this.scenario.getNetwork().getLinks().values()) {
@@ -658,6 +660,8 @@ public class AccidentRateModelMCR {
         log.info(counterCar + "car links have no hourly traffic volume");
         log.info(counterBikePed + "bikeped links have no hourly traffic volume");
         log.info("Link casualty exposure calculation completed.");
+
+         */
 
         /*
         //only for offline todo: read matsim plans
