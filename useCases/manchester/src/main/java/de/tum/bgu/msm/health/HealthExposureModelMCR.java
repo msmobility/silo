@@ -32,6 +32,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.PopulationFactory;
+import org.matsim.contrib.analysis.vsp.traveltimedistance.TripsExtractor;
 import org.matsim.contrib.dvrp.trafficmonitoring.TravelTimeUtils;
 import org.matsim.contrib.emissions.Pollutant;
 import org.matsim.core.config.Config;
@@ -106,6 +107,9 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             Map<Integer, Trip> mitoTripsAll = new TripReaderHealth().readData(properties.main.baseDirectory + "scenOutput/"
                     + properties.main.scenarioName + "/" + latestMITOYear + "/microData/trips.csv");
 
+            // todo: extract subset for testing !!
+            mitoTripsAll = TripSelector.selectRandomSubset(mitoTripsAll, 100);
+
             //clear the health data from last exposure model year
             for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
                 ((PersonHealth) person).resetHealthData();
@@ -164,6 +168,9 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 ((DataContainerHealth)dataContainer).getActivityLocations().values().forEach(activityLocation -> {activityLocation.reset();});
                 System.gc();
             }
+
+            // todo: for testing - to be removed
+            System.exit(0);
 
             // assemble home location health exposure data
             for(Day day : Day.values()){
