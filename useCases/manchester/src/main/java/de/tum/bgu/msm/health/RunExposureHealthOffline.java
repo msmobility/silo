@@ -59,17 +59,27 @@ public class RunExposureHealthOffline {
 
         // setup
         AccidentModelMCR accidentModel = new AccidentModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
-        //DiseaseModelMCR diseaseModelMCR = new DiseaseModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
+        DiseaseModelMCR diseaseModelMCR = new DiseaseModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
         HealthExposureModelMCR exposureModelMCR = new HealthExposureModelMCR(dataContainer, properties, SiloUtil.provideNewRandom(),config);
 
         //
+
         for(Day day : Set.of(Day.thursday, Day.saturday, Day.sunday)) {
             accidentModel.endYear(2021, day);
         }
 
-        exposureModelMCR.endYear(2021);
+
+        //exposureModelMCR.endYear(2021);
+
+        //exposureModelMCR.setup(); // to read-in the base exposure file for testing purposes
+        //exposureModelMCR.endYear(2021);
+        //dataContainer.endSimulation();
+
+
         //diseaseModelMCR.setup();
         //diseaseModelMCR.endYear(2021);
+        //dataContainer.endSimulation();
+
 
         /*
         airPollutantModel.endYear(2021);

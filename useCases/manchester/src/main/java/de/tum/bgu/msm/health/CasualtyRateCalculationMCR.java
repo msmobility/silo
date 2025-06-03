@@ -130,6 +130,7 @@ public class CasualtyRateCalculationMCR {
 
         //
         String roadType = getStringAttribute(link.getAttributes(), "type", "residential"); // todo: what should be the default
+        log.warn("Motorway here ...");
 
         if (roadType.equals("primary") || roadType.equals("primary_link") || roadType.equals("trunk") || roadType.equals("trunk_link")) {
             utility += binaryLogitCoef.get("roadPrimary/Trunk");

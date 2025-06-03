@@ -637,14 +637,14 @@ public class AccidentRateModelMCR {
         }
         log.info("Link casualty frequency calculation completed.");
 
-        /*
+
         try {
             writeOutCasualtyRate();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
-         */
+
 
         /*
         // Compute link-level injury risk R=1/v (v= traffic volume)
@@ -817,17 +817,19 @@ public class AccidentRateModelMCR {
 
     public boolean isTwoWayRoad(Network network, Link link, String mode) {
         // First check if the original link allows the specified mode
+        /*
         if (!link.getAllowedModes().contains(mode)) {
             return false;
         }
+
+         */
 
         Node fromNode = link.getFromNode();
         Node toNode = link.getToNode();
 
         // Check all outgoing links from the 'to' node (more efficient than scanning all links)
         for (Link potentialReverse : toNode.getOutLinks().values()) {
-            if (potentialReverse.getToNode().equals(fromNode) &&
-                    potentialReverse.getAllowedModes().contains(mode)) {
+            if (potentialReverse.getToNode().equals(fromNode) ) { // && potentialReverse.getAllowedModes().contains(mode)
                 return true;
             }
         }
