@@ -81,7 +81,7 @@ public class CasualtyRateCalculationMCR {
         utility += binaryLogitCoef.get("(Intercept)");
 
         // truck
-        double truckHourlyDemand = analzyer.getDemand(link.getId(), "truck", hour); //* SCALEFACTOR;
+        double truckHourlyDemand = analzyer.getDemand(link.getId(), "truck", hour) * SCALEFACTOR; //;
         utility += binaryLogitCoef.get("log1p(truck_flow)") *
                 Math.log1p(truckHourlyDemand);
 
@@ -91,7 +91,7 @@ public class CasualtyRateCalculationMCR {
                 Math.log1p(pedHourlyDemand);
 
         // car
-        double carHourlyDemand = analzyer.getDemand(link.getId(), "car", hour); //* SCALEFACTOR;
+        double carHourlyDemand = analzyer.getDemand(link.getId(), "car", hour) * SCALEFACTOR; //* SCALEFACTOR;
         utility += binaryLogitCoef.get("log1p(car_flow)") *
                 Math.log1p(carHourlyDemand);
 
@@ -101,7 +101,7 @@ public class CasualtyRateCalculationMCR {
                 Math.log(bikeHourlyDemand + 0.1);
 
         // motor
-        double motorHourlyDemand = (analzyer.getDemand(link.getId(), "car", hour) + analzyer.getDemand(link.getId(), "truck", hour)); //* SCALEFACTOR;
+        double motorHourlyDemand = (analzyer.getDemand(link.getId(), "car", hour) + analzyer.getDemand(link.getId(), "truck", hour)) * SCALEFACTOR; //* SCALEFACTOR;
         // todo: do I need to rescale truck flows
         utility += binaryLogitCoef.get("motor_flow") *
                 motorHourlyDemand;
