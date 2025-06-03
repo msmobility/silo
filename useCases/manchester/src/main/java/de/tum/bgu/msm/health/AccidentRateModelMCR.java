@@ -768,14 +768,14 @@ public class AccidentRateModelMCR {
                 break;
             case CAR_ONEWAY:
                 for(Link link : links.values()){
-                    if(!isTwoWayRoad(this.scenario.getNetwork(), link, TransportMode.car)){
+                    if(!isTwoWayRoad(link, TransportMode.car)){
                         placeholderMap.put(link.getId(), link);
                     }
                 }
                 break;
             case CAR_TWOWAY:
                 for(Link link : links.values()){
-                    if(isTwoWayRoad(this.scenario.getNetwork(), link, TransportMode.car)){
+                    if(isTwoWayRoad(link, TransportMode.car)){
                         placeholderMap.put(link.getId(), link);
                     }
                 }
@@ -809,27 +809,23 @@ public class AccidentRateModelMCR {
 
     /**
      * Checks if a link is part of a two-way road for a specific transport mode.
-     * @param network The MATSim network
      * @param link The link to check
      * @param mode The transport mode to verify
      * @return true if there exists a reverse link that also allows the specified mode
      */
 
-    public boolean isTwoWayRoad(Network network, Link link, String mode) {
+    public boolean isTwoWayRoad(Link link, String mode) {
         // First check if the original link allows the specified mode
-        /*
         if (!link.getAllowedModes().contains(mode)) {
             return false;
         }
-
-         */
 
         Node fromNode = link.getFromNode();
         Node toNode = link.getToNode();
 
         // Check all outgoing links from the 'to' node (more efficient than scanning all links)
         for (Link potentialReverse : toNode.getOutLinks().values()) {
-            if (potentialReverse.getToNode().equals(fromNode) ) { // && potentialReverse.getAllowedModes().contains(mode)
+            if (potentialReverse.getToNode().equals(fromNode) && potentialReverse.getAllowedModes().contains(mode)) { //
                 return true;
             }
         }
