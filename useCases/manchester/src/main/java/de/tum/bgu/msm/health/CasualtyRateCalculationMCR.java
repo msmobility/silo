@@ -56,16 +56,13 @@ public class CasualtyRateCalculationMCR {
             //probZeroCrash= probZeroCrash/5; // this is the annual proba of casualty, need to divide by 365 for online simulation
 
             // sample
-            /*
             if(random.nextDouble() < probZeroCrash)
                 val = 1;
             else{
                 val = 0;
             }
-
-             */
-            //casualtyRateByTimeOfDay.put(hour, (float) val);
-            casualtyRateByTimeOfDay.put(hour, (float) probZeroCrash);
+            casualtyRateByTimeOfDay.put(hour, (float) val);
+            //casualtyRateByTimeOfDay.put(hour, (float) probZeroCrash);
         }
 
         switch (accidentSeverity) {

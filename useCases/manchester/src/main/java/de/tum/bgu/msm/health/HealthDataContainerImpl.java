@@ -112,10 +112,10 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     @Override
     public void endSimulation() {
         delegate.endSimulation();
-        writeDwellingsWithNoise(properties.main.endYear);
+        //writeDwellingsWithNoise(properties.main.endYear);
         writePersonExposureData(properties.main.endYear);
-        writePersonRelativeRiskData(properties.main.endYear);
-        writePersonDiseaseTrackData(properties.main.endYear);
+        //writePersonRelativeRiskData(properties.main.endYear);
+        //writePersonDiseaseTrackData(properties.main.endYear);
     }
 
     private void writePersonDiseaseTrackData(int year) {
@@ -134,7 +134,7 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
                 + properties.householdData.personFinalFileName
                 + "_exposure_"
                 + year
-                + ".csv";
+                + "TEST.csv";
         new HealthPersonWriter(this).writePersonExposure(filepp);
     }
 

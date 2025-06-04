@@ -638,11 +638,14 @@ public class AccidentRateModelMCR {
         log.info("Link casualty frequency calculation completed.");
 
 
+        /*
         try {
             writeOutCasualtyRate();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+
+         */
 
 
 
@@ -1200,7 +1203,7 @@ public class AccidentRateModelMCR {
                 if(mode.equals("car")){
                     if(analysisEventHandler.getDemand(link.getId(), mode, hour) != 0){
                         //lightCasualtyExposure = (float) (lightCasualty/((analysisEventHandler.getDemand(link.getId(),mode,hour))*SCALEFACTOR*1.5));
-                        severeCasualtyExposure = (float) (severeCasualty/(analysisEventHandler.getDemand(link.getId(), mode, hour))); //* SCALEFACTOR)); // todo: why 1.5 in Munich ?? check if SCALEFACTOR should be applied or not ?
+                        severeCasualtyExposure = (float) (severeCasualty/(analysisEventHandler.getDemand(link.getId(), mode, hour) * SCALEFACTOR)); //* SCALEFACTOR)); // todo: why 1.5 in Munich ?? check if SCALEFACTOR should be applied or not ?
                     }else{
                         //log.warn(link.getId()+mode+hour);
                         counterCar++;

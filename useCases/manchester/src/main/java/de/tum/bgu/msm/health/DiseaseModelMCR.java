@@ -48,7 +48,7 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
         }
 
         // check injuries here
-        checkTransportInjuries(year);
+        //checkTransportInjuries(year);
 
         // transition probs and health statuses
         updateDiseaseProbability(properties.healthData.adjustByRelativeRisk);
@@ -143,7 +143,7 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
                     // Seriously injured (log but don't change state)
                     List<String> status = new ArrayList<>(((PersonHealthMCR) person).getHealthDiseaseTracker().getOrDefault(year,
                             ((PersonHealthMCR) person).getHealthDiseaseTracker().get(year - 1)));
-                    status.add("seriously_injured_" + mode.toLowerCase());
+                    status.add("seriously_injured_by_" + mode.toLowerCase());
                     ((PersonHealthMCR) person).getHealthDiseaseTracker().put(year, status);
                 }
             }
@@ -174,7 +174,7 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
                 }
 
                 int zoneId = dataContainer.getRealEstateDataManager().getDwelling(person.getHousehold().getDwellingId()).getZoneId();
-                String location = ((ZoneMCR)dataContainer.getGeoData().getZones().get(zoneId)).getLsoaCode();
+                String location = ((ZoneMCR) dataContainer.getGeoData().getZones().get(zoneId)).getLsoaCode();
                 String compositeKey = ((DataContainerHealth) dataContainer).createTransitionLookupIndex(Math.min(person.getAge(), 100), person.getGender(), location);
                 if (((DataContainerHealth) dataContainer).getHealthTransitionData().get(diseases).get(compositeKey)==null){
                     logger.warn("No health transition data for disease: " + diseases + "| " + compositeKey);
@@ -190,6 +190,15 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
                         sickRate *= ((PersonHealth) person).getRelativeRisksByDisease().get(exposures).getOrDefault(diseases, 1.f);
                     }
                 }
+
+
+                // disease interactions effects here (diabetes and coronary heart/stroke)
+                // todo: logic is if person has diabetes, if desease is coronary heart/stroke, then set probRiskFactor.
+                double probRiskFactor = 1.;
+                sickRate *= probRiskFactor;
+
+
+                //
                 sickProb = 1- Math.exp(-sickRate);
                 ((PersonHealth)person).getCurrentDiseaseProb().put(diseases, (float) sickProb);
             }

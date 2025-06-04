@@ -116,7 +116,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             }
 
             // process ndvi data
-            processNdviData(NetworkUtils.readNetwork(initialMatsimConfig.network().getInputFile()));
+            //processNdviData(NetworkUtils.readNetwork(initialMatsimConfig.network().getInputFile()));
 
             // assemble travel-activity health exposure data
             for(Day day : simulatedDays){
@@ -162,7 +162,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 }
                 ((DataContainerHealth)dataContainer).getLinkInfo().values().forEach(linkInfo -> {linkInfo.reset();});
                 // todo: Is it worth resetting ?
-                ((DataContainerHealth) dataContainer).getLinkInfoByDay(day).values().forEach(linkInfo -> {linkInfo.reset();});
+                // ((DataContainerHealth) dataContainer).getLinkInfoByDay(day).values().forEach(linkInfo -> {linkInfo.reset();});
                 ((DataContainerHealth)dataContainer).getActivityLocations().values().forEach(activityLocation -> {activityLocation.reset();});
                 System.gc();
             }
@@ -631,7 +631,14 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             //linkSevereInjuryRisk = severeFatalRisk[0];
             //linkFatalityRisk = severeFatalRisk[1];
             LinkInfo linkInfoByDay = ((HealthDataContainerImpl) dataContainer).getLinkInfoByDay(currentDay).get(link.getId());
-            linkInjuryRisk = getLinkInjuryRisk(mode, (int) enterTimeInSecond, linkInfoByDay);
+
+            if(weekdays.contains(trip.getDepartureDay())){
+                // the link-based risks are equivalent to the 5 weekdays, need to scale down
+                linkInjuryRisk = getLinkInjuryRisk(mode, (int) enterTimeInSecond, linkInfoByDay)/5;
+            }else{
+                // Sat and Sun , keep as it is
+                linkInjuryRisk = getLinkInjuryRisk(mode, (int) enterTimeInSecond, linkInfoByDay);
+            }
 
             // PHYSICAL ACTIVITY
             double linkMarginalMet = PhysicalActivity.getMMet(mode, linkLength, linkTime, link);
@@ -700,11 +707,21 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             pathLength += linkLength;
             pathTime += linkTime;
 
-            // Injuries
-            // pathSevereInjuryRisk += linkSevereInjuryRisk - (pathSevereInjuryRisk * linkSevereInjuryRisk);
-            // pathFatalityRisk += linkFatalityRisk - (pathFatalityRisk * linkFatalityRisk);
-            pathInjuryRisk *= (1 - linkInjuryRisk);
+            // INJURIES
+            if(linkInfoByDay != null) {
+                // Injuries
+                // pathSevereInjuryRisk += linkSevereInjuryRisk - (pathSevereInjuryRisk * linkSevereInjuryRisk);
+                // pathFatalityRisk += linkFatalityRisk - (pathFatalityRisk * linkFatalityRisk);
 
+                //
+                int agePerson = ((PersonHealth) dataContainer.getHouseholdDataManager().getPersonFromId(trip.getPerson())).getAge();
+                Gender genderPerson = ((PersonHealth) dataContainer.getHouseholdDataManager().getPersonFromId(trip.getPerson())).getGender();
+
+                double AgeGenderRR = 1.;
+                AgeGenderRR = getCasualtyRR_byAge_Gender(genderPerson, agePerson);
+
+                pathInjuryRisk *= (1 - linkInjuryRisk * AgeGenderRR); // todo: add age/gender interactions
+            }
 
             pathMarginalMetHours += linkMarginalMetHour;
             pathExposureGreen += linkExposureGreen;
@@ -773,6 +790,13 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         siloPerson.updateWeeklyNoiseExposuresByHour(pathExposureNoiseByHour);
         siloPerson.updateWeeklyGreenExposures((float) pathExposureGreen);
         siloPerson.updateWeeklyTravelActivityHourOccupied(hourOccupied);
+    }
+
+    double getCasualtyRR_byAge_Gender(Gender gender, int age){
+        double RR = 1.;
+        //
+
+        return RR;
     }
 
     private void calculateActivityExposures(Trip trip) {
@@ -1032,24 +1056,40 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
     private double getLinkInjuryRisk(Mode mode, int time, LinkInfo linkInfo){
         double linkInjuryRisk = 0.;
-        switch (mode){
+        switch (mode) {
             case autoDriver:
             case autoPassenger:
-                linkInjuryRisk = linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.CAR_ONEWAY).get((int) (time / 3600.))
-                        + linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.CAR_TWOWAY).get((int) (time / 3600.));
+                linkInjuryRisk =
+                        getRiskValue(linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime(),
+                                AccidentType.CAR_ONEWAY, time) +
+                                getRiskValue(linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime(),
+                                        AccidentType.CAR_TWOWAY, time);
                 break;
             case bicycle:
-                linkInjuryRisk = linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.BIKE_MAJOR).get((int) (time / 3600.))
-                        + linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.BIKE_MINOR).get((int) (time / 3600.));
+                linkInjuryRisk =
+                        getRiskValue(linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime(),
+                                AccidentType.BIKE_MAJOR, time) +
+                                getRiskValue(linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime(),
+                                        AccidentType.BIKE_MINOR, time);
                 break;
             case walk:
-                linkInjuryRisk = linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.PED).get((int) (time / 3600.))
-                        + linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.PED).get((int) (time / 3600.));
+                linkInjuryRisk =
+                        getRiskValue(linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime(),
+                                AccidentType.PED, time);
                 break;
             default:
                 throw new RuntimeException("Undefined mode " + mode);
         }
         return linkInjuryRisk;
+    }
+
+    // Helper method to safely get values from OpenIntFloatHashMap
+    private float getRiskValue(Map<AccidentType, OpenIntFloatHashMap> exposureMap,
+                               AccidentType type, float time) {
+        if (exposureMap == null) return 0f;
+        OpenIntFloatHashMap timeMap = exposureMap.get(type);
+        if (timeMap == null) return 0f;
+        return timeMap.get((int)(time / 3600.));
     }
 
     private double[] getLinkSevereFatalInjuryRisk(Mode mode, int hour, LinkInfo linkInfo) {
