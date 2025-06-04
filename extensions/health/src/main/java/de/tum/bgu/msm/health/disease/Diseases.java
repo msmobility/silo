@@ -26,5 +26,11 @@ public enum Diseases {
     parkinson,
     rectum_cancer,
     //respiratory,
-    stroke
+    stroke,
+    severely_injured_car,
+    severely_injured_walk,
+    severely_injured_bike,
+    killed_car,
+    killed_walk,
+    killed_bike
 }

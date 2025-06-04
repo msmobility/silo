@@ -66,6 +66,16 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
                 EnumMap<Diseases, Float> rr = new EnumMap<>(Diseases.class);
 
                 for(Diseases diseases : ((DataContainerHealth)dataContainer).getDoseResponseData().get(exposures).keySet()){
+                    if(diseases.equals(Diseases.severely_injured_car) ||
+                            diseases.equals(Diseases.severely_injured_walk) ||
+                            diseases.equals(Diseases.severely_injured_bike) ||
+                            diseases.equals(Diseases.killed_bike) ||
+                            diseases.equals(Diseases.killed_walk) ||
+                            diseases.equals(Diseases.killed_car)){
+                        continue;
+
+                    }
+
                     rr.put(diseases, 1.f);
                 }
                 ((PersonHealth)person).getRelativeRisksByDisease().put(exposures, rr);
@@ -98,6 +108,12 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
                 }
                 ((PersonHealth)person).getRelativeRisksByDisease().put(exposures, rr);
             }
+        }
+    }
+
+    private void checkInjuries(int year) {
+        for(Person person : dataContainer.getHouseholdDataManager().getPersons()){
+            // ((PersonHealthMCR) person).getCurrentDisease().contains()
         }
     }
 
@@ -248,5 +264,4 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
             }
         }
     }
-
 }

@@ -108,7 +108,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                     + properties.main.scenarioName + "/" + latestMITOYear + "/microData/trips.csv");
 
             // todo: extract subset for testing !!
-            mitoTripsAll = TripSelector.selectRandomSubset(mitoTripsAll, 100);
+            //mitoTripsAll = TripSelector.selectRandomSubset(mitoTripsAll, 100);
 
             //clear the health data from last exposure model year
             for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
@@ -116,7 +116,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             }
 
             // process ndvi data
-            //processNdviData(NetworkUtils.readNetwork(initialMatsimConfig.network().getInputFile()));
+            processNdviData(NetworkUtils.readNetwork(initialMatsimConfig.network().getInputFile()));
 
             // assemble travel-activity health exposure data
             for(Day day : simulatedDays){
@@ -151,7 +151,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                                     + "healthIndicators"
                                     + "_" + day
                                     + "_" + mode
-                                    + "TEST.csv";
+                                    + ".csv";
                             new TripExposureWriter().writeMitoTrips(mitoTrips, filett);
                             break;
                         default:
@@ -167,8 +167,6 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 System.gc();
             }
 
-            /*
-
             // assemble home location health exposure data
             for(Day day : Day.values()){
                 replyActivityLocationInfoFromFile(weekdays.contains(day) ? Day.thursday : day);
@@ -179,8 +177,6 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
             // normalize person-level home-travel-activity exposure
             calculatePersonHealthExposureMetrics();
-
-             */
         }
     }
 

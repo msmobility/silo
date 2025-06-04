@@ -134,7 +134,7 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
                 + properties.householdData.personFinalFileName
                 + "_exposure_"
                 + year
-                + "TEST.csv";
+                + ".csv";
         new HealthPersonWriter(this).writePersonExposure(filepp);
     }
 
