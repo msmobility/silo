@@ -50,6 +50,11 @@ public class DeathStrategyMCR implements DeathStrategy {
             }
         }
 
+        // risk factor here
+        if(((PersonHealth) person).getCurrentDisease().contains(Diseases.diabetes)){
+
+        };
+
         return alpha;
     }
 }

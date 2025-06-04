@@ -167,8 +167,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 System.gc();
             }
 
-            // todo: for testing - to be removed
-            System.exit(0);
+            /*
 
             // assemble home location health exposure data
             for(Day day : Day.values()){
@@ -180,8 +179,9 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
             // normalize person-level home-travel-activity exposure
             calculatePersonHealthExposureMetrics();
-        }
 
+             */
+        }
     }
 
     @Override
