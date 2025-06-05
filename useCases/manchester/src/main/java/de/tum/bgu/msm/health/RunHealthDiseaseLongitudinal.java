@@ -2,8 +2,8 @@ package de.tum.bgu.msm.health;
 
 import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.container.ModelContainer;
-import de.tum.bgu.msm.health.diseaseModelOffline.HealthExposuresReader;
-import de.tum.bgu.msm.health.diseaseModelOffline.ModelBuilderMCR;
+//import de.tum.bgu.msm.health.diseaseModelOffline.HealthExposuresReader;
+//import de.tum.bgu.msm.health.diseaseModelOffline.ModelBuilderMCR;
 import de.tum.bgu.msm.io.output.MultiFileResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -43,5 +43,6 @@ public class RunHealthDiseaseLongitudinal {
         model.runModel();
 
         logger.info("Finished SILO.");
+
     }
 }

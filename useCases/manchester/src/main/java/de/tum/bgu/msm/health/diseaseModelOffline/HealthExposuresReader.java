@@ -47,16 +47,18 @@ public class HealthExposuresReader {
                 recCount++;
                 String[] lineElements = recString.split(",");
                 PersonHealthMCR pp = (PersonHealthMCR) dataContainer.getHouseholdDataManager().getPersonFromId(Integer.parseInt(lineElements[posId]));
-                pp.updateWeeklyMarginalMetHours(Mode.walk, Float.parseFloat(lineElements[posMmetWalk]));
-                pp.updateWeeklyMarginalMetHours(Mode.bicycle, Float.parseFloat(lineElements[posMmetCycle]));
-                pp.setWeeklyMarginalMetHoursSport(Float.parseFloat(lineElements[posMmetSport]));
+                if(pp!=null) {
+                    pp.updateWeeklyMarginalMetHours(Mode.walk, Float.parseFloat(lineElements[posMmetWalk]));
+                    pp.updateWeeklyMarginalMetHours(Mode.bicycle, Float.parseFloat(lineElements[posMmetCycle]));
+                    pp.setWeeklyMarginalMetHoursSport(Float.parseFloat(lineElements[posMmetSport]));
 
-                Map<String, Float> exposureMap = new HashMap<>();
-                exposureMap.put("pm2.5", Float.parseFloat(lineElements[posPM2_5]));
-                exposureMap.put("no2", Float.parseFloat(lineElements[posNO2]));
-                pp.setWeeklyExposureByPollutantNormalised(exposureMap);
-                pp.setWeeklyNoiseExposuresNormalised(Float.parseFloat(lineElements[posNoise]));
-                pp.setWeeklyGreenExposuresNormalised(Float.parseFloat(lineElements[posNdvi]));
+                    Map<String, Float> exposureMap = new HashMap<>();
+                    exposureMap.put("pm2.5", Float.parseFloat(lineElements[posPM2_5]));
+                    exposureMap.put("no2", Float.parseFloat(lineElements[posNO2]));
+                    pp.setWeeklyExposureByPollutantNormalised(exposureMap);
+                    pp.setWeeklyNoiseExposuresNormalised(Float.parseFloat(lineElements[posNoise]));
+                    pp.setWeeklyGreenExposuresNormalised(Float.parseFloat(lineElements[posNdvi]));
+                }
             }
         } catch (IOException e) {
             logger.fatal("IO Exception caught reading person health exposure file: " + path);
