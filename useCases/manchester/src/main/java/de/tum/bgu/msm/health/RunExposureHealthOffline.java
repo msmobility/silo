@@ -63,12 +63,9 @@ public class RunExposureHealthOffline {
         HealthExposureModelMCR exposureModelMCR = new HealthExposureModelMCR(dataContainer, properties, SiloUtil.provideNewRandom(),config);
 
         //
-        accidentModel.endYear(2021, Day.thursday);
-         /*
         for(Day day : Set.of(Day.thursday, Day.saturday, Day.sunday)) {
             accidentModel.endYear(2021, day);
         }
-          */
 
         // todo: aggregate link-level risks up to the person level
         //exposureModelMCR.setup(); // to read-in the base exposure file for testing purposes
