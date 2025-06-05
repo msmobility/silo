@@ -725,13 +725,11 @@ public class AccidentRateModelMCR {
         }
         log.info("Link casualty exposure completed.");
 
-        /*
         try {
             writeOutExposure();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-         */
     }
 
     public void computePersonLevelInjuryRiskOffline(){
@@ -1384,7 +1382,7 @@ public class AccidentRateModelMCR {
         StringBuilder risk = new StringBuilder();
 
         //write header
-        risk.append("link,severity,accidentType,exposure");
+        risk.append("link,accidentType,exposure");
         risk.append('\n');
 
         for (Link link : this.scenario.getNetwork().getLinks().values()) {
@@ -1401,8 +1399,6 @@ public class AccidentRateModelMCR {
                         totalCasualty += accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
                     }
                     risk.append(link.getId());
-                    risk.append(',');
-                    risk.append(accidentSeverity.name());
                     risk.append(',');
                     risk.append(accidentType.name());
                     risk.append(',');
