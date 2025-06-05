@@ -72,8 +72,8 @@ public class AccidentModelMCR extends AbstractModel implements ModelUpdateListen
             AccidentRateModelMCR model = new AccidentRateModelMCR(scenario, 1.f/scalingFactor);
 
             model.runCasualtyRateOffline(); // number of casualties per link (max 1 per link, otherwise 0)
-            model.computeLinkLevelInjuryRisk(); // R=1/v where v is the traffic volume
-            //model.computePersonLevelInjuryRiskOffline();
+            //model.computeLinkLevelInjuryRisk(); // R=1/v where v is the traffic volume
+            // model.computePersonLevelInjuryRiskOffline();
 
             // do not use
             //model.runAgentInjuryRiskOfflineMCR();

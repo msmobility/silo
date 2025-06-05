@@ -575,6 +575,7 @@ public class AccidentRateModelMCR {
             nbPersons++;
         }
         log.info("Initializing all agent-specific information... Done. " + nbPersons);
+        // todo : pop is not initialized at all
 
 
 
@@ -645,24 +646,21 @@ public class AccidentRateModelMCR {
             e.printStackTrace();
         }
 
-
+        // Compute link-level injury risk R=1/v (v= traffic volume)
+        computeLinkLevelInjuryRisk();
 
 
         /*
-        // Compute link-level injury risk R=1/v (v= traffic volume)
         log.info("Link casualty exposure calculation start.");
         for (Link link : this.scenario.getNetwork().getLinks().values()) {
             computeLinkCasualtyExposureMCR(link);
         }
-
 
         try {
             writeOutExposure();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-
-
 
         log.info(counterCar + "car links have no hourly traffic volume");
         log.info(counterBikePed + "bikeped links have no hourly traffic volume");
@@ -711,7 +709,6 @@ public class AccidentRateModelMCR {
         }
          */
 
-        // todo: why ??
         analysisEventHandler.reset(0);
         System.gc();
     }
@@ -1175,9 +1172,9 @@ public class AccidentRateModelMCR {
             }
 
             if("null".equals(mode)){
-                throw new RuntimeException("Undefined accident type " + accidentType);
+                //throw new RuntimeException("Undefined accident type " + accidentType);
                 // todo: adjust this error message
-                //continue;
+                continue;
             }
 
             //OpenIntFloatHashMap lightCasualtyExposureByTime = new OpenIntFloatHashMap();
