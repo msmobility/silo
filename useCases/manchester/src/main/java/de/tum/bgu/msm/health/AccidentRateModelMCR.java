@@ -638,14 +638,13 @@ public class AccidentRateModelMCR {
         log.info("Link casualty frequency calculation completed.");
 
 
-        /*
+
         try {
             writeOutCasualtyRate();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
-         */
 
 
 
@@ -746,13 +745,12 @@ public class AccidentRateModelMCR {
         }
         log.info("Agent injury risk calculation completed.");
 
-        /*
+
         try {
             writeOut();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        */
     }
 
     private Map<Id<Link>,Link> extractLinkSpecific(Map<Id<Link>, Link> links, AccidentType accidentType) {
@@ -1177,9 +1175,9 @@ public class AccidentRateModelMCR {
             }
 
             if("null".equals(mode)){
-                // throw new RuntimeException("Undefined accident type " + accidentType);
+                throw new RuntimeException("Undefined accident type " + accidentType);
                 // todo: adjust this error message
-                continue;
+                //continue;
             }
 
             //OpenIntFloatHashMap lightCasualtyExposureByTime = new OpenIntFloatHashMap();
