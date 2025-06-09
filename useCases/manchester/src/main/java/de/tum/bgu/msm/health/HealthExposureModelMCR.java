@@ -628,14 +628,6 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             //linkFatalityRisk = severeFatalRisk[1];
             LinkInfo linkInfoByDay = ((HealthDataContainerImpl) dataContainer).getLinkInfoByDay(currentDay).get(link.getId());
 
-            if(weekdays.contains(trip.getDepartureDay())){
-                // the link-based risks are equivalent to the 5 weekdays, need to scale down
-                linkInjuryRisk = getLinkInjuryRisk(mode, (int) enterTimeInSecond, linkInfoByDay)/5;
-            }else{
-                // Sat and Sun , keep as it is
-                linkInjuryRisk = getLinkInjuryRisk(mode, (int) enterTimeInSecond, linkInfoByDay);
-            }
-
             // PHYSICAL ACTIVITY
             double linkMarginalMet = PhysicalActivity.getMMet(mode, linkLength, linkTime, link);
             linkMarginalMetHour = linkMarginalMet * linkTime / 3600.;
@@ -710,6 +702,15 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 // pathFatalityRisk += linkFatalityRisk - (pathFatalityRisk * linkFatalityRisk);
 
                 //
+                if(weekdays.contains(trip.getDepartureDay())){
+                    // the link-based risks are equivalent to the 5 weekdays, need to scale down
+                    linkInjuryRisk = getLinkInjuryRisk(mode, (int) enterTimeInSecond, linkInfoByDay)/5;
+                }else{
+                    // Sat and Sun , keep as it is
+                    linkInjuryRisk = getLinkInjuryRisk(mode, (int) enterTimeInSecond, linkInfoByDay);
+                }
+
+                //
                 int agePerson = ((PersonHealth) dataContainer.getHouseholdDataManager().getPersonFromId(trip.getPerson())).getAge();
                 Gender genderPerson = ((PersonHealth) dataContainer.getHouseholdDataManager().getPersonFromId(trip.getPerson())).getGender();
 
@@ -768,10 +769,10 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 siloPerson.updateWeeklyAccidentRisks(Map.of("severeFatalInjuryCar", (float) pathInjuryRisk));
                 break;
             case bicycle:
-                siloPerson.updateWeeklyAccidentRisks(Map.of("severeFatalInjuryWalk", (float) pathInjuryRisk));
+                siloPerson.updateWeeklyAccidentRisks(Map.of("severeFatalInjuryBike", (float) pathInjuryRisk));
                 break;
             case walk:
-                siloPerson.updateWeeklyAccidentRisks(Map.of("severeFatalInjuryBike", (float) pathInjuryRisk));
+                siloPerson.updateWeeklyAccidentRisks(Map.of("severeFatalInjuryWalk", (float) pathInjuryRisk));
                 break;
             default:
                 throw new RuntimeException("Undefined mode " + mode);

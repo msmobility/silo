@@ -47,7 +47,7 @@ public class PersonHealthMCR implements PersonWithSchool, PersonHealth {
     private Map<Diseases, Float> currentDiseaseProb = new HashMap<>();
 
     // Injuries
-    private InjuryStatus injuryStatus = InjuryStatus.NO_INJURY;
+    // private InjuryStatus injuryStatus = InjuryStatus.NO_INJURY;
 
     public PersonHealthMCR(int id, int age,
                            Gender gender, Occupation occupation,
@@ -372,16 +372,6 @@ public class PersonHealthMCR implements PersonWithSchool, PersonHealth {
 
     public void setNoiseHighSleepDisturbancePercentage(float noiseHighSleepDisturbancePercentage) {
         this.noiseHighSleepDisturbancePercentage = noiseHighSleepDisturbancePercentage;
-    }
-
-    // Manchester - injuries
-    // Getter/Setter
-    public InjuryStatus getInjuryStatus() {
-        return injuryStatus;
-    }
-
-    public void setInjuryStatus(InjuryStatus injuryStatus) {
-        this.injuryStatus = injuryStatus;
     }
 
     //For Munich

@@ -3,13 +3,15 @@ package de.tum.bgu.msm.models.demography.death;
 import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Person;
 
+import java.util.Random;
+
 public class DefaultDeathStrategy implements DeathStrategy {
 
     public DefaultDeathStrategy() {
     }
 
     @Override
-    public double calculateDeathProbability(Person person) {
+    public double calculateDeathProbability(Person person, Random random) {
         final int personAge = Math.min(person.getAge(), 100);
         Gender personSex = person.getGender();
 

@@ -42,6 +42,7 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     private EnumMap<Diseases, Map<String, Double>> healthTransitionData;
     private EnumMap<HealthExposures, EnumMap<Diseases, TableDataSet>> doseResponseData;
     private Map<Integer, Map<Integer, List<String>>> healthDiseaseTrackerRemovedPerson = new HashMap<>();
+    private Map<Integer, List<Diseases>> healthPrevalenceData;
 
     public HealthDataContainerImpl(DataContainerWithSchools delegate,
                                    Properties properties) {
@@ -114,8 +115,8 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
         delegate.endSimulation();
         //writeDwellingsWithNoise(properties.main.endYear);
         writePersonExposureData(properties.main.endYear);
-        //writePersonRelativeRiskData(properties.main.endYear);
-        //writePersonDiseaseTrackData(properties.main.endYear);
+        writePersonRelativeRiskData(properties.main.endYear);
+        writePersonDiseaseTrackData(properties.main.endYear);
     }
 
     private void writePersonDiseaseTrackData(int year) {
@@ -216,6 +217,14 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     @Override
     public void setAvgSpeeds(EnumMap<Mode, EnumMap<MitoGender, Map<Integer, Double>>> avgSpeeds) {
         this.avgSpeeds = avgSpeeds;
+    }
+
+    public Map<Integer, List<Diseases>> getPrevalenceData() {
+        return healthPrevalenceData;
+    }
+
+    public void setHealthPrevalenceData(Map<Integer, List<Diseases>> healthPrevalenceData){
+        this.healthPrevalenceData = healthPrevalenceData;
     }
 
     public EnumMap<HealthExposures, EnumMap<Diseases, TableDataSet>> getDoseResponseData() {

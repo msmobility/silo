@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.health.io;
 
-import de.tum.bgu.msm.data.person.Gender;
+import de.tum.bgu.msm.data.MitoGender;
+import de.tum.bgu.msm.data.Mode;
 import de.tum.bgu.msm.health.disease.Diseases;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.logging.log4j.LogManager;
@@ -11,14 +12,14 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
-public class InjuryRRTableReader {
-    private final static Logger logger = LogManager.getLogger(InjuryRRTableReader.class);
+public class PrevalenceDataReader {
+    private final static Logger logger = LogManager.getLogger(PrevalenceDataReader.class);
 
-    public Map<String, EnumMap<Gender, Map<Integer, Double>>> readData(String fileName) {
+    public Map<Integer, List<Diseases>> readData(String fileName) {
         logger.info("Reading prevalence data from ascii file");
 
         //EnumMap<Mode,EnumMap<MitoGender,Map<Integer,Double>>> speedData = new EnumMap<>(Mode.class);
-        Map<String, EnumMap<Gender, Map<Integer, Double>>> dataMap = new HashMap<>();
+        Map<Integer, List<Diseases>> dataMap = new HashMap<>();
 
         String recString = "";
         int recCount = 0;
@@ -28,26 +29,24 @@ public class InjuryRRTableReader {
 
             // read header
             String[] header = recString.split(",");
-            int posMode = SiloUtil.findPositionInArray("Mode", header);
-            int posGender = SiloUtil.findPositionInArray("Gender", header);
-            int posAge = SiloUtil.findPositionInArray("Age", header);
-            int posRR = SiloUtil.findPositionInArray("RR", header);
+            int posId = SiloUtil.findPositionInArray("id", header);
+            int posDiseases = SiloUtil.findPositionInArray("diseases", header);
 
             // read line
             while ((recString = in.readLine()) != null) {
                 recCount++;
                 String[] lineElements = recString.split(",");
-                String mode = lineElements[posMode];
-                Gender gender = "Male".equals(lineElements[posGender]) ? Gender.MALE : Gender.FEMALE;
-                Integer age = Integer.parseInt(lineElements[posAge]);
-                Double rr = Double.parseDouble(lineElements[posRR]);
-
-                // Initialize nested maps if missing
-                dataMap.putIfAbsent(mode, new EnumMap<>(Gender.class));
-                dataMap.get(mode).putIfAbsent(gender, new HashMap<>());
-
-                // Insert the age → RR mapping
-                dataMap.get(mode).get(gender).put(age, rr);
+                Integer id = Integer.parseInt(lineElements[posId]);
+                List<String> diseases = Arrays.asList(lineElements[posDiseases].split(" "));
+                List<Diseases> diseaseEnums = new ArrayList<>();
+                for (String diseaseStr : diseases) {
+                    try {
+                        diseaseEnums.add(Diseases.valueOf(diseaseStr.trim()));
+                    } catch (IllegalArgumentException e) {
+                        // handle or ignore invalid names
+                    }
+                }
+                dataMap.put(id, diseaseEnums);
             }
         } catch (IOException e) {
             logger.fatal("IO Exception caught reading prevalence data file: " + fileName);
@@ -58,4 +57,3 @@ public class InjuryRRTableReader {
         return dataMap;
     }
 }
-

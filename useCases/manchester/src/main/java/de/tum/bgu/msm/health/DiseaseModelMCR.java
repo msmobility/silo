@@ -16,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListener {
     private static final Logger logger = LogManager.getLogger(DiseaseModelMCR.class);
@@ -47,9 +48,6 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
             calculateRelativeRisk();
         }
 
-        // check injuries here
-        //checkTransportInjuries(year);
-
         // transition probs and health statuses
         updateDiseaseProbability(properties.healthData.adjustByRelativeRisk);
         updateHealthDiseaseStates(year);
@@ -66,16 +64,10 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
                 EnumMap<Diseases, Float> rr = new EnumMap<>(Diseases.class);
 
                 for(Diseases diseases : ((DataContainerHealth)dataContainer).getDoseResponseData().get(exposures).keySet()){
-                    if(diseases.equals(Diseases.severely_injured_car) ||
-                            diseases.equals(Diseases.severely_injured_walk) ||
-                            diseases.equals(Diseases.severely_injured_bike) ||
-                            diseases.equals(Diseases.killed_bike) ||
-                            diseases.equals(Diseases.killed_walk) ||
-                            diseases.equals(Diseases.killed_car)){
+                    if(diseases.equals(Diseases.killed_bike) || diseases.equals(Diseases.killed_walk) || diseases.equals(Diseases.killed_car) ||
+                            diseases.equals(Diseases.severely_injured_car) || diseases.equals(Diseases.severely_injured_walk) || diseases.equals(Diseases.severely_injured_bike)){
                         continue;
-
                     }
-
                     rr.put(diseases, 1.f);
                 }
                 ((PersonHealth)person).getRelativeRisksByDisease().put(exposures, rr);
@@ -111,64 +103,9 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
         }
     }
 
-    private void checkInjuries(int year) {
-        for(Person person : dataContainer.getHouseholdDataManager().getPersons()){
-            // ((PersonHealthMCR) person).getCurrentDisease().contains()
-        }
-    }
-
-    private void checkTransportInjuries(int year) {
-        // todo: iterate over persons here
-        for(Person person : dataContainer.getHouseholdDataManager().getPersons()){
-            if (((PersonHealthMCR) person).getInjuryStatus().name().startsWith("KILLED_")) return;
-
-            for (String mode : Set.of("Car", "Walk", "Bike")) {
-                // Step 1: Check if ANY injury occurs (fatal or serious)
-                String anyInjuryKey = "severeFatalInjury" + mode;  // e.g., "severeInjuryCar"
-                float anyInjuryProb = ((PersonHealthMCR) person).getWeeklyAccidentRisk(anyInjuryKey);
-                float annualAnyInjuryProb = anyInjuryProb;
-
-                //float annualAnyInjuryProb = 1 - (float) Math.pow(1 - anyInjuryProb, 52);
-
-                if (random.nextFloat() < annualAnyInjuryProb) {
-                    // todo: read-in prob table
-                    double pFatal = 0.01;  // P(killed | injured; age, gender, mode)
-
-                    if (random.nextFloat() < pFatal) {
-                        // Killed
-                        // todo:
-                        switch (mode.toLowerCase()) {  // Case-insensitive comparison
-                            case "car":
-                                ((PersonHealthMCR) person).setInjuryStatus(InjuryStatus.KILLED_CAR);
-                                break;
-                            case "bike":
-                                ((PersonHealthMCR) person).setInjuryStatus(InjuryStatus.KILLED_BIKE);
-                                break;
-                            case "walk":
-                                ((PersonHealthMCR) person).setInjuryStatus(InjuryStatus.KILLED_WALK);
-                                break;
-                            default:
-                                throw new IllegalArgumentException("Unknown transport mode: " + mode);
-                        }
-                    }
-
-                    ((PersonHealthMCR) person).getHealthDiseaseTracker().put(year,
-                            List.of("dead", "killed_by_" + mode.toLowerCase()));
-                    return;  // Exit early
-                } else {
-                    // Seriously injured (log but don't change state)
-                    List<String> status = new ArrayList<>(((PersonHealthMCR) person).getHealthDiseaseTracker().getOrDefault(year,
-                            ((PersonHealthMCR) person).getHealthDiseaseTracker().get(year - 1)));
-                    status.add("seriously_injured_by_" + mode.toLowerCase());
-                    ((PersonHealthMCR) person).getHealthDiseaseTracker().put(year, status);
-                }
-            }
-        }
-    }
-
     public void updateDiseaseProbability(Boolean adjustByRelativeRisk) {
         for(Diseases diseases : Diseases.values()){
-            if(((DataContainerHealth) dataContainer).getHealthTransitionData().get(diseases)==null){
+            if(((DataContainerHealth) dataContainer).getHealthTransitionData().get(diseases) == null){
                 logger.warn("No health transition data for disease: " + diseases.name());
                 continue;
             }
@@ -200,6 +137,7 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
                 //the age cap should be 100 for all diseases and all-cause-mortality
                 double sickRate = ((DataContainerHealth) dataContainer).getHealthTransitionData().get(diseases).get(compositeKey);
 
+                // Effects of exposures
                 double sickProb = 0;
                 if(adjustByRelativeRisk){
                     for(HealthExposures exposures : HealthExposures.values()){
@@ -207,24 +145,70 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
                     }
                 }
 
+                // Disease interactions effects (diabetes on coronary heart disease/stroke)
+                if(((PersonHealth) person).getCurrentDisease().contains(Diseases.diabetes)){
+                    // increase risk to have coronary heart disease
+                    if(diseases.equals(Diseases.coronary_heart_disease)){
+                        if(((PersonHealth) person).getGender().equals(Gender.MALE)){
+                            sickRate *= 2.16;
+                        }else{
+                            sickRate *= 2.82;
+                        }
+                    }
 
-                // disease interactions effects here (diabetes and coronary heart/stroke)
-                // todo: logic is if person has diabetes, if desease is coronary heart/stroke, then set probRiskFactor.
-                double probRiskFactor = 1.;
-                sickRate *= probRiskFactor;
-
+                    // increase risk to have stroke
+                    if(diseases.equals(Diseases.stroke)){
+                        if(((PersonHealth) person).getGender().equals(Gender.MALE)){
+                            sickRate *= 1.83;
+                        }else{
+                            sickRate *= 2.28;
+                        }
+                    }
+                }
 
                 //
                 sickProb = 1- Math.exp(-sickRate);
                 ((PersonHealth)person).getCurrentDiseaseProb().put(diseases, (float) sickProb);
             }
         }
+
+
+        // injuries
+        double pCasualty = 0.1/2;
+        double pFatal = 0.5;
+
+        for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
+            if(random.nextDouble() < pCasualty){
+                if(random.nextDouble() < pFatal){
+                    ((PersonHealth) person).getCurrentDiseaseProb().put(Diseases.killed_car, 1.0f); // this value will be updated in the death model, here it's just initialized.
+                    ((PersonHealth) person).getCurrentDiseaseProb().put(Diseases.severely_injured_car, 0.0f);
+                }else{
+                    ((PersonHealth) person).getCurrentDiseaseProb().put(Diseases.severely_injured_car, 1.0f);
+                    ((PersonHealth) person).getCurrentDiseaseProb().put(Diseases.killed_car, 0.0f);
+                }
+            }else{
+                ((PersonHealth) person).getCurrentDiseaseProb().putIfAbsent(Diseases.severely_injured_car, 0.0f);
+                ((PersonHealth) person).getCurrentDiseaseProb().putIfAbsent(Diseases.killed_car, 0.0f);
+            }
+        }
+
     }
 
     private void initializeHealthDiseaseStates() {
+        Map<Integer, List<Diseases>> prevData = ((HealthDataContainerImpl) dataContainer).getPrevalenceData();
         for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
-            //start year-1 as initial state
-            ((PersonHealth) person).getHealthDiseaseTracker().put(Properties.get().main.startYear-1, Arrays.asList("healthy"));
+
+            if(prevData.keySet().contains(person.getId())){
+                // If person has a disease when simulation starts
+                List<String> diseaseList = prevData.get(person.getId())  // Returns List<Diseases>
+                        .stream()                                      // Convert List to Stream
+                        .map(Enum::name)                               // Map each enum to its name
+                        .collect(Collectors.toList());                 // Collect into List<String>
+                ((PersonHealth) person).getHealthDiseaseTracker().put(Properties.get().main.startYear-1, diseaseList);
+            }else{
+                //start year-1 as initial state
+                ((PersonHealth) person).getHealthDiseaseTracker().put(Properties.get().main.startYear-1, Arrays.asList("healthy"));
+            }
         }
     }
 
@@ -239,12 +223,18 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
                     continue;
                 }
 
+                //if(diseases.equals(Diseases.killed_bike) || diseases.equals(Diseases.killed_walk) || diseases.equals(Diseases.killed_car)){
+                //    continue;
+                //}
+
+                // diseases.equals(Diseases.severely_injured_car) || diseases.equals(Diseases.severely_injured_walk) || diseases.equals(Diseases.severely_injured_bike) ||
+
                 if(personHealth.getCurrentDiseaseProb().get(diseases)==null){
                     continue;
                 }
 
                 //TODO: control random number? survival equation
-                if(random.nextFloat()<(personHealth.getCurrentDiseaseProb().get(diseases))){
+                if(random.nextFloat() < (personHealth.getCurrentDiseaseProb().get(diseases))){
                     if(!personHealth.getCurrentDisease().contains(diseases)){
                         personHealth.getCurrentDisease().add(diseases);
                         newDisease.add(diseases.toString());

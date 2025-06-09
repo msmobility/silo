@@ -15,7 +15,7 @@ public class TripExposureWriter {
         logger.info("  Writing trip health indicators file");
         PrintWriter pwh = MitoUtil.openFileForSequentialWriting(path, false);
         pwh.println("t.id,t.mode,t.matsimTravelTime_s,t.matsimTravelDistance_m,t.activityDuration_min," +
-                "t.mmetHours,t.severFatalInjuryRisk," + // "t.mmetHours,t.lightInjuryRisk,t.severeInjuryRisk,t.fatalityRisk," +
+                "t.mmetHours,t.severeFatalInjuryRisk," + // "t.mmetHours,t.lightInjuryRisk,t.severeInjuryRisk,t.fatalityRisk," +
                 "t.links," +
                 "t.exposurePm25,t.exposureNo2,t.activityExposurePm25,t.activityExposureNo2,"+
                 "t.exposureNoise,t.activityExposureNoise,"+

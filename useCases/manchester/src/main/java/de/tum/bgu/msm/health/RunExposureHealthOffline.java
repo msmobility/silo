@@ -5,6 +5,8 @@ import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.health.airPollutant.AirPollutantModel;
 import de.tum.bgu.msm.health.data.LinkInfo;
 import de.tum.bgu.msm.health.data.ActivityLocation;
+import de.tum.bgu.msm.health.disease.Diseases;
+import de.tum.bgu.msm.health.io.PrevalenceDataReader;
 import de.tum.bgu.msm.health.noise.NoiseModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.resources.Resources;
@@ -20,6 +22,7 @@ import org.apache.logging.log4j.Logger;
 import de.tum.bgu.msm.health.injury.AccidentModel;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 

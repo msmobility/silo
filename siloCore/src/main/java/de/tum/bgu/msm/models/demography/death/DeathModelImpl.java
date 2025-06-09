@@ -46,7 +46,7 @@ public class DeathModelImpl extends AbstractModel implements DeathModel {
         HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
         final Person person = householdDataManager.getPersonFromId(event.getPersonId());
         if (person != null) {
-            if (random.nextDouble() < strategy.calculateDeathProbability(person)) {
+            if (random.nextDouble() < strategy.calculateDeathProbability(person, random)) {
                 return die(person);
             }
         }
