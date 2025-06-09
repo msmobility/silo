@@ -197,9 +197,8 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
     private void initializeHealthDiseaseStates() {
         Map<Integer, List<Diseases>> prevData = ((HealthDataContainerImpl) dataContainer).getPrevalenceData();
         for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
-
-            if(prevData.keySet().contains(person.getId())){
-                // If person has a disease when simulation starts
+            if(prevData.keySet().contains(person.getId()) && (!prevData.get(person.getId()).contains(null))){
+                // todo: There are null values in prevalence data - check with Belen
                 List<String> diseaseList = prevData.get(person.getId())  // Returns List<Diseases>
                         .stream()                                      // Convert List to Stream
                         .map(Enum::name)                               // Map each enum to its name
@@ -247,10 +246,17 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
                 //for base year, year-1 is the initial state "healthy"
                 personHealth.getHealthDiseaseTracker().put(year, personHealth.getHealthDiseaseTracker().get(year-1));
             }else {
-                List<String> fullDisease = new ArrayList<>(personHealth.getHealthDiseaseTracker().get(year-1));
-                fullDisease.addAll(newDisease);
-                fullDisease.remove("healthy");
-                personHealth.getHealthDiseaseTracker().put(year, fullDisease);
+                if(personHealth.getHealthDiseaseTracker().get(year-1) != null){
+                    List<String> fullDisease = new ArrayList<>(personHealth.getHealthDiseaseTracker().get(year-1));
+                    fullDisease.addAll(newDisease);
+                    fullDisease.remove("healthy");
+                    personHealth.getHealthDiseaseTracker().put(year, fullDisease);
+                }else{
+                    List<String> fullDisease = new ArrayList<>();
+                    fullDisease.add("null");
+                    fullDisease.remove("healthy");
+                    personHealth.getHealthDiseaseTracker().put(year, fullDisease);
+                }
             }
         }
     }
