@@ -243,20 +243,21 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
 
             //update Disease track map
             if(newDisease.isEmpty()){
-                //for base year, year-1 is the initial state "healthy"
-                personHealth.getHealthDiseaseTracker().put(year, personHealth.getHealthDiseaseTracker().get(year-1));
-            }else {
-                if(personHealth.getHealthDiseaseTracker().get(year-1) != null){
-                    List<String> fullDisease = new ArrayList<>(personHealth.getHealthDiseaseTracker().get(year-1));
-                    fullDisease.addAll(newDisease);
-                    fullDisease.remove("healthy");
-                    personHealth.getHealthDiseaseTracker().put(year, fullDisease);
+                if(personHealth.getHealthDiseaseTracker().get(year-1) == null){ // todo: min(keysetTracker) == currentYear ??
+                    // newborns
+                    personHealth.getHealthDiseaseTracker().put(year, Arrays.asList("healthy")); // todo: check if redundant ?
                 }else{
-                    List<String> fullDisease = new ArrayList<>();
-                    fullDisease.add("null");
-                    fullDisease.remove("healthy");
-                    personHealth.getHealthDiseaseTracker().put(year, fullDisease);
+                    //for base year, year-1 is the initial state "healthy"
+                    personHealth.getHealthDiseaseTracker().put(year, personHealth.getHealthDiseaseTracker().get(year-1));
                 }
+            }else {
+                List<String> fullDisease = new ArrayList<>();
+                if(personHealth.getHealthDiseaseTracker().get(year-1) != null){
+                    fullDisease.addAll(personHealth.getHealthDiseaseTracker().get(year-1)); // get old diseases
+                }
+                fullDisease.addAll(newDisease); // add new diseases
+                fullDisease.remove("healthy");
+                personHealth.getHealthDiseaseTracker().put(year, fullDisease);
             }
         }
     }
