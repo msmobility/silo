@@ -123,7 +123,7 @@ public class ModelBuilderMCR {
 
         modelContainer.registerModelUpdateListener(new SportPAModelMCR(dataContainer, properties, SiloUtil.provideNewRandom()));
 
-        //modelContainer.registerModelUpdateListener(new AccidentModelMCR(dataContainer, properties, SiloUtil.provideNewRandom()));
+        modelContainer.registerModelUpdateListener(new AccidentModelMCR(dataContainer, properties, SiloUtil.provideNewRandom()));
 
         modelContainer.registerModelUpdateListener(new HealthExposureModelMCR(dataContainer, properties, SiloUtil.provideNewRandom(),config));
 

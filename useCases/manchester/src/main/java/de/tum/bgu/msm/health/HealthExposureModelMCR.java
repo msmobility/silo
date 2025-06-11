@@ -711,8 +711,8 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 }
 
                 //
-                int agePerson = ((PersonHealth) dataContainer.getHouseholdDataManager().getPersonFromId(trip.getPerson())).getAge();
-                Gender genderPerson = ((PersonHealth) dataContainer.getHouseholdDataManager().getPersonFromId(trip.getPerson())).getGender();
+                int agePerson = dataContainer.getHouseholdDataManager().getPersonFromId(trip.getPerson()).getAge();
+                Gender genderPerson = dataContainer.getHouseholdDataManager().getPersonFromId(trip.getPerson()).getGender();
 
                 double AgeGenderRR = 1.;
                 AgeGenderRR = getCasualtyRR_byAge_Gender(genderPerson, agePerson, trip.getTripMode());

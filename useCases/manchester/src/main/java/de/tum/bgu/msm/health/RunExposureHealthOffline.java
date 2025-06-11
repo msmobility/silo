@@ -52,7 +52,6 @@ public class RunExposureHealthOffline {
         DataBuilderHealth.read(properties, dataContainer, config);
 
         /*
-        // all
         AirPollutantModel airPollutantModel = new AirPollutantModel(dataContainer, properties, SiloUtil.provideNewRandom(),config);
         NoiseModel noiseModel = new NoiseModel(dataContainer,properties, SiloUtil.provideNewRandom(),config);
         SportPAModelMCR sportPAModelMCR = new SportPAModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
@@ -62,30 +61,19 @@ public class RunExposureHealthOffline {
 
         // setup
         AccidentModelMCR accidentModel = new AccidentModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
-        DiseaseModelMCR diseaseModelMCR = new DiseaseModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
         HealthExposureModelMCR exposureModelMCR = new HealthExposureModelMCR(dataContainer, properties, SiloUtil.provideNewRandom(),config);
-
-        //
-
-        /*
-        for(Day day : Set.of(Day.thursday, Day.saturday, Day.sunday)) {
-            accidentModel.endYear(2021, day);
-        }
-
-         */
-
-        accidentModel.endYear(2021, Day.sunday);
+        DiseaseModelMCR diseaseModelMCR = new DiseaseModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
 
         // todo: aggregate link-level risks up to the person level
-        //exposureModelMCR.setup(); // to read-in the base exposure file for testing purposes
-        //exposureModelMCR.endYear(2021);
-        //dataContainer.endSimulation();
 
+        accidentModel.endYear(2021);
+        exposureModelMCR.setup(); // to read-in the base exposure file for testing purposes
+        exposureModelMCR.endYear(2021);
+        dataContainer.endSimulation();
 
         //diseaseModelMCR.setup();
         //diseaseModelMCR.endYear(2021);
         //dataContainer.endSimulation();
-
 
         /*
         airPollutantModel.endYear(2021);
