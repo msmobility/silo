@@ -35,10 +35,6 @@ public class RunHealthDiseaseLongitudinal {
         HealthDataContainerImpl dataContainer = DataBuilderHealth.getModelDataForManchester(properties, config);
         DataBuilderHealth.read(properties, dataContainer, config);
 
-        dataContainer.getHealthInjuryRRdata().get("Cyclist").get(Gender.MALE).get(35);
-        System.out.println("Test ===== " + dataContainer.getHealthInjuryRRdata().get("Cyclist").get(Gender.MALE).get(35));
-        System.exit(0);
-
         ModelContainer modelContainer = ModelBuilderLongitudinalMCR.getModelContainerForManchester(dataContainer, properties, config);
 
         SiloModel model = new SiloModel(properties, dataContainer, modelContainer);

@@ -715,8 +715,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 Gender genderPerson = ((PersonHealth) dataContainer.getHouseholdDataManager().getPersonFromId(trip.getPerson())).getGender();
 
                 double AgeGenderRR = 1.;
-                AgeGenderRR = getCasualtyRR_byAge_Gender(genderPerson, agePerson);
-
+                AgeGenderRR = getCasualtyRR_byAge_Gender(genderPerson, agePerson, trip.getTripMode());
                 pathInjuryRisk *= (1 - linkInjuryRisk * AgeGenderRR); // todo: add age/gender interactions
             }
 
@@ -789,11 +788,30 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         siloPerson.updateWeeklyTravelActivityHourOccupied(hourOccupied);
     }
 
-    double getCasualtyRR_byAge_Gender(Gender gender, int age){
-        double RR = 1.;
+    double getCasualtyRR_byAge_Gender(Gender gender, int age, Mode mode) {
+        String modeStr;
         //
+        switch (mode) {
+            case autoDriver:
+            case autoPassenger:
+                modeStr = "Driver";
+                break;
+            case bicycle:
+                modeStr = "Cyclist";
+                break;
+            case walk:
+                modeStr = "Pedestrian";
+                break;
+            default:
+                logger.warn("Impossible to compute injury relative risk for mode " + mode);
+                return 1.;
+                //throw new RuntimeException("Undefined mode " + mode);
+        }
 
-        return RR;
+        if(age< 0) age = 0;
+        if(age>100) age = 100;
+
+        return ((HealthDataContainerImpl) dataContainer).getHealthInjuryRRdata().get(modeStr).get(gender).get(age);
     }
 
     private void calculateActivityExposures(Trip trip) {
