@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.health;
 
 import cern.colt.map.tfloat.OpenIntFloatHashMap;
+import de.tum.bgu.msm.data.Day;
 import de.tum.bgu.msm.health.injury.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,15 +18,19 @@ import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Injector;
 import org.matsim.core.events.EventsManagerModule;
 import org.matsim.core.events.MatsimEventsReader;
+import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.core.population.io.PopulationReader;
 import org.matsim.core.scenario.ScenarioByInstanceModule;
 import org.matsim.utils.objectattributes.attributable.Attributes;
+import routing.components.JctStress;
+import routing.components.LinkStress;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class AccidentRateModelMCR {
     private static final Logger log = LogManager.getLogger( AccidentRateModelMCR.class );
@@ -49,6 +54,7 @@ public class AccidentRateModelMCR {
     private int count;
     private int counterCar;
     private int counterBikePed;
+    private Day day;
 
     //
     private static final Set<AccidentType> ACCIDENT_TYPE_MCR = Set.of(AccidentType.CAR, AccidentType.BIKECAR, AccidentType.BIKEBIKE);
@@ -67,9 +73,10 @@ public class AccidentRateModelMCR {
             "path", "road"
     );
 
-    public AccidentRateModelMCR(Scenario scenario, float scalefactor) {
+    public AccidentRateModelMCR(Scenario scenario, float scalefactor, Day day) {
         this.scenario = scenario;
         SCALEFACTOR = scalefactor;
+        this.day = day;
     }
 
     public void runModelOnline() {
@@ -519,9 +526,8 @@ public class AccidentRateModelMCR {
         new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
         log.info("Reading network file... Done.");
 
-
-
-
+        // Aggregate the network
+        //Network networkAggregated = aggregateNetworkByOsmID(scenario.getNetwork());
 
         // Plans
         log.info("Reading car plans file...");
@@ -568,7 +574,7 @@ public class AccidentRateModelMCR {
         log.info("Initializing all link-specific information... Done.");
 
         // persons
-        int nbPersons =0;
+        int nbPersons = 0;
         for (Person person : this.scenario.getPopulation().getPersons().values()) {
             AccidentAgentInfo info = new AccidentAgentInfo(person.getId());
             this.accidentsContext.getPersonId2info().put(person.getId(), info);
@@ -616,6 +622,22 @@ public class AccidentRateModelMCR {
 
         Random random = new Random(); // todo: how to do ??
 
+        double calibrationFactor=1.;
+        switch (day){
+            case Day.thursday:
+                calibrationFactor=1.31;
+                break;
+            case Day.saturday:
+                calibrationFactor=4.26;
+                break;
+            case Day.sunday:
+                calibrationFactor=3.48;
+                break;
+            default:
+                // no calibration
+                calibrationFactor=1.;
+        }
+
         log.info("Link casualty frequency calculation (by type by time of day) start.");
         for (AccidentType accidentType : AccidentType.values()){
             if (ACCIDENT_TYPE_MCR.contains(accidentType)){
@@ -627,11 +649,13 @@ public class AccidentRateModelMCR {
                 }
 
                 String basePath = scenario.getScenarioElement("accidentModelFile").toString();
-                CasualtyRateCalculationMCR calculator = new CasualtyRateCalculationMCR(SCALEFACTOR, accidentsContext, analysisEventHandler, accidentType, accidentSeverity, basePath);
+                CasualtyRateCalculationMCR calculator = new CasualtyRateCalculationMCR(SCALEFACTOR, accidentsContext, analysisEventHandler, accidentType, accidentSeverity, basePath, scenario, calibrationFactor);
 
                 Map<Id<Link>, Link> placeholderMap = new HashMap<>();
-                placeholderMap.putAll(extractLinkSpecific((Map<Id<Link>, Link>) this.scenario.getNetwork().getLinks(), accidentType));
+                placeholderMap.putAll(extractLinkSpecific((Map<Id<Link>, Link>) scenario.getNetwork().getLinks(), accidentType));
+                //placeholderMap.putAll(extractLinkSpecific2((Map<Id<Link>, Link>) networkAggregated.getLinks(), accidentType));
                 calculator.run(placeholderMap.values(), random);
+                //calculator.run((Collection<? extends Link>) networkAggregated.getLinks(), random);
 
                 log.info("Calculating " + accidentType + "_" + accidentSeverity + " crash rate done.");
             }
@@ -647,7 +671,7 @@ public class AccidentRateModelMCR {
         }
 
         // Compute link-level injury risk R=1/v (v= traffic volume)
-        computeLinkLevelInjuryRisk();
+        //computeLinkLevelInjuryRisk();
 
 
         /*
@@ -748,6 +772,58 @@ public class AccidentRateModelMCR {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    private Map<Id<Link>,Link> extractLinkSpecific2(Map<Id<Link>, Link> links, AccidentType accidentType) {
+        Map<Id<Link>, Link> placeholderMap = new HashMap<>();
+
+        // send only relevant links for which we want to predict casualties
+        switch(accidentType){
+            case PED:
+                for(Link link : links.values()){
+                    if((boolean) link.getAttributes().getAttribute("bike_allowed")){
+                        placeholderMap.put(link.getId(), link);
+                    }
+                }
+                break;
+            case CAR_ONEWAY:
+                for(Link link : links.values()){
+                    boolean twoWay = (boolean) link.getAttributes().getAttribute("two_way");
+                    if(!twoWay){
+                        placeholderMap.put(link.getId(), link);
+                    }
+                }
+                break;
+            case CAR_TWOWAY:
+                for(Link link : links.values()){
+                    boolean twoWay = (boolean) link.getAttributes().getAttribute("two_way");
+                    if(twoWay){
+                        placeholderMap.put(link.getId(), link);
+                    }
+                }
+                break;
+            case BIKE_MINOR:
+                for(Link link : links.values()){
+                    boolean bikeAllowed = (boolean) link.getAttributes().getAttribute("bike_allowed");
+                    if(MINOR.contains(getStringAttribute(link.getAttributes(), "type", "residential")) && bikeAllowed){
+                        placeholderMap.put(link.getId(), link);
+                    }
+                }
+                break;
+            case BIKE_MAJOR:
+                for(Link link : links.values()){
+                    boolean bikeAllowed = (boolean) link.getAttributes().getAttribute("bike_allowed");
+                    if(MAJOR.contains(getStringAttribute(link.getAttributes(), "type", "residential")) && bikeAllowed){
+                        placeholderMap.put(link.getId(), link);
+                    }
+                }
+                break;
+            default:
+                // todo: better to raise error here ??
+                break;
+
+        }
+        return placeholderMap;
     }
 
     private Map<Id<Link>,Link> extractLinkSpecific(Map<Id<Link>, Link> links, AccidentType accidentType) {
@@ -1200,6 +1276,9 @@ public class AccidentRateModelMCR {
                     }else{
                         //log.warn(link.getId()+mode+hour);
                         counterCar++;
+                        if(severeCasualty == 1){
+                            log.warn("A casualty was predicted in a link with no car flows: " + link.getId());
+                        }
                     }
                 }else{
                     if(analysisEventHandler.getDemand(link.getId(), mode, hour) != 0){
@@ -1207,6 +1286,9 @@ public class AccidentRateModelMCR {
                         severeCasualtyExposure = (float) (severeCasualty/(analysisEventHandler.getDemand(link.getId(), mode, hour))); // todo: no scale factor given that we model 100% bikePed , check ??
                     }else{
                         counterBikePed++;
+                        if(severeCasualty == 1){
+                            log.warn("A casualty was predicted in a link with no active travel flows: " + link.getId() + " / " + mode);
+                        }
                     }
                 }
 
@@ -1415,5 +1497,193 @@ public class AccidentRateModelMCR {
 
     public AccidentsContext getAccidentsContext() {
         return accidentsContext;
+    }
+
+    public Network aggregateNetworkByOsmID(Network network) {
+        // Create a new network for aggregated links
+        Network aggregatedNetwork = NetworkUtils.createNetwork();
+
+        // Group links by osmID
+        Map<String, List<Link>> linksByOsmID = network.getLinks().values().stream()
+                .collect(Collectors.groupingBy(link -> getStringAttribute(link.getAttributes(), "osmID", "unknown")));
+
+        // Process each osmID group
+        for (Map.Entry<String, List<Link>> entry : linksByOsmID.entrySet()) {
+            String osmID = entry.getKey();
+            List<Link> links = entry.getValue();
+
+            // Aggregate attributes
+            // Check if any link allows biking, but enforce 0 for motorways
+            /*
+            String highway = calculateMode(links.stream()
+                    .map(link -> getStringAttribute(link.getAttributes(), "highway", "unknown"))
+                    .collect(Collectors.toList()), "unknown");
+
+             */
+
+            int bikeAllowed = links.stream()
+                    .mapToInt(link -> link.getAllowedModes().contains("bike") ? 1 : 0)
+                    .max().orElse(0);
+
+            int carAllowed = links.stream()
+                    .mapToInt(link -> link.getAllowedModes().contains("car") ? 1 : 0)
+                    .max().orElse(0);
+
+            int walkAllowed = links.stream()
+                    .mapToInt(link -> link.getAllowedModes().contains("walk") ? 1 : 0)
+                    .max().orElse(0);
+
+            // 2way or not
+            boolean isTwoWay = hasReturnLinkPair(links);
+
+            double totalLength = links.stream().mapToDouble(Link::getLength).sum();
+            if (isTwoWay) {
+                totalLength /= 2.0;
+            }
+
+            double width = calculateMode(links.stream()
+                    .map(link -> getDoubleAttribute(link.getAttributes(), "width", 0.0))
+                    .collect(Collectors.toList()));
+
+            double totalLengthForWeighting = links.stream().mapToDouble(Link::getLength).sum(); // Use original sum for weighting
+
+            double bikeStress = links.stream()
+                    .mapToDouble(link -> LinkStress.getStress(link, "bike") * link.getLength())
+                    .sum() / (totalLengthForWeighting > 0 ? totalLengthForWeighting : 1.0);
+
+            double bikeStressJct = links.stream()
+                    .mapToDouble(link -> JctStress.getStress(link, "bike"))
+                    .max().orElse(0.0);
+
+            double walkStressJct = links.stream()
+                    .mapToDouble(link -> JctStress.getStress(link, "walk"))
+                    .max().orElse(0.0);
+
+            // Aggregate other attributes for output
+            String roadType = calculateMode(links.stream()
+                    .map(link -> getStringAttribute(link.getAttributes(), "type", "residential"))
+                    .collect(Collectors.toList()), "residential");
+
+            double speedLimitMPH = links.stream()
+                    .mapToDouble(link -> getDoubleAttribute(link.getAttributes(), "speedLimitMPH", 0.0))
+                    .average().orElse(0.0);
+
+            // Create a new link
+            Link representativeLink = links.get(0);
+            Node fromNode = representativeLink.getFromNode();
+            Node toNode = representativeLink.getToNode();
+
+            // Ensure nodes are added to the aggregated network
+            if (!aggregatedNetwork.getNodes().containsKey(fromNode.getId())) {
+                aggregatedNetwork.addNode(fromNode);
+            }
+            if (!aggregatedNetwork.getNodes().containsKey(toNode.getId())) {
+                aggregatedNetwork.addNode(toNode);
+            }
+
+            // Create a new link ID
+            Id<Link> newLinkId = Id.createLinkId("agg_" + osmID);
+            Link newLink = aggregatedNetwork.getFactory().createLink(newLinkId, fromNode, toNode);
+
+            // Set basic link properties
+            newLink.setLength(totalLength);
+            newLink.setFreespeed(speedLimitMPH);
+            newLink.setCapacity(representativeLink.getCapacity());
+            newLink.setNumberOfLanes(representativeLink.getNumberOfLanes());
+
+            // Set allowed modes based on aggregated values
+            Set<String> allowedModes = new HashSet<>();
+            if (bikeAllowed == 1) allowedModes.add("bike");
+            if (carAllowed == 1) allowedModes.add("car");
+            if (walkAllowed == 1) allowedModes.add("walk");
+            newLink.setAllowedModes(allowedModes.isEmpty() ? representativeLink.getAllowedModes() : allowedModes);
+
+            // Set attributes
+            Attributes attributes = newLink.getAttributes();
+            attributes.putAttribute("osmID", osmID);
+            attributes.putAttribute("type", roadType);
+            attributes.putAttribute("speedLimitMPH", speedLimitMPH);
+            attributes.putAttribute("bike_allowed", bikeAllowed);
+            attributes.putAttribute("car_allowed", carAllowed);
+            attributes.putAttribute("walk_allowed", walkAllowed);
+            attributes.putAttribute("width", width);
+            attributes.putAttribute("bikeStress", bikeStress);
+            attributes.putAttribute("bikeStressJct", bikeStressJct);
+            attributes.putAttribute("walkStressJct", walkStressJct);
+            attributes.putAttribute("two_way", isTwoWay);
+
+            // Add the new link to the aggregated network
+            aggregatedNetwork.addLink(newLink);
+        }
+
+        return aggregatedNetwork;
+    }
+
+    // Helper method to check for outbound/return link pair
+    private static boolean hasReturnLinkPair(List<Link> links) {
+        for (Link link : links) {
+            if (!link.getAllowedModes().contains("car")) continue; // Skip if no car mode
+            Node fromNode = link.getFromNode();
+            Node toNode = link.getToNode();
+            // Look for a return link (toNode -> fromNode) with car mode
+            boolean hasReturn = links.stream()
+                    .anyMatch(returnLink ->
+                            returnLink.getFromNode().equals(toNode) &&
+                                    returnLink.getToNode().equals(fromNode) &&
+                                    returnLink.getAllowedModes().contains("car"));
+            if (hasReturn) return true; // Found a valid pair
+        }
+        return false; // No valid pair found
+    }
+
+    // Calculate the mode (most frequent value) of a list of doubles
+    private static double calculateMode(List<Double> values) {
+        if (values.isEmpty()) return 0.0;
+        Map<Double, Long> frequencyMap = values.stream()
+                .collect(Collectors.groupingBy(d -> d, Collectors.counting()));
+        return frequencyMap.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(0.0);
+    }
+
+    // Calculate the mode (most frequent value) of a list of strings
+    private static String calculateMode(List<String> values, String defaultValue) {
+        if (values.isEmpty()) return defaultValue;
+        Map<String, Long> frequencyMap = values.stream()
+                .collect(Collectors.groupingBy(s -> s, Collectors.counting()));
+        return frequencyMap.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(defaultValue);
+    }
+
+    // Helper method to safely get a double attribute
+    public static double getDoubleAttribute(Attributes attributes, String key, double defaultValue) {
+        Object value = attributes.getAttribute(key);
+        if (value != null) {
+            try {
+                return Double.parseDouble(value.toString());
+            } catch (NumberFormatException e) {
+                System.err.println("Warning: Could not parse double for attribute " + key + ", using default: " + defaultValue);
+            }
+        }
+        return defaultValue;
+    }
+
+    // Helper method to safely get a boolean attribute
+    public static boolean getBooleanAttribute(Attributes attributes, String key, boolean defaultValue) {
+        Object value = attributes.getAttribute(key);
+        if (value != null) {
+            if (value instanceof Boolean) {
+                return (Boolean) value;
+            }
+            try {
+                return Boolean.parseBoolean(value.toString());
+            } catch (Exception e) {
+                System.err.println("Warning: Could not parse boolean for attribute " + key + ", using default: " + defaultValue);
+            }
+        }
+        return defaultValue;
     }
 }
