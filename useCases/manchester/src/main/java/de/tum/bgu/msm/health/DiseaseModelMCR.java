@@ -173,25 +173,14 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
         }
 
 
-        // injuries
-        double pCasualty = 0.1/2;
-        double pFatal = 0.5;
+        // Process injuries
+        Map<String, Map<String, Double>> FatalityProbabilities = createProbabilityMap(); // table with fatality probabilities
 
-        for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
-            if(random.nextDouble() < pCasualty){
-                if(random.nextDouble() < pFatal){
-                    ((PersonHealth) person).getCurrentDiseaseProb().put(Diseases.killed_car, 1.0f); // this value will be updated in the death model, here it's just initialized.
-                    ((PersonHealth) person).getCurrentDiseaseProb().put(Diseases.severely_injured_car, 0.0f);
-                }else{
-                    ((PersonHealth) person).getCurrentDiseaseProb().put(Diseases.severely_injured_car, 1.0f);
-                    ((PersonHealth) person).getCurrentDiseaseProb().put(Diseases.killed_car, 0.0f);
-                }
-            }else{
-                ((PersonHealth) person).getCurrentDiseaseProb().putIfAbsent(Diseases.severely_injured_car, 0.0f);
-                ((PersonHealth) person).getCurrentDiseaseProb().putIfAbsent(Diseases.killed_car, 0.0f);
-            }
+        for (Person person : dataContainer.getHouseholdDataManager().getPersons()) {
+            //processInjuryRisk(person, "severeFatalInjuryCar", "Driver", Diseases.killed_car, Diseases.severely_injured_car, FatalityProbabilities);
+            //processInjuryRisk(person, "severeFatalInjuryBike", "Cyclist", Diseases.killed_bike, Diseases.severely_injured_bike, FatalityProbabilities);
+            processInjuryRisk(person, "severeFatalInjuryWalk", "Pedestrian", Diseases.killed_walk, Diseases.severely_injured_walk, FatalityProbabilities);
         }
-
     }
 
     private void initializeHealthDiseaseStates() {
@@ -259,6 +248,60 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
                 fullDisease.remove("healthy");
                 personHealth.getHealthDiseaseTracker().put(year, fullDisease);
             }
+        }
+    }
+
+    public Map<String, Map<String, Double>> createProbabilityMap() {
+        Map<String, Map<String, Double>> fatalityProbabilities = new HashMap<>();
+
+        // Cyclist probabilities
+        Map<String, Double> cyclistProbs = new HashMap<>();
+        cyclistProbs.put("<18", 0.0588);   // 6 / (6 + 96)
+        cyclistProbs.put("18-65", 0.0220); // 11 / (11 + 489)
+        cyclistProbs.put("65+", 0.0833);   // 2 / (2 + 22)
+        fatalityProbabilities.put("Cyclist", cyclistProbs);
+
+        // Driver probabilities
+        Map<String, Double> driverProbs = new HashMap<>();
+        driverProbs.put("<18", 0.0847);    // 10 / (10 + 108)
+        driverProbs.put("18-65", 0.0760);  // 66 / (66 + 802)
+        driverProbs.put("65+", 0.1090);    // 17 / (17 + 139)
+        fatalityProbabilities.put("Driver", driverProbs);
+
+        // Pedestrian probabilities
+        Map<String, Double> pedestrianProbs = new HashMap<>();
+        pedestrianProbs.put("<18", 0.0220); // 11 / (11 + 488)
+        pedestrianProbs.put("18-65", 0.1000); // 73 / (73 + 657)
+        pedestrianProbs.put("65+", 0.2170);   // 59 / (59 + 213)
+        fatalityProbabilities.put("Pedestrian", pedestrianProbs);
+
+        return fatalityProbabilities;
+    }
+
+    public String getAgeGroup(int age) {
+        if (age < 18) return "<18";
+        else if (age <= 65) return "18-65";
+        else return "65+";
+    }
+
+    private void processInjuryRisk(Person person, String riskType, String probabilityKey, Diseases fatalDisease, Diseases injuryDisease, Map<String, Map<String, Double>> FatalityTable) {
+        PersonHealth personHealth = (PersonHealth) person;
+        //double pCasualty = personHealth.getWeeklyAccidentRisk(riskType);
+        double pCasualty = 0.1; // testing
+
+        if (random.nextDouble() < pCasualty) {
+            double pFatal = FatalityTable.get(probabilityKey).get(getAgeGroup(person.getAge()));
+
+            if (random.nextDouble() < pFatal) {
+                personHealth.getCurrentDiseaseProb().put(fatalDisease, 1.0f);
+                personHealth.getCurrentDiseaseProb().put(injuryDisease, 0.0f);
+            } else {
+                personHealth.getCurrentDiseaseProb().put(fatalDisease, 0.0f);
+                personHealth.getCurrentDiseaseProb().put(injuryDisease, 1.0f);
+            }
+        } else {
+            personHealth.getCurrentDiseaseProb().putIfAbsent(injuryDisease, 0.0f);
+            personHealth.getCurrentDiseaseProb().putIfAbsent(fatalDisease, 0.0f);
         }
     }
 }

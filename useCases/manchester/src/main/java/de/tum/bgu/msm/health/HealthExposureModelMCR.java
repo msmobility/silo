@@ -704,7 +704,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 //
                 if(weekdays.contains(trip.getDepartureDay())){
                     // the link-based risks are equivalent to the 5 weekdays, need to scale down
-                    linkInjuryRisk = getLinkInjuryRisk(mode, (int) enterTimeInSecond, linkInfoByDay)/5;
+                    linkInjuryRisk = getLinkInjuryRisk(mode, (int) enterTimeInSecond, linkInfoByDay)/5; // todo: check with james
                 }else{
                     // Sat and Sun , keep as it is
                     linkInjuryRisk = getLinkInjuryRisk(mode, (int) enterTimeInSecond, linkInfoByDay);
