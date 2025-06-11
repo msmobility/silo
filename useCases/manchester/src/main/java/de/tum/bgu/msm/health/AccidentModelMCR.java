@@ -2,6 +2,7 @@ package de.tum.bgu.msm.health;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Day;
+import de.tum.bgu.msm.health.airPollutant.emission.MCRHbefaRoadTypeMapping;
 import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.health.injury.AccidentRateModel;
 import de.tum.bgu.msm.models.AbstractModel;
@@ -12,19 +13,25 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ScenarioUtils;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 public class AccidentModelMCR extends AbstractModel implements ModelUpdateListener {
     private int latestMatsimYear = -1;
     private static final Logger logger = LogManager.getLogger(AccidentModelMCR.class);
+    private List<Day> simulatedDays;
 
     public AccidentModelMCR(DataContainer dataContainer, Properties properties, Random random) {
         super(dataContainer, properties, random);
+        simulatedDays = Arrays.asList(Day.thursday,Day.saturday,Day.sunday);
     }
 
     @Override
@@ -35,15 +42,12 @@ public class AccidentModelMCR extends AbstractModel implements ModelUpdateListen
     public void prepareYear(int year) {
     }
 
-    public void endYear(int year, Day day) {
+    public void endYear(int year) {
         logger.warn("Accident model end year:" + year);
-        if(properties.main.startYear == year) {
-            latestMatsimYear = year;
-            runAccidentRateModel(year, day);
-            System.gc();
-        } else if(properties.transportModel.transportModelYears.contains(year + 1)) {//why year +1
-            latestMatsimYear = year + 1;
-            runAccidentRateModel(year + 1, day);
+        int targetYear = (properties.main.startYear == year && properties.healthData.baseExposureFile == null) ? year : (properties.transportModel.transportModelYears.contains(year + 1) ? year + 1 : -1);
+        if (targetYear != -1) {
+            latestMatsimYear = targetYear;
+            runAccidentRateModel(targetYear);
             System.gc();
         }
     }
@@ -52,7 +56,9 @@ public class AccidentModelMCR extends AbstractModel implements ModelUpdateListen
     public void endSimulation() {
     }
 
-    private void runAccidentRateModel(int year, Day day) {
+    private void runAccidentRateModel(int year) {
+        //generate link injury risks for each simulated day
+        for(Day day : simulatedDays){
             logger.info("Updating injury risk for year: " + year + "| day of week: " + day + ".");
 
             final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/"
@@ -72,16 +78,9 @@ public class AccidentModelMCR extends AbstractModel implements ModelUpdateListen
             AccidentRateModelMCR model = new AccidentRateModelMCR(scenario, 1.f/scalingFactor, day);
 
             model.runCasualtyRateOffline(); // number of casualties per link (max 1 per link, otherwise 0)
-            // model.computeLinkLevelInjuryRisk(); // R=1/v where v is the traffic volume
+            //model.computeLinkLevelInjuryRisk(); // R=1/v where v is the traffic volume
             //model.computePersonLevelInjuryRiskOffline();
 
-            // do not use
-            //model.runAgentInjuryRiskOfflineMCR();
-
-            // Qin's implementations
-            // model.runAccidentRateOffline();
-            // model.runAgentInjuryRiskOffline();
-            // model.runModelOnline();
 
             for(Id<Link> linkId : model.getAccidentsContext().getLinkId2info().keySet()){
                 //((de.tum.bgu.msm.scenarios.health.HealthDataContainerImpl)dataContainer).getLinkInfoByDay().get(day).get(linkId).setLightCasualityExposureByAccidentTypeByTime(model.getAccidentsContext().getLinkId2info().get(linkId).getLightCasualityExposureByAccidentTypeByTime());
@@ -89,5 +88,6 @@ public class AccidentModelMCR extends AbstractModel implements ModelUpdateListen
                 ((HealthDataContainerImpl) dataContainer).getLinkInfoByDay(day).get(linkId).setSevereFatalCasualityExposureByAccidentTypeByTime(model.getAccidentsContext().getLinkId2info().get(linkId).getSevereFatalCasualityExposureByAccidentTypeByTime());
             }
             model.getAccidentsContext().reset();
+        }
     }
 }

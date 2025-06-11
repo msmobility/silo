@@ -79,117 +79,6 @@ public class AccidentRateModelMCR {
         this.day = day;
     }
 
-    public void runModelOnline() {
-        com.google.inject.Injector injector = Injector.createInjector( scenario.getConfig() , new AbstractModule(){
-            @Override public void install(){
-                install( new ScenarioByInstanceModule( scenario ) );
-                install( new AccidentsModule()) ;
-                install( new EventsManagerModule());
-            }
-        }) ;
-
-        log.info("Reading network file...");
-        String networkFile;
-        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
-            networkFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + "output_network.xml.gz";
-        } else {
-            networkFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + this.scenario.getConfig().controller().getRunId() + ".output_network.xml.gz";
-        }
-        new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
-        log.info("Reading network file... Done.");
-
-        analysisEventHandler = new AnalysisEventHandlerOnline();
-        analysisEventHandler.setScenario(scenario);
-        analysisEventHandler.setAccidentsContext(accidentsContext);
-
-        log.info("Reading car events file...");
-        EventsManager events = injector.getInstance( EventsManager.class ) ;
-        MatsimEventsReader eventsReader = new MatsimEventsReader(events);
-        String eventsFile;
-        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
-            eventsFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + "output_events.xml.gz";
-        } else {
-            eventsFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + this.scenario.getConfig().controller().getRunId() + ".output_events.xml.gz";
-        }
-        events.addHandler(analysisEventHandler);
-        eventsReader.readFile(eventsFile); //car AADT are calculated by eventHandler
-        log.info("Reading car events file... Done.");
-
-        log.info("Reading bike&ped events file...");
-        String eventsFileBikePed;
-        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
-            eventsFileBikePed = this.scenario.getConfig().controller().getOutputDirectory() + "bikePed/" + "output_events.xml.gz";
-        } else {
-            eventsFileBikePed = this.scenario.getConfig().controller().getOutputDirectory() + "bikePed/" + this.scenario.getConfig().controller().getRunId() + ".output_events.xml.gz";
-        }
-
-        // todo: this is a temporary fix link to pedBike volumes, just to test.
-        eventsFileBikePed = "C:/Users/saadi/Documents/Cambridge/manchester/scenOutput/base/matsim/2021/saturday/bikePed/2021.output_events_bikePed_saturday.xml.gz";
-        eventsReader.readFile(eventsFileBikePed); //car, bike, ped AADT are calculated by eventHandler
-        log.info("Reading bike&ped events file... Done.");
-
-
-        //Preparation
-        for (Link link : this.scenario.getNetwork().getLinks().values()) {
-            AccidentLinkInfo info = new AccidentLinkInfo(link.getId());
-            this.accidentsContext.getLinkId2info().put(link.getId(), info);
-        }
-        log.info("Initializing all link-specific information... Done.");
-
-
-        log.info("Link accident frequency calculation (by type by time of day) start.");
-        for (AccidentType accidentType : AccidentType.values()){
-            for (AccidentSeverity accidentSeverity : AccidentSeverity.values()){
-                String basePath = scenario.getScenarioElement("accidentModelFile").toString();
-                AccidentRateCalculationMCR calculator = new AccidentRateCalculationMCR(SCALEFACTOR, accidentsContext, analysisEventHandler, accidentType, accidentSeverity, basePath);
-
-                // todo: add condition here to check if link is major/minor - 1way/2way based on accidentType
-                // todo: if CAR_ONEWAY, CAR_TWOWAY, BIKE_MINOR, BIKE_MAJOR -> send oneway, twoway, minor, major links only otherwise send all in run()
-
-                calculator.run(this.scenario.getNetwork().getLinks().values());
-                log.info("Calculating " + accidentType + "_" + accidentSeverity + " crash rate done.");
-            }
-        }
-        log.info("Link accident frequency calculation completed.");
-
-        try {
-            writeOutCrashFrequency();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        log.info("Link casualty frequency conversion (by type by time of day) start.");
-        for (Link link : this.scenario.getNetwork().getLinks().values()) {
-            casualtyRateCalculation(link);
-        }
-        log.info("Link casualty frequency conversion completed.");
-
-        try {
-            writeOutCasualtyRate();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        log.info("Link casualty exposure calculation start.");
-        for (Link link : this.scenario.getNetwork().getLinks().values()) {
-            computeLinkCasualtyExposure(link);
-        }
-
-        try {
-            writeOutExposure();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        log.info(counterCar + "car links have no hourly traffic volume");
-        log.info(counterBikePed + "bikeped links have no hourly traffic volume");
-        log.info("Link casualty exposure calculation completed.");
-
-        analysisEventHandler.reset(0);
-        System.gc();
-        System.out.println("System gc is reset. Current free memory usage: " + Runtime.getRuntime().freeMemory());
-    }
-
     public void runAgentInjuryRiskOfflineMCR() {
         com.google.inject.Injector injector = Injector.createInjector( scenario.getConfig() , new AbstractModule(){
             @Override public void install(){
@@ -509,10 +398,6 @@ public class AccidentRateModelMCR {
             }
         }) ;
 
-
-
-
-
         // network
         log.info("Reading network file...");
         String networkFile;
@@ -533,8 +418,6 @@ public class AccidentRateModelMCR {
         log.info("Reading car plans file...");
         PopulationReader popReader = new PopulationReader(scenario);
 
-
-
         // carTruck plans
         /*
         String plansFile;
@@ -547,8 +430,6 @@ public class AccidentRateModelMCR {
         popReader.readFile(plansFile);
         log.info("Reading car plans file... Done.");
         log.warn("Total population:" + scenario.getPopulation().getPersons().size());
-
-
 
         // bikePed plans
         log.info("Reading bikePed plans file...");
@@ -563,8 +444,6 @@ public class AccidentRateModelMCR {
         log.info("Reading bikePed plans file... Done.");
         log.warn("Total population:" + scenario.getPopulation().getPersons().size());
         */
-
-
 
         // links
         for (Link link : this.scenario.getNetwork().getLinks().values()) {
@@ -582,9 +461,6 @@ public class AccidentRateModelMCR {
         }
         log.info("Initializing all agent-specific information... Done. " + nbPersons);
         // todo : pop is not initialized at all
-
-
-
 
         // Read-in traffic volumes
         analysisEventHandler = new AnalysisEventHandler();
@@ -618,7 +494,6 @@ public class AccidentRateModelMCR {
         // eventsFileBikePed = "/media/admin/EXTERNAL_USB1/simulation_results_for_paper/base/matsim/2021/thursday/bikePed/2021.output_events.xml.gz";
         eventsReader.readFile(eventsFileBikePed); //car, bike, ped AADT are calculated by eventHandler
         log.info("Reading bike&ped events file... Done.");
-
 
         Random random = new Random(); // todo: how to do ??
 
@@ -662,8 +537,6 @@ public class AccidentRateModelMCR {
         }
         log.info("Link casualty frequency calculation completed.");
 
-
-
         try {
             writeOutCasualtyRate();
         } catch (FileNotFoundException e) {
@@ -671,8 +544,7 @@ public class AccidentRateModelMCR {
         }
 
         // Compute link-level injury risk R=1/v (v= traffic volume)
-        //computeLinkLevelInjuryRisk();
-
+        computeLinkLevelInjuryRisk();
 
         /*
         log.info("Link casualty exposure calculation start.");

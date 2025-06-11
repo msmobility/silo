@@ -70,8 +70,8 @@ public class CasualtyRateCalculationMCR {
             else{
                 val = 0;
             }
-            //casualtyRateByTimeOfDay.put(hour, (float) val);
-            casualtyRateByTimeOfDay.put(hour, (float) (probZeroCrash/calibrationFactor));
+            casualtyRateByTimeOfDay.put(hour, (float) val);
+            //casualtyRateByTimeOfDay.put(hour, (float) (probZeroCrash/calibrationFactor));
         }
 
         switch (accidentSeverity) {
