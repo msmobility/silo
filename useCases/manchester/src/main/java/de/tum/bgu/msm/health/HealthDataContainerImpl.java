@@ -43,6 +43,7 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     private EnumMap<HealthExposures, EnumMap<Diseases, TableDataSet>> doseResponseData;
     private Map<Integer, Map<Integer, List<String>>> healthDiseaseTrackerRemovedPerson = new HashMap<>();
     private Map<Integer, List<Diseases>> healthPrevalenceData;
+    private Map<String, EnumMap<Gender, Map<Integer, Double>>> healthInjuryRRdata;
 
     public HealthDataContainerImpl(DataContainerWithSchools delegate,
                                    Properties properties) {
@@ -221,6 +222,14 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
 
     public Map<Integer, List<Diseases>> getPrevalenceData() {
         return healthPrevalenceData;
+    }
+
+    public void setHealthInjuryRRdata(Map<String, EnumMap<Gender, Map<Integer, Double>>> healthInjuryRRdata){
+        this.healthInjuryRRdata = healthInjuryRRdata;
+    }
+
+    public Map<String, EnumMap<Gender, Map<Integer, Double>>> getHealthInjuryRRdata(){
+        return healthInjuryRRdata;
     }
 
     public void setHealthPrevalenceData(Map<Integer, List<Diseases>> healthPrevalenceData){

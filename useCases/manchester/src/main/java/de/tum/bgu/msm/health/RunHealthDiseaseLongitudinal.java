@@ -4,6 +4,7 @@ import de.tum.bgu.msm.SiloModel;
 import de.tum.bgu.msm.container.ModelContainer;
 //import de.tum.bgu.msm.health.diseaseModelOffline.HealthExposuresReader;
 //import de.tum.bgu.msm.health.diseaseModelOffline.ModelBuilderMCR;
+import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.io.output.MultiFileResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -33,6 +34,10 @@ public class RunHealthDiseaseLongitudinal {
         logger.info("Started SILO land use model for the Greater Manchester");
         HealthDataContainerImpl dataContainer = DataBuilderHealth.getModelDataForManchester(properties, config);
         DataBuilderHealth.read(properties, dataContainer, config);
+
+        dataContainer.getHealthInjuryRRdata().get("Cyclist").get(Gender.MALE).get(35);
+        System.out.println("Test ===== " + dataContainer.getHealthInjuryRRdata().get("Cyclist").get(Gender.MALE).get(35));
+        System.exit(0);
 
         ModelContainer modelContainer = ModelBuilderLongitudinalMCR.getModelContainerForManchester(dataContainer, properties, config);
 
