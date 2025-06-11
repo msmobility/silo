@@ -858,6 +858,10 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         double endDayHour = (startDayHour + activityDurationInMinutes/60.);
 
 
+        PersonHealth siloPerson =  ((PersonHealth)dataContainer.getHouseholdDataManager().getPersonFromId(trip.getPerson()));
+        double sportweekmMETh =  siloPerson.getWeeklyMarginalMetHoursSport();
+
+
         for(double currentDayHour = startDayHour; currentDayHour < endDayHour;) {
             //check if start hour is already next day, it could be that trip starts at 23:30, after travelling (e.g. 40 mins), activity start time is next day
             if(currentDayHour >= 24){
@@ -903,11 +907,13 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                         activityLocation.getExposure2Pollutant2TimeBin().get(Pollutant.PM2_5_non_exhaust).get(exactDayHour);
                 double locationIncrementalNO2 = activityLocation.getExposure2Pollutant2TimeBin().get(Pollutant.NO2).get(exactDayHour);
 
-                double exposurePM25 = PollutionExposure.getActivityExposurePm25(durationInThisHour * 60, locationIncrementalPM25);
-                double exposureNo2 = PollutionExposure.getActivityExposureNo2(durationInThisHour * 60, locationIncrementalNO2);
-                activityExposurePM25ByHour[exactWeekHour] = (float) exposurePM25;
-                activityExposureNo2ByHour[exactWeekHour] = (float) exposureNo2;
+                // Corin paper implementation
+                // double exposurePM25 = PollutionExposure.getActivityExposurePm25(durationInThisHour * 60, locationIncrementalPM25);
+                // double exposureNo2 = PollutionExposure.getActivityExposureNo2(durationInThisHour * 60, locationIncrementalNO2);
 
+                // new ventilation
+                double exposurePM25 = PollutionExposure.getActivityExposurePm25_newvent(durationInThisHour * 60, sportweekmMETh, locationIncrementalPM25);
+                double exposureNo2 = PollutionExposure.getActivityExposureNo2_newvent(durationInThisHour * 60, sportweekmMETh, locationIncrementalNO2);
                 activityExposurePM25 += exposurePM25;
                 activityExposureNo2 += exposureNo2;
 
@@ -936,8 +942,6 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         ));
         trip.setActivityNoiseExposure(activityNoiseExposure);
         trip.setActivityNdviExposure(activityGreenExposure);
-
-        PersonHealth siloPerson =  ((PersonHealth)dataContainer.getHouseholdDataManager().getPersonFromId(trip.getPerson()));
 
         siloPerson.updateWeeklyActivityMinutes((float) activityDurationInMinutes);
         siloPerson.updateWeeklyTravelActivityHourOccupied(hourOccupied);
@@ -981,9 +985,13 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                             activityLocation.getExposure2Pollutant2TimeBin().get(Pollutant.PM2_5_non_exhaust).get(dayHour);
                     double locationIncrementalNO2 = activityLocation.getExposure2Pollutant2TimeBin().get(Pollutant.NO2).get(dayHour);
 
-                    exposurePM25[weekHour] = (float) PollutionExposure.getHomeExposurePm25(remainingHour * 60, dayHour, locationIncrementalPM25);
-                    exposureNo2[weekHour] = (float) PollutionExposure.getHomeExposureNo2(remainingHour * 60, dayHour, locationIncrementalNO2);
+                    // Corin paper implementation
+                    // exposurePM25[weekHour] = (float) PollutionExposure.getHomeExposurePm25(remainingHour * 60, dayHour, locationIncrementalPM25);
+                    // exposureNo2[weekHour] = (float) PollutionExposure.getHomeExposureNo2(remainingHour * 60, dayHour, locationIncrementalNO2);
 
+                    // new ventilation
+                    exposurePM25[weekHour] = (float) PollutionExposure.getHomeExposurePm25_newvent(remainingHour * 60, dayHour, locationIncrementalPM25);
+                    exposureNo2[weekHour] = (float) PollutionExposure.getHomeExposureNo2_newvent(remainingHour * 60, dayHour, locationIncrementalNO2);
                     // Noise level
                     if(!activityLocation.getNoiseLevel2TimeBin().isEmpty()){
                         exposureNoise[weekHour] = activityLocation.getNoiseLevel2TimeBin().get(dayHour) * remainingHour;
