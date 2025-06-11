@@ -691,19 +691,22 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         trip.updateTravelNdviExposure(pathExposureGreen);
 
         PersonHealth siloPerson = ((PersonHealth)dataContainer.getHouseholdDataManager().getPersonFromId(trip.getPerson()));
-        siloPerson.updateWeeklyTravelSeconds((float) pathTime);
-        siloPerson.updateWeeklyAccidentRisks(Map.of(
-                "severeInjury", (float) pathSevereInjuryRisk,
-                "fatality", (float) pathFatalityRisk));
-        siloPerson.updateWeeklyMarginalMetHours(trip.getTripMode(), (float) pathMarginalMetHours);
 
-        siloPerson.updateWeeklyPollutionExposuresByHour(Map.of(
-                "pm2.5", pathExposurePm25ByHour,
-                "no2", pathExposureNo2ByHour
-        ));
-        siloPerson.updateWeeklyNoiseExposuresByHour(pathExposureNoiseByHour);
-        siloPerson.updateWeeklyGreenExposures((float) pathExposureGreen);
-        siloPerson.updateWeeklyTravelActivityHourOccupied(hourOccupied);
+        if (siloPerson != null) {
+            siloPerson.updateWeeklyTravelSeconds((float) pathTime);
+            siloPerson.updateWeeklyAccidentRisks(Map.of(
+                    "severeInjury", (float) pathSevereInjuryRisk,
+                    "fatality", (float) pathFatalityRisk));
+            siloPerson.updateWeeklyMarginalMetHours(trip.getTripMode(), (float) pathMarginalMetHours);
+
+            siloPerson.updateWeeklyPollutionExposuresByHour(Map.of(
+                    "pm2.5", pathExposurePm25ByHour,
+                    "no2", pathExposureNo2ByHour
+            ));
+            siloPerson.updateWeeklyNoiseExposuresByHour(pathExposureNoiseByHour);
+            siloPerson.updateWeeklyGreenExposures((float) pathExposureGreen);
+            siloPerson.updateWeeklyTravelActivityHourOccupied(hourOccupied);
+        }
     }
 
     private void calculateActivityExposures(Trip trip) {
