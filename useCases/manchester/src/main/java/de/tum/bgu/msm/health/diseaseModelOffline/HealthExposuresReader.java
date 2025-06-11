@@ -41,6 +41,11 @@ public class HealthExposuresReader {
             int posNoise = SiloUtil.findPositionInArray("exposure_normalised_noise_Lden", header);
             int posNdvi = SiloUtil.findPositionInArray("exposure_normalised_ndvi", header);
 
+            /*
+            int posInjCar = SiloUtil.findPositionInArray("severeFatalInjuryCar", header);
+            int posInjBike = SiloUtil.findPositionInArray("severeFatalInjuryBike", header);
+            int posInjWalk = SiloUtil.findPositionInArray("severeFatalInjuryWalk", header);
+             */
 
             // read line
             while ((recString = in.readLine()) != null) {
@@ -51,6 +56,14 @@ public class HealthExposuresReader {
                     pp.updateWeeklyMarginalMetHours(Mode.walk, Float.parseFloat(lineElements[posMmetWalk]));
                     pp.updateWeeklyMarginalMetHours(Mode.bicycle, Float.parseFloat(lineElements[posMmetCycle]));
                     pp.setWeeklyMarginalMetHoursSport(Float.parseFloat(lineElements[posMmetSport]));
+
+                    /*
+                    Map<String, Float> injuryMap = new HashMap<>();
+                    injuryMap.put("severeFatalInjuryCar", Float.parseFloat(lineElements[posInjCar]));
+                    injuryMap.put("severeFatalInjuryBike", Float.parseFloat(lineElements[posInjBike]));
+                    injuryMap.put("severeFatalInjuryWalk", Float.parseFloat(lineElements[posInjWalk]));
+                    pp.updateWeeklyAccidentRisks(injuryMap);
+                     */
 
                     Map<String, Float> exposureMap = new HashMap<>();
                     exposureMap.put("pm2.5", Float.parseFloat(lineElements[posPM2_5]));
