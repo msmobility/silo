@@ -788,9 +788,30 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         siloPerson.updateWeeklyTravelActivityHourOccupied(hourOccupied);
     }
 
+    /**
+     * Retrieves the relative risk of casualty for a given gender, age, and transportation mode.
+     *
+     * @param gender The gender of the individual
+     * @param age The age of the individual (will be clamped to 0-100)
+     * @param mode The trip mode
+     * @return The relative risk as a double value
+     * @throws IllegalArgumentException if gender or mode is null
+     */
+
     double getCasualtyRR_byAge_Gender(Gender gender, int age, Mode mode) {
+        // Parameter validation
+        if (gender == null || mode == null) {
+            throw new IllegalArgumentException("Gender and mode cannot be null");
+        }
+
+        final int MIN_AGE = 0;
+        final int MAX_AGE = 100;
+
+        // Clamp age value
+        age = Math.max(MIN_AGE, Math.min(age, MAX_AGE));
+
+        // Determine mode string
         String modeStr;
-        //
         switch (mode) {
             case autoDriver:
             case autoPassenger:
@@ -804,14 +825,20 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 break;
             default:
                 logger.warn("Impossible to compute injury relative risk for mode " + mode);
-                return 1.;
-                //throw new RuntimeException("Undefined mode " + mode);
+                return 1.0; // Consider if this is the appropriate default
         }
 
-        if(age< 0) age = 0;
-        if(age>100) age = 100;
-
-        return ((HealthDataContainerImpl) dataContainer).getHealthInjuryRRdata().get(modeStr).get(gender).get(age);
+        // Safely retrieve the value
+        try {
+            return ((HealthDataContainerImpl) dataContainer)
+                    .getHealthInjuryRRdata()
+                    .get(modeStr)
+                    .get(gender)
+                    .get(age);
+        } catch (NullPointerException e) {
+            logger.error("Missing data for mode: " + modeStr + ", gender: " + gender + ", age: " + age, e);
+            return 1.0; // Or consider throwing an exception
+        }
     }
 
     private void calculateActivityExposures(Trip trip) {
