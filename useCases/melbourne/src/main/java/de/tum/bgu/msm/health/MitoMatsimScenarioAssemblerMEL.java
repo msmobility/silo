@@ -103,7 +103,7 @@ public class MitoMatsimScenarioAssemblerMEL implements MatsimScenarioAssembler {
         DataSet dataSet = convertData(year);
 
         logger.info("  SILO data being sent to MITO");
-        MitoModelMCR mito = MitoModelMCR.initializeModelFromSilo(propertiesPath, dataSet, properties.main.scenarioName);
+        MitoModelMEL mito = MitoModelMEL.initializeModelFromSilo(propertiesPath, dataSet, properties.main.scenarioName);
         mito.setRandomNumberGenerator(SiloUtil.getRandomObject());
         mito.run();
     }

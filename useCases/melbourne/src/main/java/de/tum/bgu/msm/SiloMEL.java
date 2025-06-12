@@ -29,6 +29,7 @@ public class SiloMEL {
         if (args.length > 1 && args[1] != null) {
             config = ConfigUtils.loadConfig(args[1]);
         }
+        assert config != null;
         logger.info("Started SILO land use model for the Great Melbourne");
         HealthDataContainerImpl dataContainer = DataBuilderHealth.getModelDataForMelbourne(properties, config);
         DataBuilderHealth.read(properties, dataContainer, config);

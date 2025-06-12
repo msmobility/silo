@@ -20,6 +20,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.Objects;
 
 /**
  * Implements SILO for the Great Melbourne
@@ -63,7 +64,7 @@ public class SiloMELAWS {
         //TODO: now we copy scenOutput to S3 via terminal, later can improve it by adapting the code to implement Multipart upload
         //uploadToS3(outputDir, bucketName, folderName, region);
         // Stop the EC2 instance
-        stopEC2Instance(region, instanceId);
+        stopEC2Instance();
     }
 
     public static void uploadToS3(String outputDir, String bucketName, String folderName, String region) {
@@ -79,7 +80,7 @@ public class SiloMELAWS {
 
 
     private static void uploadDirectoryRecursively(File folder, String bucketName, String folderName, S3Client s3Client) {
-        for (File file : folder.listFiles()) {
+        for (File file : Objects.requireNonNull(folder.listFiles())) {
             if (file.isFile()) {
                 // Generate the full key for the file in S3 (include subfolder structure)
                 String keyName = folderName + (folderName.endsWith("/") ? "" : "/") + file.getPath()
@@ -98,20 +99,16 @@ public class SiloMELAWS {
         }
     }
 
-    private static void stopEC2Instance(String region, String instanceId) {
+    private static void stopEC2Instance() {
         Ec2Client ec2Client = Ec2Client.builder()
-                .region(Region.of(region))
+                .region(Region.of(SiloMELAWS.region))
                 .credentialsProvider(InstanceProfileCredentialsProvider.create())
                 .build();
-        if (instanceId == null) {
-            System.err.println("Unable to retrieve instance ID.");
-            return;
-        }
         StopInstancesRequest stopRequest = StopInstancesRequest.builder()
-                .instanceIds(instanceId)
+                .instanceIds(SiloMELAWS.instanceId)
                 .build();
         StopInstancesResponse response = ec2Client.stopInstances(stopRequest);
-        System.out.println("Stopping instance: " + instanceId);
+        System.out.println("Stopping instance: " + SiloMELAWS.instanceId);
         System.out.println("State: " + response.stoppingInstances());
         ec2Client.close();
     }

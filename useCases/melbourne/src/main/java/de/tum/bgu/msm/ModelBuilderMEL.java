@@ -30,7 +30,7 @@ public class ModelBuilderMEL {
         HouseholdFactory hhFactory = dataContainer.getHouseholdDataManager().getHouseholdFactory();
         DwellingFactory ddFactory = dataContainer.getRealEstateDataManager().getDwellingFactory();
 
-        //final BirthModelImpl birthModel = new BirthModelImpl(dataContainer, ppFactory, properties, new BirthStrategyMCR(), SiloUtil.provideNewRandom());
+        //final BirthModelImpl birthModel = new BirthModelImpl(dataContainer, ppFactory, properties, new BirthStrategyMEL(), SiloUtil.provideNewRandom());
 
         BirthdayModel birthdayModel = new BirthdayModelImpl(dataContainer, properties, SiloUtil.provideNewRandom());
 
@@ -45,7 +45,7 @@ public class ModelBuilderMEL {
 //                        new RegionUtilityStrategyImpl(), new RegionProbabilityStrategyImpl())
 //                , SiloUtil.provideNewRandom());
 //
-//        CreateCarOwnershipModel carOwnershipModel = new CreateCarOwnershipMCR(dataContainer, new CreateCarOwnershipStrategyMCR());
+//        CreateCarOwnershipModel carOwnershipModel = new CreateCarOwnershipMEL(dataContainer, new CreateCarOwnershipStrategyMEL());
 //
 //        DivorceModel divorceModel = new DivorceModelImpl(
 //                dataContainer, movesModel, carOwnershipModel, hhFactory,
@@ -63,13 +63,13 @@ public class ModelBuilderMEL {
 //        JobMarketUpdate jobMarketUpdateModel = new JobMarketUpdateImpl(dataContainer, properties, SiloUtil.provideNewRandom());
 //
 //        ConstructionModel construction = new ConstructionModelImpl(dataContainer, ddFactory,
-//                properties, new ConstructionLocationStrategyMCR(), new ConstructionDemandStrategyMCR(), SiloUtil.provideNewRandom());
+//                properties, new ConstructionLocationStrategyMEL(), new ConstructionDemandStrategyMEL(), SiloUtil.provideNewRandom());
 //
 //        PricingModel pricing = new PricingModelImpl(dataContainer, properties, new DefaultPricingStrategy(), SiloUtil.provideNewRandom());
 //
 //        RenovationModel renovation = new RenovationModelImpl(dataContainer, properties, new DefaultRenovationStrategy(), SiloUtil.provideNewRandom());
 //
-//        ConstructionOverwrite constructionOverwrite = new ConstructionOverwriteMCRImpl(dataContainer, ddFactory, properties, SiloUtil.provideNewRandom());
+//        ConstructionOverwrite constructionOverwrite = new ConstructionOverwriteMELImpl(dataContainer, ddFactory, properties, SiloUtil.provideNewRandom());
 //
 //        InOutMigration inOutMigration = new InOutMigrationImpl(dataContainer, employmentModel, movesModel,
 //                carOwnershipModel, driversLicenseModel, properties, SiloUtil.provideNewRandom());
