@@ -67,9 +67,9 @@ public class RunExposureHealthOffline {
         // todo: aggregate link-level risks up to the person level
 
         accidentModel.endYear(2021);
-        exposureModelMCR.setup(); // to read-in the base exposure file for testing purposes
-        exposureModelMCR.endYear(2021);
-        dataContainer.endSimulation();
+        //exposureModelMCR.setup(); // to read-in the base exposure file for testing purposes
+        //exposureModelMCR.endYear(2021);
+        //dataContainer.endSimulation();
 
         //diseaseModelMCR.setup();
         //diseaseModelMCR.endYear(2021);

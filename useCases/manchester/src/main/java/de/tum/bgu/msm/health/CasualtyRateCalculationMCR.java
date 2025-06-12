@@ -43,7 +43,7 @@ public class CasualtyRateCalculationMCR {
         this.timeOfDayCoef = null;
         this.scenario = scenario;
         this.calibrationFactor = calibrationFactor;
-        this.nbCasualties_with_nonZeroFlows = 0;
+        // this.nbCasualties_with_nonZeroFlows = 0;
     }
 
     /*
