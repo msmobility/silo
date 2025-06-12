@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.health;
 
 import cern.colt.map.tfloat.OpenIntFloatHashMap;
+import de.tum.bgu.msm.health.data.LinkInfo;
 import de.tum.bgu.msm.health.injury.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,6 +27,7 @@ public class CasualtyRateCalculationMCR {
     private AccidentSeverity accidentSeverity;
     private Scenario scenario;
     private double calibrationFactor;
+    private int nbCasualties_with_nonZeroFlows;
 
     // todo: testing
     //private Map<Id<Link>, EnumMap<AccidentType, OpenIntFloatHashMap>> severeFatalCasualityRiskByLinkByAccidentTypeByTime = new HashMap<>();
@@ -41,21 +43,126 @@ public class CasualtyRateCalculationMCR {
         this.timeOfDayCoef = null;
         this.scenario = scenario;
         this.calibrationFactor = calibrationFactor;
+        this.nbCasualties_with_nonZeroFlows = 0;
     }
 
+    /*
     protected void run(Collection<? extends Link> links, Random random) {
+        //
         for (Link link : links) {
+            //
             computeLinkCasualtyFrequency(link, random);
         }
+    }
+     */
 
+    protected void run(Collection<? extends Link> links, Random random) {
+        // First pass: Compute initial casualties and count AA (casualties in zero-flow links)
+        int AA = 0;
+
+        for (Link link : links) {
+            computeLinkCasualtyFrequency(link, random);
+
+            // Count casualties in zero-flow links
+            AccidentLinkInfo linkInfo = accidentsContext.getLinkId2info().get(link.getId());
+            if (linkInfo != null) {
+                OpenIntFloatHashMap casualtyMap = linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime()
+                        .get(accidentType);
+
+                if (casualtyMap != null) {
+                    for (int hour = 0; hour < 24; hour++) {
+                        if (casualtyMap.get(hour) == 1 &&
+                                analzyer.getDemand(link.getId(), getMode(accidentType), hour) == 0) {
+                            AA++;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Second pass: Resample on links with flows but no casualties until we reach AA count
+        if (AA > 0) {
+            int resampledCasualties = 0;
+            List<Link> candidateLinks = new ArrayList<>();
+
+            // Identify candidate links (with flows but no casualties)
+            for (Link link : links) {
+                boolean hasFlows = false;
+                boolean hasCasualties = false;
+
+                for (int hour = 0; hour < 24; hour++) {
+                    if (analzyer.getDemand(link.getId(), getMode(accidentType), hour) > 0) {
+                        hasFlows = true;
+                    }
+
+                    AccidentLinkInfo info = accidentsContext.getLinkId2info().get(link.getId());
+                    if (info != null) {
+                        OpenIntFloatHashMap map = info.getSevereFatalCasualityExposureByAccidentTypeByTime()
+                                .get(accidentType);
+                        if (map != null && map.get(hour) == 1) {
+                            hasCasualties = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (hasFlows && !hasCasualties) {
+                    candidateLinks.add(link);
+                }
+            }
+
+            // Shuffle to randomize sampling order
+            Collections.shuffle(candidateLinks, new Random(random.nextLong()));
+
+            // Resample on candidate links
+            for (Link link : candidateLinks) {
+                if (resampledCasualties >= AA) break;
+
+                OpenIntFloatHashMap newCasualtyRate = new OpenIntFloatHashMap();
+                for (int hour = 0; hour < 24; hour++) {
+                    if (analzyer.getDemand(link.getId(), getMode(accidentType), hour) > 0) {
+                        double prob = calculateProbability(link, hour);
+                        prob = 1 - Math.pow(1 - prob, 1.0/5);
+
+                        if (random.nextDouble() < (prob/calibrationFactor)) {
+                            newCasualtyRate.put(hour, 1f);
+                            resampledCasualties++;
+
+                            if (resampledCasualties >= AA) break;
+                        } else {
+                            newCasualtyRate.put(hour, 0f);
+                        }
+                    }
+                }
+
+                // Update the link if we added any casualties
+                if (newCasualtyRate.size() > 0) {
+                    accidentsContext.getLinkId2info().get(link.getId())
+                            .getSevereFatalCasualityExposureByAccidentTypeByTime()
+                            .put(accidentType, newCasualtyRate);
+                }
+            }
+        }
+    }
+
+    private String getMode(AccidentType accidentType){
+        String mode;
+        if (accidentType.toString().startsWith("BIKE_")) {
+            mode = "bike";
+        }
+        else if (accidentType.toString().startsWith("CAR_")) {
+            mode = "car";
+        }
+        else {
+            mode = "walk"; // default case
+        }
+        return mode;
     }
 
     private void computeLinkCasualtyFrequency(Link link, Random random) {
+
         double probZeroCrash = 0;
         int val = 0;
-        //Random random = new Random();
-        //double meanCrash = getMeanCrashPoisson(link);
-        //double finalCrashRate = meanCrash*(1-probZeroCrash);
 
         OpenIntFloatHashMap casualtyRateByTimeOfDay = new OpenIntFloatHashMap();
         for (int hour = 0; hour < 24; hour++) {
