@@ -66,7 +66,7 @@ public class DataBuilderHealth {
         //TODO: revise this!
         new JobType(properties.jobData.jobTypes);
 
-        //TODO: MCR
+        //TODO: MEL
         //JobFactoryMuc jobFactory = new JobFactoryMuc();
         //jobFactory.readWorkingTimeDistributions(properties);
 

@@ -45,7 +45,7 @@ public class GeoDataReaderMelbourne implements GeoDataReader {
         double[] popCentroid_x = zonalData.getColumnAsDouble("popCentroid_x");
         double[] popCentroid_y = zonalData.getColumnAsDouble("popCentroid_y");
         String[] lsoaCode = zonalData.getColumnAsString("lsoa21cd");
-        int[] imd10 = zonalData.getColumnAsInt("imd10");
+        int[] imd10 = zonalData.    getColumnAsInt("imd10");
 
         //TODO: check where region is used. then to define it should be msoa, lad or losa
         int[] regionColumn = zonalData.getColumnAsInt("msoaID");

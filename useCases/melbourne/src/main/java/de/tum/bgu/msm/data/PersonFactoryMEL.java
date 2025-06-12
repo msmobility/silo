@@ -5,25 +5,25 @@ import de.tum.bgu.msm.data.person.*;
 public class PersonFactoryMEL implements PersonFactory {
 
     @Override
-    public PersonMCR createPerson(int id, int age,
+    public PersonMEL createPerson(int id, int age,
                                   Gender gender, Occupation occupation,
                                   PersonRole role, int workplace,
                                   int income) {
-        return new PersonMCR(id, age, gender,
+        return new PersonMEL(id, age, gender,
                 occupation, role, workplace,
                 income);
     }
 
     @Override
     public Person giveBirth(Person parent, int id, Gender gender) {
-        PersonMCR pp = new PersonMCR(id, 0, gender, Occupation.TODDLER, PersonRole.CHILD, 0, 0);
+        PersonMEL pp = new PersonMEL(id, 0, gender, Occupation.TODDLER, PersonRole.CHILD, 0, 0);
         return pp;
     }
 
     //TODO duplicate as well school attributes
     @Override
-    public PersonMCR duplicate(Person originalPerson, int id) {
-        PersonMCR duplicate = new PersonMCR(id,
+    public PersonMEL duplicate(Person originalPerson, int id) {
+        PersonMEL duplicate = new PersonMEL(id,
                 originalPerson.getAge(),
                 originalPerson.getGender(),
                 originalPerson.getOccupation(),
@@ -31,7 +31,7 @@ public class PersonFactoryMEL implements PersonFactory {
                 -1,
                 originalPerson.getAnnualIncome());
         duplicate.setDriverLicense(originalPerson.hasDriverLicense());
-        duplicate.setSchoolId(((PersonMCR) originalPerson).getSchoolId());
+        duplicate.setSchoolId(((PersonMEL) originalPerson).getSchoolId());
         return duplicate;
     }
 }
