@@ -712,14 +712,18 @@ public class AccidentRateModelMCR {
                 break;
             case CAR_ONEWAY:
                 for(Link link : links.values()){
-                    if(!isTwoWayRoad(link, TransportMode.car)){
+                    String roadType= getStringAttribute(link.getAttributes(), "type", "residential");
+
+                    if(!isTwoWayRoad(link, TransportMode.car) && !(roadType.equals("motorway") || roadType.equals("motorway_link"))){
                         placeholderMap.put(link.getId(), link);
                     }
                 }
                 break;
             case CAR_TWOWAY:
                 for(Link link : links.values()){
-                    if(isTwoWayRoad(link, TransportMode.car) || link.getAttributes().getAttribute("type").toString().equals("motorway")){
+                    String roadType= getStringAttribute(link.getAttributes(), "type", "residential");
+
+                    if(isTwoWayRoad(link, TransportMode.car) || (roadType.equals("motorway") || roadType.equals("motorway_link"))) {
                         placeholderMap.put(link.getId(), link);
                     }
                 }
@@ -1558,4 +1562,5 @@ public class AccidentRateModelMCR {
         }
         return defaultValue;
     }
+
 }
