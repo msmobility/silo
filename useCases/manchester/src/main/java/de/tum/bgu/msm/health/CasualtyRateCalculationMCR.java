@@ -173,7 +173,7 @@ public class CasualtyRateCalculationMCR {
 
         for (int hour = 0; hour < 24; hour++) {
             if(analzyer.getDemand(link.getId(), getMode(accidentType), hour) > 0 && casualtyRateByTimeOfDay.get(hour) == 0) {
-                probZeroCrash = calculateUtility2(link, hour);
+                probZeroCrash = calculateUtility(link, hour);
                 probZeroCrash = 1 - Math.pow(1 - probZeroCrash, 1.0/5); // 1300-260
 
                 // sample
