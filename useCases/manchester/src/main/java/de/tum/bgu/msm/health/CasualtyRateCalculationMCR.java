@@ -48,16 +48,15 @@ public class CasualtyRateCalculationMCR {
         this.current_Casualties = 0;
     }
 
+    /*
     protected void run(Collection<? extends Link> links, Random random) {
         //
         for (Link link : links) {
             //
             computeLinkCasualtyFrequency(link, random);
         }
-    }
+    }*/
 
-
-    /*
     protected void run(Collection<? extends Link> links, Random random) {
 
         //
@@ -102,8 +101,6 @@ public class CasualtyRateCalculationMCR {
         tot_Casualties=0;
         current_Casualties=0;
     }
-
-     */
 
     private String getMode(AccidentType accidentType){
         String mode;
