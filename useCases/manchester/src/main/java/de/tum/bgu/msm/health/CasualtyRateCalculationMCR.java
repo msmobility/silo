@@ -164,6 +164,14 @@ public class CasualtyRateCalculationMCR {
             else{
                 expectedCasualties[1] += probZeroCrash;
             }
+
+            //
+            boolean hasNaN = Arrays.stream(expectedCasualties)
+                    .anyMatch(Double::isNaN);
+
+            if(hasNaN){
+                System.out.println("Array contains NaN: " + getStringAttribute(link.getAttributes(), "type", "NOO")); // false
+            }
         }
 
         /*
