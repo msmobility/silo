@@ -172,11 +172,11 @@ public class CasualtyRateCalculationMCR {
             if(hasNaN){
                 System.out.println("Array contains NaN: " + getStringAttribute(link.getAttributes(), "type", "NOO") + " / "
                         + analzyer.getDemand(link.getId(), "car", hour) + analzyer.getDemand(link.getId(), "truck", hour)); // false
-
+                printLinkInfo(link);
             }
 
         }
-        printLinkInfo(link);
+
 
         /*
         String roadType = link.getAttributes().getAttribute("type").toString();
