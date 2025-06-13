@@ -76,6 +76,8 @@ public class CasualtyRateCalculationMCR {
             temp[0] = 0.0;
             temp[1] = 0.0;
         }
+        log.warn("Mode: " + accidentType.toString() + " | " + "nb of casualties in links with 0 flows: " + expectedCasualties[0] + ", " + expectedCasualties[1]);
+
 
         //
         int counter = 0;
@@ -154,6 +156,8 @@ public class CasualtyRateCalculationMCR {
         for (int hour = 0; hour < 24; hour++) {
             probZeroCrash = calculateProbability(link, hour);
             probZeroCrash = 1 - Math.pow(1 - probZeroCrash, 1.0/5); // 1300-260
+            probZeroCrash = probZeroCrash/calibrationFactor;
+
             if(analzyer.getDemand(link.getId(), getMode(accidentType), hour) == 0) {
                 expectedCasualties[0] += probZeroCrash;
             }
@@ -177,7 +181,7 @@ public class CasualtyRateCalculationMCR {
                 probZeroCrash = 1 - Math.pow(1 - probZeroCrash, 1.0/5); // 1300-260
 
                 // sample
-                if(random.nextDouble() < probZeroCrash){
+                if(random.nextDouble() < (probZeroCrash/calibrationFactor)){
                     val = 1;
                     current_Casualties++;
                 }
