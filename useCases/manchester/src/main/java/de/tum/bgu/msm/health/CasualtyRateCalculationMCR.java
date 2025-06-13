@@ -294,10 +294,25 @@ public class CasualtyRateCalculationMCR {
 
         // Handle continuous variables without transformation
 
+        /*
         utility += binaryLogitCoef.get("bikeStress") * LinkStress.getStress(link, "bike");
         utility += binaryLogitCoef.get("bikeStressJct") * JctStress.getStress(link, "bike");
         utility += binaryLogitCoef.get("walkStressJct") * JctStress.getStress(link, "walk");
+         */
 
+        // Bike stress (Link)
+        double bikeStress = LinkStress.getStress(link, "bike");
+        utility += Double.isNaN(bikeStress) ? 0 : binaryLogitCoef.get("bikeStress") * bikeStress;
+
+        // Bike stress at junction (Jct)
+        double bikeStressJct = JctStress.getStress(link, "bike");
+        utility += Double.isNaN(bikeStressJct) ? 0 : binaryLogitCoef.get("bikeStressJct") * bikeStressJct;
+
+        // Walk stress at junction (Jct)
+        double walkStressJct = JctStress.getStress(link, "walk");
+        utility += Double.isNaN(walkStressJct) ? 0 : binaryLogitCoef.get("walkStressJct") * walkStressJct;
+
+        //
         utility += binaryLogitCoef.get("width") * getDoubleAttribute(attributes, "width", 0.0);
 
         // Handle categorical variables (speed limit)
