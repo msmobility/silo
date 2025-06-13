@@ -48,7 +48,6 @@ public class CasualtyRateCalculationMCR {
         this.current_Casualties = 0;
     }
 
-    /*
     protected void run(Collection<? extends Link> links, Random random) {
         //
         for (Link link : links) {
@@ -56,8 +55,9 @@ public class CasualtyRateCalculationMCR {
             computeLinkCasualtyFrequency(link, random);
         }
     }
-     */
 
+
+    /*
     protected void run(Collection<? extends Link> links, Random random) {
 
         //
@@ -102,6 +102,8 @@ public class CasualtyRateCalculationMCR {
         tot_Casualties=0;
         current_Casualties=0;
     }
+
+     */
 
     private String getMode(AccidentType accidentType){
         String mode;
@@ -166,6 +168,7 @@ public class CasualtyRateCalculationMCR {
             }
 
             //
+             /*
             boolean hasNaN = Arrays.stream(expectedCasualties)
                     .anyMatch(Double::isNaN);
 
@@ -174,6 +177,8 @@ public class CasualtyRateCalculationMCR {
                         + analzyer.getDemand(link.getId(), "car", hour) + analzyer.getDemand(link.getId(), "truck", hour)); // false
                 printLinkInfo(link);
             }
+
+              */
 
         }
 

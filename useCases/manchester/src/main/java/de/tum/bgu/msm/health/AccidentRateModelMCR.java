@@ -500,17 +500,17 @@ public class AccidentRateModelMCR {
         double calibrationFactor=1.;
         switch (day){
             case Day.thursday:
-                calibrationFactor=1.31;
+                calibrationFactor=1.0; //1.31;
                 break;
             case Day.saturday:
-                calibrationFactor=4.26;
+                calibrationFactor=1.0; //4.26;
                 break;
             case Day.sunday:
-                calibrationFactor=3.48;
+                calibrationFactor=1.0; //3.48;
                 break;
             default:
                 // no calibration
-                calibrationFactor=1.;
+                calibrationFactor=1.0;
         }
 
         log.info("Link casualty frequency calculation (by type by time of day) start.");
