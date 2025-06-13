@@ -719,7 +719,7 @@ public class AccidentRateModelMCR {
                 break;
             case CAR_TWOWAY:
                 for(Link link : links.values()){
-                    if(isTwoWayRoad(link, TransportMode.car)){
+                    if(isTwoWayRoad(link, TransportMode.car) || link.getAttributes().getAttribute("type").toString().equals("motorway")){
                         placeholderMap.put(link.getId(), link);
                     }
                 }

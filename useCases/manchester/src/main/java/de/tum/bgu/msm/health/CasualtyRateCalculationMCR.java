@@ -62,7 +62,7 @@ public class CasualtyRateCalculationMCR {
 
         //
         double[] expectedCasualties = {0.0, 0.0};
-        double[] temp = {0.0, 0.0};
+        double[] temp;
 
         // Compute expected number of casualties in links with zero traffic flows
         for (Link link : links) {
@@ -165,6 +165,14 @@ public class CasualtyRateCalculationMCR {
                 expectedCasualties[1] += probZeroCrash;
             }
         }
+
+        /*
+        String roadType = link.getAttributes().getAttribute("type").toString();
+        if (roadType.equals("motorway") || roadType.equals("motorway_link")) {
+            printLinkInfo(link);
+        }
+
+         */
         return expectedCasualties;
     }
 
@@ -194,6 +202,44 @@ public class CasualtyRateCalculationMCR {
 
         // update map
         this.accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().put(accidentType, casualtyRateByTimeOfDay);
+    }
+
+    private void printLinkInfo(Link link) {
+        Attributes attributes = link.getAttributes();
+
+        System.out.println("===== Link Information =====");
+        System.out.println("Link ID: " + link.getId());
+        System.out.println("Length: " + link.getLength());
+
+        // Print all attributes
+        System.out.println("\nAttributes:");
+        for (Map.Entry<String, Object> entry : attributes.getAsMap().entrySet()) {
+            System.out.println(entry.getKey() + ": " + entry.getValue());
+        }
+
+        // Print volumes
+        System.out.println("\nVolumes for hour :");
+        System.out.println("Truck: " + analzyer.getDemand(link.getId(), "truck") * SCALEFACTOR);
+        System.out.println("Pedestrian: " + analzyer.getDemand(link.getId(), "walk"));
+        System.out.println("Car: " + analzyer.getDemand(link.getId(), "car") * SCALEFACTOR);
+        System.out.println("Bike: " + analzyer.getDemand(link.getId(), "bike"));
+        System.out.println("Motor (car + truck): " + (analzyer.getDemand(link.getId(), "car") +
+                analzyer.getDemand(link.getId(), "truck")) * SCALEFACTOR);
+
+        // Print derived values
+        System.out.println("\nDerived Values:");
+        System.out.println("Bike Stress: " + LinkStress.getStress(link, "bike"));
+        System.out.println("Bike Junction Stress: " + JctStress.getStress(link, "bike"));
+        System.out.println("Walk Junction Stress: " + JctStress.getStress(link, "walk"));
+        System.out.println("Width: " + getDoubleAttribute(attributes, "width", 0.0));
+
+        // Print road type info
+        String roadType = getStringAttribute(attributes, "type", "residential");
+        System.out.println("\nRoad Type: " + roadType);
+        System.out.println("Is motorway? " +
+                (roadType.equals("motorway") || roadType.equals("motorway_link")));
+
+        System.out.println("============================\n");
     }
 
     private double calculateUtility(Link link, int hour) {
