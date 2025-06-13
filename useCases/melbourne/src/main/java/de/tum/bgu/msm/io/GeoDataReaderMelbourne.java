@@ -21,18 +21,25 @@ import org.geotools.api.feature.simple.SimpleFeature;
 import org.locationtech.jts.geom.Coordinate;
 import org.matsim.core.utils.gis.ShapeFileReader;
 
+import static de.tum.bgu.msm.util.MelbourneImplementationConfig.getMelbourneProperties;
+
+
 public class GeoDataReaderMelbourne implements GeoDataReader {
 
     private static Logger logger = LogManager.getLogger(GeoDataReaderMelbourne.class);
 
-    private GeoData geoDataMcr;
+    static java.util.Properties properties = getMelbourneProperties();
+
+    private GeoData geoDataMEL;
     private DataContainer dataContainer;
 
-    private final String SHAPE_IDENTIFIER = "id";
-    private final String ZONE_ID_COLUMN = "oaID";
+    private final String SHAPE_IDENTIFIER = properties.getProperty("zone.id.field");
+    private final String ZONE_ID_COLUMN = properties.getProperty("zone.id.field");
+    private final String CATCHMENT_ID_COLUMN = properties.getProperty("catchment.id.field");
+    private final String SOCIOECONOMIC_DISADVANTAGE_DECILES_COLUMN = properties.getProperty("socioeconomic.disadvantage.deciles.field");
 
     public GeoDataReaderMelbourne(DataContainer dataContainer) {
-        this.geoDataMcr = dataContainer.getGeoData();
+        this.geoDataMEL = dataContainer.getGeoData();
         this.dataContainer = dataContainer;
     }
 
@@ -44,27 +51,26 @@ public class GeoDataReaderMelbourne implements GeoDataReader {
         int[] areaTypes = zonalData.getColumnAsInt("urbanType");
         double[] popCentroid_x = zonalData.getColumnAsDouble("popCentroid_x");
         double[] popCentroid_y = zonalData.getColumnAsDouble("popCentroid_y");
-        String[] lsoaCode = zonalData.getColumnAsString("lsoa21cd");
-        int[] imd10 = zonalData.    getColumnAsInt("imd10");
+        String[] catchmentCode = zonalData.getColumnAsString(CATCHMENT_ID_COLUMN);
+        int[] socioEconomicDisadvantageDeciles = zonalData.    getColumnAsInt(SOCIOECONOMIC_DISADVANTAGE_DECILES_COLUMN);
 
-        //TODO: check where region is used. then to define it should be msoa, lad or losa
-        int[] regionColumn = zonalData.getColumnAsInt("msoaID");
+        int[] regionColumn = zonalData.getColumnAsInt(CATCHMENT_ID_COLUMN);
 
         for (int i = 0; i < zoneIds.length; i++) {
             AreaTypes.RType type = areaTypes[i]==1? AreaTypes.RType.URBAN: AreaTypes.RType.RURAL;
             Region region;
             int regionId = regionColumn[i];
-            if (geoDataMcr.getRegions().containsKey(regionId)) {
-                region = geoDataMcr.getRegions().get(regionId);
+            if (geoDataMEL.getRegions().containsKey(regionId)) {
+                region = geoDataMEL.getRegions().get(regionId);
             } else {
                 region = new RegionImpl(regionId);
-                geoDataMcr.addRegion(region);
+                geoDataMEL.addRegion(region);
             }
             ZoneMEL zone = new ZoneMEL(zoneIds[i], 0, type,new Coordinate(popCentroid_x[i], popCentroid_y[i], 0.),region);
             region.addZone(zone);
-            zone.setLsoaCode(lsoaCode[i]);
-            zone.setImd10(imd10[i]);
-            geoDataMcr.addZone(zone);
+            zone.setCatchmentCode(catchmentCode[i]);
+            zone.setSocioEconomicDisadvantageDeciles(socioEconomicDisadvantageDeciles[i]);
+            geoDataMEL.addZone(zone);
             ActivityLocation activityLocation = new ActivityLocation(("zone"+zone.getZoneId()),zone.getPopCentroidCoord());
             ((DataContainerHealth) dataContainer).getActivityLocations().put(("zone"+zone.getZoneId()),activityLocation);
         }
@@ -79,7 +85,7 @@ public class GeoDataReaderMelbourne implements GeoDataReader {
         int counter = 0;
         for (SimpleFeature feature : ShapeFileReader.getAllFeatures(path)) {
             int zoneId = Integer.parseInt(feature.getAttribute(SHAPE_IDENTIFIER).toString());
-            Zone zone = geoDataMcr.getZones().get(zoneId);
+            Zone zone = geoDataMEL.getZones().get(zoneId);
             if (zone != null) {
                 zone.setZoneFeature(feature);
             } else {

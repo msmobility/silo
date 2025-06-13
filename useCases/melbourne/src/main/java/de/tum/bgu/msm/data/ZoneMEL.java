@@ -29,7 +29,7 @@ public class ZoneMEL extends ZoneImpl {
         return lsoaCode;
     }
 
-    public void setLsoaCode(String lsoaCode) {
+    public void setCatchmentCode(String lsoaCode) {
         this.lsoaCode = lsoaCode;
     }
 
@@ -37,7 +37,7 @@ public class ZoneMEL extends ZoneImpl {
         return imd10;
     }
 
-    public void setImd10(int imd10) {
+    public void setSocioEconomicDisadvantageDeciles(int imd10) {
         this.imd10 = imd10;
     }
 }
