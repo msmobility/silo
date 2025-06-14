@@ -715,8 +715,8 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 Gender genderPerson = dataContainer.getHouseholdDataManager().getPersonFromId(trip.getPerson()).getGender();
 
                 double AgeGenderRR = 1.;
-                AgeGenderRR = getCasualtyRR_byAge_Gender(genderPerson, agePerson, trip.getTripMode());
-                pathInjuryRisk *= (1 - linkInjuryRisk * AgeGenderRR); // todo: add age/gender interactions
+                //AgeGenderRR = getCasualtyRR_byAge_Gender(genderPerson, agePerson, trip.getTripMode());
+                pathInjuryRisk *= (1 - linkInjuryRisk * AgeGenderRR);
             }
 
             pathMarginalMetHours += linkMarginalMetHour;
