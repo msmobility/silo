@@ -63,9 +63,9 @@ public class AccidentRateModelMCR {
     //
     public static final Set<String> MAJOR = Set.of(
             "primary", "primary_link", "secondary", "secondary_link",
-            "tertiary", "tertiary_link", "trunk", "trunk_link",
-            "motorway", "motorway_link", "bus_guideway", "cycleway"
+            "tertiary", "tertiary_link", "trunk", "trunk_link", "bus_guideway", "cycleway"
     );
+    //            "motorway", "motorway_link"
 
     public static final Set<String> MINOR = Set.of(
             "unclassified", "residential", "living_street", "service",
@@ -909,6 +909,7 @@ public class AccidentRateModelMCR {
                 String mode = personInfo.getLinkId2time2mode().get(linkId).get(hour);
                 if(allowedModes.contains(mode)){
                     double currentRisk = calculateRiskForMode(linkInfo, mode, hour);
+                    // personInfo.getPersonId();
                     // injuryRiskByMode.merge(mode, risk, Double::sum);
                     injuryRiskByMode.merge(mode, currentRisk, (oldValue, risk) -> oldValue * (1-risk));
                 }
