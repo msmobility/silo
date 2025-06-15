@@ -747,6 +747,9 @@ public class AccidentRateModelMCR {
                 break;
 
         }
+        // Print the number of links for the current accident type
+        System.out.println("Number of links for " + accidentType + ": " + placeholderMap.size());
+
         return placeholderMap;
     }
 
