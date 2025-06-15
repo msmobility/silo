@@ -721,7 +721,7 @@ public class AccidentRateModelMCR {
                 break;
             case CAR_TWOWAY:
                 for(Link link : links.values()){
-                    String roadType= getStringAttribute(link.getAttributes(), "type", "residential");
+                    String roadType= getStringAttribute(link.getAttributes(), "type", "null");
 
                     if(isTwoWayRoad(link, TransportMode.car) || (roadType.equals("motorway") || roadType.equals("motorway_link"))) {
                         placeholderMap.put(link.getId(), link);
@@ -730,14 +730,14 @@ public class AccidentRateModelMCR {
                 break;
             case BIKE_MINOR:
                 for(Link link : links.values()){
-                    if(MINOR.contains(getStringAttribute(link.getAttributes(), "type", "residential")) && link.getAllowedModes().contains(TransportMode.bike)){
+                    if(MINOR.contains(getStringAttribute(link.getAttributes(), "type", "null")) && link.getAllowedModes().contains(TransportMode.bike)){
                         placeholderMap.put(link.getId(), link);
                     }
                 }
                 break;
             case BIKE_MAJOR:
                 for(Link link : links.values()){
-                    if(MAJOR.contains(getStringAttribute(link.getAttributes(), "type", "residential")) && link.getAllowedModes().contains(TransportMode.bike)){
+                    if(MAJOR.contains(getStringAttribute(link.getAttributes(), "type", "null")) && link.getAllowedModes().contains(TransportMode.bike)){
                         placeholderMap.put(link.getId(), link);
                     }
                 }
