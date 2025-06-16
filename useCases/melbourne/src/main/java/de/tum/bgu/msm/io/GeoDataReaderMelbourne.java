@@ -35,8 +35,11 @@ public class GeoDataReaderMelbourne implements GeoDataReader {
 
     private final String SHAPE_IDENTIFIER = properties.getProperty("zone.id.field");
     private final String ZONE_ID_COLUMN = properties.getProperty("zone.id.field");
-    private final String CATCHMENT_ID_COLUMN = properties.getProperty("catchment.id.field");
-    private final String SOCIOECONOMIC_DISADVANTAGE_DECILES_COLUMN = properties.getProperty("socioeconomic.disadvantage.deciles.field");
+    private final String ZONE_URBAN_TYPE_COLUMN = properties.getProperty("zone.urban.type.field");
+    private final String CATCHMENT_ID_COLUMN = properties.getProperty("zone.catchment.id.field");
+    private final String SOCIOECONOMIC_DISADVANTAGE_DECILES_COLUMN = properties.getProperty("zone.socioeconomic.disadvantage.deciles.field");
+    private final String POP_CENTROID_X_COLUMN = properties.getProperty("zone.pop.centroid.x.field");
+    private final String POP_CENTROID_Y_COLUMN = properties.getProperty("zone.pop.centroid.y.field");
 
     public GeoDataReaderMelbourne(DataContainer dataContainer) {
         this.geoDataMEL = dataContainer.getGeoData();
@@ -48,9 +51,9 @@ public class GeoDataReaderMelbourne implements GeoDataReader {
         TableDataSet zonalData = SiloUtil.readCSVfile(path);
         int[] zoneIds = zonalData.getColumnAsInt(ZONE_ID_COLUMN);
         //float[] zoneAreas = zonalData.getColumnAsFloat("area");
-        int[] areaTypes = zonalData.getColumnAsInt("urbanType");
-        double[] popCentroid_x = zonalData.getColumnAsDouble("popCentroid_x");
-        double[] popCentroid_y = zonalData.getColumnAsDouble("popCentroid_y");
+        int[] areaTypes = zonalData.getColumnAsInt(ZONE_URBAN_TYPE_COLUMN);
+        double[] popCentroid_x = zonalData.getColumnAsDouble(POP_CENTROID_X_COLUMN);
+        double[] popCentroid_y = zonalData.getColumnAsDouble(POP_CENTROID_Y_COLUMN);
         String[] catchmentCode = zonalData.getColumnAsString(CATCHMENT_ID_COLUMN);
         int[] socioEconomicDisadvantageDeciles = zonalData.    getColumnAsInt(SOCIOECONOMIC_DISADVANTAGE_DECILES_COLUMN);
 
