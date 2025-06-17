@@ -64,6 +64,9 @@ import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
 
+import static de.tum.bgu.msm.util.ExtractCoefficient.extractCoefficient;
+import static de.tum.bgu.msm.util.MelbourneImplementationConfig.getMitoBaseProperties;
+
 public class HealthExposureModelMEL extends AbstractModel implements ModelUpdateListener {
     private int latestMatsimYear = -1;
     private int latestMITOYear = -1;
@@ -73,6 +76,7 @@ public class HealthExposureModelMEL extends AbstractModel implements ModelUpdate
     private MutableScenario scenario;
     private List<Day> simulatedDays;
     private List<Day> weekdays = Arrays.asList(Day.monday,Day.tuesday,Day.wednesday,Day.thursday,Day.friday);
+    private static final java.util.Properties mitoProperties = getMitoBaseProperties();
 
     public HealthExposureModelMEL(DataContainer dataContainer, Properties properties, Random random, Config config) {
         super(dataContainer, properties, random);
@@ -982,39 +986,9 @@ public class HealthExposureModelMEL extends AbstractModel implements ModelUpdate
         walkAttributes.add(l -> Math.min(1.,((double) l.getAttributes().getAttribute("speedLimitMPH")) / 50.));
         walkAttributes.add(l -> JctStress.getStressProp(l,TransportMode.walk));
 
-        // Walk weights
-        Function<org.matsim.api.core.v01.population.Person,double[]> walkWeights = p -> {
-            switch ((Purpose) p.getAttributes().getAttribute("purpose")) {
-                case HBW -> {
-                    return new double[]{0.3307472, 0, 4.9887390};
-                }
-                case HBE -> {
-                    return new double[]{0, 0, 1.0037846};
-                }
-                case HBS, HBR, HBO -> {
-                    if ((int) p.getAttributes().getAttribute("age") < 15) {
-                        return new double[]{0.7789561, 0.4479527 + 2.0418898, 5.8219067};
-                    } else if ((int) p.getAttributes().getAttribute("age") >= 65) {
-                        return new double[]{0.7789561, 0.4479527 + 0.3715017, 5.8219067};
-                    } else {
-                        return new double[]{0.7789561, 0.4479527, 5.8219067};
-                    }
-                }
-                case HBA -> {
-                    return new double[]{0.6908324, 0, 0};
-                }
-                case NHBO -> {
-                    return new double[]{0, 3.4485883, 0};
-                }
-                default -> {
-                    return null;
-                }
-            }
-        };
-
         // Walk config group
         walkConfigGroup.setAttributes(walkAttributes);
-        walkConfigGroup.setWeights(walkWeights);
+        walkConfigGroup.setWeights(HealthExposureModelMEL::calculateWalkWeights);
 
     }
 
@@ -1024,37 +998,64 @@ public class HealthExposureModelMEL extends AbstractModel implements ModelUpdate
         bikeAttributes.add(l -> Math.max(Math.min(Gradient.getGradient(l),0.5),0.));
         bikeAttributes.add(l -> LinkStress.getStress(l, TransportMode.bike));
 
-        // Bike weights
-        Function<org.matsim.api.core.v01.population.Person,double[]> bikeWeights = p -> {
-            switch((Purpose) p.getAttributes().getAttribute("purpose")) {
-                case HBW -> {
-                    if(p.getAttributes().getAttribute("sex").equals(Gender.FEMALE)) {
-                        return new double[] {35.9032908,2.3084587 + 2.7762033};
-                    } else {
-                        return new double[] {35.9032908,2.3084587};
-                    }
-                }
-                case HBE -> {
-                    return new double[] {0,4.3075357};
-                }
-                case HBS, HBR, HBO -> {
-                    if((int) p.getAttributes().getAttribute("age") < 15) {
-                        return new double[] {57.0135325,1.2411983 + 6.4243251};
-                    } else {
-                        return new double[] {57.0135325,1.2411983};
-                    }
-                }
-                default -> {
-                    return null;
-                }
-            }
-        };
-
         // Bicycle config group
         bicycleConfigGroup.setAttributes(bikeAttributes);
-        bicycleConfigGroup.setWeights(bikeWeights);
+        bicycleConfigGroup.setWeights(HealthExposureModelMEL::calculateBikeWeights);
 
     }
+
+
+    public static double[] calculateActiveModeWeights(String mode, org.matsim.api.core.v01.population.Person person) {
+        double grad = 0.0;
+        double stressLink = 0.0;
+        double vgvi = 0.0;
+        double speed = 0.0;
+
+        MitoGender gender = (MitoGender) person.getAttributes().getAttribute("sex");
+        int age = (int) person.getAttributes().getAttribute("age");
+
+        for (String purposeString : mitoProperties.getProperty("trip.purposes").split(",")) {
+            Purpose purpose = Purpose.valueOf(purposeString.trim());
+            grad += extractCoefficient(purpose, mode, "grad");
+            stressLink += extractCoefficient(purpose, mode, "stressLink");
+            vgvi += extractCoefficient(purpose, mode, "vgvi");
+            speed += extractCoefficient(purpose, mode, "speed");
+
+            // Interaction terms
+            if (age >= 16 && gender.equals(MitoGender.FEMALE)) {
+                grad += extractCoefficient(purpose, mode, "grad_f");
+                stressLink += extractCoefficient(purpose, mode, "stressLink_f");
+                vgvi += extractCoefficient(purpose, mode, "vgvi_f");
+                speed += extractCoefficient(purpose, mode, "speed_f");
+            }
+
+            if (age < 16) {
+                grad += extractCoefficient(purpose, mode, "grad_c");
+                stressLink += extractCoefficient(purpose, mode, "stressLink_c");
+                vgvi += extractCoefficient(purpose, mode, "vgvi_c");
+                speed += extractCoefficient(purpose, mode, "speed_c");
+            }
+
+            // if (age >= 65) {
+            //     grad += extractCoefficient(purpose, mode, "grad_e");
+            //     stressLink += extractCoefficient(purpose, mode, "stressLink_e");
+            //     vgvi += extractCoefficient(purpose, mode, "vgvi_e");
+            //     speed += extractCoefficient(purpose, mode, "speed_e");
+            // }
+        }
+
+        // Return aggregated coefficients
+        return new double[] {grad, stressLink, vgvi, speed};
+    }
+
+    public static double[] calculateBikeWeights(org.matsim.api.core.v01.population.Person person) {
+        return calculateActiveModeWeights("bike", person);
+    }
+
+    public static double[] calculateWalkWeights(org.matsim.api.core.v01.population.Person person) {
+        return calculateActiveModeWeights("walk", person);
+    }
+
 
     private Network extractModeSpecificNetwork(Network fullNetwork, Set<String> transportModes) {
 

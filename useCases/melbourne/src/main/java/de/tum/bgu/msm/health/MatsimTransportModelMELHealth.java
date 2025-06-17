@@ -33,7 +33,6 @@ import de.tum.bgu.msm.matsim.SiloMatsimUtils;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
-import de.tum.bgu.msm.util.MelbourneImplementationConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
@@ -71,7 +70,6 @@ import routing.components.LinkStress;
 
 import java.io.File;
 import java.util.*;
-import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 
 import static de.tum.bgu.msm.util.ExtractCoefficient.extractCoefficient;
@@ -81,6 +79,7 @@ import static org.matsim.core.config.groups.ScoringConfigGroup.ModeParams;
 
 /**
  * @author qinzhang
+ * @author Carl Higgs
  */
 public final class MatsimTransportModelMELHealth implements TransportModel {
 
@@ -424,7 +423,7 @@ public final class MatsimTransportModelMELHealth implements TransportModel {
         // WALK ATTRIBUTES
         List<ToDoubleFunction<Link>> walkAttributes = new ArrayList<>();
         walkAttributes.add(l -> Math.max(0.,0.81 - LinkAmbience.getVgviFactor(l)));
-        walkAttributes.add(l -> Math.min(1.,l.getFreespeed() / 22.35));
+        walkAttributes.add(l -> Math.min(1.,((double) l.getAttributes().getAttribute("speedLimitMPH")) / 50.));
         walkAttributes.add(l -> JctStress.getStressProp(l,TransportMode.walk));
 
         // Walk config group
