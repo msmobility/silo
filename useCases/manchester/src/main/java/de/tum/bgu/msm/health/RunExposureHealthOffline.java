@@ -2,9 +2,11 @@ package de.tum.bgu.msm.health;
 
 import de.tum.bgu.msm.data.Day;
 import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.health.airPollutant.AirPollutantModel;
 import de.tum.bgu.msm.health.data.LinkInfo;
 import de.tum.bgu.msm.health.data.ActivityLocation;
+import de.tum.bgu.msm.health.data.PersonHealth;
 import de.tum.bgu.msm.health.disease.Diseases;
 import de.tum.bgu.msm.health.io.PrevalenceDataReader;
 import de.tum.bgu.msm.health.noise.NoiseModel;
@@ -66,10 +68,18 @@ public class RunExposureHealthOffline {
 
         // todo: aggregate link-level risks up to the person level
 
-        accidentModel.endYear(2021);
+        //accidentModel.endYear(2021);
         exposureModelMCR.setup(); // to read-in the base exposure file for testing purposes
-        exposureModelMCR.endYear(2021);
-        dataContainer.endSimulation();
+
+        for (Person person : dataContainer.getHouseholdDataManager().getPersons()){
+            double injuryRisk = ((PersonHealth) person).getWeeklyAccidentRisk("severeFatalInjuryCar");
+            if(injuryRisk > 0) {
+                logger.info("Injury risk " + injuryRisk + " for " + person.getId());
+            }
+        }
+
+        //exposureModelMCR.endYear(2021);
+        //dataContainer.endSimulation();
 
         //diseaseModelMCR.setup();
         //diseaseModelMCR.endYear(2021);
