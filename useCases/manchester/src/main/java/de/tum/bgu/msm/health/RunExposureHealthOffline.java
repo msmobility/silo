@@ -71,6 +71,7 @@ public class RunExposureHealthOffline {
         //accidentModel.endYear(2021);
         exposureModelMCR.setup(); // to read-in the base exposure file for testing purposes
 
+        /*
         for (Person person : dataContainer.getHouseholdDataManager().getPersons()){
             double injuryRisk = ((PersonHealth) person).getWeeklyAccidentRisk("severeFatalInjuryCar");
             if(injuryRisk > 0) {
@@ -78,8 +79,14 @@ public class RunExposureHealthOffline {
             }
         }
 
+         */
+
+        diseaseModelMCR.setup();
+        diseaseModelMCR.endYear(2021);
+        dataContainer.endSimulation();
+
         //exposureModelMCR.endYear(2021);
-        //dataContainer.endSimulation();
+        //
 
         //diseaseModelMCR.setup();
         //diseaseModelMCR.endYear(2021);
