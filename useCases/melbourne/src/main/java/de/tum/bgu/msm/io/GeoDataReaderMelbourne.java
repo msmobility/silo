@@ -4,7 +4,6 @@ import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.AreaTypes;
 import de.tum.bgu.msm.data.Region;
-import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.ZoneMEL;
 import de.tum.bgu.msm.health.data.ActivityLocation;
 import de.tum.bgu.msm.health.data.DataContainerHealth;
@@ -26,7 +25,7 @@ import static de.tum.bgu.msm.util.MelbourneImplementationConfig.getMelbourneProp
 
 public class GeoDataReaderMelbourne implements GeoDataReader {
 
-    private static Logger logger = LogManager.getLogger(GeoDataReaderMelbourne.class);
+    private static final Logger logger = LogManager.getLogger(GeoDataReaderMelbourne.class);
 
     static java.util.Properties properties = getMelbourneProperties();
 
@@ -62,6 +61,7 @@ public class GeoDataReaderMelbourne implements GeoDataReader {
         for (int i = 0; i < zoneIds.length; i++) {
             AreaTypes.RType type = areaTypes[i]==1? AreaTypes.RType.URBAN: AreaTypes.RType.RURAL;
             Region region;
+            Coordinate coordinate;
             int regionId = regionColumn[i];
             if (geoDataMEL.getRegions().containsKey(regionId)) {
                 region = geoDataMEL.getRegions().get(regionId);
@@ -69,7 +69,14 @@ public class GeoDataReaderMelbourne implements GeoDataReader {
                 region = new RegionImpl(regionId);
                 geoDataMEL.addRegion(region);
             }
-            ZoneMEL zone = new ZoneMEL(zoneIds[i], 0, type,new Coordinate(popCentroid_x[i], popCentroid_y[i], 0.),region);
+            String xStr = String.valueOf(popCentroid_x[i]);
+            String yStr = String.valueOf(popCentroid_y[i]);
+            if ((!"NA".equalsIgnoreCase(xStr) && !"NA".equalsIgnoreCase(yStr))) {
+                coordinate = new Coordinate(popCentroid_x[i], popCentroid_y[i], 0.);
+            } else {
+                coordinate = null;
+            }
+            ZoneMEL zone = new ZoneMEL(zoneIds[i], 0, type, coordinate,region);
             region.addZone(zone);
             zone.setCatchmentCode(catchmentCode[i]);
             zone.setSocioEconomicDisadvantageDeciles(socioEconomicDisadvantageDeciles[i]);
@@ -88,9 +95,15 @@ public class GeoDataReaderMelbourne implements GeoDataReader {
         int counter = 0;
         for (SimpleFeature feature : ShapeFileReader.getAllFeatures(path)) {
             int zoneId = Integer.parseInt(feature.getAttribute(SHAPE_IDENTIFIER).toString());
-            Zone zone = geoDataMEL.getZones().get(zoneId);
+            ZoneMEL zone = (ZoneMEL) geoDataMEL.getZones().get(zoneId);
             if (zone != null) {
                 zone.setZoneFeature(feature);
+                if (zone.getPopCentroidCoord() == null) {
+                    // for zones with no population counts, population weighted centroids are null
+                    // in this case, the zone centroid is used.
+                    Coordinate centroid = zone.getGeometry().getCentroid().getCoordinate();
+                    zone.setPopCentroidCoord(centroid);
+                }
             } else {
                 counter++;
             }
