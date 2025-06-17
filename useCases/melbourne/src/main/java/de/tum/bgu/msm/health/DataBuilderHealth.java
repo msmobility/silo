@@ -99,7 +99,7 @@ public class DataBuilderHealth {
         int year = properties.main.startYear;
         String householdFile = properties.main.baseDirectory + properties.householdData.householdFileName;
         householdFile += "_" + year + ".csv";
-        HouseholdReader hhReader = new DefaultHouseholdReader(dataContainer.getHouseholdDataManager(), (HouseholdFactoryImpl) dataContainer.getHouseholdDataManager().getHouseholdFactory());
+        HouseholdReader hhReader = new HouseholdReaderMEL(dataContainer.getHouseholdDataManager(), (HouseholdFactoryImpl) dataContainer.getHouseholdDataManager().getHouseholdFactory());
         hhReader.readData(householdFile);
 
         String personFile = properties.main.baseDirectory + properties.householdData.personFileName;
