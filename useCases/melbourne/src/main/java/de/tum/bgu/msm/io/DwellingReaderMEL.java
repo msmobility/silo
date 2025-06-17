@@ -7,6 +7,7 @@ import de.tum.bgu.msm.health.NoiseDwellingMEL;
 import de.tum.bgu.msm.health.data.ActivityLocation;
 import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.io.input.DwellingReader;
+import de.tum.bgu.msm.util.parseMEL;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,7 +40,7 @@ public class DwellingReaderMEL implements DwellingReader {
 
     @Override
     public void readData(String path) {
-        logger.info("Reading dwelling micro data from ascii file");
+        logger.info("Reading dwelling micro data from ascii file ({})", path);
 
         String recString = "";
         int recCount = 0;
@@ -47,7 +48,8 @@ public class DwellingReaderMEL implements DwellingReader {
             BufferedReader in = new BufferedReader(new FileReader(path));
             recString = in.readLine();
 
-            String[] header = recString.split(",");
+            String[] header = parseMEL.stringParse(recString.split(","));
+            logger.info("Reading dwelling record " + recCount + " from " + path);
             int posId = SiloUtil.findPositionInArray("id", header);
             int posZone = SiloUtil.findPositionInArray("zone", header);
             int posHh = SiloUtil.findPositionInArray("hhID", header);
@@ -69,12 +71,12 @@ public class DwellingReaderMEL implements DwellingReader {
             int noCoordCounter = 0;
             while ((recString = in.readLine()) != null) {
                 recCount++;
-                String[] lineElements = recString.split(",");
-                int id = Integer.parseInt(lineElements[posId]);
-                int zoneId = Integer.parseInt(lineElements[posZone]);
-                int hhId = Integer.parseInt(lineElements[posHh]);
-                String tp = lineElements[posType].replace("\"", "");
-                DwellingType type = dwellingTypes.valueOf(tp);
+                String[] lineElements = parseMEL.stringParse(recString.split(","));
+                int id = parseMEL.intParse(lineElements[posId]);
+                int zoneId = parseMEL.intParse(lineElements[posZone]);
+                int hhId =  parseMEL.intParse(lineElements[posHh]);
+                String typeString = parseMEL.stringParse(lineElements[posType]);
+                DwellingType type = dwellingTypes.valueOf(typeString.toUpperCase());
                 int price = Integer.parseInt(lineElements[posCosts]);
                 int area = Integer.parseInt(lineElements[posRooms]);
                 int quality = Integer.parseInt(lineElements[posQuality]);
