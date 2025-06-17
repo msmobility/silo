@@ -12,6 +12,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
 
 public class HouseholdReaderMEL implements HouseholdReader {
 
@@ -35,12 +36,13 @@ public class HouseholdReaderMEL implements HouseholdReader {
 
             // read header
             String[] header = recString.replace("\"", "").split(",");
-            logger.info("Header: " + String.join(", ", header));
             int posId = SiloUtil.findPositionInArray("id", header);
-            int posDwell = SiloUtil.findPositionInArray("dwelling", header);
-            if (posDwell == -1) {
+            int posDwell;
+            if (!Arrays.asList(header).contains("dwelling")){
                 logger.info("Household file does not contain dwelling information; using household id as dwelling id.");
                 posDwell = posId;
+            } else {
+                posDwell = SiloUtil.findPositionInArray("dwelling", header);
             }
             int posAutos = SiloUtil.findPositionInArray("autos", header);
 
