@@ -90,13 +90,24 @@ public class DataBuilderHealth {
 
     static public void read(Properties properties, HealthDataContainerImpl dataContainer, Config config){
 
+
+        int year = properties.main.startYear;
+
+
+        new JobType(properties.jobData.jobTypes);
+        JobReader jjReader = new JobReaderMEL(dataContainer.getJobDataManager(), dataContainer);
+        String jobsFile = properties.main.baseDirectory + properties.jobData.jobsFileName + "_" + year + ".csv";
+        jjReader.readData(jobsFile);
+
+        SchoolReader ssReader = new SchoolReaderMEL(dataContainer);
+        String schoolsFile = properties.main.baseDirectory + properties.schoolData.schoolsFileName + "_" + year + ".csv";
+        ssReader.readData(schoolsFile);
+
         GeoDataReader reader = new GeoDataReaderMelbourne(dataContainer);
         String pathShp = properties.main.baseDirectory + properties.geo.zoneShapeFile;
         String fileName = properties.main.baseDirectory + properties.geo.zonalDataFile;
         reader.readZoneCsv(fileName);
         reader.readZoneShapefile(pathShp);
-
-        int year = properties.main.startYear;
         String householdFile = properties.main.baseDirectory + properties.householdData.householdFileName;
         householdFile += "_" + year + ".csv";
         HouseholdReader hhReader = new HouseholdReaderMEL(dataContainer.getHouseholdDataManager(), (HouseholdFactoryImpl) dataContainer.getHouseholdDataManager().getHouseholdFactory());
@@ -110,15 +121,6 @@ public class DataBuilderHealth {
         DwellingReader ddReader = new DwellingReaderMEL(dataContainer.getRealEstateDataManager(), dataContainer);
         String dwellingsFile = properties.main.baseDirectory + properties.realEstate.dwellingsFileName + "_" + year + ".csv";
         ddReader.readData(dwellingsFile);
-
-        new JobType(properties.jobData.jobTypes);
-        JobReader jjReader = new JobReaderMEL(dataContainer.getJobDataManager(), dataContainer);
-        String jobsFile = properties.main.baseDirectory + properties.jobData.jobsFileName + "_" + year + ".csv";
-        jjReader.readData(jobsFile);
-
-        SchoolReader ssReader = new SchoolReaderMEL(dataContainer);
-        String schoolsFile = properties.main.baseDirectory + properties.schoolData.schoolsFileName + "_" + year + ".csv";
-        ssReader.readData(schoolsFile);
 
         new PoiReader(dataContainer).readData(properties.main.baseDirectory + properties.geo.poiFileName);
 
