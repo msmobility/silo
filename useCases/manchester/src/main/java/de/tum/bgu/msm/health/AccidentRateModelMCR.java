@@ -500,13 +500,13 @@ public class AccidentRateModelMCR {
         double calibrationFactor=1.;
         switch (day){
             case Day.thursday:
-                calibrationFactor=1.36; //1.31;
+                calibrationFactor=1.0; //1.31;
                 break;
             case Day.saturday:
-                calibrationFactor=4.26; //4.26;
+                calibrationFactor=1.0; //4.26;
                 break;
             case Day.sunday:
-                calibrationFactor=3.48; //3.48;
+                calibrationFactor=1.0; //3.48;
                 break;
             default:
                 // no calibration
