@@ -12,9 +12,11 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 
 /**
- * Implements SILO for the Great Melbourne
+ * Implements SILO for the Great Melbourne region
  *
- * @author Qin Zhang*/
+ * @author Qin Zhang
+ * @author Carl Higgs
+ * */
 
 
 public class SiloMEL {
@@ -30,7 +32,7 @@ public class SiloMEL {
             config = ConfigUtils.loadConfig(args[1]);
         }
         assert config != null;
-        logger.info("Started SILO land use model for the Great Melbourne");
+        logger.info("Started SILO land use model for the Great Melbourne region");
         HealthDataContainerImpl dataContainer = DataBuilderHealth.getModelDataForMelbourne(properties, config);
         DataBuilderHealth.read(properties, dataContainer, config);
         ModelContainer modelContainer = ModelBuilderMEL.getModelContainerForMelbourne(dataContainer, properties, config);

@@ -8,7 +8,7 @@ import de.tum.bgu.msm.data.ZoneMEL;
 import de.tum.bgu.msm.health.data.ActivityLocation;
 import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.io.input.GeoDataReader;
-
+import de.tum.bgu.msm.util.RobustCSVReader;
 
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.geo.RegionImpl;
@@ -47,12 +47,25 @@ public class GeoDataReaderMelbourne implements GeoDataReader {
 
     @Override
     public void readZoneCsv(String path) {
-        TableDataSet zonalData = SiloUtil.readCSVfile(path);
+        logger.info("Reading zone data from csv file ({})", path);
+        TableDataSet zonalData = new RobustCSVReader(path);
         int[] zoneIds = zonalData.getColumnAsInt(ZONE_ID_COLUMN);
         //float[] zoneAreas = zonalData.getColumnAsFloat("area");
         int[] areaTypes = zonalData.getColumnAsInt(ZONE_URBAN_TYPE_COLUMN);
-        double[] popCentroid_x = zonalData.getColumnAsDouble(POP_CENTROID_X_COLUMN);
-        double[] popCentroid_y = zonalData.getColumnAsDouble(POP_CENTROID_Y_COLUMN);
+        String[] popCentroidXStr = zonalData.getColumnAsString(POP_CENTROID_X_COLUMN);
+        String[] popCentroidYStr = zonalData.getColumnAsString(POP_CENTROID_Y_COLUMN);
+
+        double[] popCentroid_x = new double[popCentroidXStr.length];
+        double[] popCentroid_y = new double[popCentroidYStr.length];
+
+        for (int i = 0; i < popCentroidXStr.length; i++) {
+            popCentroid_x[i] = (popCentroidXStr[i] == null || popCentroidXStr[i].equalsIgnoreCase("NA") || popCentroidXStr[i].isEmpty())
+                    ? Double.NaN
+                    : Double.parseDouble(popCentroidXStr[i]);
+            popCentroid_y[i] = (popCentroidYStr[i] == null || popCentroidYStr[i].equalsIgnoreCase("NA") || popCentroidYStr[i].isEmpty())
+                    ? Double.NaN
+                    : Double.parseDouble(popCentroidYStr[i]);
+        }
         String[] catchmentCode = zonalData.getColumnAsString(CATCHMENT_ID_COLUMN);
         int[] socioEconomicDisadvantageDeciles = zonalData.    getColumnAsInt(SOCIOECONOMIC_DISADVANTAGE_DECILES_COLUMN);
 
