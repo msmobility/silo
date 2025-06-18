@@ -31,4 +31,14 @@ public class MelbourneImplementationConfig implements ImplementationConfig {
         }
         return properties;
     }
+
+    public static Properties getMitoBaseProperties() {
+        Properties properties = new Properties();
+        try (FileInputStream input = new FileInputStream("./mito7daysMEL_reference.properties")) {
+            properties.load(input);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load project.properties file", e);
+        }
+        return properties;
+    }
 }

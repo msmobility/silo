@@ -70,13 +70,16 @@ import routing.components.LinkStress;
 
 import java.io.File;
 import java.util.*;
-import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 
+import static de.tum.bgu.msm.util.ExtractCoefficient.extractCoefficient;
+import static de.tum.bgu.msm.util.MelbourneImplementationConfig.getMitoBaseProperties;
+import static de.tum.bgu.msm.util.parseMEL.getHoursAsSeconds;
 import static org.matsim.core.config.groups.ScoringConfigGroup.ModeParams;
 
 /**
  * @author qinzhang
+ * @author Carl Higgs
  */
 public final class MatsimTransportModelMELHealth implements TransportModel {
 
@@ -95,6 +98,8 @@ public final class MatsimTransportModelMELHealth implements TransportModel {
     private List<Day> simulatedDays;
 
     protected final Random random;
+
+    private static final java.util.Properties mitoProperties = getMitoBaseProperties();
 
     public MatsimTransportModelMELHealth(DataContainer dataContainer, Config matsimConfig,
                                          Properties properties, MatsimScenarioAssembler scenarioAssembler,
@@ -151,7 +156,7 @@ public final class MatsimTransportModelMELHealth implements TransportModel {
                 ((SkimTravelTimes) mainTravelTimes).updateRegionalTravelTimes(dataContainer.getGeoData().getRegions().values(),
                         dataContainer.getGeoData().getZones().values());
             }
-            logger.warn( "finish update reginal travel times");
+            logger.warn( "finish update regional travel times");
         }
     }
 
@@ -274,7 +279,7 @@ public final class MatsimTransportModelMELHealth implements TransportModel {
 
             Population populationCarTruck = PopulationUtils.createPopulation(ConfigUtils.createConfig());
 
-            // Add truck plans from tfgm (static)
+            // Add truck plans (static)
             String truckPlans = properties.main.baseDirectory + properties.healthData.truck_plan_file;
             PopulationUtils.readPopulation(populationCarTruck, truckPlans);
 
@@ -410,36 +415,10 @@ public final class MatsimTransportModelMELHealth implements TransportModel {
         bikeAttributes.add(l -> Math.max(Math.min(Gradient.getGradient(l),0.5),0.));
         bikeAttributes.add(l -> LinkStress.getStress(l,TransportMode.bike));
 
-        // Bike weights
-        Function<Person,double[]> bikeWeights = p -> {
-            switch((Purpose) p.getAttributes().getAttribute("purpose")) {
-                case HBW -> {
-                    if(p.getAttributes().getAttribute("sex").equals(MitoGender.FEMALE)) {
-                        return new double[] {35.9032908,2.3084587 + 2.7762033};
-                    } else {
-                        return new double[] {35.9032908,2.3084587};
-                    }
-                }
-                case HBE -> {
-                    return new double[] {0,4.3075357};
-                }
-                case HBS, HBR, HBO -> {
-                    if((int) p.getAttributes().getAttribute("age") < 15) {
-                        return new double[] {57.0135325,1.2411983 + 6.4243251};
-                    } else {
-                        return new double[] {57.0135325,1.2411983};
-                    }
-                }
-                default -> {
-                    return null;
-                }
-            }
-        };
-
         // Bicycle config group
         BicycleConfigGroup bicycle = (BicycleConfigGroup) bikePedConfig.getModules().get(BicycleConfigGroup.GROUP_NAME);
         bicycle.setAttributes(bikeAttributes);
-        bicycle.setWeights(bikeWeights);
+        bicycle.setWeights(MatsimTransportModelMELHealth::calculateBikeWeights);
 
         // WALK ATTRIBUTES
         List<ToDoubleFunction<Link>> walkAttributes = new ArrayList<>();
@@ -447,40 +426,10 @@ public final class MatsimTransportModelMELHealth implements TransportModel {
         walkAttributes.add(l -> Math.min(1.,((double) l.getAttributes().getAttribute("speedLimitMPH")) / 50.));
         walkAttributes.add(l -> JctStress.getStressProp(l,TransportMode.walk));
 
-        // Walk weights
-        Function<Person,double[]> walkWeights = p -> {
-            switch ((Purpose) p.getAttributes().getAttribute("purpose")) {
-                case HBW -> {
-                    return new double[]{0.3307472, 0, 4.9887390};
-                }
-                case HBE -> {
-                    return new double[]{0, 0, 1.0037846};
-                }
-                case HBS, HBR, HBO -> {
-                    if ((int) p.getAttributes().getAttribute("age") < 15) {
-                        return new double[]{0.7789561, 0.4479527 + 2.0418898, 5.8219067};
-                    } else if ((int) p.getAttributes().getAttribute("age") >= 65) {
-                        return new double[]{0.7789561, 0.4479527 + 0.3715017, 5.8219067};
-                    } else {
-                        return new double[]{0.7789561, 0.4479527, 5.8219067};
-                    }
-                }
-                case HBA -> {
-                    return new double[]{0.6908324, 0, 0};
-                }
-                case NHBO -> {
-                    return new double[]{0, 3.4485883, 0};
-                }
-                default -> {
-                    return null;
-                }
-            }
-        };
-
         // Walk config group
         WalkConfigGroup walkConfigGroup = (WalkConfigGroup) bikePedConfig.getModules().get(WalkConfigGroup.GROUP_NAME);
         walkConfigGroup.setAttributes(walkAttributes);
-        walkConfigGroup.setWeights(walkWeights);
+        walkConfigGroup.setWeights(MatsimTransportModelMELHealth::calculateWalkWeights);
 
         // set scoring parameters
         ModeParams bicycleParams = new ModeParams(TransportMode.bike);
@@ -497,25 +446,25 @@ public final class MatsimTransportModelMELHealth implements TransportModel {
         walkParams.setMonetaryDistanceRate(0. );
         bikePedConfig.scoring().addModeParams(walkParams);
 
-        ScoringConfigGroup.ActivityParams homeActivity = new ScoringConfigGroup.ActivityParams("home").setTypicalDuration(12 * 60 * 60);
+        ScoringConfigGroup.ActivityParams homeActivity = new ScoringConfigGroup.ActivityParams("home").setTypicalDuration(getHoursAsSeconds(12));
         bikePedConfig.scoring().addActivityParams(homeActivity);
 
-        ScoringConfigGroup.ActivityParams workActivity = new ScoringConfigGroup.ActivityParams("work").setTypicalDuration(8 * 60 * 60);
+        ScoringConfigGroup.ActivityParams workActivity = new ScoringConfigGroup.ActivityParams("work").setTypicalDuration(getHoursAsSeconds(8));
         bikePedConfig.scoring().addActivityParams(workActivity);
 
-        ScoringConfigGroup.ActivityParams educationActivity = new ScoringConfigGroup.ActivityParams("education").setTypicalDuration(8 * 60 * 60);
+        ScoringConfigGroup.ActivityParams educationActivity = new ScoringConfigGroup.ActivityParams("education").setTypicalDuration(getHoursAsSeconds(8));
         bikePedConfig.scoring().addActivityParams(educationActivity);
 
-        ScoringConfigGroup.ActivityParams shoppingActivity = new ScoringConfigGroup.ActivityParams("shopping").setTypicalDuration(1 * 60 * 60);
+        ScoringConfigGroup.ActivityParams shoppingActivity = new ScoringConfigGroup.ActivityParams("shopping").setTypicalDuration(getHoursAsSeconds(1));
         bikePedConfig.scoring().addActivityParams(shoppingActivity);
 
-        ScoringConfigGroup.ActivityParams recreationActivity = new ScoringConfigGroup.ActivityParams("recreation").setTypicalDuration(1 * 60 * 60);
+        ScoringConfigGroup.ActivityParams recreationActivity = new ScoringConfigGroup.ActivityParams("recreation").setTypicalDuration(getHoursAsSeconds(1));
         bikePedConfig.scoring().addActivityParams(recreationActivity);
 
-        ScoringConfigGroup.ActivityParams otherActivity = new ScoringConfigGroup.ActivityParams("other").setTypicalDuration(1 * 60 * 60);
+        ScoringConfigGroup.ActivityParams otherActivity = new ScoringConfigGroup.ActivityParams("other").setTypicalDuration(getHoursAsSeconds(1));
         bikePedConfig.scoring().addActivityParams(otherActivity);
 
-        ScoringConfigGroup.ActivityParams airportActivity = new ScoringConfigGroup.ActivityParams("airport").setTypicalDuration(1 * 60 * 60);
+        ScoringConfigGroup.ActivityParams airportActivity = new ScoringConfigGroup.ActivityParams("airport").setTypicalDuration(getHoursAsSeconds(1));
         bikePedConfig.scoring().addActivityParams(airportActivity);
 
         //Set strategy
@@ -540,6 +489,56 @@ public final class MatsimTransportModelMELHealth implements TransportModel {
 
     }
 
+    public static double[] calculateActiveModeWeights(String mode, Person person) {
+        double grad = 0.0;
+        double stressLink = 0.0;
+        double vgvi = 0.0;
+        double speed = 0.0;
+
+        MitoGender gender = (MitoGender) person.getAttributes().getAttribute("sex");
+        int age = (int) person.getAttributes().getAttribute("age");
+
+        for (String purposeString : mitoProperties.getProperty("trip.purposes").split(",")) {
+            Purpose purpose = Purpose.valueOf(purposeString.trim());
+            grad += extractCoefficient(purpose, mode, "grad");
+            stressLink += extractCoefficient(purpose, mode, "stressLink");
+            vgvi += extractCoefficient(purpose, mode, "vgvi");
+            speed += extractCoefficient(purpose, mode, "speed");
+
+            // Interaction terms
+            if (age >= 16 && gender.equals(MitoGender.FEMALE)) {
+                grad += extractCoefficient(purpose, mode, "grad_f");
+                stressLink += extractCoefficient(purpose, mode, "stressLink_f");
+                vgvi += extractCoefficient(purpose, mode, "vgvi_f");
+                speed += extractCoefficient(purpose, mode, "speed_f");
+            }
+
+            if (age < 16) {
+                grad += extractCoefficient(purpose, mode, "grad_c");
+                stressLink += extractCoefficient(purpose, mode, "stressLink_c");
+                vgvi += extractCoefficient(purpose, mode, "vgvi_c");
+                speed += extractCoefficient(purpose, mode, "speed_c");
+            }
+
+            // if (age >= 65) {
+            //     grad += extractCoefficient(purpose, mode, "grad_e");
+            //     stressLink += extractCoefficient(purpose, mode, "stressLink_e");
+            //     vgvi += extractCoefficient(purpose, mode, "vgvi_e");
+            //     speed += extractCoefficient(purpose, mode, "speed_e");
+            // }
+        }
+
+        // Return aggregated coefficients
+        return new double[] {grad, stressLink, vgvi, speed};
+    }
+
+    public static double[] calculateBikeWeights(Person person) {
+        return calculateActiveModeWeights("bike", person);
+    }
+
+    public static double[] calculateWalkWeights(Person person) {
+        return calculateActiveModeWeights("walk", person);
+    }
 
     private void finalizeCarTruckConfig(Config config, int year, Day day) {
         // Set basic setting
@@ -563,8 +562,6 @@ public final class MatsimTransportModelMELHealth implements TransportModel {
         config.controller().setWritePlansInterval(Math.max(config.controller().getLastIteration(), 1));
         config.controller().setWriteEventsInterval(Math.max(config.controller().getLastIteration(), 1));
         config.controller().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
-
-
 
         //set mode params
         List<String> mainModeList = new ArrayList<>();
@@ -602,7 +599,7 @@ public final class MatsimTransportModelMELHealth implements TransportModel {
         internalTravelTimes.update(matsimData);
         final TravelTimes mainTravelTimes = dataContainer.getTravelTimes();
 
-        if (mainTravelTimes != this.internalTravelTimes && mainTravelTimes instanceof SkimTravelTimes) {
+        if (mainTravelTimes instanceof SkimTravelTimes) {
             ((SkimTravelTimes) mainTravelTimes).updateSkimMatrix(internalTravelTimes.getPeakSkim(TransportMode.car), TransportMode.car);
             if ((properties.transportModel.transportModelIdentifier == TransportModelPropertiesModule.TransportModelIdentifier.MATSIM)) {
                 ((SkimTravelTimes) mainTravelTimes).updateSkimMatrix(internalTravelTimes.getPeakSkim(TransportMode.pt), TransportMode.pt);

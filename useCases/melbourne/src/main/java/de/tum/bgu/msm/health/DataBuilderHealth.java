@@ -90,16 +90,16 @@ public class DataBuilderHealth {
 
     static public void read(Properties properties, HealthDataContainerImpl dataContainer, Config config){
 
+        int year = properties.main.startYear;
+
         GeoDataReader reader = new GeoDataReaderMelbourne(dataContainer);
         String pathShp = properties.main.baseDirectory + properties.geo.zoneShapeFile;
         String fileName = properties.main.baseDirectory + properties.geo.zonalDataFile;
         reader.readZoneCsv(fileName);
         reader.readZoneShapefile(pathShp);
-
-        int year = properties.main.startYear;
         String householdFile = properties.main.baseDirectory + properties.householdData.householdFileName;
         householdFile += "_" + year + ".csv";
-        HouseholdReader hhReader = new DefaultHouseholdReader(dataContainer.getHouseholdDataManager(), (HouseholdFactoryImpl) dataContainer.getHouseholdDataManager().getHouseholdFactory());
+        HouseholdReader hhReader = new HouseholdReaderMEL(dataContainer.getHouseholdDataManager(), (HouseholdFactoryImpl) dataContainer.getHouseholdDataManager().getHouseholdFactory());
         hhReader.readData(householdFile);
 
         String personFile = properties.main.baseDirectory + properties.householdData.personFileName;
@@ -119,7 +119,7 @@ public class DataBuilderHealth {
         SchoolReader ssReader = new SchoolReaderMEL(dataContainer);
         String schoolsFile = properties.main.baseDirectory + properties.schoolData.schoolsFileName + "_" + year + ".csv";
         ssReader.readData(schoolsFile);
-
+        
         new PoiReader(dataContainer).readData(properties.main.baseDirectory + properties.geo.poiFileName);
 
         Network network = NetworkUtils.readNetwork(config.network().getInputFile());

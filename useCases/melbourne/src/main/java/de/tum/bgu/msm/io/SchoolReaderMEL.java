@@ -4,6 +4,7 @@ import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.health.data.ActivityLocation;
 import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.schools.*;
+import de.tum.bgu.msm.util.parseMEL;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,7 +28,7 @@ public class SchoolReaderMEL implements SchoolReader {
     @Override
     public void readData(String fileName) {
 
-        logger.info("Reading school micro data from ascii file");
+        logger.info("Reading school micro data from ascii file ({})", fileName);
         SchoolFactory factory = SchoolUtils.getFactory();
         String recString = "";
         int recCount = 0;
@@ -37,7 +38,7 @@ public class SchoolReaderMEL implements SchoolReader {
             recString = in.readLine();
 
             // read header
-            String[] header = recString.split(",");
+            String[] header = parseMEL.stringParse(recString.split(","));
             int posId = SiloUtil.findPositionInArray("id", header);
             int posZone = SiloUtil.findPositionInArray("zone", header);
             int posCapacity = SiloUtil.findPositionInArray("capacity", header);
@@ -50,25 +51,35 @@ public class SchoolReaderMEL implements SchoolReader {
             posCoordY = SiloUtil.findPositionInArray("CoordY", header);
 
             // read line
+            int combinedTypeCount = 0;
             while ((recString = in.readLine()) != null) {
                 recCount++;
-                String[] lineElements = recString.split(",");
-                int id = Integer.parseInt(lineElements[posId]);
-                int zoneId = Integer.parseInt(lineElements[posZone]);
-                int type = Integer.parseInt(lineElements[posType]);
-                int capacity = Integer.parseInt(lineElements[posOccupancy]);
-                int occupancy = Integer.parseInt(lineElements[posCapacity]);
+                String[] lineElements = recString.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+                int id = parseMEL.intParse(lineElements[posId]);
+                int zoneId = parseMEL.intParse(lineElements[posZone]);
+                String typeString;
+                if (lineElements[posType].equals("\"1,2\"")) {
+                    typeString = "4"; // MEL uses 1,2 for primary and secondary schools, we use 4 for schools
+                    combinedTypeCount++;
+                } else {
+                    typeString = lineElements[posType];
+                }
+                int type = parseMEL.intParse(typeString);
+                int capacity = parseMEL.intParse(lineElements[posCapacity]);
+                int occupancy = parseMEL.intParse(lineElements[posOccupancy]);
 
                 Coordinate coordinate = new Coordinate(Double.parseDouble(lineElements[posCoordX]), Double.parseDouble(lineElements[posCoordY]));
 
-                School ss = factory.createSchool(id, type, capacity, occupancy, coordinate,zoneId);
+                School ss = factory.createSchool(id, type, capacity, occupancy, coordinate, zoneId);
                 schoolData.addSchool(ss);
 
-                ActivityLocation activityLocation = new ActivityLocation(("ss"+id),coordinate);
-                ((DataContainerHealth) dataContainer).getActivityLocations().put(("ss"+id),activityLocation);
-
+                ActivityLocation activityLocation = new ActivityLocation(("ss" + id), coordinate);
+                ((DataContainerHealth) dataContainer).getActivityLocations().put(("ss" + id), activityLocation);
             }
 
+            if (combinedTypeCount > 0) {
+                logger.warn("{} schools with combined type (\"1,2\"; i.e. primary and secondary, combined) identified; SILO requires distinct types; tenatively, a new type \"4\" will be used instead for combined schools.", combinedTypeCount);
+            }
 
         } catch (IOException e) {
             logger.fatal("IO Exception caught reading synpop school file: " + fileName);

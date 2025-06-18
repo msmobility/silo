@@ -3,6 +3,9 @@ package de.tum.bgu.msm.util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+
 public class parseMEL {
 
     private static final Logger logger = LogManager.getLogger(parseMEL.class);
@@ -68,6 +71,17 @@ public class parseMEL {
         }
     }
 
+    public static int[] intParse(String[] input) {
+        if (input == null) {
+            throw new IllegalArgumentException("Input array cannot be null");
+        }
+        int[] parsedArray = new int[input.length];
+        for (int i = 0; i < input.length; i++) {
+            parsedArray[i] = intParse(input[i]);
+        }
+        return parsedArray; // Return the cleaned integer array
+    }
+
     public static String stringParse(String input) {
         if (input == null) {
             throw new IllegalArgumentException("Input cannot be null");
@@ -104,5 +118,20 @@ public class parseMEL {
             }
         }
         return -1; // Return -1 if the target is not found
+    }
+
+    public static long stringToLongId(String str) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest(str.getBytes(StandardCharsets.UTF_8));
+            // Use the first 8 bytes to form a long
+            long value = 0;
+            for (int i = 0; i < 8; i++) {
+                value = (value << 8) | (hash[i] & 0xff);
+            }
+            return value;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

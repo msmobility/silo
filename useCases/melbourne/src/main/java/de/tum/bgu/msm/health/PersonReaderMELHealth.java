@@ -5,6 +5,7 @@ import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.io.input.PersonReader;
+import de.tum.bgu.msm.util.parseMEL;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,7 +25,7 @@ public class PersonReaderMELHealth implements PersonReader {
 
     @Override
     public void readData(String path) {
-        logger.info("Reading person micro data from ascii file");
+        logger.info("Reading person micro data from ascii file ({})", path);
 
         PersonFactoryMELHealth ppFactory = new PersonFactoryMELHealth();
         String recString = "";
@@ -34,7 +35,7 @@ public class PersonReaderMELHealth implements PersonReader {
             recString = in.readLine();
 
             // read header
-            String[] header = recString.split(",");
+            String[] header = parseMEL.stringParse(recString.split(","));
             int posId = SiloUtil.findPositionInArray("id", header);
             int posHhId = SiloUtil.findPositionInArray("hhID",header);
             int posAge = SiloUtil.findPositionInArray("age",header);
@@ -43,22 +44,38 @@ public class PersonReaderMELHealth implements PersonReader {
             int posOccupation = SiloUtil.findPositionInArray("occupation",header);
             int posWorkplace = SiloUtil.findPositionInArray("workplace",header);
             int posIncome = SiloUtil.findPositionInArray("income",header);
-            int posDriver = SiloUtil.findPositionInArray("driversLicense", header);
+            int posDriver = SiloUtil.findPositionInArray("driversLicence", header);
             int posSchoolId = SiloUtil.findPositionInArray("schoolId", header);
             int posEthnic = SiloUtil.findPositionInArray("ethnic", header);
 
             // read line
             while ((recString = in.readLine()) != null) {
                 recCount++;
-                String[] lineElements = recString.split(",");
-                int id         = Integer.parseInt(lineElements[posId]);
-                int hhid       = Integer.parseInt(lineElements[posHhId]);
-                int age        = Integer.parseInt(lineElements[posAge]);
-                Gender gender     = Gender.valueOf(Integer.parseInt(lineElements[posGender]));
-                String relShp  = lineElements[posRelShp].replace("\"", "");
+                String[] lineElements = parseMEL.stringParse(recString).split(",");
+                int id         = parseMEL.intParse(lineElements[posId]);
+                int hhid       = parseMEL.intParse(lineElements[posHhId]);
+                int age        = parseMEL.intParse(lineElements[posAge]);
+                String genderString     = parseMEL.stringParse(lineElements[posGender]);
+                Gender gender;
+                if ("Female".equalsIgnoreCase(genderString)) {
+                    gender = Gender.FEMALE;
+                } else if ("Male".equalsIgnoreCase(genderString)) {
+                    gender = Gender.MALE;
+                } else {
+                    throw new IllegalArgumentException("Invalid gender value: " + genderString);
+                }
+                String relShp  = parseMEL.stringParse(lineElements[posRelShp]);
+                // only single, married and child are implemented in person role currently; and ill fit for modern household structures. or at least the Melbourne synthetic population is not a tight fit for this typology.
+                if ("LONE_PERSON".equalsIgnoreCase(relShp) || "LONE_PARENT".equalsIgnoreCase(relShp) || "RELATIVE".equalsIgnoreCase(relShp)) {
+                    relShp = "SINGLE";
+                } else if ("GROUP_HOUSEHOLD".equalsIgnoreCase(relShp)) {
+                    relShp = "MARRIED";
+                } else if ("U15_CHILD".equalsIgnoreCase(relShp) || "O15_CHILD".equalsIgnoreCase(relShp) || "STUDENT".equalsIgnoreCase(relShp)) {
+                    relShp = "CHILD";
+                }
                 PersonRole pr  = PersonRole.valueOf(relShp.toUpperCase());
-                Occupation occupation = Occupation.valueOf(Integer.parseInt(lineElements[posOccupation]));
-                int workplace  = Integer.parseInt(lineElements[posWorkplace]);
+                Occupation occupation = Occupation.valueOf(parseMEL.intParse(lineElements[posOccupation]));
+                int workplace  = parseMEL.intParse(lineElements[posWorkplace]);
                 //todo remove the workplace if they are not employed - temporary if school ids or zones are stored there
                 if (!occupation.equals(Occupation.EMPLOYED)){
                     workplace = -1;
@@ -76,11 +93,22 @@ public class PersonReaderMELHealth implements PersonReader {
                 householdDataManager.addPerson(pp);
                 householdDataManager.addPersonToHousehold(pp, household);
                 pp.setDriverLicense(license);
-
-                int schoolId = Integer.parseInt(lineElements[posSchoolId]);
+                final String schoolString = parseMEL.stringParse(lineElements[posSchoolId]);
+                final int schoolId;
+                if ("NA".equalsIgnoreCase(schoolString)) {
+                    schoolId = -1; // Use -1 to indicate missing data
+                } else {
+                    schoolId = Integer.parseInt(schoolString);
+                }
                 pp.setSchoolId(schoolId);
-
-                pp.setEthnic(Ethnic.valueOf(lineElements[posEthnic]));
+                final String ethnicString = parseMEL.stringParse(lineElements[posEthnic]);
+                final Ethnic ethnic;
+                if ("NA".equalsIgnoreCase(ethnicString)) {
+                    ethnic = Ethnic.other;
+                } else {
+                    ethnic = Ethnic.valueOf(lineElements[posEthnic]);
+                }
+                pp.setEthnic(ethnic);
 
                 if (id == SiloUtil.trackPp) {
                     SiloUtil.trackWriter.println("Read person with following attributes from " + path);

@@ -6,6 +6,7 @@ import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.job.JobFactory;
 import de.tum.bgu.msm.data.job.JobMEL;
 import de.tum.bgu.msm.io.input.JobReader;
+import de.tum.bgu.msm.util.parseMEL;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,7 +30,7 @@ public class JobReaderMEL implements JobReader {
     @Override
     public void readData(String fileName) {
 
-        logger.info("Reading job micro data from ascii file");
+        logger.info("Reading job micro data from ascii file ({})", fileName);
         JobFactory factory = jobData.getFactory();
         String recString = "";
         int recCount = 0;
@@ -38,7 +39,7 @@ public class JobReaderMEL implements JobReader {
             recString = in.readLine();
 
             // read header
-            String[] header = recString.split(",");
+            String[] header = parseMEL.stringParse(recString.split(","));
             int posId = SiloUtil.findPositionInArray("id", header);
             int posZone = SiloUtil.findPositionInArray("zone", header);
             int posWorker = SiloUtil.findPositionInArray("personId", header);
@@ -63,11 +64,11 @@ public class JobReaderMEL implements JobReader {
             // read line
             while ((recString = in.readLine()) != null) {
                 recCount++;
-                String[] lineElements = recString.split(",");
-                int id = Integer.parseInt(lineElements[posId]);
-                int zoneId = Integer.parseInt(lineElements[posZone]);
-                int worker = Integer.parseInt(lineElements[posWorker]);
-                String type = lineElements[posType].replace("\"", "");
+                String[] lineElements = parseMEL.stringParse(recString.split(","));
+                int id = parseMEL.intParse(lineElements[posId]);
+                int zoneId = parseMEL.intParse(lineElements[posZone]);
+                int worker = parseMEL.intParse(lineElements[posWorker]);
+                String type = parseMEL.stringParse(lineElements[posType]);
 
                 Coordinate coordinate = null;
                 if (posCoordX >= 0 && posCoordY >= 0) {
@@ -89,7 +90,7 @@ public class JobReaderMEL implements JobReader {
                 }
 
                 if(posMicroBuildingId>=0){
-                    ((JobMEL)jj).setMicroBuildingId(Long.parseLong(lineElements[posMicroBuildingId]));
+                    ((JobMEL)jj).setMicroBuildingId(parseMEL.stringToLongId(lineElements[posMicroBuildingId]));
                 }else {
                     ((JobMEL)jj).setMicroBuildingId(-1);
                 }
