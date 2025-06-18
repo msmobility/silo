@@ -90,18 +90,7 @@ public class DataBuilderHealth {
 
     static public void read(Properties properties, HealthDataContainerImpl dataContainer, Config config){
 
-
         int year = properties.main.startYear;
-
-
-        new JobType(properties.jobData.jobTypes);
-        JobReader jjReader = new JobReaderMEL(dataContainer.getJobDataManager(), dataContainer);
-        String jobsFile = properties.main.baseDirectory + properties.jobData.jobsFileName + "_" + year + ".csv";
-        jjReader.readData(jobsFile);
-
-        SchoolReader ssReader = new SchoolReaderMEL(dataContainer);
-        String schoolsFile = properties.main.baseDirectory + properties.schoolData.schoolsFileName + "_" + year + ".csv";
-        ssReader.readData(schoolsFile);
 
         GeoDataReader reader = new GeoDataReaderMelbourne(dataContainer);
         String pathShp = properties.main.baseDirectory + properties.geo.zoneShapeFile;
@@ -122,6 +111,15 @@ public class DataBuilderHealth {
         String dwellingsFile = properties.main.baseDirectory + properties.realEstate.dwellingsFileName + "_" + year + ".csv";
         ddReader.readData(dwellingsFile);
 
+        new JobType(properties.jobData.jobTypes);
+        JobReader jjReader = new JobReaderMEL(dataContainer.getJobDataManager(), dataContainer);
+        String jobsFile = properties.main.baseDirectory + properties.jobData.jobsFileName + "_" + year + ".csv";
+        jjReader.readData(jobsFile);
+
+        SchoolReader ssReader = new SchoolReaderMEL(dataContainer);
+        String schoolsFile = properties.main.baseDirectory + properties.schoolData.schoolsFileName + "_" + year + ".csv";
+        ssReader.readData(schoolsFile);
+        
         new PoiReader(dataContainer).readData(properties.main.baseDirectory + properties.geo.poiFileName);
 
         Network network = NetworkUtils.readNetwork(config.network().getInputFile());

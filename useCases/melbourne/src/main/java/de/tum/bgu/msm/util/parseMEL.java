@@ -71,6 +71,17 @@ public class parseMEL {
         }
     }
 
+    public static int[] intParse(String[] input) {
+        if (input == null) {
+            throw new IllegalArgumentException("Input array cannot be null");
+        }
+        int[] parsedArray = new int[input.length];
+        for (int i = 0; i < input.length; i++) {
+            parsedArray[i] = intParse(input[i]);
+        }
+        return parsedArray; // Return the cleaned integer array
+    }
+
     public static String stringParse(String input) {
         if (input == null) {
             throw new IllegalArgumentException("Input cannot be null");
