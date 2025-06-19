@@ -702,7 +702,9 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 // pathFatalityRisk += linkFatalityRisk - (pathFatalityRisk * linkFatalityRisk);
 
                 //
-                if (Day.thursday.equals(trip.getDepartureDay()) || Day.saturday.equals(trip.getDepartureDay()) || Day.sunday.equals(trip.getDepartureDay())) {
+                if (weekdays.contains(trip.getDepartureDay())){
+                    linkInjuryRisk = getLinkInjuryRisk(mode, (int) enterTimeInSecond, linkInfoByDay)/5;
+                } else {
                     linkInjuryRisk = getLinkInjuryRisk(mode, (int) enterTimeInSecond, linkInfoByDay);
                 }
 
