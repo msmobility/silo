@@ -500,17 +500,17 @@ public class AccidentRateModelMCR {
         double calibrationFactor=1.;
         switch (day){
             case Day.thursday:
-                calibrationFactor=1.0; //1.31;
+                calibrationFactor=2.19; //1.31;
                 break;
             case Day.saturday:
-                calibrationFactor=1.0; //4.26;
+                calibrationFactor=2.19; //4.26;
                 break;
             case Day.sunday:
-                calibrationFactor=1.0; //3.48;
+                calibrationFactor=2.19; //3.48;
                 break;
             default:
                 // no calibration
-                calibrationFactor=1.0;
+                calibrationFactor=2.19;
         }
 
         log.info("Link casualty frequency calculation (by type by time of day) start.");
@@ -537,11 +537,13 @@ public class AccidentRateModelMCR {
         }
         log.info("Link casualty frequency calculation completed.");
 
+        /*
         try {
             writeOutCasualtyRate();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+         */
 
         // Compute link-level injury risk R=1/v (v= traffic volume)
         computeLinkLevelInjuryRisk();
@@ -617,11 +619,14 @@ public class AccidentRateModelMCR {
         }
         log.info("Link casualty exposure completed.");
 
+        /*
         try {
             writeOutExposure();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+
+         */
     }
 
     public void computePersonLevelInjuryRiskOffline(){
