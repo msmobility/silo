@@ -72,13 +72,14 @@ public class AccidentModelMCR extends AbstractModel implements ModelUpdateListen
             final MutableScenario scenario = ScenarioUtils.createMutableScenario(config);
             scenario.getConfig().travelTimeCalculator().setTraveltimeBinSize(3600);
 
-            float scalingFactor = (float) (properties.main.scaleFactor * Double.parseDouble(Resources.instance.getString(de.tum.bgu.msm.resources.Properties.TRIP_SCALING_FACTOR)));
+            //float scalingFactor = (float) (properties.main.scaleFactor * Double.parseDouble(Resources.instance.getString(de.tum.bgu.msm.resources.Properties.TRIP_SCALING_FACTOR)));
+            float scalingFactor = 0.1f; // todo: temporary fix
             scenario.addScenarioElement("accidentModelFile",properties.main.baseDirectory+"input/accident/");
 
             // Injury model
             AccidentRateModelMCR model = new AccidentRateModelMCR(scenario, 1.f/scalingFactor, day);
 
-            model.runCasualtyRateOffline(); // number of casualties per link (max 1 per link, otherwise 0)
+            model.runCasualtyRateMCR(); // number of casualties per link (max 1 per link, otherwise 0)
             //model.computeLinkLevelInjuryRisk(); // R=1/v where v is the traffic volume
             //model.computePersonLevelInjuryRiskOffline();
 

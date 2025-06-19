@@ -389,7 +389,7 @@ public class AccidentRateModelMCR {
         System.gc();
     }
 
-    public void runCasualtyRateOffline() {
+    public void runCasualtyRateMCR() {
         com.google.inject.Injector injector = Injector.createInjector( scenario.getConfig() , new AbstractModule(){
             @Override public void install(){
                 install( new ScenarioByInstanceModule( scenario ) );
@@ -412,7 +412,7 @@ public class AccidentRateModelMCR {
         log.info("Reading network file... Done.");
 
         // Aggregate the network
-        //Network networkAggregated = aggregateNetworkByOsmID(scenario.getNetwork());
+        // Network networkAggregated = aggregateNetworkByOsmID(scenario.getNetwork());
 
         // Plans
         log.info("Reading car plans file...");

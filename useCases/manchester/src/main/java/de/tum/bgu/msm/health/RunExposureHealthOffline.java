@@ -63,34 +63,21 @@ public class RunExposureHealthOffline {
 
         // setup
         AccidentModelMCR accidentModel = new AccidentModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
-        accidentModel.endYear(2021);
-
-
         //HealthExposureModelMCR exposureModelMCR = new HealthExposureModelMCR(dataContainer, properties, SiloUtil.provideNewRandom(),config);
+
+        accidentModel.endYear(2021);
+        //exposureModelMCR.endYear(2021);
+        //dataContainer.endSimulation();
+
         //DiseaseModelMCR diseaseModelMCR = new DiseaseModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
 
         // todo: aggregate link-level risks up to the person level
 
         //accidentModel.endYear(2021);
         //exposureModelMCR.setup(); // to read-in the base exposure file for testing purposes
-
-        /*
-        for (Person person : dataContainer.getHouseholdDataManager().getPersons()){
-            double injuryRisk = ((PersonHealth) person).getWeeklyAccidentRisk("severeFatalInjuryCar");
-            if(injuryRisk > 0) {
-                logger.info("Injury risk " + injuryRisk + " for " + person.getId());
-            }
-        }
-
-         */
-
         //diseaseModelMCR.setup();
         //diseaseModelMCR.endYear(2021);
         //dataContainer.endSimulation();
-
-        //exposureModelMCR.endYear(2021);
-        //
-
         //diseaseModelMCR.setup();
         //diseaseModelMCR.endYear(2021);
         //dataContainer.endSimulation();
