@@ -119,7 +119,7 @@ public class DataBuilderHealth {
         SchoolReader ssReader = new SchoolReaderMEL(dataContainer);
         String schoolsFile = properties.main.baseDirectory + properties.schoolData.schoolsFileName + "_" + year + ".csv";
         ssReader.readData(schoolsFile);
-        
+
         new PoiReader(dataContainer).readData(properties.main.baseDirectory + properties.geo.poiFileName);
 
         Network network = NetworkUtils.readNetwork(config.network().getInputFile());
@@ -132,7 +132,10 @@ public class DataBuilderHealth {
         new PtSkimsReaderMEL(dataContainer).read();
 
         dataContainer.setAvgSpeeds(new DefaultSpeedReader().readData(properties.main.baseDirectory + properties.healthData.avgSpeedFile));
-        dataContainer.setHealthTransitionData(new HealthTransitionTableReader().readData(dataContainer,properties.main.baseDirectory + properties.healthData.healthTransitionData));
+        dataContainer.setHealthTransitionData(new HealthTransitionTableReader().readData(
+                dataContainer,
+                properties.main.baseDirectory + properties.healthData.healthTransitionData)
+        );
         DoseResponseLookupReader doseResponseReader = new DoseResponseLookupReader();
         doseResponseReader.readData(properties.main.baseDirectory + properties.healthData.basePath);
         dataContainer.setDoseResponseData(doseResponseReader.getDoseResponseData());
