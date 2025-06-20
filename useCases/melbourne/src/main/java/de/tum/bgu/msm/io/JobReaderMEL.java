@@ -66,7 +66,7 @@ public class JobReaderMEL implements JobReader {
                 recCount++;
                 String[] lineElements = parseMEL.stringParse(recString.split(","));
                 int id = parseMEL.intParse(lineElements[posId]);
-                int zoneId = parseMEL.intParse(lineElements[posZone]);
+                int zoneId = parseMEL.zoneParse(lineElements[posZone]);
                 int worker = parseMEL.intParse(lineElements[posWorker]);
                 String type = parseMEL.stringParse(lineElements[posType]);
 
