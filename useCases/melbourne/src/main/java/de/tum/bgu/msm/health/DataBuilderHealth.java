@@ -132,7 +132,7 @@ public class DataBuilderHealth {
         new PtSkimsReaderMEL(dataContainer).read();
 
         dataContainer.setAvgSpeeds(new DefaultSpeedReader().readData(properties.main.baseDirectory + properties.healthData.avgSpeedFile));
-        dataContainer.setHealthTransitionData(new HealthTransitionTableReader().readData(
+        dataContainer.setHealthTransitionData(new HealthTransitionTableReaderMEL().readData(
                 dataContainer,
                 properties.main.baseDirectory + properties.healthData.healthTransitionData)
         );
