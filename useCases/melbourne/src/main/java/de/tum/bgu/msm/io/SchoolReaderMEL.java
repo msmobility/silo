@@ -56,7 +56,7 @@ public class SchoolReaderMEL implements SchoolReader {
                 recCount++;
                 String[] lineElements = recString.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
                 int id = parseMEL.intParse(lineElements[posId]);
-                int zoneId = parseMEL.intParse(lineElements[posZone]);
+                int zoneId = parseMEL.zoneParse(lineElements[posZone]);
                 String typeString;
                 if (lineElements[posType].equals("\"1,2\"")) {
                     typeString = "4"; // MEL uses 1,2 for primary and secondary schools, we use 4 for schools

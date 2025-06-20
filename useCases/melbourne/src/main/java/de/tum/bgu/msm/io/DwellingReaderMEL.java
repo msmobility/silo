@@ -73,7 +73,7 @@ public class DwellingReaderMEL implements DwellingReader {
                 recCount++;
                 String[] lineElements = parseMEL.stringParse(recString.split(","));
                 int id = parseMEL.intParse(lineElements[posId]);
-                int zoneId = parseMEL.intParse(lineElements[posZone]);
+                int zoneId = parseMEL.zoneParse(lineElements[posZone]);
                 int hhId =  parseMEL.intParse(lineElements[posHh]);
                 String typeString = parseMEL.stringParse(lineElements[posType]);
                 DwellingType type = dwellingTypes.valueOf(typeString.toUpperCase());
