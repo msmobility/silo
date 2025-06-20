@@ -67,7 +67,7 @@ public class RunExposureHealthOffline {
 
         //
         accidentModel.endYear(2021);
-        exposureModelMCR.setup(); // to read-in the base exposure file for testing purposes
+        //exposureModelMCR.setup(); // to read-in the base exposure file for testing purposes
         exposureModelMCR.endYear(2021);
         dataContainer.endSimulation();
 
