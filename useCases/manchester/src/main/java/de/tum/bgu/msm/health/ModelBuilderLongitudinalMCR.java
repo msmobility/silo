@@ -145,8 +145,7 @@ public class ModelBuilderLongitudinalMCR {
 
         modelContainer.registerModelUpdateListener(new SportPAModelMCR(dataContainer, properties, SiloUtil.provideNewRandom()));
 
-        // todo: activate injury model here
-        //modelContainer.registerModelUpdateListener(new AccidentModelMCR(dataContainer, properties, SiloUtil.provideNewRandom()));
+        modelContainer.registerModelUpdateListener(new AccidentModelMCR(dataContainer, properties, SiloUtil.provideNewRandom()));
 
         modelContainer.registerModelUpdateListener(new HealthExposureModelMCR(dataContainer, properties, SiloUtil.provideNewRandom(),config));
 

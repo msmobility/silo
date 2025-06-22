@@ -173,7 +173,7 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
         }
 
         // Injuries
-        boolean activateInjuries = false; // activate injuries here
+        boolean activateInjuries = true; // activate injuries here
 
         if(activateInjuries){
             // Prepare fatalities map by mode and age (gender ??)
@@ -183,13 +183,15 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
             InjurySampler injSampler = new InjurySampler();
 
             // The target come from the accidentModel, they should be add to the HealthDataContainer
+            /*
             Map<String, Integer> CasualtiesByMode = new HashMap<>();
             CasualtiesByMode.put("Car", 200);
             CasualtiesByMode.put("Walk", 300);
             CasualtiesByMode.put("Bike", 100);
+             */
 
             // Process injury transitions
-            injSampler.processInjuries(dataContainer, CasualtiesByMode, FatalityProbabilities);
+            injSampler.processInjuries2(dataContainer, FatalityProbabilities);
         }
     }
 
@@ -197,7 +199,6 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
         Map<Integer, List<Diseases>> prevData = ((HealthDataContainerImpl) dataContainer).getPrevalenceData();
         for (Person person : dataContainer.getHouseholdDataManager().getPersons()) {
             if (prevData.keySet().contains(person.getId()) && (!prevData.get(person.getId()).contains(null))) {
-                // todo: There are null values in prevalence data - check with Belen
                 List<String> diseaseList = prevData.get(person.getId())  // Returns List<Diseases>
                         .stream()                                      // Convert List to Stream
                         .map(Enum::name)                               // Map each enum to its name

@@ -88,6 +88,21 @@ public class InjurySampler {
         return injuredPersons;
     }
 
+    public List<Integer> sampleInjuries2(DataContainer dataContainer, String mode) {
+        List<Integer> injuredPersons = new ArrayList<>();
+
+        // Collect injury risks for the mode
+        for (Person person : dataContainer.getHouseholdDataManager().getPersons()) {
+            double injuryRisk = ((PersonHealth) person).getWeeklyAccidentRisk("severeFatalInjury" + mode);
+            if (random.nextDouble() < injuryRisk) {
+                injuredPersons.add(person.getId());
+            }
+        }
+
+        // Log results ??
+        return injuredPersons;
+    }
+
     /**
      * Processes injuries for multiple modes and updates disease probabilities.
      * @param dataContainer Data container with person data.
@@ -105,6 +120,40 @@ public class InjurySampler {
             //Map<Integer, Double> injuryRiskMap = new HashMap<>();
             List<Integer> injuredPersons = sampleInjuries(targetInjured.getOrDefault(mode, 0), dataContainer, mode);
             //injuryRiskMaps.put(mode, injuryRiskMap);
+            injuredPersonsByMode.put(mode, injuredPersons);
+        }
+
+        // Process each person for all modes
+        // todo: there is a theoretical probability that an agent is injured by multiple modes during the sample sampling iteration
+
+        for (Person person : dataContainer.getHouseholdDataManager().getPersons()) {
+            int personId = person.getId();
+            PersonHealth personHealth = (PersonHealth) person;
+
+            for (String mode : modes) {
+                String modeAlias = getModeAlias(mode);
+                Diseases severeInjury = getSevereInjuryDisease(mode);
+                Diseases fatalInjury = getFatalInjuryDisease(mode);
+
+                if (injuredPersonsByMode.get(mode).contains(personId)) {
+                    // Process injury for this mode
+                    processInjuryRisk(person, modeAlias, fatalInjury, severeInjury, fatalityProbabilities);
+                } else {
+                    // Set zero probability for non-injured persons
+                    personHealth.getCurrentDiseaseProb().putIfAbsent(severeInjury, 0.0f);
+                    personHealth.getCurrentDiseaseProb().putIfAbsent(fatalInjury, 0.0f);
+                }
+            }
+        }
+    }
+
+    public void processInjuries2(DataContainer dataContainer, Map<String, Map<String, Double>> fatalityProbabilities) {
+        List<String> modes = Arrays.asList("Car", "Bike", "Walk");
+        Map<String, List<Integer>> injuredPersonsByMode = new HashMap<>();
+
+        // Sample injuries for each mode
+        for (String mode : modes) {
+            List<Integer> injuredPersons = sampleInjuries2(dataContainer, mode);
             injuredPersonsByMode.put(mode, injuredPersons);
         }
 
