@@ -21,6 +21,7 @@ import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ScenarioUtils;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -32,7 +33,7 @@ public class AccidentModelMCR extends AbstractModel implements ModelUpdateListen
     public AccidentModelMCR(DataContainer dataContainer, Properties properties, Random random) {
         super(dataContainer, properties, random);
         //simulatedDays = Arrays.asList(Day.thursday,Day.saturday,Day.sunday);
-        simulatedDays = Arrays.asList(Day.saturday, Day.sunday);
+        simulatedDays = Arrays.asList(Day.thursday, Day.saturday, Day.sunday);
     }
 
     @Override
@@ -45,7 +46,27 @@ public class AccidentModelMCR extends AbstractModel implements ModelUpdateListen
 
     public void endYear(int year) {
         logger.warn("Accident model end year:" + year);
-        int targetYear = (properties.main.startYear == year && properties.healthData.baseExposureFile == null) ? year : (properties.transportModel.transportModelYears.contains(year + 1) ? year + 1 : -1);
+
+        int targetYear = -1;
+
+        // no baseExposure file when simulation starts
+        if (properties.main.startYear == year && properties.healthData.baseExposureFile == null) {
+            targetYear = year;
+        }
+
+        // Accident model outputs will be needed for future exposure updates
+        if (properties.main.startYear == year &&
+                properties.healthData.baseExposureFile != null &&
+                !properties.healthData.exposureModelYears.isEmpty() &&
+                !properties.healthData.exposureModelYears.contains(Collections.singleton(-1))) {
+            targetYear = year;
+        }
+
+        // Accident model needs to be updated whenever traffic flows are updated
+        if(properties.transportModel.transportModelYears.contains(year) && year != properties.main.startYear) {
+            targetYear = year;
+        }
+
         if (targetYear != -1) {
             latestMatsimYear = targetYear;
             runAccidentRateModel(targetYear);
@@ -59,7 +80,7 @@ public class AccidentModelMCR extends AbstractModel implements ModelUpdateListen
 
     private void runAccidentRateModel(int year) {
         //generate link injury risks for each simulated day
-        for(Day day : simulatedDays){
+        for (Day day : simulatedDays) {
             logger.info("Updating injury risk for year: " + year + "| day of week: " + day + ".");
 
             final String outputDirectoryRoot = properties.main.baseDirectory + "scenOutput/"
@@ -74,17 +95,17 @@ public class AccidentModelMCR extends AbstractModel implements ModelUpdateListen
 
             //float scalingFactor = (float) (properties.main.scaleFactor * Double.parseDouble(Resources.instance.getString(de.tum.bgu.msm.resources.Properties.TRIP_SCALING_FACTOR)));
             float scalingFactor = 0.1f; // todo: temporary fix
-            scenario.addScenarioElement("accidentModelFile",properties.main.baseDirectory+"input/accident/");
+            scenario.addScenarioElement("accidentModelFile", properties.main.baseDirectory + "input/accident/");
 
             // Injury model
-            AccidentRateModelMCR model = new AccidentRateModelMCR(scenario, 1.f/scalingFactor, day);
+            AccidentRateModelMCR model = new AccidentRateModelMCR(scenario, 1.f / scalingFactor, day);
 
             model.runCasualtyRateMCR(); // number of casualties per link (max 1 per link, otherwise 0)
             //model.computeLinkLevelInjuryRisk(); // R=1/v where v is the traffic volume
             //model.computePersonLevelInjuryRiskOffline();
 
 
-            for(Id<Link> linkId : model.getAccidentsContext().getLinkId2info().keySet()){
+            for (Id<Link> linkId : model.getAccidentsContext().getLinkId2info().keySet()) {
                 //((de.tum.bgu.msm.scenarios.health.HealthDataContainerImpl)dataContainer).getLinkInfoByDay().get(day).get(linkId).setLightCasualityExposureByAccidentTypeByTime(model.getAccidentsContext().getLinkId2info().get(linkId).getLightCasualityExposureByAccidentTypeByTime());
                 //((DataContainerHealth) dataContainer).getLinkInfo().get(linkId).setSevereFatalCasualityExposureByAccidentTypeByTime(model.getAccidentsContext().getLinkId2info().get(linkId).getSevereFatalCasualityExposureByAccidentTypeByTime());
                 ((HealthDataContainerImpl) dataContainer).getLinkInfoByDay(day).get(linkId).setSevereFatalCasualityExposureByAccidentTypeByTime(model.getAccidentsContext().getLinkId2info().get(linkId).getSevereFatalCasualityExposureByAccidentTypeByTime());

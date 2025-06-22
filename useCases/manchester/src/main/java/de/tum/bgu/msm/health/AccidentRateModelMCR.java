@@ -537,13 +537,12 @@ public class AccidentRateModelMCR {
         }
         log.info("Link casualty frequency calculation completed.");
 
-        /*
+
         try {
             writeOutCasualtyRate();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-         */
 
         // Compute link-level injury risk R=1/v (v= traffic volume)
         computeLinkLevelInjuryRisk();
@@ -619,14 +618,12 @@ public class AccidentRateModelMCR {
         }
         log.info("Link casualty exposure completed.");
 
-        /*
         try {
             writeOutExposure();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
-         */
     }
 
     public void computePersonLevelInjuryRiskOffline(){

@@ -82,8 +82,8 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
     public HealthExposureModelMCR(DataContainer dataContainer, Properties properties, Random random, Config config) {
         super(dataContainer, properties, random);
         this.initialMatsimConfig = config;
-        //simulatedDays = Arrays.asList(Day.thursday,Day.saturday,Day.sunday);
-        simulatedDays = Arrays.asList(Day.saturday, Day.sunday);
+        simulatedDays = Arrays.asList(Day.thursday,Day.saturday,Day.sunday);
+        //simulatedDays = Arrays.asList(Day.saturday, Day.sunday);
     }
 
     @Override
@@ -99,7 +99,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
     @Override
     public void endYear(int year) {
         //TODO: clean up the code to be compatible for different simulation setting
-        if((properties.healthData.baseExposureFile ==null && year == properties.main.startYear) || properties.healthData.exposureModelYears.contains(year)) {
+        if((properties.healthData.baseExposureFile == null && year == properties.main.startYear) || properties.healthData.exposureModelYears.contains(year)) {
             logger.warn("Health model end year:" + year);
             TreeSet<Integer> sortedYears = new TreeSet<>(properties.transportModel.transportModelYears);
             latestMatsimYear = sortedYears.floor(year);

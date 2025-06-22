@@ -140,7 +140,8 @@ public class CasualtyRateCalculationMCR {
 
              */
             //casualtyRateByTimeOfDay.put(hour, (float) val);
-            casualtyRateByTimeOfDay.put(hour, (float) (probZeroCrash/calibrationFactor));
+            // casualtyRateByTimeOfDay.put(hour, (float) (probZeroCrash/calibrationFactor));
+            casualtyRateByTimeOfDay.put(hour, (float) (probZeroCrash/2.19));
         }
 
         switch (accidentSeverity) {
