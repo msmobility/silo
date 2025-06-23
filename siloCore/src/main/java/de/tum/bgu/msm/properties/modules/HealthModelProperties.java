@@ -90,7 +90,7 @@ public class HealthModelProperties {
 
         baseExposureFile = PropertiesUtil.getStringProperty(bundle, "base.exposure.file", null);
 
-        exposureModelYears = Arrays.stream((PropertiesUtil.getIntPropertyArray(bundle, "exposure.model.years", new int[]{2030,2040,2050}))).boxed().collect(Collectors.toList());
+        exposureModelYears = Arrays.stream((PropertiesUtil.getIntPropertyArray(bundle, "exposure.model.years", new int[]{-1}))).boxed().collect(Collectors.toList());
 
         bus_network = PropertiesUtil.getStringProperty(bundle, "matsim.network.bus", "input/mito/trafficAssignment/network_transit_hbefa.xml");
 
