@@ -69,8 +69,8 @@ public class AccidentModelMCR extends AbstractModel implements ModelUpdateListen
 
         if (targetYear != -1) {
             // todo: lastestMatsimYear to be generalized ...
-            //latestMatsimYear = targetYear;
-            runAccidentRateModel(targetYear);
+            latestMatsimYear = targetYear;
+            runAccidentRateModel(latestMatsimYear);
             System.gc();
         }
     }
