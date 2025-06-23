@@ -58,7 +58,7 @@ public class AccidentModelMCR extends AbstractModel implements ModelUpdateListen
         if (properties.main.startYear == year &&
                 properties.healthData.baseExposureFile != null &&
                 !properties.healthData.exposureModelYears.isEmpty() &&
-                !properties.healthData.exposureModelYears.contains(Collections.singleton(-1))) {
+                !properties.healthData.exposureModelYears.contains(-1)) {
             targetYear = year;
         }
 
@@ -68,7 +68,8 @@ public class AccidentModelMCR extends AbstractModel implements ModelUpdateListen
         }
 
         if (targetYear != -1) {
-            latestMatsimYear = targetYear;
+            // todo: lastestMatsimYear to be generalized ...
+            //latestMatsimYear = targetYear;
             runAccidentRateModel(targetYear);
             System.gc();
         }
@@ -111,6 +112,8 @@ public class AccidentModelMCR extends AbstractModel implements ModelUpdateListen
                 ((HealthDataContainerImpl) dataContainer).getLinkInfoByDay(day).get(linkId).setSevereFatalCasualityExposureByAccidentTypeByTime(model.getAccidentsContext().getLinkId2info().get(linkId).getSevereFatalCasualityExposureByAccidentTypeByTime());
             }
             model.getAccidentsContext().reset();
+
+            //
         }
     }
 }
