@@ -11,6 +11,8 @@ import org.apache.logging.log4j.Logger;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 
+import java.io.IOException;
+
 /**
  * Implements SILO for the Great Melbourne region
  *
@@ -23,7 +25,7 @@ public class SiloMEL {
 
     private final static Logger logger = LogManager.getLogger(SiloMEL.class);
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         Properties properties = SiloUtil.siloInitialization(args[0]);
 

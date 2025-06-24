@@ -10,6 +10,8 @@ import org.apache.logging.log4j.Logger;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 
+import java.io.IOException;
+
 /**
  * Implements SILO for the Greater Melbourne
  *
@@ -20,7 +22,7 @@ public class RunHealthDiseaseLongitudinal {
 
     private final static Logger logger = LogManager.getLogger(RunHealthDiseaseLongitudinal.class);
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         Properties properties = SiloUtil.siloInitialization(args[0]);
 

@@ -19,6 +19,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Objects;
 
@@ -38,7 +39,7 @@ public class SiloMELAWS {
     private final static String instanceId = "i-0994f34e4fb1b499d"; // Replace with your instance id
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         Properties properties = SiloUtil.siloInitialization(args[0]);
 
