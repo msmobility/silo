@@ -3,6 +3,7 @@ package de.tum.bgu.msm.io;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.health.data.ActivityLocation;
 import de.tum.bgu.msm.health.data.DataContainerHealth;
+import de.tum.bgu.msm.util.parseMEL;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,7 +23,7 @@ public class PoiReader {
     }
 
     public void readData(String path) {
-        logger.info("Reading poi data from csv file");
+        logger.info("Reading poi data from csv file ({})", path);
 
         String recString = "";
         int recCount = 0;
@@ -40,7 +41,7 @@ public class PoiReader {
                 recCount++;
                 String[] lineElements = recString.split(",");
                 int id = Integer.parseInt(lineElements[posId]);
-                int zoneId = Integer.parseInt(lineElements[posZoneId]);
+                int zoneId = parseMEL.zoneParse(lineElements[posZoneId]);
                 double coordX = Double.parseDouble(lineElements[posCoordX]);
                 double coordY = Double.parseDouble(lineElements[posCoordY]);
 
@@ -51,6 +52,7 @@ public class PoiReader {
         } catch (IOException e) {
             logger.fatal("IO Exception caught reading poi file: " + path);
             logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
+            throw new RuntimeException("IO Exception caught reading poi file: " + path);
         }
         logger.info("Finished reading " + recCount + " poi.");
     }

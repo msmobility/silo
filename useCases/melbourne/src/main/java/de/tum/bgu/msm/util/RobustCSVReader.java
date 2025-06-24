@@ -9,7 +9,7 @@ import com.opencsv.CSVReader;
 public class RobustCSVReader extends TableDataSet {
 
     private final List<String[]> rows = new ArrayList<>();
-    private String[] headers;
+    private final String[] headers;
 
     public RobustCSVReader(String fileName) {
         try (CSVReader reader = new CSVReader(new FileReader(fileName))) {
@@ -65,5 +65,9 @@ public class RobustCSVReader extends TableDataSet {
             }
         }
         return -1;
+    }
+
+    public int getRowCount() {
+        return rows.size();
     }
 }

@@ -49,7 +49,6 @@ public class DwellingReaderMEL implements DwellingReader {
             recString = in.readLine();
 
             String[] header = parseMEL.stringParse(recString.split(","));
-            logger.info("Reading dwelling record " + recCount + " from " + path);
             int posId = SiloUtil.findPositionInArray("id", header);
             int posZone = SiloUtil.findPositionInArray("zone", header);
             int posHh = SiloUtil.findPositionInArray("hhID", header);
@@ -73,7 +72,7 @@ public class DwellingReaderMEL implements DwellingReader {
                 recCount++;
                 String[] lineElements = parseMEL.stringParse(recString.split(","));
                 int id = parseMEL.intParse(lineElements[posId]);
-                int zoneId = parseMEL.intParse(lineElements[posZone]);
+                int zoneId = parseMEL.zoneParse(lineElements[posZone]);
                 int hhId =  parseMEL.intParse(lineElements[posHh]);
                 String typeString = parseMEL.stringParse(lineElements[posType]);
                 DwellingType type = dwellingTypes.valueOf(typeString.toUpperCase());
