@@ -78,29 +78,14 @@ public class SchoolDataImpl implements SchoolData {
         }
     }
 
-    private void setSchoolSearchTree() {
-        Envelope bounds = loadEnvelope();
-        double minX = bounds.getMinX()-1;
-        double minY = bounds.getMinY()-1;
-        double maxX = bounds.getMaxX()+1;
-        double maxY = bounds.getMaxY()+1;
+    private void setSchoolSearchTree(double minx, double miny, double maxx, double maxy) {
+        double minX = minx-1;
+        double minY = miny-1;
+        double maxX = maxx+1;
+        double maxY = maxy+1;
         this.primarySearchTree = new QuadTree<>(minX,minY,maxX,maxY);
         this.secondarySearchTree = new QuadTree<>(minX,minY,maxX,maxY);
         this.tertiarySearchTree = new QuadTree<>(minX,minY,maxX,maxY);
-    }
-
-
-    private Envelope loadEnvelope() {
-        //TODO: Remove minX,minY,maxX,maxY when implementing study area shapefile in Geodata 09 Oct QZ'
-        File schoolsShapeFile = new File(properties.main.baseDirectory + properties.schoolData.schoolsShapeFile);
-
-        try {
-            FileDataStore dataStore = FileDataStoreFinder.getDataStore(schoolsShapeFile);
-            return dataStore.getFeatureSource().getBounds();
-        } catch (IOException e) {
-            logger.error("Error reading file " + schoolsShapeFile);
-            throw new RuntimeException(e);
-        }
     }
 
     @Override
@@ -178,7 +163,19 @@ public class SchoolDataImpl implements SchoolData {
     @Override
     public void setup() {
         logger.info("Setup of schools.");
-        setSchoolSearchTree();
+        double minX = Double.POSITIVE_INFINITY;
+        double maxX = Double.NEGATIVE_INFINITY;
+        double minY = Double.POSITIVE_INFINITY;
+        double maxY = Double.NEGATIVE_INFINITY;
+
+        for (School school : schools.values()) {
+            Coordinate coord = ((MicroLocation) school).getCoordinate();
+            if (coord.x < minX) minX = coord.x;
+            if (coord.x > maxX) maxX = coord.x;
+            if (coord.y < minY) minY = coord.y;
+            if (coord.y > maxY) maxY = coord.y;
+        }
+        setSchoolSearchTree(minX, minY, maxX, maxY);
         for(School school: schools.values()) {
             addSchoolToSearchTree(school);
         }
