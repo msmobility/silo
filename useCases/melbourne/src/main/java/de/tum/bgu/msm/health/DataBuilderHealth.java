@@ -160,6 +160,8 @@ public class DataBuilderHealth {
             if (rows < 2) {
                 logger.error("Development data file {} has {} rows (is empty or does not contain a header).", devFilePath, rows);
                 mockDevelopmentTableDataSet(devFilePath, geoData);
+            } else {
+                logger.info("Development data file {} exists and has {} rows.", devFilePath, rows);
             }
         } else {
             mockDevelopmentTableDataSet(devFilePath, geoData);
