@@ -1,6 +1,8 @@
 package de.tum.bgu.msm.health;
 
+import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.data.MelbourneDwellingTypes;
+import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.accessibility.AccessibilityImpl;
 import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
@@ -15,27 +17,32 @@ import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.health.data.LinkInfo;
 import de.tum.bgu.msm.health.io.DefaultSpeedReader;
 import de.tum.bgu.msm.health.io.DoseResponseLookupReader;
-import de.tum.bgu.msm.health.io.HealthTransitionTableReader;
 import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.io.input.*;
 import de.tum.bgu.msm.matsim.MatsimTravelTimesAndCosts;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.config.Config;
 import org.matsim.core.network.NetworkUtils;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
+import static de.tum.bgu.msm.util.CsvWriter.writeTableDataSetToCSV;
 
 public class DataBuilderHealth {
 
     private DataBuilderHealth() {
     }
 
-    public static HealthDataContainerImpl getModelDataForMelbourne(Properties properties, Config config) {
+    public static HealthDataContainerImpl getModelDataForMelbourne(Properties properties, Config config) throws IOException {
 
         HouseholdData householdData = new HouseholdDataImpl();
         JobData jobData = new JobDataImpl();
@@ -69,7 +76,11 @@ public class DataBuilderHealth {
         //TODO: MEL
         //JobFactoryMuc jobFactory = new JobFactoryMuc();
         //jobFactory.readWorkingTimeDistributions(properties);
-
+        String devFilePath = properties.main.baseDirectory + properties.geo.landUseAndDevelopmentFile;
+        File devFile = new File(devFilePath);
+        if (!devFile.exists()) {
+            mockDevelopmentTableDataSet(devFilePath,geoData);
+        }
         RealEstateDataManager realEstateDataManager = new RealEstateDataManagerImpl(
                 new MelbourneDwellingTypes(), dwellingData, householdData, geoData, new DwellingFactoryMEL(new DwellingFactoryImpl()), properties);
 
@@ -143,4 +154,47 @@ public class DataBuilderHealth {
         MicroDataScaler microDataScaler = new MicroDataScaler(dataContainer, properties);
         microDataScaler.scale();
     }
+
+
+    private static void mockDevelopmentTableDataSet(String devFilePath, GeoData geoData) throws IOException {
+        Map<Integer, Zone> zones = geoData.getZones();
+        int n = zones.size();
+        String[] colNames = {"Zone", "Region", "SFD", "SFA", "FLAT", "MH", "DevCapacity", "DevLandUse"};
+        TableDataSet developmentTable = new TableDataSet();
+        developmentTable.setColumnLabels(colNames);
+        int[] zoneIds = new int[n];
+        int[] regionIds = new int[n];
+        int[] sfd = new int[n];
+        int[] sfa = new int[n];
+        int[] flat = new int[n];
+        int[] mh = new int[n];
+        int[] devCapacity = new int[n];
+        double[] devLandUse = new double[n];
+        int i = 0;
+        for (Zone zone : zones.values()) {
+            zoneIds[i] = zone.getId();
+            regionIds[i] = zone.getRegion().getId();
+            sfd[i] = 1; // Single-family dwelling
+            sfa[i] = 1; // Single-family apartment
+            flat[i] = 1; // Flat
+            mh[i] = 1; // Multi-family house
+            devCapacity[i] = 100; // Mock capacity
+            devLandUse[i] = 0.5; // Mock land use
+            i++;
+        }
+        developmentTable.appendColumn(zoneIds,"Zone");
+        developmentTable.appendColumn(regionIds,"Region");
+        developmentTable.appendColumn(sfd,"SFD");
+        developmentTable.appendColumn(sfa,"SFA");
+        developmentTable.appendColumn(flat,"FLAT");
+        developmentTable.appendColumn(mh,"MH");
+        developmentTable.appendColumn(devCapacity,"DevCapacity");
+        developmentTable.appendColumn(devLandUse,"DevLandUse");
+        // Write the mock development table to a CSV file
+        writeTableDataSetToCSV(developmentTable,devFilePath);
+        Logger logger = LogManager.getLogger(RealEstateDataManagerImplMEL.class);
+        logger.info("Mock development table created with {} zones at {}", n, devFilePath);
+
+    }
+
 }
