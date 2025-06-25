@@ -82,8 +82,8 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
     public HealthExposureModelMCR(DataContainer dataContainer, Properties properties, Random random, Config config) {
         super(dataContainer, properties, random);
         this.initialMatsimConfig = config;
-        //simulatedDays = Arrays.asList(Day.thursday,Day.saturday,Day.sunday);
-        simulatedDays = Arrays.asList(Day.saturday, Day.sunday);
+        simulatedDays = Arrays.asList(Day.thursday,Day.saturday,Day.sunday);
+        //simulatedDays = Arrays.asList(Day.saturday, Day.sunday);
     }
 
     @Override
