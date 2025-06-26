@@ -16,19 +16,16 @@
 	</licenses>
 
 	<scm>
-		<url>https://github.com/msmobility/silo</url>
-		<connection>scm:git:git://github.com/msmobility/silo.git</connection>
-		<developerConnection>scm:git:git@github.com:msmobility/silo.git</developerConnection>
+		<url>https://github.com/jibeproject/silo</url>
+		<connection>scm:git:git://github.com/jibeproject/silo.git</connection>
+		<developerConnection>scm:git:git@github.com:jibeproject/silo.git</developerConnection>
 	</scm>
 
 	<distributionManagement>
-		<snapshotRepository>
-			<id>msm</id>
-			<url>https://maven.cloudsmith.io/msmobility/silo/</url>
-		</snapshotRepository>
 		<repository>
-			<id>msm-snapshots</id>
-			<url>https://maven.cloudsmith.io/msmobility/silo/</url>
+			<id>github</id>
+			<name>GitHub Packages</name>
+			<url>https://maven.pkg.github.com/jibeproject/silo</url>
 		</repository>
 	</distributionManagement>
 
@@ -47,7 +44,7 @@
 		</repository>
 		<repository>
 			<id>mito</id>
-			<url>https://dl.cloudsmith.io/public/msmobility/mito/maven/</url>
+			<url>https://maven.pkg.github.com/jibeproject/mito</url>
 			<releases>
 				<enabled>true</enabled>
 				<updatePolicy>always</updatePolicy>
@@ -59,7 +56,7 @@
 		</repository>
 		<repository>
 			<id>silo</id>
-			<url>https://dl.cloudsmith.io/public/msmobility/silo/maven/</url>
+			<url>https://maven.pkg.github.com/jibeproject/silo</url>
 			<releases>
 				<enabled>true</enabled>
 				<updatePolicy>always</updatePolicy>

@@ -149,7 +149,7 @@ public final class MatsimTransportModelMELHealth implements TransportModel {
         } else if (properties.healthData.exposureModelYears.contains(year)){
             runMitoModel (year);
 
-            logger.warn( "Updating reginal travel times");
+            logger.warn( "Updating regional travel times");
             final TravelTimes mainTravelTimes = dataContainer.getTravelTimes();
 
             if (mainTravelTimes instanceof SkimTravelTimes) {
