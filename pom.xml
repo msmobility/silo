@@ -43,7 +43,7 @@
 			</snapshots>
 		</repository>
 		<repository>
-			<id>mito</id>
+			<id>jibe</id>
 			<url>https://maven.pkg.github.com/jibeproject/mito</url>
 			<releases>
 				<enabled>true</enabled>
@@ -55,8 +55,32 @@
 			</snapshots>
 		</repository>
 		<repository>
-			<id>silo</id>
+			<id>jibe</id>
 			<url>https://maven.pkg.github.com/jibeproject/silo</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>mito</id>
+			<url>https://dl.cloudsmith.io/public/msmobility/mito/maven/</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>silo</id>
+			<url>https://dl.cloudsmith.io/public/msmobility/silo/maven/</url>
 			<releases>
 				<enabled>true</enabled>
 				<updatePolicy>always</updatePolicy>
