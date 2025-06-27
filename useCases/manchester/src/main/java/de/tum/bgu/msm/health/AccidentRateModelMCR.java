@@ -1176,7 +1176,7 @@ public class AccidentRateModelMCR {
 
                 //lightCasualtyExposureByTime.put(hour,lightCasualtyExposure);
                 // TODO: can be optimized, if 0 do not put
-                severeCasualtyExposure = severeCasualtyExposure * 2.0f;
+                //severeCasualtyExposure = severeCasualtyExposure * 2.0f;
                 severeCasualtyExposureByTime.put(hour, severeCasualtyExposure);
             }
             //this.accidentsContext.getLinkId2info().get(link.getId()).getLightCasualityExposureByAccidentTypeByTime().put(accidentType,lightCasualtyExposureByTime);

@@ -65,6 +65,7 @@ public class RunExposureHealthOffline {
         AccidentModelMCR accidentModel = new AccidentModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
         HealthExposureModelMCR exposureModelMCR = new HealthExposureModelMCR(dataContainer, properties, SiloUtil.provideNewRandom(),config);
 
+        // TODO: should sport PA be added ?
         //
         accidentModel.endYear(2021);
         exposureModelMCR.endYear(2021);
