@@ -82,8 +82,8 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
     public HealthExposureModelMCR(DataContainer dataContainer, Properties properties, Random random, Config config) {
         super(dataContainer, properties, random);
         this.initialMatsimConfig = config;
-        //simulatedDays = Arrays.asList(Day.thursday,Day.saturday,Day.sunday);
-        simulatedDays = Arrays.asList(Day.saturday, Day.sunday);
+        simulatedDays = Arrays.asList(Day.thursday,Day.saturday,Day.sunday);
+        //simulatedDays = Arrays.asList(Day.saturday, Day.sunday);
     }
 
     @Override
@@ -593,7 +593,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         double pathFatalityRisk = 0;
 
         // Manchester
-        double pathInjuryRisk = 0.0;
+        double pathInjuryRisk = 1.0;
         Day currentDay; // by default
         if(trip.getDepartureDay().equals(Day.saturday) || trip.getDepartureDay().equals(Day.sunday)){
             currentDay = trip.getDepartureDay();
@@ -715,8 +715,8 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
                 double AgeGenderRR = 1.;
                 //AgeGenderRR = getCasualtyRR_byAge_Gender(genderPerson, agePerson, trip.getTripMode());
-                //pathInjuryRisk *= (1 - linkInjuryRisk * AgeGenderRR);
-                pathInjuryRisk += (linkInjuryRisk * AgeGenderRR);
+                pathInjuryRisk *= (1 - linkInjuryRisk * AgeGenderRR);
+                //pathInjuryRisk += (linkInjuryRisk * AgeGenderRR);
             }
 
             pathMarginalMetHours += linkMarginalMetHour;
@@ -738,10 +738,13 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
          */
 
         // Manchester
-        //pathInjuryRisk = 1- pathInjuryRisk;
+        pathInjuryRisk = 1- pathInjuryRisk;
+        /*
         if(pathInjuryRisk > 1.){ // safe check
             pathInjuryRisk = 1.;
         }
+
+         */
 
         trip.updateTravelRiskMap(Map.of("severeFatalInjury", (float) pathInjuryRisk));
 
