@@ -1,7 +1,6 @@
 package de.tum.bgu.msm.health;
 
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.core.network.NetworkUtils;
 import routing.components.JctStress;
 import routing.components.LinkStress;
 
@@ -26,11 +25,12 @@ public class OsmLink {
     public double bikeStressJct;
     public double walkStressJct;
 
-    public double carHourlyDemand;
-    public double truckHourlyDemand;
-    public double pedHourlyDemand;
-    public double bikeHourlyDemand;
-    public double motorHourlyDemand;
+    // Updated to arrays for hourly demands
+    public double[] carHourlyDemand = new double[24];
+    public double[] truckHourlyDemand = new double[24];
+    public double[] pedHourlyDemand = new double[24];
+    public double[] bikeHourlyDemand = new double[24];
+    public double[] motorHourlyDemand = new double[24];
 
     public Set<Link> networkLinks;
 
@@ -54,6 +54,11 @@ public class OsmLink {
             this.bikeStress = 0.0;
             this.bikeStressJct = 0.0;
             this.walkStressJct = 0.0;
+            Arrays.fill(carHourlyDemand, 0.0);
+            Arrays.fill(truckHourlyDemand, 0.0);
+            Arrays.fill(pedHourlyDemand, 0.0);
+            Arrays.fill(bikeHourlyDemand, 0.0);
+            Arrays.fill(motorHourlyDemand, 0.0);
             return;
         }
 
@@ -91,7 +96,6 @@ public class OsmLink {
                 .map(Map.Entry::getKey)
                 .orElse(0.0);
 
-        // Compute bikeStress (weighted average, excluding NaN values)
         double weightedSum = 0.0;
         double totalWeight = 0.0;
         for (Link link : networkLinks) {
@@ -104,7 +108,6 @@ public class OsmLink {
         }
         this.bikeStress = totalWeight > 0 ? weightedSum / totalWeight : 0.0;
 
-        // Compute bikeStressJct (max, excluding NaN values)
         this.bikeStressJct = networkLinks.stream()
                 .mapToDouble(link -> {
                     double stress = JctStress.getStress(link, "bike");
@@ -113,7 +116,6 @@ public class OsmLink {
                 .max()
                 .orElse(0.0);
 
-        // Compute walkStressJct (max, excluding NaN values)
         this.walkStressJct = networkLinks.stream()
                 .mapToDouble(link -> {
                     double stress = JctStress.getStress(link, "walk");
@@ -134,6 +136,6 @@ public class OsmLink {
     }
 
     public Set<Link> getNetworkLinks() {
-        return new HashSet<>(networkLinks); // Return a copy to prevent external modification
+        return new HashSet<>(networkLinks);
     }
 }
