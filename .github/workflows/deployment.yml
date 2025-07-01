@@ -26,6 +26,6 @@ jobs:
         run: mvn test -DforkMode=always --fail-at-end --batch-mode -Dmatsim.preferLocalDtds=true
 
       - name: Publish to GitHub Packages
-        run: mvn deploy -DskipTests=true --fail-at-end --batch-mode -Dmatsim.preferLocalDtds=true -DuniqueVersion=true -e -X
+        run: mvn deploy -DskipTests=true --fail-at-end --batch-mode -Dmatsim.preferLocalDtds=true -DuniqueVersion=true -e
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

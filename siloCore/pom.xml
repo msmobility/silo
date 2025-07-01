@@ -76,23 +76,6 @@
             <groupId>org.matsim</groupId>
             <artifactId>matsim</artifactId>
             <version>${matsimVersion}</version>
-            <type>jar</type>
-            <scope>compile</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>javax.media</groupId>
-                    <artifactId>jai_core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>jgridshift</groupId>
-                    <artifactId>jgridshift</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.matsim</groupId>
-            <artifactId>matsim</artifactId>
-            <version>${matsimVersion}</version>
             <exclusions>
                 <exclusion>
                     <groupId>javax.media</groupId>
@@ -133,8 +116,8 @@
         </dependency>
         <dependency>
             <groupId>de.tum.bgu.msm.mito</groupId>
-            <artifactId>mitoCore</artifactId>
-            <version>master-SNAPSHOT</version>
+            <artifactId>mito-core</artifactId>
+            <version>0.1.0-jibe-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>javax.media</groupId>
@@ -157,7 +140,30 @@
         <dependency>
             <groupId>de.tum.bgu.msm.mito</groupId>
             <artifactId>manchester</artifactId>
-            <version>master-SNAPSHOT</version>
+            <version>0.1.0-jibe-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.media</groupId>
+                    <artifactId>jai_core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jgridshift</groupId>
+                    <artifactId>jgridshift</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>jfree</groupId>
+                    <artifactId>jfreechart</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>de.tum.bgu.msm.mito</groupId>
+            <artifactId>melbourne</artifactId>
+            <version>0.1.0-jibe-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>javax.media</groupId>
