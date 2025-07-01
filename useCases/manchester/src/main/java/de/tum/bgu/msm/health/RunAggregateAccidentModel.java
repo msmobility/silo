@@ -96,7 +96,7 @@ public class RunAggregateAccidentModel {
     }
 
     private static int getOsmId(Link link) {
-        Object osmIdAttr = link.getAttributes().getAttribute("osmId");
+        Object osmIdAttr = link.getAttributes().getAttribute("osmID");
         if (osmIdAttr instanceof String) {
             try {
                 return Integer.parseInt((String) osmIdAttr);
