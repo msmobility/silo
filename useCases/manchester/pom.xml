@@ -31,7 +31,7 @@
         <dependency>
             <groupId>de.tum.bgu.msm.mito</groupId>
             <artifactId>manchester</artifactId>
-            <version>master-SNAPSHOT</version>
+            <version>0.1.0-jibe-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>javax.media</groupId>
@@ -54,7 +54,7 @@
         <dependency>
             <groupId>de.tum.bgu.msm.mito</groupId>
             <artifactId>mito7days</artifactId>
-            <version>master-SNAPSHOT</version>
+            <version>0.1.0-jibe-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>javax.media</groupId>
@@ -76,8 +76,8 @@
         </dependency>
         <dependency>
             <groupId>de.tum.bgu.msm.mito</groupId>
-            <artifactId>mitoCore</artifactId>
-            <version>master-SNAPSHOT</version>
+            <artifactId>mito-core</artifactId>
+            <version>0.1.0-jibe-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>javax.media</groupId>

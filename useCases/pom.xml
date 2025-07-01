@@ -15,13 +15,7 @@
 
     <modules>
         <module>munich</module>
-        <module>maryland</module>
-        <module>perth</module>
-        <module>kagawa</module>
-        <module>austin</module>
-        <module>capeTown</module>
         <module>fabiland</module>
-        <module>bangkok</module>
         <module>manchester</module>
         <module>melbourne</module>
     </modules>

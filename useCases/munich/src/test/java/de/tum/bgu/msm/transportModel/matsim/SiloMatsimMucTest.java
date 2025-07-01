@@ -70,7 +70,7 @@ public class SiloMatsimMucTest {
         Config config = ConfigUtils.loadConfig("./test/muc/matsim_input/config.xml") ;
 
         try {
-            utils.initWithoutJUnitForFixture(this.getClass(), this.getClass().getMethod("testMain", null));
+            utils.initWithoutJUnitForFixture(this.getClass(), this.getClass().getMethod("testMain", (Class<?>) null));
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
         }
