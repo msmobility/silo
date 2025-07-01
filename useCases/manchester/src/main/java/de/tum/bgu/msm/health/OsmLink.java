@@ -64,9 +64,9 @@ public class OsmLink {
 
         Link first = networkLinks.iterator().next();
 
-        this.roadType = getStringAttribute(first, "type", "residential");
-        this.highway = getStringAttribute(first, "highway", "unclassified");
-        this.onwysmm = getStringAttribute(first, "onwysmm", "Two Way");
+        this.roadType = getStringAttribute(first, "type", "none");
+        this.highway = getStringAttribute(first, "highway", "none");
+        this.onwysmm = getStringAttribute(first, "onwysmm", "none");
         this.speedLimitMPH = getDoubleAttribute(first, "speedLimitMPH", 0.0);
 
         int bikeAllowedInt = networkLinks.stream()
