@@ -67,7 +67,6 @@ public class RunAggregateAccidentModel {
             // Select up to 10 OsmLinks
             List<OsmLink> samples = osmLinks.stream().limit(10).collect(Collectors.toList());
             // Choose a specific hour for output (e.g., hour 8)
-            int outputHour = 8;
 
             for (OsmLink sample : samples) {
                 System.out.println("OsmLink ID: " + sample.osmId);
@@ -83,11 +82,14 @@ public class RunAggregateAccidentModel {
                 System.out.println("Bike Stress: " + sample.bikeStress);
                 System.out.println("Bike Stress Jct: " + sample.bikeStressJct);
                 System.out.println("Walk Stress Jct: " + sample.walkStressJct);
-                System.out.println("Car Hourly Demand (Hour " + outputHour + "): " + sample.carHourlyDemand[outputHour]);
-                System.out.println("Truck Hourly Demand (Hour " + outputHour + "): " + sample.truckHourlyDemand[outputHour]);
-                System.out.println("Ped Hourly Demand (Hour " + outputHour + "): " + sample.pedHourlyDemand[outputHour]);
-                System.out.println("Bike Hourly Demand (Hour " + outputHour + "): " + sample.bikeHourlyDemand[outputHour]);
-                System.out.println("Motor Hourly Demand (Hour " + outputHour + "): " + sample.motorHourlyDemand[outputHour]);
+                for(int outputHour=0; outputHour<24; outputHour++){
+                    System.out.println("Car Hourly Demand (Hour " + outputHour + "): " + sample.carHourlyDemand[outputHour]);
+                    System.out.println("Truck Hourly Demand (Hour " + outputHour + "): " + sample.truckHourlyDemand[outputHour]);
+                    System.out.println("Ped Hourly Demand (Hour " + outputHour + "): " + sample.pedHourlyDemand[outputHour]);
+                    System.out.println("Bike Hourly Demand (Hour " + outputHour + "): " + sample.bikeHourlyDemand[outputHour]);
+                    System.out.println("Motor Hourly Demand (Hour " + outputHour + "): " + sample.motorHourlyDemand[outputHour]);
+                    System.out.println("*******");
+                }
                 System.out.println("------------------------");
             }
         } else {
