@@ -170,7 +170,8 @@
 
 					<!--execute each test in separate JVM (slow, but otherwise it does not-->
 					<!--work, and no problem as long as there are only integration tests):-->
-					<forkMode>always</forkMode>
+					<forkCount>1</forkCount>
+					<reuseForks>false</reuseForks>
 
 					<!-- avoid out of memory errors: -->
 					<argLine>-Xmx2000m -Djava.awt.headless=true
