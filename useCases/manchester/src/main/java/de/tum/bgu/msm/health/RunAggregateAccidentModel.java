@@ -5,6 +5,7 @@ import de.tum.bgu.msm.health.injury.AnalysisEventHandler;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.events.EventsManagerImpl;
@@ -27,6 +28,28 @@ public class RunAggregateAccidentModel {
         Config config = ConfigUtils.createConfig();
         config.network().setInputFile(networkFile);
         Scenario scenario = ScenarioUtils.loadScenario(config);
+
+        // Check
+
+        // Iterate over all links in the network
+        for (Link link : scenario.getNetwork().getLinks().values()) {
+            System.out.println("Link ID: " + link.getId());
+            System.out.println("  From Node: " + link.getFromNode().getId());
+            System.out.println("  To Node: " + link.getToNode().getId());
+            System.out.println("  Length: " + link.getLength() + " meters");
+            System.out.println("  Free Speed: " + link.getFreespeed() + " m/s");
+            System.out.println("  Capacity: " + link.getCapacity() + " vehicles/hour");
+            System.out.println("  Number of Lanes: " + link.getNumberOfLanes());
+            System.out.println("  Allowed Modes: " + link.getAllowedModes());
+            System.out.println("  Attributes: ");
+
+            // Print custom attributes if any
+            link.getAttributes().getAsMap().forEach((key, value) ->
+                    System.out.println("    " + key + ": " + value));
+
+            System.out.println("--------------------------------");
+            break;
+        }
 
         // AccidentContext
         AccidentsContext accidentsContext = new AccidentsContext();
