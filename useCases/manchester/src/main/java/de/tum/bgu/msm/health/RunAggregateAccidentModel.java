@@ -2,6 +2,7 @@ package de.tum.bgu.msm.health;
 
 import de.tum.bgu.msm.health.injury.AccidentsContext;
 import de.tum.bgu.msm.health.injury.AnalysisEventHandler;
+import de.tum.bgu.msm.health.injury.AnalysisEventHandler2;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
@@ -63,7 +64,7 @@ public class RunAggregateAccidentModel {
         String eventsFileCarTruck = "/mnt/usb-TOSHIBA_EXTERNAL_USB_20241124015626F-0:0-part1/manchester/scenOutput/base/matsim/2021/sunday/car/2021.output_events.xml.gz";
         String eventsFileBikePed = "/mnt/usb-TOSHIBA_EXTERNAL_USB_20241124015626F-0:0-part1/manchester/scenOutput/base/matsim/2021/sunday/bikePed/2021.output_events.xml.gz";
 
-        AnalysisEventHandler analysisEventHandler = new AnalysisEventHandler();
+        AnalysisEventHandler2 analysisEventHandler = new AnalysisEventHandler2();
         analysisEventHandler.setScenario(scenario);
         analysisEventHandler.setAccidentsContext(accidentsContext);
         EventsManagerImpl events = new EventsManagerImpl();
@@ -153,7 +154,7 @@ public class RunAggregateAccidentModel {
         return 0; // Default if osmId is missing or invalid
     }
 
-    private static void computeDemandAttributes(OsmLink osmLink, AnalysisEventHandler analyzer) {
+    private static void computeDemandAttributes(OsmLink osmLink, AnalysisEventHandler2 analyzer) {
         Set<Link> links = osmLink.getNetworkLinks();
         if (links.isEmpty()) {
             Arrays.fill(osmLink.carHourlyDemand, 0.0);
