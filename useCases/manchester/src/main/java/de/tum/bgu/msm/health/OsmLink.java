@@ -12,7 +12,7 @@ public class OsmLink {
     int osmId;
     public String roadType;
     public String highway;
-    public String onwysmm;
+    public boolean onwysmm;
     public double speedLimitMPH;
 
     public boolean bikeAllowed;
@@ -44,7 +44,7 @@ public class OsmLink {
             // Set default values if no links
             this.roadType = "residential";
             this.highway = "unclassified";
-            this.onwysmm = "Two Way";
+            this.onwysmm = false;
             this.speedLimitMPH = 0.0;
             this.bikeAllowed = false;
             this.carAllowed = false;
@@ -66,7 +66,7 @@ public class OsmLink {
 
         this.roadType = getStringAttribute(first, "type", "none");
         this.highway = getStringAttribute(first, "highway", "none");
-        this.onwysmm = getStringAttribute(first, "onwysmm", "none");
+        this.onwysmm = getBooleanAttribute(first, "onwysmm", false);
         this.speedLimitMPH = getDoubleAttribute(first, "speedLimitMPH", 0.0);
 
         int bikeAllowedInt = networkLinks.stream()
@@ -85,7 +85,7 @@ public class OsmLink {
         this.walkAllowed = walkAllowedInt == 1;
 
         double totalLength = networkLinks.stream().mapToDouble(Link::getLength).sum();
-        this.lengthSum = onwysmm.startsWith("Two Way") ? totalLength / 2.0 : totalLength;
+        this.lengthSum = onwysmm ? totalLength / 2.0 : totalLength;
 
         Map<Double, Long> widthFreq = networkLinks.stream()
                 .map(l -> getDoubleAttribute(l, "width", 0.0))
@@ -133,6 +133,11 @@ public class OsmLink {
     private String getStringAttribute(Link l, String key, String defaultVal) {
         Object attr = l.getAttributes().getAttribute(key);
         return attr instanceof String ? (String) attr : defaultVal;
+    }
+
+    private boolean getBooleanAttribute(Link l, String key, boolean defaultVal) {
+        Object attr = l.getAttributes().getAttribute(key);
+        return attr instanceof Boolean ? (Boolean) attr : defaultVal;
     }
 
     public Set<Link> getNetworkLinks() {
