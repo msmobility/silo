@@ -85,36 +85,48 @@ public class RunAggregateAccidentModel {
                 })
                 .collect(Collectors.toList());
 
-        // Output 10 samples for verification
-        System.out.println("Processed " + osmLinks.size() + " OsmLinks.");
-        if (!osmLinks.isEmpty()) {
-            // Select up to 10 OsmLinks
-            List<OsmLink> samples = osmLinks.stream().limit(10).collect(Collectors.toList());
-            // Choose a specific hour for output (e.g., hour 8)
 
-            for (OsmLink sample : samples) {
-                System.out.println("OsmLink ID: " + sample.osmId);
-                System.out.println("Road Type: " + sample.roadType);
-                System.out.println("Highway: " + sample.highway);
-                System.out.println("One Way: " + sample.onwysmm);
-                System.out.println("Speed Limit (MPH): " + sample.speedLimitMPH);
-                System.out.println("Bike Allowed: " + sample.bikeAllowed);
-                System.out.println("Car Allowed: " + sample.carAllowed);
-                System.out.println("Walk Allowed: " + sample.walkAllowed);
-                System.out.println("Total Length (m): " + sample.lengthSum);
-                System.out.println("Width (m): " + sample.width);
-                System.out.println("Bike Stress: " + sample.bikeStress);
-                System.out.println("Bike Stress Jct: " + sample.bikeStressJct);
-                System.out.println("Walk Stress Jct: " + sample.walkStressJct);
-                for(int outputHour=0; outputHour<24; outputHour++){
-                    System.out.println("Car Hourly Demand (Hour " + outputHour + "): " + sample.carHourlyDemand[outputHour]);
-                    System.out.println("Truck Hourly Demand (Hour " + outputHour + "): " + sample.truckHourlyDemand[outputHour]);
-                    System.out.println("Ped Hourly Demand (Hour " + outputHour + "): " + sample.pedHourlyDemand[outputHour]);
-                    System.out.println("Bike Hourly Demand (Hour " + outputHour + "): " + sample.bikeHourlyDemand[outputHour]);
-                    System.out.println("Motor Hourly Demand (Hour " + outputHour + "): " + sample.motorHourlyDemand[outputHour]);
-                    System.out.println("*******");
+        // Define the set of 10 specific osmIDs
+        Set<Integer> targetOsmIds = Set.of(1111480, 2219688, 2246322, 2246324, 2270660, 3662033, 3663335, 3697915, 3697942, 3988635, 3991625, 3991626, 3991667, 3991668, 3991962, 3994226, 3994227, 3994228, 4013498, 4018897, 4018898);
+
+        // Output the number of processed OsmLinks
+        System.out.println("The aggregated network has " + osmLinks.size() + " osmLinks.");
+
+        if (!osmLinks.isEmpty()) {
+            // Filter OsmLinks to only include those with specified osmIDs
+            List<OsmLink> samples = osmLinks.stream()
+                    .filter(link -> targetOsmIds.contains(link.osmId))
+                    .collect(Collectors.toList());
+
+            if (!samples.isEmpty()) {
+                for (OsmLink sample : samples) {
+                    System.out.println("OsmLink ID: " + sample.osmId);
+                    System.out.println("Road Type: " + sample.roadType);
+                    //System.out.println("Highway: " + sample.highway);
+                    System.out.println("One Way ?: " + sample.onwysmm);
+                    System.out.println("Speed Limit (MPH): " + sample.speedLimitMPH);
+                    System.out.println("Bike Allowed: " + sample.bikeAllowed);
+                    System.out.println("Car Allowed: " + sample.carAllowed);
+                    System.out.println("Walk Allowed: " + sample.walkAllowed);
+                    System.out.println("Total Length (m): " + sample.lengthSum);
+                    System.out.println("Width (m): " + sample.width);
+                    System.out.println("Bike Stress: " + sample.bikeStress);
+                    System.out.println("Bike Stress Jct: " + sample.bikeStressJct);
+                    System.out.println("Walk Stress Jct: " + sample.walkStressJct);
+
+                    // Print hourly demand data for all 24 hours
+                    for (int outputHour = 0; outputHour < 24; outputHour++) {
+                        System.out.println("Car Hourly Demand (Hour " + outputHour + "): " + sample.carHourlyDemand[outputHour]);
+                        System.out.println("Truck Hourly Demand (Hour " + outputHour + "): " + sample.truckHourlyDemand[outputHour]);
+                        System.out.println("Ped Hourly Demand (Hour " + outputHour + "): " + sample.pedHourlyDemand[outputHour]);
+                        System.out.println("Bike Hourly Demand (Hour " + outputHour + "): " + sample.bikeHourlyDemand[outputHour]);
+                        System.out.println("Motor Hourly Demand (Hour " + outputHour + "): " + sample.motorHourlyDemand[outputHour]);
+                        System.out.println("*******");
+                    }
+                    System.out.println("------------------------");
                 }
-                System.out.println("------------------------");
+            } else {
+                System.out.println("No OsmLinks found for the specified osmIDs.");
             }
         } else {
             System.out.println("No OsmLinks available to display.");
