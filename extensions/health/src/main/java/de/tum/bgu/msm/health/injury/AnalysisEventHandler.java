@@ -126,7 +126,7 @@ public class AnalysisEventHandler implements EventHandler, LinkLeaveEventHandler
 	public double getDemand(Id<Link> linkId, int intervalNr) {
 		double demand = 0.;
 		if (this.linkId2time2leavingAgents.get(linkId) != null && this.linkId2time2leavingAgents.get(linkId).get(intervalNr) != null) {
-			demand = this.linkId2time2leavingAgents.get(linkId).get(intervalNr);
+			demand += this.linkId2time2leavingAgents.get(linkId).get(intervalNr);
 		}
 		return demand;
 	}
@@ -148,7 +148,7 @@ public class AnalysisEventHandler implements EventHandler, LinkLeaveEventHandler
 		if (this.linkId2mode2time2leavingAgents.get(linkId) != null) {
 			if(this.linkId2mode2time2leavingAgents.get(linkId).get(mode) != null){
 				if(this.linkId2mode2time2leavingAgents.get(linkId).get(mode).get(intervalNr) != null){
-					demand = this.linkId2mode2time2leavingAgents.get(linkId).get(mode).get(intervalNr);
+					demand += this.linkId2mode2time2leavingAgents.get(linkId).get(mode).get(intervalNr);
 				}
 			}
 		}

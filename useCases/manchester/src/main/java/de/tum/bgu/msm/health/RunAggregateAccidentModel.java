@@ -12,8 +12,13 @@ import org.matsim.core.events.EventsManagerImpl;
 import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.scenario.ScenarioUtils;
 
-import java.util.*;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.*;
+
 
 public class RunAggregateAccidentModel {
     // Define SCALEFACTOR
@@ -166,14 +171,14 @@ public class RunAggregateAccidentModel {
 
         for (Link link : links) {
             for (int hour = 0; hour < 24; hour++) {
-                double carDemand = analyzer.getDemand(link.getId(), "car", hour);
-                double truckDemand = analyzer.getDemand(link.getId(), "truck", hour);
+                double carDemand = analyzer.getDemand(link.getId(), "car", hour) * SCALEFACTOR;
+                double truckDemand = analyzer.getDemand(link.getId(), "truck", hour) * SCALEFACTOR;
                 double pedDemand = analyzer.getDemand(link.getId(), "walk", hour);
                 double bikeDemand = analyzer.getDemand(link.getId(), "bike", hour);
 
                 // Handle NaN values
-                carSums[hour] += Double.isNaN(carDemand) ? 0.0 : carDemand * SCALEFACTOR;
-                truckSums[hour] += Double.isNaN(truckDemand) ? 0.0 : truckDemand * SCALEFACTOR;
+                carSums[hour] += Double.isNaN(carDemand) ? 0.0 : carDemand;
+                truckSums[hour] += Double.isNaN(truckDemand) ? 0.0 : truckDemand;
                 pedSums[hour] += Double.isNaN(pedDemand) ? 0.0 : pedDemand;
                 bikeSums[hour] += Double.isNaN(bikeDemand) ? 0.0 : bikeDemand;
             }
@@ -191,5 +196,79 @@ public class RunAggregateAccidentModel {
     private static double getDoubleAttribute(Link link, String key, double defaultVal) {
         Object attr = link.getAttributes().getAttribute(key);
         return attr instanceof Number ? ((Number) attr).doubleValue() : defaultVal;
+    }
+
+    public static void generateOsmLinksCsv(List<OsmLink> osmLinks, Set<Integer> targetOsmIds, String filePath) {
+        // Output the number of processed OsmLinks
+        System.out.println("The aggregated network has " + osmLinks.size() + " osmLinks.");
+
+        if (!osmLinks.isEmpty()) {
+            // Filter OsmLinks to only include those with specified osmIDs
+            List<OsmLink> samples = osmLinks.stream()
+                    .filter(link -> targetOsmIds.contains(link.osmId))
+                    .collect(Collectors.toList());
+
+            if (!samples.isEmpty()) {
+                try (FileWriter writer = new FileWriter(filePath)) {
+                    // Write CSV header
+                    StringBuilder header = new StringBuilder();
+                    header.append("osmId,roadType,onwysmm,speedLimitMPH,bikeAllowed,carAllowed,walkAllowed,lengthSum,width,bikeStress,bikeStressJct,walkStressJct");
+                    for (int hour = 0; hour < 24; hour++) {
+                        header.append(",carHourlyDemand_").append(hour)
+                                .append(",truckHourlyDemand_").append(hour)
+                                .append(",pedHourlyDemand_").append(hour)
+                                .append(",bikeHourlyDemand_").append(hour)
+                                .append(",motorHourlyDemand_").append(hour);
+                    }
+                    header.append("\n");
+                    writer.write(header.toString());
+
+                    // Write data rows
+                    for (OsmLink sample : samples) {
+                        StringBuilder row = new StringBuilder();
+                        row.append(sample.osmId).append(",")
+                                .append(escapeCsv(sample.roadType)).append(",")
+                                .append(sample.onwysmm).append(",")
+                                .append(sample.speedLimitMPH).append(",")
+                                .append(sample.bikeAllowed).append(",")
+                                .append(sample.carAllowed).append(",")
+                                .append(sample.walkAllowed).append(",")
+                                .append(sample.lengthSum).append(",")
+                                .append(sample.width).append(",")
+                                .append(sample.bikeStress).append(",")
+                                .append(sample.bikeStressJct).append(",")
+                                .append(sample.walkStressJct);
+
+                        for (int hour = 0; hour < 24; hour++) {
+                            row.append(",").append(sample.carHourlyDemand[hour])
+                                    .append(",").append(sample.truckHourlyDemand[hour])
+                                    .append(",").append(sample.pedHourlyDemand[hour])
+                                    .append(",").append(sample.bikeHourlyDemand[hour])
+                                    .append(",").append(sample.motorHourlyDemand[hour]);
+                        }
+                        row.append("\n");
+                        writer.write(row.toString());
+                    }
+                    System.out.println("CSV file '" + filePath + "' generated successfully.");
+                } catch (IOException e) {
+                    System.err.println("Error writing CSV file: " + e.getMessage());
+                }
+            } else {
+                System.out.println("No OsmLinks found for the specified osmIDs.");
+            }
+        } else {
+            System.out.println("No OsmLinks available to display.");
+        }
+    }
+
+    // Helper method to escape CSV strings (handle commas, quotes, etc.)
+    public static String escapeCsv(String value) {
+        if (value == null) {
+            return "";
+        }
+        if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
+            return "\"" + value.replace("\"", "\"\"") + "\"";
+        }
+        return value;
     }
 }
