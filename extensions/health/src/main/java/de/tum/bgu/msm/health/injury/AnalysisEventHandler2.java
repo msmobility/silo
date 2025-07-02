@@ -21,161 +21,136 @@ package de.tum.bgu.msm.health.injury;
 
 import com.google.inject.Inject;
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.IdMap;
 import org.matsim.api.core.v01.Scenario;
-import org.matsim.api.core.v01.events.LinkLeaveEvent;
-import org.matsim.api.core.v01.events.PersonDepartureEvent;
-import org.matsim.api.core.v01.events.PersonEntersVehicleEvent;
-import org.matsim.api.core.v01.events.handler.LinkLeaveEventHandler;
-import org.matsim.api.core.v01.events.handler.PersonDepartureEventHandler;
-import org.matsim.api.core.v01.events.handler.PersonEntersVehicleEventHandler;
+import org.matsim.api.core.v01.events.LinkEnterEvent;
+import org.matsim.api.core.v01.events.handler.LinkEnterEventHandler;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.events.handler.EventHandler;
 import org.matsim.vehicles.Vehicle;
+import org.matsim.vehicles.Vehicles;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Event handler for analyzing traffic flows and accident data in MATSim.
- * Tracks agents leaving links by time bin and mode, and stores per-person accident data.
- *
- * @author ikaddoura
+ * Event handler for tracking hourly traffic volumes by mode (bike, walk, car, truck) in MATSim.
+ * Records vehicles entering links and provides demand queries by link, mode, and time interval.
  */
-public class AnalysisEventHandler2 implements EventHandler, LinkLeaveEventHandler, PersonEntersVehicleEventHandler, PersonDepartureEventHandler {
+public class AnalysisEventHandler2 implements LinkEnterEventHandler, EventHandler {
 
-    private final Map<Id<Link>, Map<Integer, Integer>> linkId2time2leavingAgents = new HashMap<>();
-    private final Map<Id<Vehicle>, Id<Person>> vehicleId2personId = new HashMap<>();
-    private final Map<Id<Link>, Map<String, Map<Integer, Integer>>> linkId2mode2time2leavingAgents = new HashMap<>();
-    private final Map<Id<Person>, String> personId2legMode = new HashMap<>();
+    private final Vehicles vehicles;
+    private final Scenario scenario;
 
-    @Inject
-    private Scenario scenario;
-
-    @Inject
-    private AccidentsContext accidentsContext;
+    private final IdMap<Link, Map<Integer, Integer>> bikeVolumes = new IdMap<>(Link.class);
+    private final IdMap<Link, Map<Integer, Integer>> pedVolumes = new IdMap<>(Link.class);
+    private final IdMap<Link, Map<Integer, Integer>> carVolumes = new IdMap<>(Link.class);
+    private final IdMap<Link, Map<Integer, Integer>> truckVolumes = new IdMap<>(Link.class);
 
     @Inject
-    public AnalysisEventHandler2() {
+    public AnalysisEventHandler2(Vehicles vehicles, Scenario scenario) {
+        this.vehicles = vehicles;
+        this.scenario = scenario;
     }
 
     @Override
     public void reset(int iteration) {
-        // Clear all maps at the start of each iteration
-        linkId2time2leavingAgents.clear();
-        vehicleId2personId.clear();
-        linkId2mode2time2leavingAgents.clear();
-        personId2legMode.clear();
+        // Clear all volume maps at the start of each iteration
+        bikeVolumes.clear();
+        pedVolumes.clear();
+        carVolumes.clear();
+        truckVolumes.clear();
     }
 
     @Override
-    public void handleEvent(LinkLeaveEvent event) {
-        // Validate dependencies
+    public void handleEvent(LinkEnterEvent event) {
         if (scenario == null) {
             throw new IllegalStateException("Scenario is not initialized");
         }
-        if (accidentsContext == null) {
-            throw new IllegalStateException("AccidentsContext is not initialized");
+        if (vehicles == null) {
+            throw new IllegalStateException("Vehicles is not initialized");
+        }
+
+        Id<Link> linkId = event.getLinkId();
+        Id<Vehicle> vehicleId = event.getVehicleId();
+
+        // Get vehicle mode, default to "car" for unknown modes
+        Vehicle vehicle = vehicles.getVehicles().get(vehicleId);
+        if (vehicle == null) {
+            return; // Skip if vehicle is not found
+        }
+        String mode = vehicle.getType() != null ? vehicle.getType().getNetworkMode() : null;
+        if (mode == null) {
+            mode = "car"; // Default to car for unknown modes
         }
 
         // Calculate time bin based on configuration
         double timeBinSize = scenario.getConfig().travelTimeCalculator().getTraveltimeBinSize();
         int timeBinNr = (int) (event.getTime() / timeBinSize);
-        Id<Link> linkId = event.getLinkId();
 
-        // Get the driver's mode
-        Id<Person> driverId = getDriverId(event.getVehicleId());
-        String legMode = personId2legMode.get(driverId);
-        if (legMode == null) {
-            return; // Skip if mode is unknown (e.g., event processed out of order)
+        // Update the appropriate volume map
+        IdMap<Link, Map<Integer, Integer>> targetMap;
+        switch (mode) {
+            case "bike":
+                targetMap = bikeVolumes;
+                break;
+            case "walk":
+                targetMap = pedVolumes;
+                break;
+            case "truck":
+                targetMap = truckVolumes;
+                break;
+            default:
+                targetMap = carVolumes;
+                break;
         }
 
-        // Update total agents leaving the link in this time bin
-        linkId2time2leavingAgents.computeIfAbsent(linkId, k -> new HashMap<>())
+        targetMap.computeIfAbsent(linkId, k -> new HashMap<>())
                 .merge(timeBinNr, 1, Integer::sum);
-
-        // Update mode-specific agents leaving the link in this time bin
-        linkId2mode2time2leavingAgents.computeIfAbsent(linkId, k -> new HashMap<>())
-                .computeIfAbsent(legMode, k -> new HashMap<>())
-                .merge(timeBinNr, 1, Integer::sum);
-
-        // Update accident data for the driver
-        AccidentAgentInfo personInfo = accidentsContext.getPersonId2info().computeIfAbsent(driverId, k -> new AccidentAgentInfo(driverId));
-        personInfo.getLinkId2time2mode().computeIfAbsent(linkId, k -> new HashMap<>())
-                .put(timeBinNr, legMode);
-    }
-
-    @Override
-    public void handleEvent(PersonEntersVehicleEvent event) {
-        // Only map the person to the vehicle if they are the driver (e.g., car or bike mode)
-        String mode = personId2legMode.get(event.getPersonId());
-        if (mode != null && (mode.equals("car") || mode.equals("bike"))) { // Adjust modes as needed
-            vehicleId2personId.put(event.getVehicleId(), event.getPersonId());
-        }
-    }
-
-    @Override
-    public void handleEvent(PersonDepartureEvent event) {
-        // Store the transport mode for the person's current leg
-        personId2legMode.put(event.getPersonId(), event.getLegMode());
     }
 
     /**
-     * Returns the total number of agents leaving a link in a specific time bin.
+     * Returns the number of vehicles entering a link for a specific mode in a given time interval.
      *
-     * @param linkId    The ID of the link
+     * @param linkId     The ID of the link
+     * @param mode       The transport mode (bike, walk, car, truck)
      * @param intervalNr The time bin number
-     * @return The number of agents
-     */
-    public double getDemand(Id<Link> linkId, int intervalNr) {
-        return linkId2time2leavingAgents.getOrDefault(linkId, new HashMap<>())
-                .getOrDefault(intervalNr, 0);
-    }
-
-    /**
-     * Returns the total number of agents leaving a link for a specific mode across all time bins.
-     *
-     * @param linkId The ID of the link
-     * @param mode   The transport mode
-     * @return The total number of agents
-     */
-    public double getDemand(Id<Link> linkId, String mode) {
-        Map<String, Map<Integer, Integer>> mode2time2count = linkId2mode2time2leavingAgents.get(linkId);
-        if (mode2time2count == null) {
-            return 0.0;
-        }
-        Map<Integer, Integer> time2count = mode2time2count.get(mode);
-        if (time2count == null) {
-            return 0.0;
-        }
-        return time2count.values().stream().mapToInt(Integer::intValue).sum();
-    }
-
-    /**
-     * Returns the number of agents leaving a link for a specific mode in a specific time bin.
-     *
-     * @param linkId    The ID of the link
-     * @param mode      The transport mode
-     * @param intervalNr The time bin number
-     * @return The number of agents
+     * @return The number of vehicles
      */
     public double getDemand(Id<Link> linkId, String mode, int intervalNr) {
-        return linkId2mode2time2leavingAgents.getOrDefault(linkId, new HashMap<>())
-                .getOrDefault(mode, new HashMap<>())
-                .getOrDefault(intervalNr, 0);
+        IdMap<Link, Map<Integer, Integer>> targetMap;
+        switch (mode) {
+            case "bike":
+                targetMap = bikeVolumes;
+                break;
+            case "walk":
+                targetMap = pedVolumes;
+                break;
+            case "car":
+                targetMap = carVolumes;
+                break;
+            case "truck":
+                targetMap = truckVolumes;
+                break;
+            default:
+                return 0.0; // Return 0 for unknown modes
+        }
+        return targetMap.getOrDefault(linkId, new HashMap<>()).getOrDefault(intervalNr, 0);
     }
 
-    private Id<Person> getDriverId(Id<Vehicle> vehicleId) {
-        return vehicleId2personId.getOrDefault(vehicleId, null);
+    public IdMap<Link, Map<Integer, Integer>> getBikeVolumes() {
+        return bikeVolumes;
     }
 
-    // Setter for scenario (for manual initialization if needed)
-    public void setScenario(Scenario scenario) {
-        this.scenario = scenario;
+    public IdMap<Link, Map<Integer, Integer>> getPedVolumes() {
+        return pedVolumes;
     }
 
-    // Setter for accidents context (for manual initialization if needed)
-    public void setAccidentsContext(AccidentsContext accidentsContext) {
-        this.accidentsContext = accidentsContext;
+    public IdMap<Link, Map<Integer, Integer>> getCarVolumes() {
+        return carVolumes;
+    }
+
+    public IdMap<Link, Map<Integer, Integer>> getTruckVolumes() {
+        return truckVolumes;
     }
 }

@@ -64,9 +64,9 @@ public class RunAggregateAccidentModel {
         String eventsFileCarTruck = "/mnt/usb-TOSHIBA_EXTERNAL_USB_20241124015626F-0:0-part1/manchester/scenOutput/base/matsim/2021/sunday/car/2021.output_events.xml.gz";
         String eventsFileBikePed = "/mnt/usb-TOSHIBA_EXTERNAL_USB_20241124015626F-0:0-part1/manchester/scenOutput/base/matsim/2021/sunday/bikePed/2021.output_events.xml.gz";
 
-        AnalysisEventHandler2 analysisEventHandler = new AnalysisEventHandler2();
-        analysisEventHandler.setScenario(scenario);
-        analysisEventHandler.setAccidentsContext(accidentsContext);
+        AnalysisEventHandler2 analysisEventHandler = new AnalysisEventHandler2(scenario.getVehicles(), scenario);
+        //analysisEventHandler.setScenario(scenario);
+        //analysisEventHandler.setAccidentsContext(accidentsContext);
         EventsManagerImpl events = new EventsManagerImpl();
         MatsimEventsReader eventsReader = new MatsimEventsReader(events);
 
