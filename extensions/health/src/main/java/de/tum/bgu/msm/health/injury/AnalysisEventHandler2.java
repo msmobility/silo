@@ -86,7 +86,8 @@ public class AnalysisEventHandler2 implements LinkEnterEventHandler, EventHandle
 
         // Calculate time bin based on configuration
         double timeBinSize = scenario.getConfig().travelTimeCalculator().getTraveltimeBinSize();
-        int timeBinNr = (int) (event.getTime() / timeBinSize);
+        //int timeBinNr = (int) (event.getTime() / timeBinSize);
+        int timeBinNr = (int) (event.getTime() / 3600);
 
         // Update the appropriate volume map
         IdMap<Link, Map<Integer, Integer>> targetMap;

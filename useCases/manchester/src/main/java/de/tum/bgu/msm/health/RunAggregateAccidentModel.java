@@ -12,6 +12,9 @@ import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.events.EventsManagerImpl;
 import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.vehicles.MatsimVehicleReader;
+import org.matsim.vehicles.VehicleUtils;
+import org.matsim.vehicles.Vehicles;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -35,7 +38,34 @@ public class RunAggregateAccidentModel {
         config.network().setInputFile(networkFile);
         Scenario scenario = ScenarioUtils.loadScenario(config);
 
-        // Check
+        // Vehicles
+        String vehicleFileCar = "/mnt/usb-TOSHIBA_EXTERNAL_USB_20241124015626F-0:0-part1/manchester/scenOutput/base/matsim/2021/sunday/car/2021.output_vehicles.xml.gz";
+        String vehicleFileBikePed = "/mnt/usb-TOSHIBA_EXTERNAL_USB_20241124015626F-0:0-part1/manchester/scenOutput/base/matsim/2021/sunday/bikePed/2021.output_vehicles.xml.gz";
+
+        Vehicles vehiclesAll = VehicleUtils.createVehiclesContainer();
+
+        try {
+            // Read car vehicles
+            new MatsimVehicleReader(vehiclesAll).readFile(vehicleFileCar);
+            System.out.println("Car vehicles loaded: " + vehiclesAll.getVehicles().size());
+
+            // Read bike/ped vehicles
+            new MatsimVehicleReader(vehiclesAll).readFile(vehicleFileBikePed);
+            System.out.println("Total vehicles after adding bike/ped: " + vehiclesAll.getVehicles().size());
+
+            // Optionally, validate vehicle IDs
+            vehiclesAll.getVehicles().keySet().stream()
+                    .collect(Collectors.groupingBy(id -> id, Collectors.counting()))
+                    .entrySet().stream()
+                    .filter(entry -> entry.getValue() > 1)
+                    .forEach(entry -> System.err.println("Duplicate vehicle ID found: " + entry.getKey()));
+        } catch (Exception e) {
+            System.err.println("Error reading vehicle files: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        //
+
 
         // Iterate over all links in the network
         for (Link link : scenario.getNetwork().getLinks().values()) {
@@ -64,7 +94,7 @@ public class RunAggregateAccidentModel {
         String eventsFileCarTruck = "/mnt/usb-TOSHIBA_EXTERNAL_USB_20241124015626F-0:0-part1/manchester/scenOutput/base/matsim/2021/sunday/car/2021.output_events.xml.gz";
         String eventsFileBikePed = "/mnt/usb-TOSHIBA_EXTERNAL_USB_20241124015626F-0:0-part1/manchester/scenOutput/base/matsim/2021/sunday/bikePed/2021.output_events.xml.gz";
 
-        AnalysisEventHandler2 analysisEventHandler = new AnalysisEventHandler2(scenario.getVehicles(), scenario);
+        AnalysisEventHandler2 analysisEventHandler = new AnalysisEventHandler2(vehiclesAll, scenario);
         //analysisEventHandler.setScenario(scenario);
         //analysisEventHandler.setAccidentsContext(accidentsContext);
         EventsManagerImpl events = new EventsManagerImpl();
