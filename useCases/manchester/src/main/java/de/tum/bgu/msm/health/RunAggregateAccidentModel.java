@@ -123,8 +123,8 @@ public class RunAggregateAccidentModel {
 
 
         // Define the set of 10 specific osmIDs
-        //Set<Integer> targetOsmIds = Set.of(1111480, 2219688, 2246322, 2246324, 2270660, 3662033, 3663335, 3697915, 3697942, 3988635, 3991625, 3991626, 3991667, 3991668, 3991962, 3994226, 3994227, 3994228, 4013498, 4018897, 4018898);
-        Set<Integer> targetOsmIds = Set.of(1111480);
+        Set<Integer> targetOsmIds = Set.of(1111480, 2219688, 2246322, 2246324, 2270660, 3662033, 3663335, 3697915, 3697942, 3988635, 3991625, 3991626, 3991667, 3991668, 3991962, 3994226, 3994227, 3994228, 4013498, 4018897, 4018898);
+        //Set<Integer> targetOsmIds = Set.of(1111480);
 
         // Output the number of processed OsmLinks
         System.out.println("The aggregated network has " + osmLinks.size() + " osmLinks.");
