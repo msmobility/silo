@@ -1,36 +1,31 @@
 package de.tum.bgu.msm.health;
 
 import de.tum.bgu.msm.health.injury.AccidentsContext;
-import de.tum.bgu.msm.health.injury.AnalysisEventHandler;
 import de.tum.bgu.msm.health.injury.AnalysisEventHandler2;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.api.core.v01.events.LinkEnterEvent;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.events.EventsManagerImpl;
 import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.vehicles.MatsimVehicleReader;
+import org.matsim.vehicles.Vehicle;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.*;
-
+import java.util.stream.Collectors;
 
 public class RunAggregateAccidentModel {
-    // Define SCALEFACTOR
     private static final double SCALEFACTOR = 10.0; // Adjust as needed
 
     public static void main(String[] args) {
         // Read in network
-        //String networkFile = "/mnt/usb-TOSHIBA_EXTERNAL_USB_20241124015626F-0:0-part1/manchester/scenOutput/base/matsim/2021/sunday/car/2021.output_network.xml.gz";
         String networkFile = "/mnt/usb-TOSHIBA_EXTERNAL_USB_20241124015626F-0:0-part1/manchester/input/mito/trafficAssignment/network(1).xml";
 
         // Create scenario
@@ -42,67 +37,55 @@ public class RunAggregateAccidentModel {
         String vehicleFileCar = "/mnt/usb-TOSHIBA_EXTERNAL_USB_20241124015626F-0:0-part1/manchester/scenOutput/base/matsim/2021/sunday/car/2021.output_vehicles.xml.gz";
         String vehicleFileBikePed = "/mnt/usb-TOSHIBA_EXTERNAL_USB_20241124015626F-0:0-part1/manchester/scenOutput/base/matsim/2021/sunday/bikePed/2021.output_vehicles.xml.gz";
 
-        Vehicles vehiclesAll = VehicleUtils.createVehiclesContainer();
+        // Create separate vehicle containers
+        Vehicles vehiclesMotorized = VehicleUtils.createVehiclesContainer();
+        Vehicles vehiclesNonMotorized = VehicleUtils.createVehiclesContainer();
 
         try {
-            // Read car vehicles
-            new MatsimVehicleReader(vehiclesAll).readFile(vehicleFileCar);
-            System.out.println("Car vehicles loaded: " + vehiclesAll.getVehicles().size());
+            // Read car/truck vehicles
+            new MatsimVehicleReader(vehiclesMotorized).readFile(vehicleFileCar);
+            System.out.println("Motorized vehicles loaded: " + vehiclesMotorized.getVehicles().size());
 
             // Read bike/ped vehicles
-            new MatsimVehicleReader(vehiclesAll).readFile(vehicleFileBikePed);
-            System.out.println("Total vehicles after adding bike/ped: " + vehiclesAll.getVehicles().size());
+            new MatsimVehicleReader(vehiclesNonMotorized).readFile(vehicleFileBikePed);
+            System.out.println("Non-motorized vehicles loaded: " + vehiclesNonMotorized.getVehicles().size());
 
-            // Optionally, validate vehicle IDs
-            vehiclesAll.getVehicles().keySet().stream()
-                    .collect(Collectors.groupingBy(id -> id, Collectors.counting()))
-                    .entrySet().stream()
-                    .filter(entry -> entry.getValue() > 1)
-                    .forEach(entry -> System.err.println("Duplicate vehicle ID found: " + entry.getKey()));
+            // Validate vehicle IDs for each container
+            validateVehicleIds(vehiclesMotorized, "Motorized");
+            validateVehicleIds(vehiclesNonMotorized, "Non-motorized");
+
         } catch (Exception e) {
             System.err.println("Error reading vehicle files: " + e.getMessage());
             e.printStackTrace();
         }
 
-        //
-
-
-        // Iterate over all links in the network
-        for (Link link : scenario.getNetwork().getLinks().values()) {
-            System.out.println("Link ID: " + link.getId());
-            System.out.println("  From Node: " + link.getFromNode().getId());
-            System.out.println("  To Node: " + link.getToNode().getId());
-            System.out.println("  Length: " + link.getLength() + " meters");
-            System.out.println("  Free Speed: " + link.getFreespeed() + " m/s");
-            System.out.println("  Capacity: " + link.getCapacity() + " vehicles/hour");
-            System.out.println("  Number of Lanes: " + link.getNumberOfLanes());
-            System.out.println("  Allowed Modes: " + link.getAllowedModes());
-            System.out.println("  Attributes: ");
-
-            // Print custom attributes if any
-            link.getAttributes().getAsMap().forEach((key, value) ->
-                    System.out.println("    " + key + ": " + value));
-
-            System.out.println("--------------------------------");
-            break;
-        }
-
         // AccidentContext
-        AccidentsContext accidentsContext = new AccidentsContext();
+        //AccidentsContext accidentsContext = new AccidentsContext();
 
-        // Read in carTruck/bikePed traffic volumes
+        // Read in car/truck and bike/ped traffic volumes
         String eventsFileCarTruck = "/mnt/usb-TOSHIBA_EXTERNAL_USB_20241124015626F-0:0-part1/manchester/scenOutput/base/matsim/2021/sunday/car/2021.output_events.xml.gz";
         String eventsFileBikePed = "/mnt/usb-TOSHIBA_EXTERNAL_USB_20241124015626F-0:0-part1/manchester/scenOutput/base/matsim/2021/sunday/bikePed/2021.output_events.xml.gz";
 
-        AnalysisEventHandler2 analysisEventHandler = new AnalysisEventHandler2(vehiclesAll, scenario);
-        //analysisEventHandler.setScenario(scenario);
-        //analysisEventHandler.setAccidentsContext(accidentsContext);
+        // Create separate event handlers
+        AnalysisEventHandlerMotorized motorizedHandler = new AnalysisEventHandlerMotorized(vehiclesMotorized, scenario);
+        AnalysisEventHandlerNonMotorized nonMotorizedHandler = new AnalysisEventHandlerNonMotorized(vehiclesNonMotorized, scenario);
+
+        // Set AccidentsContext
+        // motorizedHandler.setAccidentsContext(accidentsContext);
+        // nonMotorizedHandler.setAccidentsContext(accidentsContext);
+
+        // Process events
         EventsManagerImpl events = new EventsManagerImpl();
         MatsimEventsReader eventsReader = new MatsimEventsReader(events);
 
-        events.addHandler(analysisEventHandler);
-        eventsReader.readFile(eventsFileCarTruck); // carTruck
-        eventsReader.readFile(eventsFileBikePed); // bikePed
+        events.addHandler(motorizedHandler);
+        events.addHandler(nonMotorizedHandler);
+
+        // Read event files separately
+        System.out.println("Processing motorized events...");
+        eventsReader.readFile(eventsFileCarTruck); // car/truck
+        System.out.println("Processing non-motorized events...");
+        eventsReader.readFile(eventsFileBikePed); // bike/ped
 
         // Process network
         Map<Integer, Set<Link>> linksByOsmId = scenario.getNetwork().getLinks().values().stream()
@@ -116,21 +99,20 @@ public class RunAggregateAccidentModel {
                 .map(entry -> {
                     OsmLink osmLink = new OsmLink(entry.getKey(), entry.getValue());
                     osmLink.computeAttributes();
-                    computeDemandAttributes(osmLink, analysisEventHandler);
+                    computeDemandAttributes(osmLink, motorizedHandler, nonMotorizedHandler);
                     return osmLink;
                 })
                 .collect(Collectors.toList());
 
-
-        // Define the set of 10 specific osmIDs
+        // Define the set of target osmIDs
         Set<Integer> targetOsmIds = Set.of(1111480, 2219688, 2246322, 2246324, 2270660, 3662033, 3663335, 3697915, 3697942, 3988635, 3991625, 3991626, 3991667, 3991668, 3991962, 3994226, 3994227, 3994228, 4013498, 4018897, 4018898);
-        //Set<Integer> targetOsmIds = Set.of(1111480);
 
-        // Output the number of processed OsmLinks
+        // Output results to CSV
+        generateOsmLinksCsv(osmLinks, targetOsmIds, "osmLinks_output.csv");
+
+        // Print results for verification
         System.out.println("The aggregated network has " + osmLinks.size() + " osmLinks.");
-
         if (!osmLinks.isEmpty()) {
-            // Filter OsmLinks to only include those with specified osmIDs
             List<OsmLink> samples = osmLinks.stream()
                     .filter(link -> targetOsmIds.contains(link.osmId))
                     .collect(Collectors.toList());
@@ -139,7 +121,6 @@ public class RunAggregateAccidentModel {
                 for (OsmLink sample : samples) {
                     System.out.println("OsmLink ID: " + sample.osmId);
                     System.out.println("Road Type: " + sample.roadType);
-                    //System.out.println("Highway: " + sample.highway);
                     System.out.println("One Way ?: " + sample.onwysmm);
                     System.out.println("Speed Limit (MPH): " + sample.speedLimitMPH);
                     System.out.println("Bike Allowed: " + sample.bikeAllowed);
@@ -151,7 +132,6 @@ public class RunAggregateAccidentModel {
                     System.out.println("Bike Stress Jct: " + sample.bikeStressJct);
                     System.out.println("Walk Stress Jct: " + sample.walkStressJct);
 
-                    // Print hourly demand data for all 24 hours
                     for (int outputHour = 0; outputHour < 24; outputHour++) {
                         System.out.println("Car Hourly Demand (Hour " + outputHour + "): " + sample.carHourlyDemand[outputHour]);
                         System.out.println("Truck Hourly Demand (Hour " + outputHour + "): " + sample.truckHourlyDemand[outputHour]);
@@ -170,21 +150,68 @@ public class RunAggregateAccidentModel {
         }
     }
 
+    // Subclass for motorized events
+    static class AnalysisEventHandlerMotorized extends AnalysisEventHandler2 {
+        public AnalysisEventHandlerMotorized(Vehicles vehicles, Scenario scenario) {
+            super(vehicles, scenario);
+        }
+
+        @Override
+        public void handleEvent(LinkEnterEvent event) {
+            Id<Vehicle> vehicleId = event.getVehicleId();
+            Vehicle vehicle = vehicles.getVehicles().get(vehicleId);
+            if (vehicle != null) {
+                String mode = vehicle.getType() != null ? vehicle.getType().getNetworkMode() : "car";
+                if (mode.equals("car") || mode.equals("truck")) {
+                    super.handleEvent(event);
+                }
+            }
+        }
+    }
+
+    // Subclass for non-motorized events
+    static class AnalysisEventHandlerNonMotorized extends AnalysisEventHandler2 {
+        public AnalysisEventHandlerNonMotorized(Vehicles vehicles, Scenario scenario) {
+            super(vehicles, scenario);
+        }
+
+        @Override
+        public void handleEvent(LinkEnterEvent event) {
+            Id<Vehicle> vehicleId = event.getVehicleId();
+            Vehicle vehicle = vehicles.getVehicles().get(vehicleId);
+            if (vehicle != null) {
+                String mode = vehicle.getType() != null ? vehicle.getType().getNetworkMode() : null;
+                if (mode != null && (mode.equals("bike") || mode.equals("walk"))) {
+                    super.handleEvent(event);
+                }
+            }
+        }
+    }
+
+    private static void validateVehicleIds(Vehicles vehicles, String type) {
+        vehicles.getVehicles().keySet().stream()
+                .collect(Collectors.groupingBy(id -> id, Collectors.counting()))
+                .entrySet().stream()
+                .filter(entry -> entry.getValue() > 1)
+                .forEach(entry -> System.err.println("Duplicate " + type + " vehicle ID found: " + entry.getKey()));
+        System.out.println(type + " vehicle IDs validated. Total: " + vehicles.getVehicles().size());
+    }
+
     private static int getOsmId(Link link) {
         Object osmIdAttr = link.getAttributes().getAttribute("osmID");
         if (osmIdAttr instanceof String) {
             try {
                 return Integer.parseInt((String) osmIdAttr);
             } catch (NumberFormatException e) {
-                return 0; // Default or handle invalid osmId
+                return 0;
             }
         } else if (osmIdAttr instanceof Number) {
             return ((Number) osmIdAttr).intValue();
         }
-        return 0; // Default if osmId is missing or invalid
+        return 0;
     }
 
-    private static void computeDemandAttributes(OsmLink osmLink, AnalysisEventHandler2 analyzer) {
+    private static void computeDemandAttributes(OsmLink osmLink, AnalysisEventHandler2 motorizedHandler, AnalysisEventHandler2 nonMotorizedHandler) {
         Set<Link> links = osmLink.getNetworkLinks();
         if (links.isEmpty()) {
             Arrays.fill(osmLink.carHourlyDemand, 0.0);
@@ -203,12 +230,11 @@ public class RunAggregateAccidentModel {
 
         for (Link link : links) {
             for (int hour = 0; hour < 24; hour++) {
-                double carDemand = analyzer.getDemand(link.getId(), "car", hour) * SCALEFACTOR;
-                double truckDemand = analyzer.getDemand(link.getId(), "truck", hour) * SCALEFACTOR;
-                double pedDemand = analyzer.getDemand(link.getId(), "walk", hour);
-                double bikeDemand = analyzer.getDemand(link.getId(), "bike", hour);
+                double carDemand = motorizedHandler.getDemand(link.getId(), "car", hour) * SCALEFACTOR;
+                double truckDemand = motorizedHandler.getDemand(link.getId(), "truck", hour) * SCALEFACTOR;
+                double pedDemand = nonMotorizedHandler.getDemand(link.getId(), "walk", hour);
+                double bikeDemand = nonMotorizedHandler.getDemand(link.getId(), "bike", hour);
 
-                // Handle NaN values
                 carSums[hour] += Double.isNaN(carDemand) ? 0.0 : carDemand;
                 truckSums[hour] += Double.isNaN(truckDemand) ? 0.0 : truckDemand;
                 pedSums[hour] += Double.isNaN(pedDemand) ? 0.0 : pedDemand;
@@ -231,18 +257,14 @@ public class RunAggregateAccidentModel {
     }
 
     public static void generateOsmLinksCsv(List<OsmLink> osmLinks, Set<Integer> targetOsmIds, String filePath) {
-        // Output the number of processed OsmLinks
         System.out.println("The aggregated network has " + osmLinks.size() + " osmLinks.");
-
         if (!osmLinks.isEmpty()) {
-            // Filter OsmLinks to only include those with specified osmIDs
             List<OsmLink> samples = osmLinks.stream()
                     .filter(link -> targetOsmIds.contains(link.osmId))
                     .collect(Collectors.toList());
 
             if (!samples.isEmpty()) {
                 try (FileWriter writer = new FileWriter(filePath)) {
-                    // Write CSV header
                     StringBuilder header = new StringBuilder();
                     header.append("osmId,roadType,onwysmm,speedLimitMPH,bikeAllowed,carAllowed,walkAllowed,lengthSum,width,bikeStress,bikeStressJct,walkStressJct");
                     for (int hour = 0; hour < 24; hour++) {
@@ -255,7 +277,6 @@ public class RunAggregateAccidentModel {
                     header.append("\n");
                     writer.write(header.toString());
 
-                    // Write data rows
                     for (OsmLink sample : samples) {
                         StringBuilder row = new StringBuilder();
                         row.append(sample.osmId).append(",")
@@ -293,7 +314,6 @@ public class RunAggregateAccidentModel {
         }
     }
 
-    // Helper method to escape CSV strings (handle commas, quotes, etc.)
     public static String escapeCsv(String value) {
         if (value == null) {
             return "";

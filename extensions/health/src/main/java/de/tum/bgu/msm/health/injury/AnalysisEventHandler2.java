@@ -39,7 +39,7 @@ import java.util.Map;
  */
 public class AnalysisEventHandler2 implements LinkEnterEventHandler, EventHandler {
 
-    private final Vehicles vehicles;
+    public final Vehicles vehicles;
     private final Scenario scenario;
 
     private final IdMap<Link, Map<Integer, Integer>> bikeVolumes = new IdMap<>(Link.class);
