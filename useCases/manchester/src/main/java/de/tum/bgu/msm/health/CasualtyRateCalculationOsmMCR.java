@@ -35,9 +35,9 @@ public class CasualtyRateCalculationOsmMCR {
     // todo: testing
     //private Map<Id<Link>, EnumMap<AccidentType, OpenIntFloatHashMap>> severeFatalCasualityRiskByLinkByAccidentTypeByTime = new HashMap<>();
 
-    public CasualtyRateCalculationOsmMCR(AccidentType accidentType, AccidentSeverity accidentSeverity, String basePath) {
+    public CasualtyRateCalculationOsmMCR(AccidentsContext accidentsContext, AccidentType accidentType, AccidentSeverity accidentSeverity, String basePath) {
         //this.SCALEFACTOR = scaleFactor;
-        //this.accidentsContext = accidentsContext;
+        this.accidentsContext = accidentsContext;
         //this.analyserMotorized = analyserMotorized;
         //this.analyserNonMotorized = analyserNonMotorized;
         this.accidentType = accidentType;

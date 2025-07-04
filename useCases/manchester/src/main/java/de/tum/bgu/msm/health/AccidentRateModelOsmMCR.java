@@ -115,12 +115,6 @@ public class AccidentRateModelOsmMCR {
         // Calculate casualty frequency at OSM level
         calculateCasualtyFrequency();
 
-        // Translate OSM to link-level
-
-
-        //this.accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().put(accidentType, casualtyRateByTimeOfDay)
-
-
         // Compute link-level injury risk
         // computeLinkLevelInjuryRisk();
 
@@ -193,7 +187,7 @@ public class AccidentRateModelOsmMCR {
                     OsmLink osmLink = new OsmLink(entry.getKey(), entry.getValue());
                     osmLink.computeAttributes();
                     computeDemandAttributes(osmLink);
-                    initializeLinkInfo(osmLink);
+                    //initializeLinkInfo(osmLink);
                     return osmLink;
                 })
                 .collect(Collectors.toList());
@@ -271,6 +265,7 @@ public class AccidentRateModelOsmMCR {
             for (AccidentSeverity accidentSeverity : AccidentSeverity.values()) {
                 if (ACCIDENT_SEVERITIES_EXCLUDED.contains(accidentSeverity)) continue;
                 CasualtyRateCalculationOsmMCR calculator = new CasualtyRateCalculationOsmMCR(
+                        accidentsContext,
                         accidentType,
                         accidentSeverity,
                         basePath);
