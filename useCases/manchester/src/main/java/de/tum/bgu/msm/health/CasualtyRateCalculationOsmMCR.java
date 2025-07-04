@@ -35,9 +35,9 @@ public class CasualtyRateCalculationOsmMCR {
     // todo: testing
     //private Map<Id<Link>, EnumMap<AccidentType, OpenIntFloatHashMap>> severeFatalCasualityRiskByLinkByAccidentTypeByTime = new HashMap<>();
 
-    public CasualtyRateCalculationOsmMCR(double scaleFactor, AccidentsContext accidentsContext, RunAggregateAccidentModel.AnalysisEventHandlerMotorized analyserMotorized, RunAggregateAccidentModel.AnalysisEventHandlerNonMotorized analyserNonMotorized, AccidentType accidentType, AccidentSeverity accidentSeverity, String basePath, Scenario scenario, double calibrationFactor) {
+    public CasualtyRateCalculationOsmMCR(AccidentType accidentType, AccidentSeverity accidentSeverity, String basePath) {
         //this.SCALEFACTOR = scaleFactor;
-        this.accidentsContext = accidentsContext;
+        //this.accidentsContext = accidentsContext;
         //this.analyserMotorized = analyserMotorized;
         //this.analyserNonMotorized = analyserNonMotorized;
         this.accidentType = accidentType;
@@ -49,7 +49,7 @@ public class CasualtyRateCalculationOsmMCR {
 
     protected void run(Collection<? extends OsmLink> links, Random random) {
         for (OsmLink link : links) {
-            computeLinkCasualtyFrequency(link, random);
+            computeLinkCasualtyFrequency(link, random, accidentType, accidentSeverity, 1.);
         }
     }
 
@@ -67,45 +67,32 @@ public class CasualtyRateCalculationOsmMCR {
         return mode;
     }
 
-    private void computeLinkCasualtyFrequency(OsmLink link, Random random) {
-
-        double probZeroCrash = 0;
-        int val = 0;
-
+    private void computeLinkCasualtyFrequency(OsmLink osmLink, Random random, AccidentType accidentType, AccidentSeverity accidentSeverity, double calibrationFactor) {
         OpenIntFloatHashMap casualtyRateByTimeOfDay = new OpenIntFloatHashMap();
+        double totalLength = osmLink.getNetworkLinks().stream().mapToDouble(Link::getLength).sum();
+        if (totalLength == 0) {
+            log.warn("OSM ID {} has no links or zero total length, skipping casualty frequency calculation.", osmLink.osmId);
+            return;
+        }
+
         for (int hour = 0; hour < 24; hour++) {
-            probZeroCrash = calculateProbability(link, hour);
-            // downscale
-            probZeroCrash = 1 - Math.pow(1 - probZeroCrash, 1.0/5); // 1300-260
-            //probZeroCrash= probZeroCrash/5; // this is the annual proba of casualty, need to divide by 365 for online simulation
+            double probZeroCrash = calculateProbability(osmLink, hour);
+            probZeroCrash = 1 - Math.pow(1 - probZeroCrash, 1.0 / 5);
+            float casualtyRate = (float) (probZeroCrash / calibrationFactor);
+            casualtyRateByTimeOfDay.put(hour, casualtyRate);
+        }
 
-            // sample
-            /*
-            if(random.nextDouble() < (probZeroCrash/calibrationFactor))
-                val = 1;
-            else{
-                val = 0;
+        for (Link link : osmLink.getNetworkLinks()) {
+            double lengthWeight = link.getLength() / totalLength;
+            OpenIntFloatHashMap linkCasualtyRateByTime = new OpenIntFloatHashMap();
+            for (int hour = 0; hour < 24; hour++) {
+                float osmCasualtyRate = casualtyRateByTimeOfDay.get(hour);
+                float linkCasualtyRate = (float) (osmCasualtyRate * lengthWeight);
+                linkCasualtyRateByTime.put(hour, linkCasualtyRate);
             }
-
-             */
-            //casualtyRateByTimeOfDay.put(hour, (float) val);
-            // casualtyRateByTimeOfDay.put(hour, (float) (probZeroCrash/calibrationFactor));
-            // TODO: use calibrationFactor instead in final model
-            casualtyRateByTimeOfDay.put(hour, (float) (probZeroCrash/2.19));
+            AccidentLinkInfo linkInfo = accidentsContext.getLinkId2info().computeIfAbsent(link.getId(), id -> new AccidentLinkInfo(id));
+            linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().put(accidentType, linkCasualtyRateByTime);
         }
-
-
-        // TODO: distribute risks here ??
-        /*
-        switch (accidentSeverity) {
-            case SEVEREFATAL:
-                this.accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().put(accidentType, casualtyRateByTimeOfDay);
-                break;
-            default:
-                throw new RuntimeException("Undefined accident severity " + accidentSeverity);
-        }
-
-         */
     }
 
     private double calculateUtility(OsmLink link, int hour) {

@@ -108,14 +108,10 @@ public class RunAggregateAccidentModel {
 
         // TODO: check probability of casualty by OSMlink here
         String basePath = "/mnt/usb-TOSHIBA_EXTERNAL_USB_20241124015626F-0:0-part1/manchester/input/accident/";
-        CasualtyRateCalculationOsmMCR casualtyRateCalculationOsmMCR = new CasualtyRateCalculationOsmMCR(1.,
-                 new AccidentsContext(),
-                 motorizedHandler,
-                 nonMotorizedHandler,
-                 AccidentType.PED,
-                 AccidentSeverity.SEVEREFATAL,
-                 basePath,
-                 scenario, 1.);
+        CasualtyRateCalculationOsmMCR casualtyRateCalculationOsmMCR = new CasualtyRateCalculationOsmMCR(
+                AccidentType.PED,
+                AccidentSeverity.SEVEREFATAL,
+                basePath);
 
         // loop over OSM links from list osmLinks
         // casualtyRateCalculationOsmMCR.calculateProbability(osmLink, 6);

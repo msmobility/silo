@@ -32,8 +32,8 @@ public class AccidentModelMCR extends AbstractModel implements ModelUpdateListen
 
     public AccidentModelMCR(DataContainer dataContainer, Properties properties, Random random) {
         super(dataContainer, properties, random);
-        //simulatedDays = Arrays.asList(Day.saturday, Day.sunday);
-        simulatedDays = Arrays.asList(Day.thursday, Day.saturday, Day.sunday);
+        simulatedDays = Arrays.asList(Day.sunday);
+        //simulatedDays = Arrays.asList(Day.thursday, Day.saturday, Day.sunday);
     }
 
     @Override
@@ -94,17 +94,19 @@ public class AccidentModelMCR extends AbstractModel implements ModelUpdateListen
             final MutableScenario scenario = ScenarioUtils.createMutableScenario(config);
             scenario.getConfig().travelTimeCalculator().setTraveltimeBinSize(3600);
 
-            //float scalingFactor = (float) (properties.main.scaleFactor * Double.parseDouble(Resources.instance.getString(de.tum.bgu.msm.resources.Properties.TRIP_SCALING_FACTOR)));
+            // float scalingFactor = (float) (properties.main.scaleFactor * properties.transportModel.matsimScaleFactor);
             float scalingFactor = 0.1f; // todo: temporary fix
             scenario.addScenarioElement("accidentModelFile", properties.main.baseDirectory + "input/accident/");
 
-            // Injury model
-            AccidentRateModelMCR model = new AccidentRateModelMCR(scenario, 1.f / scalingFactor, day);
+            // injury model (old version)
+            // AccidentRateModelMCR model = new AccidentRateModelMCR(scenario, 1.f / scalingFactor, day);
+            // model.runCasualtyRateMCR(); // number of casualties per link (max 1 per link, otherwise 0)
+            // model.computeLinkLevelInjuryRisk(); // R=1/v where v is the traffic volume
+            // model.computePersonLevelInjuryRiskOffline();
 
-            model.runCasualtyRateMCR(); // number of casualties per link (max 1 per link, otherwise 0)
-            //model.computeLinkLevelInjuryRisk(); // R=1/v where v is the traffic volume
-            //model.computePersonLevelInjuryRiskOffline();
-
+            // osm-based injury model (new version)
+            AccidentRateModelOsmMCR model = new AccidentRateModelOsmMCR(properties, scenario, 1.f / scalingFactor, day);
+            model.runCasualtyRateMCR();
 
             for (Id<Link> linkId : model.getAccidentsContext().getLinkId2info().keySet()) {
                 //((de.tum.bgu.msm.scenarios.health.HealthDataContainerImpl)dataContainer).getLinkInfoByDay().get(day).get(linkId).setLightCasualityExposureByAccidentTypeByTime(model.getAccidentsContext().getLinkId2info().get(linkId).getLightCasualityExposureByAccidentTypeByTime());
@@ -112,8 +114,6 @@ public class AccidentModelMCR extends AbstractModel implements ModelUpdateListen
                 ((HealthDataContainerImpl) dataContainer).getLinkInfoByDay(day).get(linkId).setSevereFatalCasualityExposureByAccidentTypeByTime(model.getAccidentsContext().getLinkId2info().get(linkId).getSevereFatalCasualityExposureByAccidentTypeByTime());
             }
             model.getAccidentsContext().reset();
-
-            //
         }
     }
 }
