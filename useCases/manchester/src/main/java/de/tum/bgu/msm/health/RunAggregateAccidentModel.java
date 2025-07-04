@@ -120,6 +120,10 @@ public class RunAggregateAccidentModel {
         // loop over OSM links from list osmLinks
         // casualtyRateCalculationOsmMCR.calculateProbability(osmLink, 6);
 
+        // method that takes list of osm links witj
+        // osmLinks.get(0).networkLinks
+
+
 
         // Define the set of target osmIDs
         Set<Integer> targetOsmIds = Set.of(1111480, 2219688, 2246322, 2246324, 2270660, 3662033, 3663335, 3697915, 3697942, 3988635, 3991625, 3991626, 3991667, 3991668, 3991962, 3994226, 3994227, 3994228, 4013498, 4018897, 4018898);
