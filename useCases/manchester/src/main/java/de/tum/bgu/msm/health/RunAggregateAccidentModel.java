@@ -1,5 +1,7 @@
 package de.tum.bgu.msm.health;
 
+import de.tum.bgu.msm.health.injury.AccidentSeverity;
+import de.tum.bgu.msm.health.injury.AccidentType;
 import de.tum.bgu.msm.health.injury.AccidentsContext;
 import de.tum.bgu.msm.health.injury.AnalysisEventHandler2;
 import org.matsim.api.core.v01.Id;
@@ -103,6 +105,21 @@ public class RunAggregateAccidentModel {
                     return osmLink;
                 })
                 .collect(Collectors.toList());
+
+        // TODO: check probability of casualty by OSMlink here
+        String basePath = "/mnt/usb-TOSHIBA_EXTERNAL_USB_20241124015626F-0:0-part1/manchester/input/accident/";
+        CasualtyRateCalculationOsmMCR casualtyRateCalculationOsmMCR = new CasualtyRateCalculationOsmMCR(1.,
+                 new AccidentsContext(),
+                 motorizedHandler,
+                 nonMotorizedHandler,
+                 AccidentType.PED,
+                 AccidentSeverity.SEVEREFATAL,
+                 basePath,
+                 scenario, 1.);
+
+        // loop over OSM links from list osmLinks
+        // casualtyRateCalculationOsmMCR.calculateProbability(osmLink, 6);
+
 
         // Define the set of target osmIDs
         Set<Integer> targetOsmIds = Set.of(1111480, 2219688, 2246322, 2246324, 2270660, 3662033, 3663335, 3697915, 3697942, 3988635, 3991625, 3991626, 3991667, 3991668, 3991962, 3994226, 3994227, 3994228, 4013498, 4018897, 4018898);
