@@ -47,7 +47,7 @@ public class AccidentRateModelOsmMCR {
     private static final Set<AccidentSeverity> ACCIDENT_SEVERITIES_EXCLUDED = Set.of(AccidentSeverity.LIGHT);
     public static final Set<String> MAJOR = Set.of(
             "primary", "primary_link", "secondary", "secondary_link",
-            "tertiary", "tertiary_link", "trunk", "trunk_link", "bus_guideway", "cycleway"
+            "tertiary", "tertiary_link", "trunk", "trunk_link", "bus_guideway", "cycleway","motorway","motorway_link"
     );
     public static final Set<String> MINOR = Set.of(
             "unclassified", "residential", "living_street", "service",
@@ -289,13 +289,13 @@ public class AccidentRateModelOsmMCR {
                 case PED:
                     return osmLink.walkAllowed;
                 case CAR_ONEWAY:
-                    return !osmLink.onwysmm && !Set.of("motorway", "motorway_link").contains(osmLink.highway);
+                    return osmLink.onwysmm && osmLink.carAllowed;
                 case CAR_TWOWAY:
-                    return osmLink.onwysmm || Set.of("motorway", "motorway_link").contains(osmLink.highway);
+                    return !osmLink.onwysmm && osmLink.carAllowed;
                 case BIKE_MINOR:
-                    return MINOR.contains(osmLink.highway) && osmLink.bikeAllowed;
+                    return MINOR.contains(osmLink.roadType) && osmLink.bikeAllowed;
                 case BIKE_MAJOR:
-                    return MAJOR.contains(osmLink.highway) && osmLink.bikeAllowed;
+                    return MAJOR.contains(osmLink.roadType) && osmLink.bikeAllowed;
                 default:
                     return false;
             }
