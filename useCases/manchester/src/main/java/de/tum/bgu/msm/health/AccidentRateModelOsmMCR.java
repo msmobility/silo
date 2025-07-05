@@ -400,11 +400,11 @@ public class AccidentRateModelOsmMCR {
                             for (int hour = 0; hour < 24; hour++) {
 
                                 totalCasualty += accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
-
+                            }
                                 if (totalCasualty > 0) {
                                     data.append(String.format("%d,%s,%s,%.2f\n", osmLink.osmId, link.getId().toString(), accidentType.name(), totalCasualty));
                                 }
-                            }
+
                         }
                     }
                 }
