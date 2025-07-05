@@ -382,15 +382,30 @@ public class AccidentRateModelOsmMCR {
         StringBuilder data = new StringBuilder("osmId,accidentType,casualty\n");
 
         for (OsmLink osmLink : osmLinks) {
-            for (AccidentType accidentType : AccidentType.values()) {
-                if (ACCIDENT_TYPES_EXCLUDED.contains(accidentType)) continue;
-                for (AccidentSeverity accidentSeverity : AccidentSeverity.values()) {
-                    if (ACCIDENT_SEVERITIES_EXCLUDED.contains(accidentSeverity)) continue;
+            for (Link link : osmLink.getNetworkLinks()) {
+                for (AccidentType accidentType : AccidentType.values()) {
+                    if (ACCIDENT_TYPES_EXCLUDED.contains(accidentType)) continue;
+                    for (AccidentSeverity accidentSeverity : AccidentSeverity.values()) {
+                        if (ACCIDENT_SEVERITIES_EXCLUDED.contains(accidentSeverity)) continue;
+
+                    /*
                     double totalCasualty = osmLink.getNetworkLinks().stream()
                             .mapToDouble(link -> calculateTotalCasualty(link.getId(), accidentType))
                             .sum();
-                    if (totalCasualty > 0) {
-                        data.append(String.format("%d,%s,%.2f\n", osmLink.osmId, accidentType.name(), totalCasualty));
+
+                     */
+
+                        if (accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType) != null) {
+                            double totalCasualty = 0;
+                            for (int hour = 0; hour < 24; hour++) {
+
+                                totalCasualty += accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
+
+                                if (totalCasualty > 0) {
+                                    data.append(String.format("%d,%d,%s,%.2f\n", osmLink.osmId, link.getId(), accidentType.name(), totalCasualty));
+                                }
+                            }
+                        }
                     }
                 }
             }
