@@ -84,8 +84,21 @@ public class OsmLink {
                 .max().orElse(0);
         this.walkAllowed = walkAllowedInt == 1;
 
-        double totalLength = networkLinks.stream().mapToDouble(Link::getLength).sum();
-        this.lengthSum = (!onwysmm) ? totalLength / 2.0 : totalLength;
+        //double totalLength = networkLinks.stream().mapToDouble(Link::getLength).sum();
+        //this.lengthSum = (!onwysmm) ? totalLength / 2.0 : totalLength;
+
+        Map<Double, Double> edgeIdToLength = new HashMap<>();
+
+        for (Link link : networkLinks) {
+            double edgeId = getDoubleAttribute(link, "edgeID", 0.0);
+            edgeIdToLength.putIfAbsent(edgeId, link.getLength());
+        }
+
+        double totalLength = edgeIdToLength.values().stream()
+                .mapToDouble(Double::doubleValue)
+                .sum();
+
+        this.lengthSum = totalLength;
 
         Map<Double, Long> widthFreq = networkLinks.stream()
                 .map(l -> getDoubleAttribute(l, "width", 0.0))
