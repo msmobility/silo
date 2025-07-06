@@ -394,9 +394,9 @@ public class AccidentRateModelOsmMCR {
                             .sum();
 
                      */
-
+                        double totalCasualty = 0;
                         if (accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType) != null) {
-                            double totalCasualty = 0;
+
                             for (int hour = 0; hour < 24; hour++) {
                                 totalCasualty += accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
                             }
