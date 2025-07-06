@@ -71,6 +71,7 @@ public class RunExposureHealthOffline {
         //exposureModelMCR.endYear(2021);
         //dataContainer.endSimulation();
 
+
         //DiseaseModelMCR diseaseModelMCR = new DiseaseModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
 
         // todo: aggregate link-level risks up to the person level

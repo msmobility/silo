@@ -81,7 +81,7 @@ public class AccidentRateCalculationMCR {
         utilityZeroCrash += Math.log(linkLength) * binaryLogitCoef.get("log(length_sum)");
 
         // log(bike+0.1)
-        double bikeDailyDemand = analzyer.getDemand(link.getId(),"bike") * SCALEFACTOR / 1000.0; // todo: why 1000 ??
+        double bikeDailyDemand = analzyer.getDemand(link.getId(),"bike") * SCALEFACTOR; // todo: why 1000 ??
         if(bikeDailyDemand == 0) {
             if (accidentType.equals(AccidentType.BIKEBIKE) | accidentType.equals(AccidentType.BIKECAR)) {
                 return 1.;
@@ -109,7 +109,7 @@ public class AccidentRateCalculationMCR {
         }
 
         // car
-        double carDailyDemand = analzyer.getDemand(link.getId(),"car") * SCALEFACTOR / 1000.0;
+        double carDailyDemand = analzyer.getDemand(link.getId(),"car") * SCALEFACTOR;
 
         if(carDailyDemand==0) {
             if (accidentType.equals(AccidentType.CAR) | accidentType.equals(AccidentType.BIKECAR)) {
@@ -121,7 +121,7 @@ public class AccidentRateCalculationMCR {
         // motor
 
         // walk
-        double pedDailyDemand = analzyer.getDemand(link.getId(),"walk") * SCALEFACTOR / 1000.0;
+        double pedDailyDemand = analzyer.getDemand(link.getId(),"walk") * SCALEFACTOR;
         if(pedDailyDemand==0) {
             if (accidentType.equals(AccidentType.PED)) {
                 return 1.;
