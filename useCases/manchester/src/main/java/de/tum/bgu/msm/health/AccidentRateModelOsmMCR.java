@@ -47,7 +47,7 @@ public class AccidentRateModelOsmMCR {
     private static final Set<AccidentSeverity> ACCIDENT_SEVERITIES_EXCLUDED = Set.of(AccidentSeverity.LIGHT);
     public static final Set<String> MAJOR = Set.of(
             "primary", "primary_link", "secondary", "secondary_link",
-            "tertiary", "tertiary_link", "trunk", "trunk_link", "bus_guideway", "cycleway","motorway","motorway_link"
+            "tertiary", "tertiary_link", "trunk", "trunk_link", "bus_guideway", "cycleway", "motorway", "motorway_link"
     );
     public static final Set<String> MINOR = Set.of(
             "unclassified", "residential", "living_street", "service",
@@ -398,12 +398,11 @@ public class AccidentRateModelOsmMCR {
                         if (accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType) != null) {
                             double totalCasualty = 0;
                             for (int hour = 0; hour < 24; hour++) {
-
                                 totalCasualty += accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
                             }
-                                if (totalCasualty > 0) {
-                                    data.append(String.format("%d,%s,%s,%.2f\n", osmLink.osmId, link.getId().toString(), accidentType.name(), totalCasualty));
-                                }
+                            if (totalCasualty > 0) {
+                                data.append(String.format("%d,%s,%s,%.2f\n", osmLink.osmId, link.getId().toString(), accidentType.name(), totalCasualty));
+                            }
 
                         }
                     }

@@ -77,7 +77,8 @@ public class CasualtyRateCalculationOsmMCR {
 
         for (int hour = 0; hour < 24; hour++) {
             double probZeroCrash = calculateProbability(osmLink, hour);
-            probZeroCrash = 1 - Math.pow(1 - probZeroCrash, 1.0 / 5);
+            //probZeroCrash = 1 - Math.pow(1 - probZeroCrash, 1.0 / 5);
+            probZeroCrash = probZeroCrash / 5;
             float casualtyRate = (float) (probZeroCrash / calibrationFactor);
             casualtyRateByTimeOfDay.put(hour, casualtyRate);
         }
