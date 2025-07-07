@@ -191,7 +191,7 @@ public class CasualtyRateCalculationOsmMCR {
                 Math.log1p(motorHourlyDemand);
 
         // length
-        utility += binaryLogitCoef.get("log(length_sum)") * link.lengthSum;
+        utility += binaryLogitCoef.get("log(length_sum)") * Math.log(link.lengthSum);
 
         // Handle continuous variables without transformation
 
