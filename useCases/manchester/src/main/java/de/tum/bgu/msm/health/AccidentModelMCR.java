@@ -97,6 +97,8 @@ public class AccidentModelMCR extends AbstractModel implements ModelUpdateListen
             // float scalingFactor = (float) (properties.main.scaleFactor * properties.transportModel.matsimScaleFactor);
             float scalingFactor = 0.1f; // todo: temporary fix
             scenario.addScenarioElement("accidentModelFile", properties.main.baseDirectory + "input/accident/");
+            System.out.println(scenario.getScenarioElement("accidentModelFile").toString());
+            System.exit(0);
 
             // injury model (old version)
             // AccidentRateModelMCR model = new AccidentRateModelMCR(scenario, 1.f / scalingFactor, day);
