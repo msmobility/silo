@@ -102,6 +102,8 @@ public class CasualtyRateCalculationOsmMCR {
             System.out.println("===============================================================");
             printOsmLinkDetails(osmLink);
             System.out.println("===============================================================");
+            printBinaryLogitCoefficients();
+            System.out.println("===============================================================");
             for(int hour = 0; hour < 24; hour++) {
                 System.out.println("Hour " + hour + ": " + casualtyRateByTimeOfDay.get(hour));
             }
@@ -118,6 +120,15 @@ public class CasualtyRateCalculationOsmMCR {
                 System.out.println("===============================================================");
             }
         }
+    }
+
+    public void printBinaryLogitCoefficients() {
+        System.out.println("Binary Logit Coefficients:");
+        System.out.println("--------------------------");
+        for (Map.Entry<String, Double> entry : binaryLogitCoef.entrySet()) {
+            System.out.printf("%-30s : %.6f%n", entry.getKey(), entry.getValue());
+        }
+        System.out.println("--------------------------");
     }
 
     public void printOsmLinkDetails(OsmLink sample) {
