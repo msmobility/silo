@@ -15,6 +15,7 @@ import org.matsim.contrib.accidents.AccidentsModule;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Injector;
+import org.matsim.core.events.EventsManagerImpl;
 import org.matsim.core.events.EventsManagerModule;
 import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.network.io.MatsimNetworkReader;
@@ -106,8 +107,21 @@ public class AccidentRateModelOsmMCR {
 
         // Initialize event handlers and read events
         setupEventHandlers(vehiclesMotorized, vehiclesNonMotorized);
-        readEvents(injector, "car", "output_events.xml.gz");
-        readEvents(injector, "bikePed", "output_events.xml.gz");
+        //readEvents(injector, "car", "output_events.xml.gz");
+        //readEvents(injector, "bikePed", "output_events.xml.gz");
+
+        // Process events
+        EventsManagerImpl events = new EventsManagerImpl();
+        MatsimEventsReader eventsReader = new MatsimEventsReader(events);
+
+        events.addHandler(motorizedHandler);
+        events.addHandler(nonMotorizedHandler);
+
+        // Read event files separately
+        System.out.println("Processing motorized events...");
+        eventsReader.readFile(getOutputFilePath("car", "output_events.xml.gz")); // car/truck
+        System.out.println("Processing non-motorized events...");
+        eventsReader.readFile(getOutputFilePath("bikePed", "output_events.xml.gz")); // bike/ped
 
         // Aggregate network by OSM ID and compute attributes
         initializeOsmLinks();
@@ -167,7 +181,9 @@ public class AccidentRateModelOsmMCR {
 
     private void readEvents(com.google.inject.Injector injector, String mode, String fileName) {
         log.info("Reading {} events file...", mode);
-        EventsManager events = injector.getInstance(EventsManager.class);
+        EventsManagerImpl events = new EventsManagerImpl();
+        MatsimEventsReader eventsReader = new MatsimEventsReader(events);
+
         events.addHandler(motorizedHandler);
         events.addHandler(nonMotorizedHandler);
         new MatsimEventsReader(events).readFile(getOutputFilePath(mode, fileName));
