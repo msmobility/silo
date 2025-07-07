@@ -100,6 +100,8 @@ public class CasualtyRateCalculationOsmMCR {
         if(osmLink.osmId== 1111480){
             System.out.println("OSM ID " + osmLink.osmId);
             System.out.println("===============================================================");
+            printOsmLinkDetails(osmLink);
+            System.out.println("===============================================================");
             for(int hour = 0; hour < 24; hour++) {
                 System.out.println("Hour " + hour + ": " + casualtyRateByTimeOfDay.get(hour));
             }
@@ -116,6 +118,31 @@ public class CasualtyRateCalculationOsmMCR {
                 System.out.println("===============================================================");
             }
         }
+    }
+
+    public void printOsmLinkDetails(OsmLink sample) {
+        System.out.println("OsmLink ID: " + sample.osmId);
+        System.out.println("Road Type: " + sample.roadType);
+        System.out.println("One Way?: " + sample.onwysmm); // Assumed 'oneWay' instead of 'onwysmm'
+        System.out.println("Speed Limit (MPH): " + sample.speedLimitMPH);
+        System.out.println("Bike Allowed: " + sample.bikeAllowed);
+        System.out.println("Car Allowed: " + sample.carAllowed);
+        System.out.println("Walk Allowed: " + sample.walkAllowed);
+        System.out.println("Total Length (m): " + sample.lengthSum);
+        System.out.println("Width (m): " + sample.width);
+        System.out.println("Bike Stress: " + sample.bikeStress);
+        System.out.println("Bike Stress Jct: " + sample.bikeStressJct);
+        System.out.println("Walk Stress Jct: " + sample.walkStressJct);
+
+        for (int outputHour = 0; outputHour < 24; outputHour++) {
+            System.out.println("Car Hourly Demand (Hour " + outputHour + "): " + sample.carHourlyDemand[outputHour]);
+            System.out.println("Truck Hourly Demand (Hour " + outputHour + "): " + sample.truckHourlyDemand[outputHour]);
+            System.out.println("Ped Hourly Demand (Hour " + outputHour + "): " + sample.pedHourlyDemand[outputHour]);
+            System.out.println("Bike Hourly Demand (Hour " + outputHour + "): " + sample.bikeHourlyDemand[outputHour]);
+            System.out.println("Motor Hourly Demand (Hour " + outputHour + "): " + sample.motorHourlyDemand[outputHour]);
+            System.out.println("*******");
+        }
+        System.out.println("------------------------");
     }
 
     private double calculateUtility(OsmLink link, int hour) {
