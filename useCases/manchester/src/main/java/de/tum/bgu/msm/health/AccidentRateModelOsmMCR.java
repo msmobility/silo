@@ -130,7 +130,7 @@ public class AccidentRateModelOsmMCR {
         calculateCasualtyFrequency();
 
         // Compute link-level injury risk
-        // computeLinkLevelInjuryRisk();
+        computeLinkLevelInjuryRisk();
 
         // Clean up
         motorizedHandler.reset(0);
@@ -327,11 +327,14 @@ public class AccidentRateModelOsmMCR {
         log.info("{} bike/ped links have no hourly traffic volume", counterBikePed);
         log.info("Link casualty exposure calculation completed.");
 
+        /*
         try {
             writeOutExposure();
         } catch (FileNotFoundException e) {
             log.error("Error writing exposure data", e);
         }
+
+         */
     }
 
     private void computeLinkCasualtyExposureMCR(OsmLink osmLink) {
@@ -343,7 +346,7 @@ public class AccidentRateModelOsmMCR {
                 OpenIntFloatHashMap severeCasualtyExposureByTime = new OpenIntFloatHashMap();
                 for (int hour = 0; hour < 24; hour++) {
                     float severeCasualty = getSevereCasualty(link.getId(), accidentType, hour);
-                    float exposure = calculateExposure(osmLink, mode, hour, severeCasualty);
+                    float exposure = calculateExposure2(link, mode, hour, severeCasualty);
                     severeCasualtyExposureByTime.put(hour, exposure);
                 }
                 accidentsContext.getLinkId2info().get(link.getId())
@@ -351,6 +354,42 @@ public class AccidentRateModelOsmMCR {
                         .put(accidentType, severeCasualtyExposureByTime);
             }
         }
+    }
+
+    private float calculateExposure2(Link link, String mode, int hour, float severeCasualty) {
+        double demand;
+        switch (mode) {
+            case "car":
+                demand = motorizedHandler.getDemand(link.getId(), "car", hour) * VEHICLE_SCALE_FACTOR;
+                break;
+            case "truck":
+                demand = motorizedHandler.getDemand(link.getId(), "truck", hour) * VEHICLE_SCALE_FACTOR;
+                break;
+            case "walk":
+                demand = nonMotorizedHandler.getDemand(link.getId(), "walk", hour);
+                break;
+            case "bike":
+                demand = nonMotorizedHandler.getDemand(link.getId(), "bike", hour);
+                break;
+            default:
+                log.warn("Unknown mode: {}", mode);
+                return 0.0f;
+        }
+
+        if (demand == 0) {
+            if (severeCasualty > 0.1) {
+                log.warn("Casualty predicted in link with no {} flows: {}", mode, link.getId());
+            }
+            if (mode.equals("car") || mode.equals("truck")) {
+                counterCar++;
+            } else {
+                counterBikePed++;
+            }
+            return 0.0f;
+        }
+
+        // float scaleFactor = (mode.equals("car") || mode.equals("truck")) ? scaleFactor : 1.0f;
+        return (float) (severeCasualty / demand);
     }
 
     private String getModeForAccidentType(AccidentType accidentType) {

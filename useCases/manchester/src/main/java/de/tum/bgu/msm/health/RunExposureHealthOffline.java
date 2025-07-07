@@ -53,47 +53,19 @@ public class RunExposureHealthOffline {
         HealthDataContainerImpl dataContainer = DataBuilderHealth.getModelDataForManchester(properties, config);
         DataBuilderHealth.read(properties, dataContainer, config);
 
-        /*
-        AirPollutantModel airPollutantModel = new AirPollutantModel(dataContainer, properties, SiloUtil.provideNewRandom(),config);
-        NoiseModel noiseModel = new NoiseModel(dataContainer,properties, SiloUtil.provideNewRandom(),config);
+        // setup
         SportPAModelMCR sportPAModelMCR = new SportPAModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
+        AccidentModelMCR accidentModel = new AccidentModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
         HealthExposureModelMCR exposureModelMCR = new HealthExposureModelMCR(dataContainer, properties, SiloUtil.provideNewRandom(),config);
         DiseaseModelMCR diseaseModelMCR = new DiseaseModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
-        */
 
-        // setup
-        AccidentModelMCR accidentModel = new AccidentModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
-        //HealthExposureModelMCR exposureModelMCR = new HealthExposureModelMCR(dataContainer, properties, SiloUtil.provideNewRandom(),config);
-
-        // TODO: should sport PA be added ?
-        //
-        accidentModel.endYear(2021);
-        //exposureModelMCR.endYear(2021);
-        //dataContainer.endSimulation();
-
-
-        //DiseaseModelMCR diseaseModelMCR = new DiseaseModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
-
-        // todo: aggregate link-level risks up to the person level
-
-        //accidentModel.endYear(2021);
-        //exposureModelMCR.setup(); // to read-in the base exposure file for testing purposes
-        //diseaseModelMCR.setup();
-        //diseaseModelMCR.endYear(2021);
-        //dataContainer.endSimulation();
-        //diseaseModelMCR.setup();
-        //diseaseModelMCR.endYear(2021);
-        //dataContainer.endSimulation();
-
-        /*
-        airPollutantModel.endYear(2021);
-        noiseModel.endYear(2021);
+        // runs
         sportPAModelMCR.endYear(2021);
+        accidentModel.endYear(2021);
         exposureModelMCR.endYear(2021);
         diseaseModelMCR.setup();
         diseaseModelMCR.endYear(2021);
         dataContainer.endSimulation();
-         */
 
         logger.info("Finished SILO.");
     }

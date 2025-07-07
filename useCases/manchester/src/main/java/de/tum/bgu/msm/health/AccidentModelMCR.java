@@ -32,8 +32,8 @@ public class AccidentModelMCR extends AbstractModel implements ModelUpdateListen
 
     public AccidentModelMCR(DataContainer dataContainer, Properties properties, Random random) {
         super(dataContainer, properties, random);
-        simulatedDays = Arrays.asList(Day.sunday);
-        //simulatedDays = Arrays.asList(Day.thursday, Day.saturday, Day.sunday);
+        //simulatedDays = Arrays.asList(Day.sunday);
+        simulatedDays = Arrays.asList(Day.thursday, Day.saturday, Day.sunday);
     }
 
     @Override
@@ -101,8 +101,8 @@ public class AccidentModelMCR extends AbstractModel implements ModelUpdateListen
             //System.exit(0);
 
             // injury model (old version)
-            // AccidentRateModelMCR model = new AccidentRateModelMCR(scenario, 1.f / scalingFactor, day);
-            // model.runCasualtyRateMCR(); // number of casualties per link (max 1 per link, otherwise 0)
+            //AccidentRateModelMCR model = new AccidentRateModelMCR(scenario, 1.f / scalingFactor, day);
+            //model.runCasualtyRateMCR(); // number of casualties per link (max 1 per link, otherwise 0)
             // model.computeLinkLevelInjuryRisk(); // R=1/v where v is the traffic volume
             // model.computePersonLevelInjuryRiskOffline();
 

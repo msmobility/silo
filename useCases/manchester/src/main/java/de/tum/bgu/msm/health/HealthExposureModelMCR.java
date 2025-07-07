@@ -593,7 +593,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         double pathFatalityRisk = 0;
 
         // Manchester
-        double pathInjuryRisk = 1.0;
+        double pathInjuryRisk = 0.0;
         Day currentDay; // by default
         if(trip.getDepartureDay().equals(Day.saturday) || trip.getDepartureDay().equals(Day.sunday)){
             currentDay = trip.getDepartureDay();
@@ -714,9 +714,9 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 Gender genderPerson = dataContainer.getHouseholdDataManager().getPersonFromId(trip.getPerson()).getGender();
 
                 double AgeGenderRR = 1.;
-                //AgeGenderRR = getCasualtyRR_byAge_Gender(genderPerson, agePerson, trip.getTripMode());
-                pathInjuryRisk *= (1 - linkInjuryRisk * AgeGenderRR);
-                //pathInjuryRisk += (linkInjuryRisk * AgeGenderRR);
+                AgeGenderRR = getCasualtyRR_byAge_Gender(genderPerson, agePerson, trip.getTripMode());
+                //pathInjuryRisk *= (1 - linkInjuryRisk * AgeGenderRR);
+                pathInjuryRisk += (linkInjuryRisk * AgeGenderRR);
             }
 
             pathMarginalMetHours += linkMarginalMetHour;
@@ -738,12 +738,12 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
          */
 
         // Manchester
-        pathInjuryRisk = 1- pathInjuryRisk;
+        //pathInjuryRisk = 1- pathInjuryRisk;
+
         /*
         if(pathInjuryRisk > 1.){ // safe check
             pathInjuryRisk = 1.;
         }
-
          */
 
         trip.updateTravelRiskMap(Map.of("severeFatalInjury", (float) pathInjuryRisk));
