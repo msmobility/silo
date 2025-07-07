@@ -433,7 +433,7 @@ public class AccidentRateModelOsmMCR {
     }
 
     public void writeOutCasualtyRate() throws FileNotFoundException {
-        String outputPath = scenario.getConfig().controller().getOutputDirectory() + "casualtyRatesW.csv";
+        String outputPath = scenario.getConfig().controller().getOutputDirectory() + "casualtyRates.csv";
         StringBuilder data = new StringBuilder("osmId,linkId,accidentType,casualty\n");
 
         for (OsmLink osmLink : osmLinks) {
