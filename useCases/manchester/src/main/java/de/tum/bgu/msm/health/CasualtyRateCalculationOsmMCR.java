@@ -94,6 +94,28 @@ public class CasualtyRateCalculationOsmMCR {
             AccidentLinkInfo linkInfo = accidentsContext.getLinkId2info().computeIfAbsent(link.getId(), id -> new AccidentLinkInfo(id));
             linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().put(accidentType, linkCasualtyRateByTime);
         }
+
+
+        // testing
+        if(osmLink.osmId== 1111480){
+            System.out.println("OSM ID " + osmLink.osmId);
+            System.out.println("===============================================================");
+            for(int hour = 0; hour < 24; hour++) {
+                System.out.println("Hour " + hour + ": " + casualtyRateByTimeOfDay.get(hour));
+            }
+            System.out.println("===============================================================");
+
+            // links
+            for(Link link : osmLink.getNetworkLinks()) {
+                System.out.println("Link ID " + link.getId().toString());
+                System.out.println("===============================================================");
+                for(int hour = 0; hour < 24; hour++) {
+                    float val = accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
+                    System.out.println("Hour " + hour + ": " + val);
+                }
+                System.out.println("===============================================================");
+            }
+        }
     }
 
     private double calculateUtility(OsmLink link, int hour) {
