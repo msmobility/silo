@@ -38,9 +38,9 @@ public class DeathStrategyMCR implements DeathStrategy {
 
         // check killed by injury
         Set<Diseases> killedInAccident = Set.of(
-                Diseases.killed_car,
-                Diseases.killed_bike,
-                Diseases.killed_walk
+                Diseases.dead_car,
+                Diseases.dead_bike,
+                Diseases.dead_walk
         );
 
         if (!Collections.disjoint(((PersonHealth) person).getCurrentDisease(), killedInAccident)) {

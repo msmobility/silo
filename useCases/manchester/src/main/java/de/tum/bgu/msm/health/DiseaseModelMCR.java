@@ -64,7 +64,7 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
                 EnumMap<Diseases, Float> rr = new EnumMap<>(Diseases.class);
 
                 for (Diseases diseases : ((DataContainerHealth) dataContainer).getDoseResponseData().get(exposures).keySet()) {
-                    if (diseases.equals(Diseases.killed_bike) || diseases.equals(Diseases.killed_walk) || diseases.equals(Diseases.killed_car) ||
+                    if (diseases.equals(Diseases.dead_bike) || diseases.equals(Diseases.dead_walk) || diseases.equals(Diseases.dead_car) ||
                             diseases.equals(Diseases.severely_injured_car) || diseases.equals(Diseases.severely_injured_walk) || diseases.equals(Diseases.severely_injured_bike)) {
                         continue;
                     }
