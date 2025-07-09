@@ -63,9 +63,9 @@ public class RunExposureHealthOffline {
         sportPAModelMCR.endYear(2021);
         accidentModel.endYear(2021);
         exposureModelMCR.endYear(2021);
-        diseaseModelMCR.setup();
-        diseaseModelMCR.endYear(2021);
-        dataContainer.endSimulation();
+        //diseaseModelMCR.setup();
+        //diseaseModelMCR.endYear(2021);
+        //dataContainer.endSimulation();
 
         logger.info("Finished SILO.");
     }
