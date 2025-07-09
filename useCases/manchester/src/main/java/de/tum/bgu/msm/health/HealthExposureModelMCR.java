@@ -696,7 +696,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             String modeAdjusted = getAdjustedModeName(mode);
             trafficFlowsByDayModeLinkHour.get(trip.getDepartureDay())
                     .get(modeAdjusted)
-                    .computeIfAbsent(link.getId(), k -> new HashMap<>())
+                    .computeIfAbsent(link.getId(), k -> new ConcurrentHashMap<>())
                     .merge(hour, 1, Integer::sum);
 
             double linkLength = link.getLength();
