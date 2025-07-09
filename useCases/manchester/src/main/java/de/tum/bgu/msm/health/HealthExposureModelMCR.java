@@ -78,12 +78,13 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
     private MutableScenario scenario;
     private List<Day> simulatedDays;
     private List<Day> weekdays = Arrays.asList(Day.monday,Day.tuesday,Day.wednesday,Day.thursday,Day.friday);
+    private Map<Day, Map<String, Map<Id<Link>, Map<Integer, Integer>>>> trafficFlowsByDayModeLinkHour = new HashMap<>();
 
     public HealthExposureModelMCR(DataContainer dataContainer, Properties properties, Random random, Config config) {
         super(dataContainer, properties, random);
         this.initialMatsimConfig = config;
-        simulatedDays = Arrays.asList(Day.thursday,Day.saturday,Day.sunday);
-        //simulatedDays = Arrays.asList(Day.saturday, Day.sunday);
+        //simulatedDays = Arrays.asList(Day.thursday,Day.saturday,Day.sunday);
+        simulatedDays = Arrays.asList(Day.sunday);
     }
 
     @Override
@@ -117,7 +118,10 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             }
 
             // process ndvi data
-            processNdviData(NetworkUtils.readNetwork(initialMatsimConfig.network().getInputFile()));
+            //processNdviData(NetworkUtils.readNetwork(initialMatsimConfig.network().getInputFile()));
+
+            // Initialize the table to count the flows for the injury model
+            initializeTrafficFlows();
 
             // assemble travel-activity health exposure data
             for(Day day : simulatedDays){
@@ -161,6 +165,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                     mitoTrips.clear();
                     System.gc();
                 }
+
                 ((DataContainerHealth)dataContainer).getLinkInfo().values().forEach(linkInfo -> {linkInfo.reset();});
                 // todo: Is it worth resetting ?
                 // ((DataContainerHealth) dataContainer).getLinkInfoByDay(day).values().forEach(linkInfo -> {linkInfo.reset();});
@@ -168,6 +173,11 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 System.gc();
             }
 
+            // write the traffic flows from routed trips and free memory
+            writeAndClearTrafficFlows(year, scenario.getNetwork());
+            System.gc();
+
+            /*
             // assemble home location health exposure data
             for(Day day : Day.values()){
                 replyActivityLocationInfoFromFile(weekdays.contains(day) ? Day.thursday : day);
@@ -178,11 +188,84 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
             // normalize person-level home-travel-activity exposure
             calculatePersonHealthExposureMetrics();
+
+             */
         }
     }
 
     @Override
     public void endSimulation() {
+    }
+
+    private String getAdjustedModeName(Mode mode) {
+        switch (mode) {
+            case autoDriver:
+            case autoPassenger:
+                return "car";
+            case bicycle:
+                return "bike";
+            case walk:
+                return "walk";
+            case pt:
+                return "pt";
+            default:
+                throw new RuntimeException("Undefined mode " + mode);
+        }
+    }
+
+    private void initializeTrafficFlows() {
+        String[] modeAdjustedNames = {"car", "bike", "walk"};
+        for (Day day : Day.values()) {
+            Map<String, Map<Id<Link>, Map<Integer, Integer>>> modeMap = new HashMap<>();
+            for (String modeName : modeAdjustedNames) {
+                modeMap.put(modeName, new HashMap<>());
+            }
+            trafficFlowsByDayModeLinkHour.put(day, modeMap);
+        }
+    }
+
+    private void writeAndClearTrafficFlows(int year, Network network) {
+        for (String modeAdjusted : Set.of("car", "walk", "bike")) {
+            for (Day day : Day.values()) {
+                writeTrafficFlowsToCSV(year, day, modeAdjusted, network);
+                trafficFlowsByDayModeLinkHour.get(day).remove(modeAdjusted);
+            }
+        }
+    }
+
+    private void writeTrafficFlowsToCSV(int year, Day day, String mode, Network network) {
+        String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName + "/" + year + "/";
+        String filePath = outputDirectory + "traffic_flows_" + day + "_" + mode + ".csv";
+
+        try (java.io.FileWriter writer = new java.io.FileWriter(filePath)) {
+            // Write CSV header
+            writer.write("linkId,hour,count\n");
+
+            // Get the flow data for the current day and mode
+            Map<Id<Link>, Map<Integer, Integer>> linkFlows = trafficFlowsByDayModeLinkHour.getOrDefault(day, new HashMap<>()).getOrDefault(mode, new HashMap<>());
+
+            // Iterate through links and hours
+            for (Map.Entry<Id<Link>, Map<Integer, Integer>> linkEntry : linkFlows.entrySet()) {
+                Id<Link> linkId = linkEntry.getKey();
+                Link link = network.getLinks().get(linkId);
+                if (link == null) {
+                    logger.warn("Link " + linkId + " not found in network.");
+                    continue;
+                }
+
+                // Write flow counts for each hour
+                for (Map.Entry<Integer, Integer> hourEntry : linkEntry.getValue().entrySet()) {
+                    int hour = hourEntry.getKey();
+                    int count = hourEntry.getValue();
+                    writer.write(String.format("%s,%d,%d\n",
+                            linkId.toString(), hour, count));
+                }
+            }
+
+            logger.info("Wrote traffic flows to " + filePath);
+        } catch (java.io.IOException e) {
+            logger.error("Failed to write traffic flows CSV: " + filePath, e);
+        }
     }
 
     private void replyLinkInfoFromFile(Day day) {
@@ -605,6 +688,14 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
         for(Link link : path.links) {
             double enterTimeInSecond = (double) departureTimeInSecond + pathTime;
+
+            // Update counts for traffic flows estimation
+            int hour = (int) (enterTimeInSecond / 3600) % 24;
+            trafficFlowsByDayModeLinkHour.get(trip.getDepartureDay())
+                    .get(getAdjustedModeName(mode))
+                    .computeIfAbsent(link.getId(), k -> new HashMap<>())
+                    .merge(hour, 1, Integer::sum);
+
             double linkLength = link.getLength();
             double linkTime = travelTime.getLinkTravelTime(link,enterTimeInSecond,null,vehicle);
 

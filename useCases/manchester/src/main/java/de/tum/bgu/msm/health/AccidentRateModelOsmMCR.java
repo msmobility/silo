@@ -327,14 +327,13 @@ public class AccidentRateModelOsmMCR {
         log.info("{} bike/ped links have no hourly traffic volume", counterBikePed);
         log.info("Link casualty exposure calculation completed.");
 
-        /*
         try {
-            writeOutExposure();
+            //writeOutExposure();
+            writeOutCasualtyRate();
         } catch (FileNotFoundException e) {
             log.error("Error writing exposure data", e);
         }
 
-         */
     }
 
     private void computeLinkCasualtyExposureMCR(OsmLink osmLink) {
