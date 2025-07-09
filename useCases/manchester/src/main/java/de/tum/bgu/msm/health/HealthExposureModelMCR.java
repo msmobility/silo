@@ -64,6 +64,7 @@ import routing.travelTime.WalkLinkSpeedCalculatorImpl;
 import routing.travelTime.WalkTravelTime;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
@@ -78,7 +79,8 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
     private MutableScenario scenario;
     private List<Day> simulatedDays;
     private List<Day> weekdays = Arrays.asList(Day.monday,Day.tuesday,Day.wednesday,Day.thursday,Day.friday);
-    private Map<Day, Map<String, Map<Id<Link>, Map<Integer, Integer>>>> trafficFlowsByDayModeLinkHour = new HashMap<>();
+    // private Map<Day, Map<String, Map<Id<Link>, Map<Integer, Integer>>>> trafficFlowsByDayModeLinkHour = new HashMap<>();
+    private Map<Day, Map<String, Map<Id<Link>, Map<Integer, Integer>>>> trafficFlowsByDayModeLinkHour = new ConcurrentHashMap<>();
 
     public HealthExposureModelMCR(DataContainer dataContainer, Properties properties, Random random, Config config) {
         super(dataContainer, properties, random);
@@ -214,11 +216,11 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
     }
 
     private void initializeTrafficFlows() {
-        String[] modeAdjustedNames = {"car", "bike", "walk"};
+        String[] modeAdjustedNames = {"car", "bike", "walk", "pt"};
         for (Day day : Day.values()) {
-            Map<String, Map<Id<Link>, Map<Integer, Integer>>> modeMap = new HashMap<>();
+            Map<String, Map<Id<Link>, Map<Integer, Integer>>> modeMap = new ConcurrentHashMap<>();
             for (String modeName : modeAdjustedNames) {
-                modeMap.put(modeName, new HashMap<>());
+                modeMap.put(modeName, new ConcurrentHashMap<>());
             }
             trafficFlowsByDayModeLinkHour.put(day, modeMap);
         }
@@ -691,8 +693,9 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
             // Update counts for traffic flows estimation
             int hour = (int) (enterTimeInSecond / 3600) % 24;
+            String modeAdjusted = getAdjustedModeName(mode);
             trafficFlowsByDayModeLinkHour.get(trip.getDepartureDay())
-                    .get(getAdjustedModeName(mode))
+                    .get(modeAdjusted)
                     .computeIfAbsent(link.getId(), k -> new HashMap<>())
                     .merge(hour, 1, Integer::sum);
 
