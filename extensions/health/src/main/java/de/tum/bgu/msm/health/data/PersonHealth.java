@@ -81,4 +81,8 @@ public interface PersonHealth extends Person {
     void setRelativeRisks(Map<String, Float> relativeRisks);
 
     void setAllCauseRR(Float reduce);
+
+    //List<VisitedLink> getVisitedLinks();
+
+    //void setVisitedLinks(List<VisitedLink> visitedLinks);
 }

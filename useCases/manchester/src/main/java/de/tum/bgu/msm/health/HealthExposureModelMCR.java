@@ -175,6 +175,12 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 System.gc();
             }
 
+            // update injury risks here
+            RunLinkToPersonInjuryRisks();
+
+            // TODO: free memory
+
+
             // write the traffic flows from routed trips and free memory
             writeAndClearTrafficFlows(year, scenario.getNetwork());
             System.gc();
@@ -199,6 +205,101 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
     public void endSimulation() {
     }
 
+    private void RunLinkToPersonInjuryRisks() {
+        for (Person person : dataContainer.getHouseholdDataManager().getPersons()) {
+            PersonHealthMCR personHealth = (PersonHealthMCR) person;
+            List<VisitedLink> visitedLinks = personHealth.getVisitedLinks();
+            if (visitedLinks == null || visitedLinks.isEmpty()) {
+                continue;
+            }
+
+            // Map<Day, Map<String, Double>> risksByDayMode = new HashMap<>();
+
+            for (VisitedLink visit : visitedLinks) {
+                Link link = scenario.getNetwork().getLinks().get(visit.linkId);
+                if (link == null) {
+                    logger.warn("Link " + visit.linkId + " not found in network for person " + person.getId());
+                    continue;
+                }
+
+                /*
+                Mode modeForRisk;
+                switch (visit.mode) {
+                    case "car":
+                        modeForRisk = Mode.autoDriver;
+                        break;
+                    case "bike":
+                        modeForRisk = Mode.bicycle;
+                        break;
+                    case "walk":
+                        modeForRisk = Mode.walk;
+                        break;
+                    case "pt":
+                        modeForRisk = Mode.pt;
+                        break;
+                    default:
+                        throw new RuntimeException("Undefined mode " + visit.mode);
+                }
+
+                 */
+
+                int flow = trafficFlowsByDayModeLinkHour.getOrDefault(visit.day, new ConcurrentHashMap<>())
+                        .getOrDefault(visit.mode, new ConcurrentHashMap<>())
+                        .getOrDefault(visit.linkId, new ConcurrentHashMap<>())
+                        .getOrDefault(visit.hour, 0);
+
+                // TODO: get thursday for weekdays
+                LinkInfo linkInfo;
+                double linkRisk = 0.0, linkRiskPerPerson=0.0;
+
+                if((!visit.day.equals(Day.saturday))&&(!visit.day.equals(Day.sunday))){
+                    linkInfo = ((HealthDataContainerImpl) dataContainer).getLinkInfoByDay(Day.thursday).get(visit.linkId);
+                    linkRisk = getLinkInjuryRisk2(visit.mode, visit.hour, linkInfo);
+                    linkRisk = linkRisk/5;
+                    linkRiskPerPerson = flow > 0 ? linkRisk / flow : 0.0;
+                }else{
+                    linkInfo = ((HealthDataContainerImpl) dataContainer).getLinkInfoByDay(visit.day).get(visit.linkId);
+                    linkRisk = getLinkInjuryRisk2(visit.mode, visit.hour, linkInfo);
+                    linkRiskPerPerson = flow > 0 ? linkRisk / flow : 0.0;
+                }
+
+
+
+                /*
+                risksByDayMode.computeIfAbsent(visit.day, k -> new HashMap<>())
+                        .merge(visit.mode, riskPerTrip, Double::sum);
+
+                 */
+                switch(visit.mode){
+                    case "car":
+                        personHealth.updateWeeklyAccidentRisks(Map.of("severeFatalInjuryCar", (float) linkRiskPerPerson));
+                        break;
+                    case "bike":
+                        personHealth.updateWeeklyAccidentRisks(Map.of("severeFatalInjuryBike", (float) linkRiskPerPerson));
+                        break;
+                    case "walk":
+                        personHealth.updateWeeklyAccidentRisks(Map.of("severeFatalInjuryWalk", (float) linkRiskPerPerson));
+                        break;
+                    default:
+                        throw new RuntimeException("Undefined mode " + visit.mode);
+                }
+            }
+
+            // Store aggregated risks in PersonHealthMCR (implementation-specific)
+            /*
+            for (Map.Entry<Day, Map<String, Double>> dayEntry : risksByDayMode.entrySet()) {
+                Day day = dayEntry.getKey();
+                for (Map.Entry<String, Double> modeEntry : dayEntry.getValue().entrySet()) {
+                    String mode = modeEntry.getKey();
+                    double risk = modeEntry.getValue();
+                    personHealth.updateWeeklyAccidentRisks(Map.of(mode, (float) risk));
+                }
+            }
+
+             */
+        }
+    }
+
     private String getAdjustedModeName(Mode mode) {
         switch (mode) {
             case autoDriver:
@@ -216,7 +317,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
     }
 
     private void initializeTrafficFlows() {
-        String[] modeAdjustedNames = {"car", "bike", "walk", "pt"};
+        String[] modeAdjustedNames = {"car", "bike", "walk"};
         for (Day day : Day.values()) {
             Map<String, Map<Id<Link>, Map<Integer, Integer>>> modeMap = new ConcurrentHashMap<>();
             for (String modeName : modeAdjustedNames) {
@@ -688,6 +789,8 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
         float[] hourOccupied = new float[24*7];
 
+        List<VisitedLink> visitedLinksPath = new ArrayList<>();
+
         for(Link link : path.links) {
             double enterTimeInSecond = (double) departureTimeInSecond + pathTime;
 
@@ -791,6 +894,8 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             pathTime += linkTime;
 
             // INJURIES
+            visitedLinksPath.add(new VisitedLink(link.getId(), hour, trip.getDepartureDay(), modeAdjusted));
+
             if(linkInfoByDay != null) {
                 // Injuries
                 // pathSevereInjuryRisk += linkSevereInjuryRisk - (pathSevereInjuryRisk * linkSevereInjuryRisk);
@@ -840,7 +945,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         }
          */
 
-        trip.updateTravelRiskMap(Map.of("severeFatalInjury", (float) pathInjuryRisk));
+        trip.updateTravelRiskMap(Map.of("severeFatalInjury", (float) 0));
 
         trip.updateTravelExposureMap(Map.of(
                 "pm2.5", (float) pathExposurePm25,
@@ -859,10 +964,12 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
          */
 
-        // todo: by mode ??
+
+        // Injuries
+        ((PersonHealthMCR) siloPerson).addVisitedLinks(visitedLinksPath);
         // siloPerson.updateWeeklyAccidentRisks(Map.of("severeFatalInjury", (float) pathInjuryRisk));
 
-        //
+        /*
         switch(mode){
             case autoDriver:
             case autoPassenger:
@@ -877,9 +984,9 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             default:
                 throw new RuntimeException("Undefined mode " + mode);
         }
+         */
 
         siloPerson.updateWeeklyMarginalMetHours(trip.getTripMode(), (float) pathMarginalMetHours);
-
         siloPerson.updateWeeklyPollutionExposuresByHour(Map.of(
                 "pm2.5", pathExposurePm25ByHour,
                 "no2", pathExposureNo2ByHour
@@ -1205,6 +1312,34 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         return null;
     }
 
+    private double getLinkInjuryRisk2(String mode, int time, LinkInfo linkInfo){
+        double linkInjuryRisk = 0.;
+        switch (mode) {
+            case "car":
+                linkInjuryRisk =
+                        getRiskValue2(linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime(),
+                                AccidentType.CAR_ONEWAY, time) +
+                                getRiskValue2(linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime(),
+                                        AccidentType.CAR_TWOWAY, time);
+                break;
+            case "bike":
+                linkInjuryRisk =
+                        getRiskValue2(linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime(),
+                                AccidentType.BIKE_MAJOR, time) +
+                                getRiskValue2(linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime(),
+                                        AccidentType.BIKE_MINOR, time);
+                break;
+            case "walk":
+                linkInjuryRisk =
+                        getRiskValue2(linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime(),
+                                AccidentType.PED, time);
+                break;
+            default:
+                throw new RuntimeException("Undefined mode " + mode);
+        }
+        return linkInjuryRisk;
+    }
+
     private double getLinkInjuryRisk(Mode mode, int time, LinkInfo linkInfo){
         double linkInjuryRisk = 0.;
         switch (mode) {
@@ -1241,6 +1376,14 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         OpenIntFloatHashMap timeMap = exposureMap.get(type);
         if (timeMap == null) return 0f;
         return timeMap.get((int)(time / 3600.));
+    }
+
+    private float getRiskValue2(Map<AccidentType, OpenIntFloatHashMap> exposureMap,
+                               AccidentType type, float time) {
+        if (exposureMap == null) return 0f;
+        OpenIntFloatHashMap timeMap = exposureMap.get(type);
+        if (timeMap == null) return 0f;
+        return timeMap.get((int) time);
     }
 
     private double[] getLinkSevereFatalInjuryRisk(Mode mode, int hour, LinkInfo linkInfo) {

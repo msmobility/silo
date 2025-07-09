@@ -38,6 +38,7 @@ public class PersonHealthMCR implements PersonWithSchool, PersonHealth {
     private float noiseHighSleepDisturbancePercentage = 0.f;
     private float weeklyNdviExposure = 0.f;
     private float weeklyNdviExposureNormalised = 0.f;
+    private List<VisitedLink> visitedLinks = new ArrayList<>();
 
 
     //for disease model
@@ -373,6 +374,15 @@ public class PersonHealthMCR implements PersonWithSchool, PersonHealth {
 
     public void setNoiseHighSleepDisturbancePercentage(float noiseHighSleepDisturbancePercentage) {
         this.noiseHighSleepDisturbancePercentage = noiseHighSleepDisturbancePercentage;
+    }
+
+    // For injuries Manchester
+    List<VisitedLink> getVisitedLinks(){
+        return visitedLinks;
+    }
+
+    void addVisitedLinks(List<VisitedLink> visitedLink){
+        this.visitedLinks.addAll(visitedLink);
     }
 
     //For Munich

@@ -130,7 +130,7 @@ public class AccidentRateModelOsmMCR {
         calculateCasualtyFrequency();
 
         // Compute link-level injury risk
-        computeLinkLevelInjuryRisk();
+        //computeLinkLevelInjuryRisk();
 
         // Clean up
         motorizedHandler.reset(0);
@@ -452,12 +452,11 @@ public class AccidentRateModelOsmMCR {
                         if (accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType) != null) {
 
                             for (int hour = 0; hour < 24; hour++) {
-                                totalCasualty += accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
+                                totalCasualty = accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
+                                if (totalCasualty > 0) {
+                                    data.append(String.format("%d,%s,%s,%s\n", osmLink.osmId, link.getId().toString(), accidentType.name(), Double.toString(totalCasualty)));
+                                }
                             }
-                            if (totalCasualty > 0) {
-                                data.append(String.format("%d,%s,%s,%s\n", osmLink.osmId, link.getId().toString(), accidentType.name(), Double.toString(totalCasualty)));
-                            }
-
                         }
                     }
                 }
