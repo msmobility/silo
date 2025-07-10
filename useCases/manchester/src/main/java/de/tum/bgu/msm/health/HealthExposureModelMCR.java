@@ -210,7 +210,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             PersonHealthMCR personHealth = (PersonHealthMCR) person;
             List<VisitedLink> visitedLinks = personHealth.getVisitedLinks();
             if (visitedLinks == null || visitedLinks.isEmpty()) {
-                logger.warn("Person " + person.getId() + " has no paths");
+                //logger.warn("Person " + person.getId() + " has no paths");
                 continue;
             }
 
@@ -219,7 +219,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             for (VisitedLink visit : visitedLinks) {
                 Link link = scenario.getNetwork().getLinks().get(visit.linkId); // TODO: this will be the active network :/
                 if (link == null) {
-                    logger.warn("Link " + visit.linkId + " not found in network for person " + person.getId());
+                    //logger.warn("Link " + visit.linkId + " not found in network for person " + person.getId());
                     continue;
                 }
 
@@ -262,6 +262,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 }else{
                     linkInfo = ((HealthDataContainerImpl) dataContainer).getLinkInfoByDay(visit.day).get(visit.linkId);
                     linkRisk = getLinkInjuryRisk2(visit.mode, visit.hour, linkInfo);
+                    logger.warn("Risk positive");
                     linkRiskPerPerson = flow > 0 ? linkRisk / flow : 0.0;
                 }
 
