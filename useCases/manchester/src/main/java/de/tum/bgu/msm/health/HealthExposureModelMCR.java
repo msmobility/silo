@@ -168,10 +168,10 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                     System.gc();
                 }
 
-                ((DataContainerHealth)dataContainer).getLinkInfo().values().forEach(linkInfo -> {linkInfo.reset();});
+                //((DataContainerHealth) dataContainer).getLinkInfo().values().forEach(linkInfo -> {linkInfo.reset();});
                 // todo: Is it worth resetting ?
                 // ((DataContainerHealth) dataContainer).getLinkInfoByDay(day).values().forEach(linkInfo -> {linkInfo.reset();});
-                ((DataContainerHealth)dataContainer).getActivityLocations().values().forEach(activityLocation -> {activityLocation.reset();});
+                ((DataContainerHealth) dataContainer).getActivityLocations().values().forEach(activityLocation -> {activityLocation.reset();});
                 System.gc();
             }
 
@@ -262,7 +262,9 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 }else{
                     linkInfo = ((HealthDataContainerImpl) dataContainer).getLinkInfoByDay(visit.day).get(visit.linkId);
                     linkRisk = getLinkInjuryRisk2(visit.mode, visit.hour, linkInfo);
-                    logger.warn("Risk positive");
+                    if(linkRisk > 0){
+                        logger.warn("Risk positive !!!");
+                    }
                     linkRiskPerPerson = flow > 0 ? linkRisk / flow : 0.0;
                 }
 
@@ -905,7 +907,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             pathTime += linkTime;
 
             // INJURIES
-            visitedLinksPath.add(new VisitedLink(link.getId(), hour, trip.getDepartureDay(), modeAdjusted));
+            visitedLinksPath.add(new VisitedLink(link.getId(), (int) enterTimeInSecond/3600, trip.getDepartureDay(), modeAdjusted));
 
             if(linkInfoByDay != null) {
                 // Injuries
@@ -1390,12 +1392,12 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         return timeMap.get((int)(time / 3600.));
     }
 
-    private float getRiskValue2(Map<AccidentType, OpenIntFloatHashMap> exposureMap,
-                               AccidentType type, float time) {
+    private double getRiskValue2(Map<AccidentType, OpenIntFloatHashMap> exposureMap,
+                               AccidentType type, int time) {
         if (exposureMap == null) return 0f;
         OpenIntFloatHashMap timeMap = exposureMap.get(type);
         if (timeMap == null) return 0f;
-        return timeMap.get((int) time);
+        return timeMap.get(time);
     }
 
     private double[] getLinkSevereFatalInjuryRisk(Mode mode, int hour, LinkInfo linkInfo) {
