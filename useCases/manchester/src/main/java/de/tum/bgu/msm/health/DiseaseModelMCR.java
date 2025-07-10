@@ -252,7 +252,9 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
                 }
             } else {
                 List<String> fullDisease = new ArrayList<>();
-                if (personHealth.getHealthDiseaseTracker().get(year - 1) != null) {
+                // DO NOT add previous states when a person has died in the injury model. These states are exclusive.
+                if (personHealth.getHealthDiseaseTracker().get(year - 1) != null &&
+                        !(newDisease.equals(Diseases.dead_bike) || newDisease.equals(Diseases.dead_walk) || newDisease.equals(Diseases.dead_car))) {
                     fullDisease.addAll(personHealth.getHealthDiseaseTracker().get(year - 1)); // get old diseases
                 }
                 fullDisease.addAll(newDisease); // add new diseases
