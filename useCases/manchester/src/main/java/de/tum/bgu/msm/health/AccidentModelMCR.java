@@ -33,8 +33,8 @@ public class AccidentModelMCR extends AbstractModel implements ModelUpdateListen
 
     public AccidentModelMCR(DataContainer dataContainer, Properties properties, Random random) {
         super(dataContainer, properties, random);
-        simulatedDays = Arrays.asList(Day.sunday);
-        //simulatedDays = Arrays.asList(Day.thursday, Day.saturday, Day.sunday);
+        //simulatedDays = Arrays.asList(Day.sunday);
+        simulatedDays = Arrays.asList(Day.thursday, Day.saturday, Day.sunday);
     }
 
     @Override
