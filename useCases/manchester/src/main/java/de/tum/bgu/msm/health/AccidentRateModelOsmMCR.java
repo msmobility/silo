@@ -292,14 +292,13 @@ public class AccidentRateModelOsmMCR {
         }
         log.info("Link casualty frequency calculation completed.");
 
-        /*
+
         try {
             writeOutCasualtyRate();
         } catch (FileNotFoundException e) {
             log.error("Error writing casualty rates", e);
         }
 
-         */
     }
 
     private List<OsmLink> extractOsmLinksSpecific(List<OsmLink> osmLinks, AccidentType accidentType) {
@@ -455,11 +454,14 @@ public class AccidentRateModelOsmMCR {
                         if (accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType) != null) {
 
                             for (int hour = 0; hour < 24; hour++) {
-                                totalCasualty = accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
-                                if (totalCasualty > 0) {
-                                    data.append(String.format("%d,%s,%s,%s\n", osmLink.osmId, link.getId().toString(), accidentType.name(), Double.toString(totalCasualty)));
-                                }
+                                totalCasualty += accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
+
                             }
+
+                        }
+
+                        if (totalCasualty > 0) {
+                            data.append(String.format("%d,%s,%s,%s\n", osmLink.osmId, link.getId().toString(), accidentType.name(), Double.toString(totalCasualty)));
                         }
                     }
                 }
