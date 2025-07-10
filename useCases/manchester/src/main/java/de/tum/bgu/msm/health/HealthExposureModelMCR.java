@@ -168,8 +168,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                     System.gc();
                 }
 
-                //((DataContainerHealth) dataContainer).getLinkInfo().values().forEach(linkInfo -> {linkInfo.reset();});
-                // todo: Is it worth resetting ?
+                // ((DataContainerHealth) dataContainer).getLinkInfo().values().forEach(linkInfo -> {linkInfo.reset();});
                 // ((DataContainerHealth) dataContainer).getLinkInfoByDay(day).values().forEach(linkInfo -> {linkInfo.reset();});
                 ((DataContainerHealth) dataContainer).getActivityLocations().values().forEach(activityLocation -> {activityLocation.reset();});
                 System.gc();
@@ -262,9 +261,12 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 }else{
                     linkInfo = ((HealthDataContainerImpl) dataContainer).getLinkInfoByDay(visit.day).get(visit.linkId);
                     linkRisk = getLinkInjuryRisk2(visit.mode, visit.hour, linkInfo);
+                    /*
                     if(linkRisk > 0){
                         logger.warn("Risk positive !!!");
                     }
+
+                     */
                     linkRiskPerPerson = flow > 0 ? linkRisk / flow : 0.0;
                 }
 
@@ -301,6 +303,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
              */
 
+            /*
             if(((PersonHealthMCR) person).getWeeklyAccidentRisk("severeFatalInjuryCar") > 0){
                 logger.warn("Person " + person.getId() + " has weekly accident risks by car");
             }
@@ -310,6 +313,8 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             if(((PersonHealthMCR) person).getWeeklyAccidentRisk("severeFatalInjuryBike") > 0){
                 logger.warn("Person " + person.getId() + " has weekly accident risks by bike");
             }
+
+             */
         }
     }
 
