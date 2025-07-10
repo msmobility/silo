@@ -5,6 +5,7 @@ import de.tum.bgu.msm.data.Day;
 import de.tum.bgu.msm.health.airPollutant.emission.MCRHbefaRoadTypeMapping;
 import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.health.injury.AccidentRateModel;
+import de.tum.bgu.msm.health.injury.AccidentType;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
@@ -123,7 +124,8 @@ public class AccidentModelMCR extends AbstractModel implements ModelUpdateListen
                 //((DataContainerHealth) dataContainer).getLinkInfo().get(linkId).setSevereFatalCasualityExposureByAccidentTypeByTime(model.getAccidentsContext().getLinkId2info().get(linkId).getSevereFatalCasualityExposureByAccidentTypeByTime());
 
                 for(int hour =0; hour<24; hour++){
-                    ((HealthDataContainerImpl) dataContainer).getLinkInfoByDay(day).get(linkId).getSevereFatalCasualityExposureByAccidentTypeByTime().get(hour);
+                    double risk= ((HealthDataContainerImpl) dataContainer).getLinkInfoByDay(day).get(linkId).getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.PED).get(hour);
+                    logger.warn("risk = " + risk);
                 }
 
             }
