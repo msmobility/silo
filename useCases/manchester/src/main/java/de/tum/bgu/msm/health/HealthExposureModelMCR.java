@@ -210,13 +210,14 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             PersonHealthMCR personHealth = (PersonHealthMCR) person;
             List<VisitedLink> visitedLinks = personHealth.getVisitedLinks();
             if (visitedLinks == null || visitedLinks.isEmpty()) {
+                logger.warn("Person " + person.getId() + " has no paths");
                 continue;
             }
 
             // Map<Day, Map<String, Double>> risksByDayMode = new HashMap<>();
 
             for (VisitedLink visit : visitedLinks) {
-                Link link = scenario.getNetwork().getLinks().get(visit.linkId);
+                Link link = scenario.getNetwork().getLinks().get(visit.linkId); // TODO: this will be the active network :/
                 if (link == null) {
                     logger.warn("Link " + visit.linkId + " not found in network for person " + person.getId());
                     continue;
@@ -243,16 +244,17 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
                  */
 
-                int flow = trafficFlowsByDayModeLinkHour.getOrDefault(visit.day, new ConcurrentHashMap<>())
-                        .getOrDefault(visit.mode, new ConcurrentHashMap<>())
-                        .getOrDefault(visit.linkId, new ConcurrentHashMap<>())
+
+                int flow = trafficFlowsByDayModeLinkHour.getOrDefault(visit.day, new HashMap<>())
+                        .getOrDefault(visit.mode, new HashMap<>())
+                        .getOrDefault(visit.linkId, new HashMap<>())
                         .getOrDefault(visit.hour, 0);
 
                 // TODO: get thursday for weekdays
                 LinkInfo linkInfo;
                 double linkRisk = 0.0, linkRiskPerPerson=0.0;
 
-                if((!visit.day.equals(Day.saturday))&&(!visit.day.equals(Day.sunday))){
+                if((!visit.day.equals(Day.saturday)) && (!visit.day.equals(Day.sunday))){
                     linkInfo = ((HealthDataContainerImpl) dataContainer).getLinkInfoByDay(Day.thursday).get(visit.linkId);
                     linkRisk = getLinkInjuryRisk2(visit.mode, visit.hour, linkInfo);
                     linkRisk = linkRisk/5;
@@ -263,8 +265,6 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                     linkRiskPerPerson = flow > 0 ? linkRisk / flow : 0.0;
                 }
 
-
-
                 /*
                 risksByDayMode.computeIfAbsent(visit.day, k -> new HashMap<>())
                         .merge(visit.mode, riskPerTrip, Double::sum);
@@ -272,13 +272,13 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                  */
                 switch(visit.mode){
                     case "car":
-                        personHealth.updateWeeklyAccidentRisks(Map.of("severeFatalInjuryCar", (float) linkRiskPerPerson));
+                        personHealth.updateWeeklyAccidentRisks(Map.of("severeFatalInjuryCar", linkRiskPerPerson));
                         break;
                     case "bike":
-                        personHealth.updateWeeklyAccidentRisks(Map.of("severeFatalInjuryBike", (float) linkRiskPerPerson));
+                        personHealth.updateWeeklyAccidentRisks(Map.of("severeFatalInjuryBike", linkRiskPerPerson));
                         break;
                     case "walk":
-                        personHealth.updateWeeklyAccidentRisks(Map.of("severeFatalInjuryWalk", (float) linkRiskPerPerson));
+                        personHealth.updateWeeklyAccidentRisks(Map.of("severeFatalInjuryWalk", linkRiskPerPerson));
                         break;
                     default:
                         throw new RuntimeException("Undefined mode " + visit.mode);
@@ -297,6 +297,16 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             }
 
              */
+
+            if(((PersonHealthMCR) person).getWeeklyAccidentRisk("severeFatalInjuryCar") > 0){
+                logger.warn("Person " + person.getId() + " has weekly accident risks by car");
+            }
+            if(((PersonHealthMCR) person).getWeeklyAccidentRisk("severeFatalInjuryWalk") > 0){
+                logger.warn("Person " + person.getId() + " has weekly accident risks by walk");
+            }
+            if(((PersonHealthMCR) person).getWeeklyAccidentRisk("severeFatalInjuryBike") > 0){
+                logger.warn("Person " + person.getId() + " has weekly accident risks by bike");
+            }
         }
     }
 
@@ -967,6 +977,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
         // Injuries
         ((PersonHealthMCR) siloPerson).addVisitedLinks(visitedLinksPath);
+        logger.warn("Number of visited links is " + visitedLinksPath.size() + " to person " + siloPerson.getId() + " by mode " + mode);
         // siloPerson.updateWeeklyAccidentRisks(Map.of("severeFatalInjury", (float) pathInjuryRisk));
 
         /*

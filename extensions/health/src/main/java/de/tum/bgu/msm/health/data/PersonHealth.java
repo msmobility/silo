@@ -39,9 +39,9 @@ public interface PersonHealth extends Person {
 
     void setWeeklyExposureByPollutantNormalised(Map<String, Float> exposureMap);
 
-    float getWeeklyAccidentRisk(String type);
+    double getWeeklyAccidentRisk(String type);
 
-    void updateWeeklyAccidentRisks(Map<String, Float> newRisks);
+    void updateWeeklyAccidentRisks(Map<String, Double> newRisks);
 
     float[] getWeeklyNoiseExposureByHour();
 

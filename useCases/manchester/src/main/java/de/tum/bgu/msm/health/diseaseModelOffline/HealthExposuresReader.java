@@ -55,10 +55,10 @@ public class HealthExposuresReader {
                     pp.updateWeeklyMarginalMetHours(Mode.bicycle, Float.parseFloat(lineElements[posMmetCycle]));
                     pp.setWeeklyMarginalMetHoursSport(Float.parseFloat(lineElements[posMmetSport]));
 
-                    Map<String, Float> injuryMap = new HashMap<>();
-                    injuryMap.put("severeFatalInjuryCar", Float.parseFloat(lineElements[posInjCar]));
-                    injuryMap.put("severeFatalInjuryBike", Float.parseFloat(lineElements[posInjBike]));
-                    injuryMap.put("severeFatalInjuryWalk", Float.parseFloat(lineElements[posInjWalk]));
+                    Map<String, Double> injuryMap = new HashMap<>();
+                    injuryMap.put("severeFatalInjuryCar", Double.parseDouble(lineElements[posInjCar]));
+                    injuryMap.put("severeFatalInjuryBike", Double.parseDouble(lineElements[posInjBike]));
+                    injuryMap.put("severeFatalInjuryWalk", Double.parseDouble(lineElements[posInjWalk]));
                     pp.updateWeeklyAccidentRisks(injuryMap);
 
                     Map<String, Float> exposureMap = new HashMap<>();

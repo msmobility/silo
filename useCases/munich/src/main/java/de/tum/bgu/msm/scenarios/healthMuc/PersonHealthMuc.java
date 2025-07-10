@@ -233,7 +233,7 @@ public class PersonHealthMuc implements PersonWithSchool, PersonHealth {
 
     }
 
-    public float getWeeklyAccidentRisk(String type) {
+    public double getWeeklyAccidentRisk(String type) {
         return weeklyAccidentRisks.getOrDefault(type, 0.f);
     }
 
