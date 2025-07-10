@@ -120,7 +120,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             }
 
             // process ndvi data
-            //processNdviData(NetworkUtils.readNetwork(initialMatsimConfig.network().getInputFile()));
+            processNdviData(NetworkUtils.readNetwork(initialMatsimConfig.network().getInputFile()));
 
             // Initialize the table to count the flows for the injury model
             initializeTrafficFlows();
@@ -185,7 +185,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             writeAndClearTrafficFlows(year, scenario.getNetwork());
             System.gc();
 
-            /*
+
             // assemble home location health exposure data
             for(Day day : Day.values()){
                 replyActivityLocationInfoFromFile(weekdays.contains(day) ? Day.thursday : day);
@@ -197,7 +197,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             // normalize person-level home-travel-activity exposure
             calculatePersonHealthExposureMetrics();
 
-             */
+
         }
     }
 
