@@ -277,6 +277,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
     }
 
     private void RunLinkToPersonInjuryRisks(Network network) {
+        logger.warn("Updating person-based risks");
 
         for (Person person : dataContainer.getHouseholdDataManager().getPersons()) {
             PersonHealthMCR personHealth = (PersonHealthMCR) person;
