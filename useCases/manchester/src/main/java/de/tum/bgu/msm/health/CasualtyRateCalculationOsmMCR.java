@@ -159,6 +159,36 @@ public class CasualtyRateCalculationOsmMCR {
         System.out.println("------------------------");
     }
 
+    private void printUtilityDetails(OsmLink link, int hour) {
+        System.out.println("Utility is NaN. Printing variables and coefficients:");
+        System.out.printf("Intercept: coef=%.4f%n", binaryLogitCoef.get("(Intercept)"));
+        System.out.printf("truckHourlyDemand: value=%.4f, coef(log1p(truck_flow))=%.4f%n",
+                link.truckHourlyDemand[hour], binaryLogitCoef.get("log1p(truck_flow)"));
+        System.out.printf("pedHourlyDemand: value=%.4f, coef(log1p(ped_flow))=%.4f%n",
+                link.pedHourlyDemand[hour], binaryLogitCoef.get("log1p(ped_flow)"));
+        System.out.printf("carHourlyDemand: value=%.4f, coef(log1p(car_flow))=%.4f%n",
+                link.carHourlyDemand[hour], binaryLogitCoef.get("log1p(car_flow)"));
+        System.out.printf("bikeHourlyDemand: value=%.4f, coef(log(bike_flow + 0.1))=%.4f%n",
+                link.bikeHourlyDemand[hour], binaryLogitCoef.get("log(bike_flow + 0.1)"));
+        double motorHourlyDemand = link.carHourlyDemand[hour] + link.truckHourlyDemand[hour];
+        System.out.printf("motorHourlyDemand: value=%.4f, coef(motor_flow)=%.4f, coef(log1p(motor_flow))=%.4f%n",
+                motorHourlyDemand, binaryLogitCoef.get("motor_flow"), binaryLogitCoef.get("log1p(motor_flow)"));
+        System.out.printf("lengthSum: value=%.4f, coef(log(length_sum))=%.4f%n",
+                link.lengthSum, binaryLogitCoef.get("log(length_sum)"));
+        System.out.printf("bikeStress: value=%.4f, coef(bikeStress)=%.4f%n",
+                link.bikeStress, binaryLogitCoef.get("bikeStress"));
+        System.out.printf("bikeStressJct: value=%.4f, coef(bikeStressJct)=%.4f%n",
+                link.bikeStressJct, binaryLogitCoef.get("bikeStressJct"));
+        System.out.printf("walkStressJct: value=%.4f, coef(walkStressJct)=%.4f%n",
+                link.walkStressJct, binaryLogitCoef.get("walkStressJct"));
+        System.out.printf("width: value=%.4f, coef(width)=%.4f%n",
+                link.width, binaryLogitCoef.get("width"));
+        System.out.printf("speedLimit: value=%.4f, coef(speed_limit<20 MPH)=%.4f, coef(speed_limit20 - 29 MPH)=%.4f%n",
+                link.speedLimitMPH, binaryLogitCoef.get("speed_limit<20 MPH"), binaryLogitCoef.get("speed_limit20 - 29 MPH"));
+        System.out.printf("roadType: value=%s, coef(roadPrimary/Trunk)=%.4f, coef(road<20MPH)=%.4f, coef(road20 - 29 MPH)=%.4f%n",
+                link.roadType, binaryLogitCoef.get("roadPrimary/Trunk"), binaryLogitCoef.get("road<20MPH"), binaryLogitCoef.get("road20 - 29 MPH"));
+    }
+
     private double calculateUtility(OsmLink link, int hour) {
 
         double utility = 0.0;
@@ -239,6 +269,11 @@ public class CasualtyRateCalculationOsmMCR {
                 utility += binaryLogitCoef.get("road20 - 29 MPH");
             }
         }
+        if(Double.isNaN(utility)){
+            System.out.println("utility is NaN !!!!!!!!!!!");
+            printUtilityDetails(link, hour);
+        }
+
         return utility;
     }
 
