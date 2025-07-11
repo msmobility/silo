@@ -142,11 +142,11 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                         case bicycle:
                         case walk:
                         case pt:
-                            if(Day.thursday.equals(day)){
+                            if(Day.thursday.equals(day)){ // trips during weekdays
                                 mitoTrips = mitoTripsAll.values().stream().
                                         filter(trip -> trip.getTripMode().equals(mode) & weekdays.contains(trip.getDepartureDay())).
                                         collect(Collectors.toMap(Trip::getId,trip -> trip));
-                            }else {
+                            }else { // trips during weekends
                                 mitoTrips = mitoTripsAll.values().stream().
                                         filter(trip -> trip.getTripMode().equals(mode) & trip.getDepartureDay().equals(day)).
                                         collect(Collectors.toMap(Trip::getId,trip -> trip));
@@ -168,8 +168,8 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                     System.gc();
                 }
 
-                //((DataContainerHealth) dataContainer).getLinkInfo().values().forEach(linkInfo -> {linkInfo.reset();});
-                // ((DataContainerHealth) dataContainer).getLinkInfoByDay(day).values().forEach(linkInfo -> {linkInfo.reset();});
+                ((DataContainerHealth) dataContainer).getLinkInfo().values().forEach(linkInfo -> {linkInfo.reset();});
+                //((DataContainerHealth) dataContainer).getLinkInfoByDay(day).values().forEach(linkInfo -> {linkInfo.reset();});
                 ((DataContainerHealth) dataContainer).getActivityLocations().values().forEach(activityLocation -> {activityLocation.reset();});
                 System.gc();
             }
@@ -208,7 +208,10 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
     public void endSimulation() {
     }
 
-    public void checkAccumulatedRisksByModeDayHour(Network network, Day day, HealthDataContainerImpl dataContainer, Map<Day, Map<String, Map<Id<Link>, Map<Integer, Integer>>>> trafficFlowsByDayModeLinkHour) {
+    public void checkAccumulatedRisksByModeDayHour(Network network,
+                                                   Day day,
+                                                   HealthDataContainerImpl dataContainer,
+                                                   Map<Day, Map<String, Map<Id<Link>, Map<Integer, Integer>>>> trafficFlowsByDayModeLinkHour) {
         // Define modes to loop over
         List<String> modes = Arrays.asList("car", "bike", "walk");
 
@@ -225,12 +228,11 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
                 // Loop over all links in the MATSim network
                 for (Link link : network.getLinks().values()) {
-                    Id<Link> linkId = link.getId();
 
                     // Get link info for the specific day and link
                     LinkInfo linkInfo = ((HealthDataContainerImpl) dataContainer)
                             .getLinkInfoByDay(day)
-                            .get(linkId);
+                            .get(link.getId());
 
                     // Skip if linkInfo is null
                     if (linkInfo == null) {
@@ -244,7 +246,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                     int flow = trafficFlowsByDayModeLinkHour
                             .getOrDefault(day, new HashMap<>())
                             .getOrDefault(mode, new HashMap<>())
-                            .getOrDefault(linkId, new HashMap<>())
+                            .getOrDefault(link.getId(), new HashMap<>())
                             .getOrDefault(hour, 0);
 
                     // Accumulate risks based on flow for this hour
@@ -259,7 +261,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             }
 
             // Print results for the current mode and hour
-            System.out.println("Analysis for Day: " + day + ", Mode: " + mode);
+            System.out.println("Analysis for day: " + day + ", mode: " + mode);
             System.out.println("Links with Zero Flow:");
             System.out.printf("  Total Risk: %.4f, Number of Links: %d, Average Risk: %.4f%n",
                     zeroFlowRisk, zeroFlowCount, zeroFlowCount > 0 ? zeroFlowRisk / zeroFlowCount : 0.0);
@@ -342,6 +344,18 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                         .merge(visit.mode, riskPerTrip, Double::sum);
 
                  */
+
+                // Age/gender interactions
+                //
+                int agePerson = person.getAge();
+                Gender genderPerson = person.getGender();
+
+                double AgeGenderRR;
+                AgeGenderRR = getCasualtyRR_byAge_Gender(genderPerson, agePerson, mapToModeEnum(visit.mode));
+                linkRiskPerPerson = linkRiskPerPerson * AgeGenderRR;
+
+
+
                 switch(visit.mode){
                     case "car":
                         personHealth.updateWeeklyAccidentRisks(Map.of("severeFatalInjuryCar", linkRiskPerPerson));
@@ -382,6 +396,25 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             }
 
              */
+        }
+    }
+
+    public Mode mapToModeEnum(String modeStr) {
+        if (modeStr == null) {
+            logger.warn("Null mode string provided");
+            return null; // or throw an exception
+        }
+
+        switch (modeStr.toLowerCase()) {
+            case "car":
+                return Mode.autoDriver;
+            case "bike":
+                return Mode.bicycle;
+            case "walk":
+                return Mode.walk;
+            default:
+                logger.warn("Unknown mode string: " + modeStr);
+                return null; // or throw an exception
         }
     }
 
@@ -1052,7 +1085,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
         // Injuries
         ((PersonHealthMCR) siloPerson).addVisitedLinks(visitedLinksPath);
-        logger.warn("Number of visited links is " + visitedLinksPath.size() + " to person " + siloPerson.getId() + " by mode " + mode);
+        //logger.warn("Number of visited links is " + visitedLinksPath.size() + " to person " + siloPerson.getId() + " by mode " + mode);
         // siloPerson.updateWeeklyAccidentRisks(Map.of("severeFatalInjury", (float) pathInjuryRisk));
 
         /*
