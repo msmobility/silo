@@ -168,12 +168,13 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                     System.gc();
                 }
 
-                // ((DataContainerHealth) dataContainer).getLinkInfo().values().forEach(linkInfo -> {linkInfo.reset();});
+                ((DataContainerHealth) dataContainer).getLinkInfo().values().forEach(linkInfo -> {linkInfo.reset();});
                 // ((DataContainerHealth) dataContainer).getLinkInfoByDay(day).values().forEach(linkInfo -> {linkInfo.reset();});
                 ((DataContainerHealth) dataContainer).getActivityLocations().values().forEach(activityLocation -> {activityLocation.reset();});
                 System.gc();
             }
 
+            // Readin full network
             Network network = NetworkUtils.readNetwork(initialMatsimConfig.network().getInputFile());
 
             //
@@ -978,7 +979,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             pathTime += linkTime;
 
             // INJURIES
-            visitedLinksPath.add(new VisitedLink(link.getId(), (int) enterTimeInSecond/3600, trip.getDepartureDay(), modeAdjusted));
+            visitedLinksPath.add(new VisitedLink(link.getId(), hour, trip.getDepartureDay(), modeAdjusted));
 
             if(linkInfoByDay != null) {
                 // Injuries
