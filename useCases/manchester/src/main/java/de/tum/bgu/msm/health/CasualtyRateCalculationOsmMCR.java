@@ -97,6 +97,7 @@ public class CasualtyRateCalculationOsmMCR {
 
 
         // testing
+        /*
         if(osmLink.osmId== 1111480){
             System.out.println("OSM ID " + osmLink.osmId);
             System.out.println("===============================================================");
@@ -120,6 +121,8 @@ public class CasualtyRateCalculationOsmMCR {
                 System.out.println("===============================================================");
             }
         }
+
+         */
     }
 
     public void printBinaryLogitCoefficients() {
