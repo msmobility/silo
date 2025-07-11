@@ -85,8 +85,8 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
     public HealthExposureModelMCR(DataContainer dataContainer, Properties properties, Random random, Config config) {
         super(dataContainer, properties, random);
         this.initialMatsimConfig = config;
-        simulatedDays = Arrays.asList(Day.thursday,Day.saturday,Day.sunday);
-        //simulatedDays = Arrays.asList(Day.sunday);
+        //simulatedDays = Arrays.asList(Day.thursday,Day.saturday,Day.sunday);
+        simulatedDays = Arrays.asList(Day.sunday);
     }
 
     @Override
@@ -174,14 +174,17 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 System.gc();
             }
 
+            Network network = NetworkUtils.readNetwork(initialMatsimConfig.network().getInputFile());
+
+            //
+            checkAccumulatedRisksByModeDayHour(network, Day.sunday, (HealthDataContainerImpl) dataContainer, trafficFlowsByDayModeLinkHour);
+
             // update injury risks here
-            RunLinkToPersonInjuryRisks();
+            RunLinkToPersonInjuryRisks(network);
 
             // TODO: free memory
-
-
             // write the traffic flows from routed trips and free memory
-            writeAndClearTrafficFlows(year, scenario.getNetwork());
+            writeAndClearTrafficFlows(year, network);
             System.gc();
 
 
@@ -204,7 +207,70 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
     public void endSimulation() {
     }
 
-    private void RunLinkToPersonInjuryRisks() {
+    public void checkAccumulatedRisksByModeDayHour(Network network, Day day, HealthDataContainerImpl dataContainer, Map<Day, Map<String, Map<Id<Link>, Map<Integer, Integer>>>> trafficFlowsByDayModeLinkHour) {
+        // Define modes to loop over
+        List<String> modes = Arrays.asList("car", "bike", "walk");
+
+        // Loop over each hour (0 to 23)
+        for (String mode : modes) {
+            // Loop over each mode
+            double zeroFlowRisk = 0.0;
+            double nonZeroFlowRisk = 0.0;
+            int zeroFlowCount = 0;
+            int nonZeroFlowCount = 0;
+
+            for (int hour = 0; hour < 24; hour++) {
+                // Initialize accumulators for risks
+
+                // Loop over all links in the MATSim network
+                for (Link link : network.getLinks().values()) {
+                    Id<Link> linkId = link.getId();
+
+                    // Get link info for the specific day and link
+                    LinkInfo linkInfo = ((HealthDataContainerImpl) dataContainer)
+                            .getLinkInfoByDay(day)
+                            .get(linkId);
+
+                    // Skip if linkInfo is null
+                    if (linkInfo == null) {
+                        continue;
+                    }
+
+                    // Get risk for the mode, hour, and link
+                    double linkRisk = getLinkInjuryRisk2(mode, hour, linkInfo);
+
+                    // Get flow for the day, mode, link, and hour
+                    int flow = trafficFlowsByDayModeLinkHour
+                            .getOrDefault(day, new HashMap<>())
+                            .getOrDefault(mode, new HashMap<>())
+                            .getOrDefault(linkId, new HashMap<>())
+                            .getOrDefault(hour, 0);
+
+                    // Accumulate risks based on flow for this hour
+                    if (flow == 0) {
+                        zeroFlowRisk += linkRisk;
+                        zeroFlowCount++;
+                    } else {
+                        nonZeroFlowRisk += linkRisk;
+                        nonZeroFlowCount++;
+                    }
+                }
+            }
+
+            // Print results for the current mode and hour
+            System.out.println("Analysis for Day: " + day + ", Mode: " + mode);
+            System.out.println("Links with Zero Flow:");
+            System.out.printf("  Total Risk: %.4f, Number of Links: %d, Average Risk: %.4f%n",
+                    zeroFlowRisk, zeroFlowCount, zeroFlowCount > 0 ? zeroFlowRisk / zeroFlowCount : 0.0);
+            System.out.println("Links with Non-Zero Flow:");
+            System.out.printf("  Total Risk: %.4f, Number of Links: %d, Average Risk: %.4f%n",
+                    nonZeroFlowRisk, nonZeroFlowCount, nonZeroFlowCount > 0 ? nonZeroFlowRisk / nonZeroFlowCount : 0.0);
+            System.out.println(); // Empty line for readability
+        }
+    }
+
+    private void RunLinkToPersonInjuryRisks(Network network) {
+
         for (Person person : dataContainer.getHouseholdDataManager().getPersons()) {
             PersonHealthMCR personHealth = (PersonHealthMCR) person;
             List<VisitedLink> visitedLinks = personHealth.getVisitedLinks();
@@ -216,7 +282,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             // Map<Day, Map<String, Double>> risksByDayMode = new HashMap<>();
 
             for (VisitedLink visit : visitedLinks) {
-                Link link = scenario.getNetwork().getLinks().get(visit.linkId); // TODO: this will be the active network :/
+                Link link = network.getLinks().get(visit.linkId); // TODO: this will be the active network :/
                 if (link == null) {
                     //logger.warn("Link " + visit.linkId + " not found in network for person " + person.getId());
                     continue;
