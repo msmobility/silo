@@ -236,15 +236,15 @@ public class CasualtyRateCalculationOsmMCR {
 
         // Bike stress (Link)
         double bikeStress = link.bikeStress;
-        utility += Double.isNaN(bikeStress) ? 0 : binaryLogitCoef.get("bikeStress") * bikeStress;
+        utility += (Double.isNaN(bikeStress) || Double.isInfinite(bikeStress)) ? 0 : binaryLogitCoef.get("bikeStress") * bikeStress;
 
         // Bike stress at junction (Jct)
         double bikeStressJct = link.bikeStressJct;
-        utility += Double.isNaN(bikeStressJct) ? 0 : binaryLogitCoef.get("bikeStressJct") * bikeStressJct;
+        utility += (Double.isNaN(bikeStressJct) || Double.isInfinite(bikeStressJct)) ? 0 : binaryLogitCoef.get("bikeStressJct") * bikeStressJct;
 
         // Walk stress at junction (Jct)
         double walkStressJct = link.walkStressJct;
-        utility += Double.isNaN(walkStressJct) ? 0 : binaryLogitCoef.get("walkStressJct") * walkStressJct;
+        utility += (Double.isNaN(walkStressJct) || Double.isInfinite(walkStressJct)) ? 0 : binaryLogitCoef.get("walkStressJct") * walkStressJct;
 
         //
         utility += binaryLogitCoef.get("width") * link.width;
