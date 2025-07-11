@@ -114,6 +114,11 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             // todo: extract subset for testing !!
             //mitoTripsAll = TripSelector.selectRandomSubset(mitoTripsAll, 100);
 
+            //
+            // Readin full network
+            Network networkFull = NetworkUtils.readNetwork(initialMatsimConfig.network().getInputFile());
+
+
             //clear the health data from last exposure model year
             for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
                 ((PersonHealth) person).resetHealthData();
@@ -168,24 +173,23 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                     System.gc();
                 }
 
+                //
+                checkAccumulatedRisksByModeDayHour(networkFull, day, (HealthDataContainerImpl) dataContainer, trafficFlowsByDayModeLinkHour);
+
+                // update injury risks here
+                RunLinkToPersonInjuryRisks(networkFull);
+                System.gc();
+
+                // Reset
                 ((DataContainerHealth) dataContainer).getLinkInfo().values().forEach(linkInfo -> {linkInfo.reset();});
-                //((DataContainerHealth) dataContainer).getLinkInfoByDay(day).values().forEach(linkInfo -> {linkInfo.reset();});
+                ((DataContainerHealth) dataContainer).getLinkInfoByDay(day).values().forEach(linkInfo -> {linkInfo.reset();});
                 ((DataContainerHealth) dataContainer).getActivityLocations().values().forEach(activityLocation -> {activityLocation.reset();});
                 System.gc();
             }
 
-            // Readin full network
-            Network network = NetworkUtils.readNetwork(initialMatsimConfig.network().getInputFile());
-
-            //
-            checkAccumulatedRisksByModeDayHour(network, Day.sunday, (HealthDataContainerImpl) dataContainer, trafficFlowsByDayModeLinkHour);
-
-            // update injury risks here
-            RunLinkToPersonInjuryRisks(network);
-
             // TODO: free memory
             // write the traffic flows from routed trips and free memory
-            writeAndClearTrafficFlows(year, network);
+            writeAndClearTrafficFlows(year, networkFull);
             System.gc();
 
 
@@ -350,8 +354,8 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 int agePerson = person.getAge();
                 Gender genderPerson = person.getGender();
 
-                double AgeGenderRR;
-                AgeGenderRR = getCasualtyRR_byAge_Gender(genderPerson, agePerson, mapToModeEnum(visit.mode));
+                double AgeGenderRR=1.;
+                //AgeGenderRR = getCasualtyRR_byAge_Gender(genderPerson, agePerson, mapToModeEnum(visit.mode));
                 linkRiskPerPerson = linkRiskPerPerson * AgeGenderRR;
 
 
@@ -396,6 +400,9 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             }
 
              */
+
+            // Remove visited links after being used for calculation
+            personHealth.getVisitedLinks().clear();
         }
     }
 
