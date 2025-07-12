@@ -85,8 +85,9 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
     public HealthExposureModelMCR(DataContainer dataContainer, Properties properties, Random random, Config config) {
         super(dataContainer, properties, random);
         this.initialMatsimConfig = config;
-        simulatedDays = Arrays.asList(Day.sunday,Day.saturday,Day.thursday);
+        //simulatedDays = Arrays.asList(Day.sunday,Day.saturday,Day.thursday);
         //simulatedDays = Arrays.asList(Day.sunday);
+        simulatedDays = Arrays.asList(Day.values());
     }
 
     @Override
@@ -107,6 +108,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             TreeSet<Integer> sortedYears = new TreeSet<>(properties.transportModel.transportModelYears);
             latestMatsimYear = sortedYears.floor(year);
             latestMITOYear = year;
+            List<Day> completedDays = new ArrayList<>();
 
             Map<Integer, Trip> mitoTripsAll = new TripReaderHealth().readData(properties.main.baseDirectory + "scenOutput/"
                     + properties.main.scenarioName + "/" + latestMITOYear + "/microData/trips.csv");
@@ -134,8 +136,13 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             for(Day day : simulatedDays){
                 logger.warn("Health model setup for " + day);
 
-                replyLinkInfoFromFile(day);
-                replyActivityLocationInfoFromFile(day);
+                // Use 'thursday' for weekdays in healthDataAssembler, otherwise use the actual day
+                Day dayForHealthData = Arrays.asList(Day.monday, Day.tuesday, Day.wednesday, Day.thursday, Day.friday).contains(day)
+                        ? Day.thursday
+                        : day;
+
+                replyLinkInfoFromFile(dayForHealthData);
+                replyActivityLocationInfoFromFile(dayForHealthData);
                 System.gc();
 
                 logger.warn("Run health exposure model for " + day);
@@ -147,6 +154,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                         case bicycle:
                         case walk:
                         case pt:
+                            /*
                             if(Day.thursday.equals(day)){ // trips during weekdays
                                 mitoTrips = mitoTripsAll.values().stream().
                                         filter(trip -> trip.getTripMode().equals(mode) & weekdays.contains(trip.getDepartureDay())).
@@ -157,7 +165,13 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                                         collect(Collectors.toMap(Trip::getId,trip -> trip));
                             }
 
-                            healthDataAssembler(latestMatsimYear, day, mode);
+                             */
+                            // Filter trips for the specific day only
+                            mitoTrips = mitoTripsAll.values().stream()
+                                    .filter(trip -> trip.getTripMode().equals(mode) && trip.getDepartureDay().equals(day))
+                                    .collect(Collectors.toMap(Trip::getId, trip -> trip));
+
+                            healthDataAssembler(latestMatsimYear, dayForHealthData, mode);
                             final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName +"/" + year+"/" ;
                             String filett = outputDirectory
                                     + "healthIndicators"
@@ -173,24 +187,45 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                     System.gc();
                 }
 
+                // Track completed simulated days
+                completedDays.add(day);
+
                 //
                 checkAccumulatedRisksByModeDayHour(networkFull, day, (HealthDataContainerImpl) dataContainer, trafficFlowsByDayModeLinkHour);
 
                 // update injury risks here
                 RunLinkToPersonInjuryRisks(networkFull);
-                System.gc();
+                //System.gc();
+
+                writeAndClearTrafficFlows(year, networkFull, day);
 
                 // Reset
                 ((DataContainerHealth) dataContainer).getLinkInfo().values().forEach(linkInfo -> {linkInfo.reset();});
-                ((DataContainerHealth) dataContainer).getLinkInfoByDay(day).values().forEach(linkInfo -> {linkInfo.reset();});
+
+                //
+                if(completedDays.contains(Day.sunday)){
+                    ((DataContainerHealth) dataContainer).getLinkInfoByDay(Day.sunday).values().forEach(linkInfo -> {linkInfo.reset();});
+                } else if(completedDays.contains(Day.saturday)) {
+                    ((DataContainerHealth) dataContainer).getLinkInfoByDay(Day.saturday).values().forEach(linkInfo -> {
+                        linkInfo.reset();
+                    });
+                }
+                if (weekdays.stream().allMatch(completedDays::contains)) {
+                    logger.info("All weekdays (Monday to Friday) have been processed and are stored in completedDays.");
+                    ((DataContainerHealth) dataContainer).getLinkInfoByDay(Day.thursday).values().forEach(linkInfo -> {
+                        linkInfo.reset();
+                    });
+                }
+
+                //
                 ((DataContainerHealth) dataContainer).getActivityLocations().values().forEach(activityLocation -> {activityLocation.reset();});
                 System.gc();
             }
 
             // TODO: free memory
             // write the traffic flows from routed trips and free memory
-            writeAndClearTrafficFlows(year, networkFull);
-            System.gc();
+            //writeAndClearTrafficFlows(year, networkFull);
+            //System.gc();
 
 
             // assemble home location health exposure data
@@ -453,12 +488,22 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         }
     }
 
+    /*
     private void writeAndClearTrafficFlows(int year, Network network) {
         for (String modeAdjusted : Set.of("car", "walk", "bike")) {
             for (Day day : Day.values()) {
                 writeTrafficFlowsToCSV(year, day, modeAdjusted, network);
                 trafficFlowsByDayModeLinkHour.get(day).remove(modeAdjusted);
             }
+        }
+    }
+
+     */
+
+    private void writeAndClearTrafficFlows(int year, Network network, Day day) {
+        for (String modeAdjusted : Set.of("car", "walk", "bike")) {
+            writeTrafficFlowsToCSV(year, day, modeAdjusted, network);
+            trafficFlowsByDayModeLinkHour.get(day).remove(modeAdjusted);
         }
     }
 
