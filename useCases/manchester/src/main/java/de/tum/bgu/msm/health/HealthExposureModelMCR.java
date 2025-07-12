@@ -125,11 +125,9 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
                 ((PersonHealth) person).resetHealthData();
             }
-            System.gc();
 
             // process ndvi data
             processNdviData(NetworkUtils.readNetwork(initialMatsimConfig.network().getInputFile()));
-            System.gc();
 
             // Initialize the table to count the flows for the injury model
             initializeTrafficFlows();
@@ -200,7 +198,8 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                             logger.warn("No exposure model for mode: " + mode);
                     }
                     mitoTrips.clear();
-                    System.gc();
+                    mitoTrips = null; // Optional: nullify if not reused immediately
+                    mitoTrips = new HashMap<>(); // Reinitialize for next mode
                 }
 
                 // Track completed simulated days
@@ -211,10 +210,8 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
                 // update injury risks here
                 RunLinkToPersonInjuryRisks(networkFull);
-                System.gc();
 
                 writeAndClearTrafficFlows(year, networkFull, day);
-                System.gc();
 
                 // Reset
                 ((DataContainerHealth) dataContainer).getLinkInfo().values().forEach(linkInfo -> {linkInfo.reset();});
@@ -236,7 +233,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
                 //
                 ((DataContainerHealth) dataContainer).getActivityLocations().values().forEach(activityLocation -> {activityLocation.reset();});
-                System.gc();
+                //System.gc();
             }
 
             // TODO: free memory
@@ -522,6 +519,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             writeTrafficFlowsToCSV(year, day, modeAdjusted, network);
             trafficFlowsByDayModeLinkHour.get(day).remove(modeAdjusted);
         }
+        trafficFlowsByDayModeLinkHour.remove(day); // Clear entire day
         System.gc();
     }
 
@@ -940,7 +938,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             });
 
             partition.clear();
-            System.gc();
+            //System.gc();
         }
         executor.execute();
 
