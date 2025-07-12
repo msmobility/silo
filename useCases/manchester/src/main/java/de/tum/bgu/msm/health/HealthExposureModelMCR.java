@@ -87,7 +87,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         this.initialMatsimConfig = config;
         //simulatedDays = Arrays.asList(Day.sunday,Day.saturday,Day.thursday);
         //simulatedDays = Arrays.asList(Day.sunday);
-        simulatedDays = Arrays.asList(Day.values());
+        simulatedDays = Arrays.asList(Day.sunday, Day.saturday, Day.friday, Day.thursday, Day.wednesday, Day.tuesday, Day.monday);
     }
 
     @Override
@@ -137,12 +137,15 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 logger.warn("Health model setup for " + day);
 
                 // Use 'thursday' for weekdays in healthDataAssembler, otherwise use the actual day
-                Day dayForHealthData = Arrays.asList(Day.monday, Day.tuesday, Day.wednesday, Day.thursday, Day.friday).contains(day)
+                Day dayForHealthData = weekdays.contains(day)
                         ? Day.thursday
                         : day;
 
                 replyLinkInfoFromFile(dayForHealthData);
+                logger.warn("Link info for " + dayForHealthData + "loaded.");
+
                 replyActivityLocationInfoFromFile(dayForHealthData);
+                logger.warn("Activity info for " + dayForHealthData + "loaded.");
                 System.gc();
 
                 logger.warn("Run health exposure model for " + day);
