@@ -144,10 +144,10 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                         : day;
 
                 replyLinkInfoFromFile(dayForHealthData);
-                logger.warn("Link info for " + dayForHealthData + "loaded.");
+                logger.warn("Link info for " + dayForHealthData + " loaded.");
 
                 replyActivityLocationInfoFromFile(dayForHealthData);
-                logger.warn("Activity info for " + dayForHealthData + "loaded.");
+                logger.warn("Activity info for " + dayForHealthData + " loaded.");
                 System.gc();
 
                 logger.warn("Run health exposure model for " + day);
@@ -172,9 +172,20 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
                              */
                             // Filter trips for the specific day only
+
                             mitoTrips = mitoTripsAll.values().stream()
                                     .filter(trip -> trip.getTripMode().equals(mode) && trip.getDepartureDay().equals(day))
                                     .collect(Collectors.toMap(Trip::getId, trip -> trip));
+
+
+
+                            /*
+                            mitoTrips = mitoTripsAll.values().stream()
+                                    .filter(trip -> trip.getTripMode().equals(mode) && trip.getDepartureDay().equals(day))
+                                    .limit(10000) // Test with 10K trips
+                                    .collect(Collectors.toMap(Trip::getId, trip -> trip));
+
+                             */
 
                             healthDataAssembler(latestMatsimYear, dayForHealthData, mode);
                             final String outputDirectory = properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName +"/" + year+"/" ;
@@ -927,6 +938,9 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 }
                 return null;
             });
+
+            partition.clear();
+            System.gc();
         }
         executor.execute();
 

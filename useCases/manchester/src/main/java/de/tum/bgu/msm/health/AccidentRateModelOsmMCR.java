@@ -293,11 +293,15 @@ public class AccidentRateModelOsmMCR {
         log.info("Link casualty frequency calculation completed.");
 
 
+        /*
         try {
-            writeOutCasualtyRate();
+            //writeOutCasualtyRate();
+            writeOutHourlyCasualtyRate();
         } catch (FileNotFoundException e) {
             log.error("Error writing casualty rates", e);
         }
+
+         */
 
     }
 
@@ -433,6 +437,38 @@ public class AccidentRateModelOsmMCR {
                 (float) (severeCasualty / demand);
     }
 
+    public void writeOutHourlyCasualtyRate() throws FileNotFoundException {
+        String outputPath = scenario.getConfig().controller().getOutputDirectory() + "hourlyCasualtyRates.csv";
+        try (PrintWriter writer = new PrintWriter(new FileOutputStream(outputPath, false))) {
+            writer.println("osmId,linkId,accidentType,hour,casualty");
+            for (OsmLink osmLink : osmLinks) {
+                for (Link link : osmLink.getNetworkLinks()) {
+                    for (AccidentType accidentType : AccidentType.values()) {
+                        if (ACCIDENT_TYPES_EXCLUDED.contains(accidentType)) continue;
+                        for (AccidentSeverity accidentSeverity : AccidentSeverity.values()) {
+                            if (ACCIDENT_SEVERITIES_EXCLUDED.contains(accidentSeverity)) continue;
+                            if (accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType) != null) {
+                                for (int hour = 0; hour < 24; hour++) {
+                                    double casualty = accidentsContext.getLinkId2info().get(link.getId())
+                                            .getSevereFatalCasualityExposureByAccidentTypeByTime()
+                                            .get(accidentType).get(hour);
+                                    if (casualty > 0) {
+                                        writer.printf("%d,%s,%s,%d,%s\n",
+                                                osmLink.osmId,
+                                                link.getId().toString(),
+                                                accidentType.name(),
+                                                hour,
+                                                Double.toString(casualty));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public void writeOutCasualtyRate() throws FileNotFoundException {
         String outputPath = scenario.getConfig().controller().getOutputDirectory() + "casualtyRates.csv";
         StringBuilder data = new StringBuilder("osmId,linkId,accidentType,casualty\n");
@@ -470,6 +506,12 @@ public class AccidentRateModelOsmMCR {
         writeToFile(outputPath, data.toString());
     }
 
+    public static void writeToFile(String path, String data) throws FileNotFoundException {
+        try (PrintWriter writer = new PrintWriter(new FileOutputStream(path, false))) {
+            writer.print(data);
+        }
+    }
+
     private double calculateTotalCasualty(Id<Link> linkId, AccidentType accidentType) {
         OpenIntFloatHashMap timeMap = accidentsContext.getLinkId2info()
                 .get(linkId)
@@ -504,11 +546,7 @@ public class AccidentRateModelOsmMCR {
         writeToFile(outputPath, data.toString());
     }
 
-    public static void writeToFile(String path, String data) throws FileNotFoundException {
-        try (PrintWriter writer = new PrintWriter(new FileOutputStream(path, false))) {
-            writer.print(data);
-        }
-    }
+
 
     public AccidentsContext getAccidentsContext() {
         return accidentsContext;
