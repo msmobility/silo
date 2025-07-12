@@ -125,9 +125,11 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
                 ((PersonHealth) person).resetHealthData();
             }
+            System.gc();
 
             // process ndvi data
             processNdviData(NetworkUtils.readNetwork(initialMatsimConfig.network().getInputFile()));
+            System.gc();
 
             // Initialize the table to count the flows for the injury model
             initializeTrafficFlows();
@@ -198,9 +200,10 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
                 // update injury risks here
                 RunLinkToPersonInjuryRisks(networkFull);
-                //System.gc();
+                System.gc();
 
                 writeAndClearTrafficFlows(year, networkFull, day);
+                System.gc();
 
                 // Reset
                 ((DataContainerHealth) dataContainer).getLinkInfo().values().forEach(linkInfo -> {linkInfo.reset();});
@@ -508,6 +511,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             writeTrafficFlowsToCSV(year, day, modeAdjusted, network);
             trafficFlowsByDayModeLinkHour.get(day).remove(modeAdjusted);
         }
+        System.gc();
     }
 
     private void writeTrafficFlowsToCSV(int year, Day day, String mode, Network network) {
