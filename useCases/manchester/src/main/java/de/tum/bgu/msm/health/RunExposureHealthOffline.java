@@ -60,12 +60,12 @@ public class RunExposureHealthOffline {
         DiseaseModelMCR diseaseModelMCR = new DiseaseModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
 
         // runs
-        sportPAModelMCR.endYear(2021);
+        //sportPAModelMCR.endYear(2021);
         accidentModel.endYear(2021);
-        exposureModelMCR.endYear(2021);
-        diseaseModelMCR.setup();
-        diseaseModelMCR.endYear(2021);
-        dataContainer.endSimulation();
+        //exposureModelMCR.endYear(2021);
+        //diseaseModelMCR.setup();
+        //diseaseModelMCR.endYear(2021);
+        //dataContainer.endSimulation();
 
         logger.info("Finished SILO.");
     }
