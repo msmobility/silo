@@ -118,6 +118,8 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
             //
             // Readin full network
+            // TODO simplify this
+            //Set<Id<Link>> allLinks = scenario.getNetwork().getLinks().keySet();
             Network networkFull = NetworkUtils.readNetwork(initialMatsimConfig.network().getInputFile());
 
 
@@ -937,7 +939,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 return null;
             });
 
-            partition.clear();
+            //partition.clear();
             //System.gc();
         }
         executor.execute();
