@@ -1157,6 +1157,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
         // Injuries
         ((PersonHealthMCR) siloPerson).addVisitedLinks(visitedLinksPath);
+        visitedLinksPath.clear();
         //logger.warn("Number of visited links is " + visitedLinksPath.size() + " to person " + siloPerson.getId() + " by mode " + mode);
         // siloPerson.updateWeeklyAccidentRisks(Map.of("severeFatalInjury", (float) pathInjuryRisk));
 
