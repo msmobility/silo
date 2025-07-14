@@ -272,6 +272,11 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         // Define modes to loop over
         List<String> modes = Arrays.asList("car", "bike", "walk");
 
+        //
+        Day dayForHealthData = weekdays.contains(day)
+                ? Day.thursday
+                : day;
+
         // Loop over each hour (0 to 23)
         for (String mode : modes) {
             // Loop over each mode
@@ -288,7 +293,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
 
                     // Get link info for the specific day and link
                     LinkInfo linkInfo = ((HealthDataContainerImpl) dataContainer)
-                            .getLinkInfoByDay(day)
+                            .getLinkInfoByDay(dayForHealthData)
                             .get(link.getId());
 
                     // Skip if linkInfo is null
