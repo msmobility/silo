@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.health;
 
 import de.tum.bgu.msm.common.datafile.TableDataSet;
+import de.tum.bgu.msm.data.Day;
 import de.tum.bgu.msm.data.MitoGender;
 import de.tum.bgu.msm.data.Mode;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
@@ -172,8 +173,18 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     }
 
     @Override
+    public Map<Id<Link>, LinkInfo> getLinkInfoByDay(Day day) {
+        return Map.of();
+    }
+
+    @Override
     public void setLinkInfo(Map<Id<Link>, LinkInfo> linkInfo) {
         this.linkInfo = linkInfo;
+    }
+
+    @Override
+    public void setLinkInfoByDay(Map<Id<Link>, LinkInfo> linkInfo, Day day) {
+
     }
 
     @Override

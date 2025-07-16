@@ -9,7 +9,6 @@ import de.tum.bgu.msm.data.person.PersonRole;
 import de.tum.bgu.msm.events.impls.person.DeathEvent;
 import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.health.data.PersonHealth;
-import de.tum.bgu.msm.health.disease.Diseases;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.demography.death.DeathModel;
 import de.tum.bgu.msm.models.demography.death.DeathStrategy;
@@ -50,7 +49,7 @@ public class DeathModelMCR extends AbstractModel implements DeathModel {
         HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
         final Person person = householdDataManager.getPersonFromId(event.getPersonId());
         if (person != null) {
-            if (random.nextDouble() < strategy.calculateDeathProbability(person, random)) {
+            if (random.nextDouble() < strategy.calculateDeathProbability(person)) {
                 return die(person);
             }
         }

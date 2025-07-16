@@ -6,8 +6,6 @@ import de.tum.bgu.msm.health.data.PersonHealth;
 import de.tum.bgu.msm.health.io.LifeTableReader;
 import de.tum.bgu.msm.models.demography.death.DeathStrategy;
 
-import java.util.Random;
-
 public class DeathStrategyHealth implements DeathStrategy {
 
     // Lifetable filenames todo: define somewhere in properties
@@ -23,7 +21,7 @@ public class DeathStrategyHealth implements DeathStrategy {
     }
 
     @Override
-    public double calculateDeathProbability(Person person, Random random) {
+    public double calculateDeathProbability(Person person) {
         final int personAge = Math.min(person.getAge(), 100);
         Gender personSex = person.getGender();
         double allCauseRR = ((PersonHealth)person).getAllCauseRR();
