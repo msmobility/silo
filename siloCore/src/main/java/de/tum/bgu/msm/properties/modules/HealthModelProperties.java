@@ -25,6 +25,8 @@ public class HealthModelProperties {
     public final String basePath;
     public final String diseaseLookupTable;
     public final String avgSpeedFile;
+    public final String prevalenceDataFile;
+    public final String healthInjuryRRDataFile;
     public final String healthTransitionData;
     public final Boolean adjustByRelativeRisk;
     public final String baseExposureFile;
@@ -78,13 +80,17 @@ public class HealthModelProperties {
 
         avgSpeedFile = PropertiesUtil.getStringProperty(bundle, "avg.speed.file", "input/maxSpeeds.csv");
 
+        prevalenceDataFile = PropertiesUtil.getStringProperty(bundle, "prev.data.file", "input/health/base_prevalence_id_clean.csv");
+
+        healthInjuryRRDataFile = PropertiesUtil.getStringProperty(bundle, "injury.rr.data.file", "input/accident/injury_relativeRisks.csv");
+
         healthTransitionData = PropertiesUtil.getStringProperty(bundle, "health.transition.data", "input/health/health_transitions_manchester.csv");
 
         adjustByRelativeRisk = PropertiesUtil.getBooleanProperty(bundle, "adjust.transition.byRelativeRisk", false);
 
         baseExposureFile = PropertiesUtil.getStringProperty(bundle, "base.exposure.file", null);
 
-        exposureModelYears = Arrays.stream((PropertiesUtil.getIntPropertyArray(bundle, "exposure.model.years", new int[]{2030,2040,2050}))).boxed().collect(Collectors.toList());
+        exposureModelYears = Arrays.stream((PropertiesUtil.getIntPropertyArray(bundle, "exposure.model.years", new int[]{-1}))).boxed().collect(Collectors.toList());
 
         bus_network = PropertiesUtil.getStringProperty(bundle, "matsim.network.bus", "input/mito/trafficAssignment/network_transit_hbefa.xml");
 

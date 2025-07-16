@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.health;
 
 import de.tum.bgu.msm.common.datafile.TableDataSet;
+import de.tum.bgu.msm.data.Day;
 import de.tum.bgu.msm.data.MitoGender;
 import de.tum.bgu.msm.data.Mode;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
@@ -34,12 +35,15 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     private final DataContainerWithSchools delegate;
     private final Properties properties;
     private Map<Id<Link>, LinkInfo> linkInfo = new HashMap<>();
+    private Map<Day, Map<Id<Link>, LinkInfo>> linkInfoByDay = new HashMap<>();
     private Map<String, ActivityLocation> activityLocationInfo = new HashMap<>();
     private Set<Pollutant> pollutantSet = new HashSet<>();
     private EnumMap<Mode, EnumMap<MitoGender,Map<Integer,Double>>> avgSpeeds;
     private EnumMap<Diseases, Map<String, Double>> healthTransitionData;
     private EnumMap<HealthExposures, EnumMap<Diseases, TableDataSet>> doseResponseData;
     private Map<Integer, Map<Integer, List<String>>> healthDiseaseTrackerRemovedPerson = new HashMap<>();
+    private Map<Integer, List<Diseases>> healthPrevalenceData;
+    private Map<String, EnumMap<Gender, Map<Integer, Double>>> healthInjuryRRdata;
 
     public HealthDataContainerImpl(DataContainerWithSchools delegate,
                                    Properties properties) {
@@ -172,8 +176,18 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     }
 
     @Override
+    public Map<Id<Link>, LinkInfo> getLinkInfoByDay(Day day){
+        return linkInfoByDay.get(day);
+    };
+
+    @Override
     public void setLinkInfo(Map<Id<Link>, LinkInfo> linkInfo) {
         this.linkInfo = linkInfo;
+    }
+
+    @Override
+    public void setLinkInfoByDay(Map<Id<Link>, LinkInfo> linkInfo, Day day) {
+        this.linkInfoByDay.put(day, new HashMap<>(linkInfo));
     }
 
     @Override
@@ -206,6 +220,22 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
         this.avgSpeeds = avgSpeeds;
     }
 
+    public Map<Integer, List<Diseases>> getPrevalenceData() {
+        return healthPrevalenceData;
+    }
+
+    public void setHealthInjuryRRdata(Map<String, EnumMap<Gender, Map<Integer, Double>>> healthInjuryRRdata){
+        this.healthInjuryRRdata = healthInjuryRRdata;
+    }
+
+    public Map<String, EnumMap<Gender, Map<Integer, Double>>> getHealthInjuryRRdata(){
+        return healthInjuryRRdata;
+    }
+
+    public void setHealthPrevalenceData(Map<Integer, List<Diseases>> healthPrevalenceData){
+        this.healthPrevalenceData = healthPrevalenceData;
+    }
+
     public EnumMap<HealthExposures, EnumMap<Diseases, TableDataSet>> getDoseResponseData() {
         return doseResponseData;
     }
@@ -218,6 +248,7 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     public void reset(){
         linkInfo.clear();
         activityLocationInfo.clear();
+        linkInfoByDay.clear();
     }
 
     public Map<Integer, Map<Integer, List<String>>> getHealthDiseaseTrackerRemovedPerson() {

@@ -145,7 +145,7 @@ public class ModelBuilderLongitudinalMCR {
 
         modelContainer.registerModelUpdateListener(new SportPAModelMCR(dataContainer, properties, SiloUtil.provideNewRandom()));
 
-        // TODO: I believe that AP and Noise models should be added here
+        modelContainer.registerModelUpdateListener(new AccidentModelMCR(dataContainer, properties, SiloUtil.provideNewRandom()));
 
         modelContainer.registerModelUpdateListener(new HealthExposureModelMCR(dataContainer, properties, SiloUtil.provideNewRandom(),config));
 

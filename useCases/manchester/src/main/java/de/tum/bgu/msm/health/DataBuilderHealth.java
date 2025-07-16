@@ -1,5 +1,6 @@
 package de.tum.bgu.msm.health;
 
+import de.tum.bgu.msm.data.Day;
 import de.tum.bgu.msm.data.ManchesterDwellingTypes;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
 import de.tum.bgu.msm.data.accessibility.AccessibilityImpl;
@@ -14,9 +15,7 @@ import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.health.data.LinkInfo;
 import de.tum.bgu.msm.health.diseaseModelOffline.HealthExposuresReader;
-import de.tum.bgu.msm.health.io.DefaultSpeedReader;
-import de.tum.bgu.msm.health.io.DoseResponseLookupReader;
-import de.tum.bgu.msm.health.io.HealthTransitionTableReader;
+import de.tum.bgu.msm.health.io.*;
 import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.io.input.*;
 import de.tum.bgu.msm.matsim.MatsimTravelTimesAndCosts;
@@ -132,6 +131,11 @@ public class DataBuilderHealth {
         }
         dataContainer.setLinkInfo(linkInfoMap);
 
+        // Initialize here for map per day
+        dataContainer.setLinkInfoByDay(linkInfoMap, Day.thursday);
+        dataContainer.setLinkInfoByDay(linkInfoMap, Day.saturday);
+        dataContainer.setLinkInfoByDay(linkInfoMap, Day.sunday);
+
         new PtSkimsReaderMCR(dataContainer).read();
 
         dataContainer.setAvgSpeeds(new DefaultSpeedReader().readData(properties.main.baseDirectory + properties.healthData.avgSpeedFile));
@@ -139,6 +143,8 @@ public class DataBuilderHealth {
         DoseResponseLookupReader doseResponseReader = new DoseResponseLookupReader();
         doseResponseReader.readData(properties.main.baseDirectory + properties.healthData.basePath);
         dataContainer.setDoseResponseData(doseResponseReader.getDoseResponseData());
+        dataContainer.setHealthPrevalenceData(new PrevalenceDataReader().readData(properties.main.baseDirectory + properties.healthData.prevalenceDataFile));
+        dataContainer.setHealthInjuryRRdata(new InjuryRRTableReader().readData(properties.main.baseDirectory + properties.healthData.healthInjuryRRDataFile));
 
         MicroDataScaler microDataScaler = new MicroDataScaler(dataContainer, properties);
         microDataScaler.scale();
