@@ -15,7 +15,7 @@ public class TripExposureWriter {
         logger.info("  Writing trip health indicators file");
         PrintWriter pwh = MitoUtil.openFileForSequentialWriting(path, false);
         pwh.println("t.id,t.mode,t.matsimTravelTime_s,t.matsimTravelDistance_m,t.activityDuration_min," +
-                "t.mmetHours,t.lightInjuryRisk,t.severeInjuryRisk,t.fatalityRisk," +
+                "t.mmetHours,t.severeFatalInjuryRisk," + // "t.mmetHours,t.lightInjuryRisk,t.severeInjuryRisk,t.fatalityRisk," +
                 "t.links," +
                 "t.exposurePm25,t.exposureNo2,t.activityExposurePm25,t.activityExposureNo2,"+
                 "t.exposureNoise,t.activityExposureNoise,"+
@@ -34,12 +34,14 @@ public class TripExposureWriter {
             pwh.print(",");
             pwh.print(trip.getMarginalMetHours());
             pwh.print(",");
-            pwh.print(trip.getTravelRiskMap().get("lightInjury"));
+            pwh.print(trip.getTravelRiskMap().get("severeFatalInjury"));
             pwh.print(",");
-            pwh.print(trip.getTravelRiskMap().get("severeInjury"));
-            pwh.print(",");
-            pwh.print(trip.getTravelRiskMap().get("fatality"));
-            pwh.print(",");
+            //pwh.print(trip.getTravelRiskMap().get("lightInjury"));
+            //pwh.print(",");
+            //pwh.print(trip.getTravelRiskMap().get("severeInjury"));
+            //pwh.print(",");
+            //pwh.print(trip.getTravelRiskMap().get("fatality"));
+            //pwh.print(",");
             pwh.print(trip.getMatsimLinkCount());
             pwh.print(",");
             pwh.print(trip.getTravelExposureMap().get("pm2.5"));

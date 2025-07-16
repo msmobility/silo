@@ -46,6 +46,8 @@ public class PersonHealthMCR implements PersonWithSchool, PersonHealth {
     private List<Diseases> currentDisease = new ArrayList<>();
     private Map<Diseases, Float> currentDiseaseProb = new HashMap<>();
 
+    // Injuries
+    // private InjuryStatus injuryStatus = InjuryStatus.NO_INJURY;
 
     public PersonHealthMCR(int id, int age,
                            Gender gender, Occupation occupation,
@@ -270,6 +272,7 @@ public class PersonHealthMCR implements PersonWithSchool, PersonHealth {
     @Override
     public void updateWeeklyAccidentRisks(Map<String, Float> newRisks) {
         newRisks.forEach((k, v) -> weeklyAccidentRisks.merge(k, v, (v1, v2) -> v1 + v2 - v1*v2));
+        //newRisks.forEach((k, v) -> weeklyAccidentRisks.merge(k, v, (v1, v2) -> v1 + v2));
     }
 
     public float[] getWeeklyNoiseExposureByHour() {

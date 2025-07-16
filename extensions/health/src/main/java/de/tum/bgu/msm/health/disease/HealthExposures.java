@@ -6,4 +6,5 @@ public enum HealthExposures {
     PHYSICAL_ACTIVITY,
     NOISE,
     NDVI
+    //INJURY
 }

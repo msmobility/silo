@@ -118,7 +118,7 @@ public class PollutionExposure {
         return BACKGROUND_NO2 * REST_VENTILATION_RATE * activityMinutes / 60.;
     }
 
-        // new ventilation rate
+
     public static double getHomeExposurePm25_newvent(double minutesAtHome, int dayHour ,  double locationIncremental) {
         double minutesResting = 0.;
         double minutesSleeping = 0.;

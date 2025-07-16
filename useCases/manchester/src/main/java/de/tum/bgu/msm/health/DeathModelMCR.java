@@ -9,6 +9,7 @@ import de.tum.bgu.msm.data.person.PersonRole;
 import de.tum.bgu.msm.events.impls.person.DeathEvent;
 import de.tum.bgu.msm.health.data.DataContainerHealth;
 import de.tum.bgu.msm.health.data.PersonHealth;
+import de.tum.bgu.msm.health.disease.Diseases;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.demography.death.DeathModel;
 import de.tum.bgu.msm.models.demography.death.DeathStrategy;
@@ -25,10 +26,12 @@ import java.util.*;
 public class DeathModelMCR extends AbstractModel implements DeathModel {
 
     private final DeathStrategy strategy;
+    //private final Random random;
 
     public DeathModelMCR(DataContainer dataContainer, Properties properties, DeathStrategy strategy, Random rnd) {
         super(dataContainer, properties, rnd);
         this.strategy = strategy;
+        //this.random = rnd;
     }
 
     @Override
@@ -47,7 +50,7 @@ public class DeathModelMCR extends AbstractModel implements DeathModel {
         HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
         final Person person = householdDataManager.getPersonFromId(event.getPersonId());
         if (person != null) {
-            if (random.nextDouble() < strategy.calculateDeathProbability(person)) {
+            if (random.nextDouble() < strategy.calculateDeathProbability(person, random)) {
                 return die(person);
             }
         }
@@ -111,7 +114,7 @@ public class DeathModelMCR extends AbstractModel implements DeathModel {
     private void updateHealthDiseaseTracker(Person person) {
         Map<Integer, List<String>> healthDiseaseTracker = ((PersonHealth) person).getHealthDiseaseTracker();
         int previousYear = Collections.max(healthDiseaseTracker.keySet());
-        healthDiseaseTracker.put(previousYear+1, Arrays.asList("dead"));
-        ((DataContainerHealth)dataContainer).getHealthDiseaseTrackerRemovedPerson().put(person.getId(),healthDiseaseTracker);
+        healthDiseaseTracker.put(previousYear + 1, Arrays.asList("dead"));
+        ((DataContainerHealth) dataContainer).getHealthDiseaseTrackerRemovedPerson().put(person.getId(),healthDiseaseTracker);
     }
 }

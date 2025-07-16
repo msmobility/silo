@@ -51,7 +51,7 @@ public final class AnalysisEventHandlerOnline extends AnalysisEventHandler {
 
 
 	@Inject
-    AnalysisEventHandlerOnline(){}
+    public AnalysisEventHandlerOnline(){}
 	
 	@Inject
 	private Scenario scenario;

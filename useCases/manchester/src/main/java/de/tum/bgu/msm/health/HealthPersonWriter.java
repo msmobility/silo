@@ -47,12 +47,21 @@ public class HealthPersonWriter implements PersonWriter {
         pwp.print(",");
         pwp.print("totalTimeAtHome_min");
         pwp.print(",");
+        pwp.print("severeFatalInjuryCar"); // todo ??
+        pwp.print(",");
+        pwp.print("severeFatalInjuryBike"); // todo ??
+        pwp.print(",");
+        pwp.print("severeFatalInjuryWalk"); // todo ??
+        pwp.print(",");
+        /*
         pwp.print("lightInjuryRisk");
         pwp.print(",");
         pwp.print("severeInjuryRisk");
         pwp.print(",");
         pwp.print("fatalityRisk");
         pwp.print(",");
+
+         */
         pwp.print("mmetHr_walk");
         pwp.print(",");
         pwp.print("mmetHr_cycle");
@@ -104,12 +113,21 @@ public class HealthPersonWriter implements PersonWriter {
             pwp.print(",");
             pwp.print(((PersonHealthMCR)pp).getWeeklyHomeMinutes());
             pwp.print(",");
+            pwp.print(((PersonHealthMCR)pp).getWeeklyAccidentRisk("severeFatalInjuryCar"));
+            pwp.print(",");
+            pwp.print(((PersonHealthMCR)pp).getWeeklyAccidentRisk("severeFatalInjuryBike"));
+            pwp.print(",");
+            pwp.print(((PersonHealthMCR)pp).getWeeklyAccidentRisk("severeFatalInjuryWalk"));
+            pwp.print(",");
+            /*
             pwp.print(((PersonHealthMCR)pp).getWeeklyAccidentRisk("lightInjury"));
             pwp.print(",");
             pwp.print(((PersonHealthMCR)pp).getWeeklyAccidentRisk("severeInjury"));
             pwp.print(",");
             pwp.print(((PersonHealthMCR)pp).getWeeklyAccidentRisk("fatality"));
             pwp.print(",");
+
+             */
             pwp.print(((PersonHealthMCR)pp).getWeeklyMarginalMetHours(Mode.walk));
             pwp.print(",");
             pwp.print(((PersonHealthMCR)pp).getWeeklyMarginalMetHours(Mode.bicycle));
