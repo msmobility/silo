@@ -201,5 +201,7 @@
 		<matsimVersion>2025.0-PR3643</matsimVersion>
 		<jackson.version>2.9.5</jackson.version>
 		<junit.version>5.10.3</junit.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
 </project>
