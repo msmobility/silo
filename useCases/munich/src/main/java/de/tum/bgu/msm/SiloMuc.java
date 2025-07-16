@@ -25,7 +25,7 @@ public class SiloMuc {
     private final static Logger logger = LogManager.getLogger(SiloMuc.class);
 
     public static void main(String[] args) {
-
+//hjhjh
         Properties properties = SiloUtil.siloInitialization(args[0]);
 
         Config config = null;
