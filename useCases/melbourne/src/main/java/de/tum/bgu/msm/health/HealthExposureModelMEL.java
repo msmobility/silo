@@ -982,9 +982,10 @@ public class HealthExposureModelMEL extends AbstractModel implements ModelUpdate
     private void fillConfigWithWalkStandardValue(WalkConfigGroup walkConfigGroup) {
         // WALK ATTRIBUTES
         List<ToDoubleFunction<Link>> walkAttributes = new ArrayList<>();
+        walkAttributes.add(l -> Math.max(Math.min(Gradient.getGradient(l),0.5),0.));
+        walkAttributes.add(l -> JctStress.getStressProp(l,TransportMode.walk));
         walkAttributes.add(l -> Math.max(0.,0.81 - LinkAmbience.getVgviFactor(l)));
         walkAttributes.add(l -> Math.min(1.,((double) l.getAttributes().getAttribute("speedLimitMPH")) / 50.));
-        walkAttributes.add(l -> JctStress.getStressProp(l,TransportMode.walk));
 
         // Walk config group
         walkConfigGroup.setAttributes(walkAttributes);
@@ -997,6 +998,8 @@ public class HealthExposureModelMEL extends AbstractModel implements ModelUpdate
         List<ToDoubleFunction<Link>> bikeAttributes = new ArrayList<>();
         bikeAttributes.add(l -> Math.max(Math.min(Gradient.getGradient(l),0.5),0.));
         bikeAttributes.add(l -> LinkStress.getStress(l, TransportMode.bike));
+        bikeAttributes.add(l -> Math.max(0.,0.81 - LinkAmbience.getVgviFactor(l)));
+        bikeAttributes.add(l -> Math.min(1.,((double) l.getAttributes().getAttribute("speedLimitMPH")) / 50.));
 
         // Bicycle config group
         bicycleConfigGroup.setAttributes(bikeAttributes);

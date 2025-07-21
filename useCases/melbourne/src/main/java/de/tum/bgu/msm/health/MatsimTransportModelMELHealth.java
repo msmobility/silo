@@ -187,7 +187,7 @@ public final class MatsimTransportModelMELHealth implements TransportModel {
         assembledMultiScenario = scenarioAssembler.assembleMultiScenarios(initialMatsimConfig, year, travelTimes);
 
         //run car truck simulation
-        runCarTruckSimulation(year, assembledMultiScenario);
+//        runCarTruckSimulation(year, assembledMultiScenario);
 
         //run bike ped simulation
         runBikePedSimulation(year, assembledMultiScenario);
@@ -418,6 +418,8 @@ public final class MatsimTransportModelMELHealth implements TransportModel {
         List<ToDoubleFunction<Link>> bikeAttributes = new ArrayList<>();
         bikeAttributes.add(l -> Math.max(Math.min(Gradient.getGradient(l),0.5),0.));
         bikeAttributes.add(l -> LinkStress.getStress(l,TransportMode.bike));
+        bikeAttributes.add(l -> Math.max(0.,0.81 - LinkAmbience.getVgviFactor(l)));
+        bikeAttributes.add(l -> Math.min(1.,((double) l.getAttributes().getAttribute("speedLimitMPH")) / 50.));
 
         // Bicycle config group
         BicycleConfigGroup bicycle = (BicycleConfigGroup) bikePedConfig.getModules().get(BicycleConfigGroup.GROUP_NAME);
@@ -426,6 +428,7 @@ public final class MatsimTransportModelMELHealth implements TransportModel {
 
         // WALK ATTRIBUTES
         List<ToDoubleFunction<Link>> walkAttributes = new ArrayList<>();
+        walkAttributes.add(l -> Math.max(Math.min(Gradient.getGradient(l),0.5),0.));
         walkAttributes.add(l -> Math.max(0.,0.81 - LinkAmbience.getVgviFactor(l)));
         walkAttributes.add(l -> Math.min(1.,((double) l.getAttributes().getAttribute("speedLimitMPH")) / 50.));
         walkAttributes.add(l -> JctStress.getStressProp(l,TransportMode.walk));
