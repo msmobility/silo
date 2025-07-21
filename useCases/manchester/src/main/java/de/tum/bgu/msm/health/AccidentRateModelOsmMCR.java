@@ -292,17 +292,12 @@ public class AccidentRateModelOsmMCR {
         }
         log.info("Link casualty frequency calculation completed.");
 
-
-        /*
         try {
-            //writeOutCasualtyRate();
-            writeOutHourlyCasualtyRate();
+            writeOutCasualtyRate();
+            //writeOutHourlyCasualtyRate();
         } catch (FileNotFoundException e) {
             log.error("Error writing casualty rates", e);
         }
-
-         */
-
     }
 
     private List<OsmLink> extractOsmLinksSpecific(List<OsmLink> osmLinks, AccidentType accidentType) {
