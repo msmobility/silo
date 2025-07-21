@@ -198,7 +198,8 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
     private void initializeHealthDiseaseStates() {
         Map<Integer, List<Diseases>> prevData = ((HealthDataContainerImpl) dataContainer).getPrevalenceData();
         for (Person person : dataContainer.getHouseholdDataManager().getPersons()) {
-            if (prevData.keySet().contains(person.getId()) && (!prevData.get(person.getId()).contains(null))) {
+            if (prevData.keySet().contains(person.getId()) && (!prevData.get(person.getId()).contains(null)) &&
+                    person.getAge() > 17) {
                 List<String> diseaseList = prevData.get(person.getId())  // Returns List<Diseases>
                         .stream()                                      // Convert List to Stream
                         .map(Enum::name)                               // Map each enum to its name
@@ -210,6 +211,7 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
             }
         }
     }
+
 
 
     public void updateHealthDiseaseStates(int year) {
