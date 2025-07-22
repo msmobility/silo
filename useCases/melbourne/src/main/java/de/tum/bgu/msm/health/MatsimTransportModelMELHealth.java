@@ -101,47 +101,6 @@ public final class MatsimTransportModelMELHealth implements TransportModel {
 
     private static final java.util.Properties mitoProperties = getMitoBaseProperties();
 
-    // Static final attribute lists for efficiency
-    private static final List<ToDoubleFunction<Link>> BIKE_ATTRIBUTES = Arrays.asList(
-        MatsimTransportModelMELHealth::bikeGradient,
-        MatsimTransportModelMELHealth::bikeStress,
-        MatsimTransportModelMELHealth::bikeVgvi,
-        MatsimTransportModelMELHealth::bikeSpeedLimit
-    );
-    private static final List<ToDoubleFunction<Link>> WALK_ATTRIBUTES = Arrays.asList(
-        MatsimTransportModelMELHealth::walkGradient,
-        MatsimTransportModelMELHealth::walkVgvi,
-        MatsimTransportModelMELHealth::walkSpeedLimit,
-        MatsimTransportModelMELHealth::walkJctStress
-    );
-
-    private static double bikeGradient(Link l) {
-        return Math.max(Math.min(Gradient.getGradient(l), 0.5), 0.);
-    }
-    private static double bikeStress(Link l) {
-        return LinkStress.getStress(l, TransportMode.bike);
-    }
-    private static double bikeVgvi(Link l) {
-        return Math.max(0., 0.81 - LinkAmbience.getVgviFactor(l));
-    }
-    private static double bikeSpeedLimit(Link l) {
-        Object attr = l.getAttributes().getAttribute("speedLimitMPH");
-        return attr instanceof Number ? Math.min(1., ((Number) attr).doubleValue() / 50.) : 0.;
-    }
-    private static double walkGradient(Link l) {
-        return Math.max(Math.min(Gradient.getGradient(l), 0.5), 0.);
-    }
-    private static double walkVgvi(Link l) {
-        return Math.max(0., 0.81 - LinkAmbience.getVgviFactor(l));
-    }
-    private static double walkSpeedLimit(Link l) {
-        Object attr = l.getAttributes().getAttribute("speedLimitMPH");
-        return attr instanceof Number ? Math.min(1., ((Number) attr).doubleValue() / 50.) : 0.;
-    }
-    private static double walkJctStress(Link l) {
-        return JctStress.getStressProp(l, TransportMode.walk);
-    }
-
     public MatsimTransportModelMELHealth(DataContainer dataContainer, Config matsimConfig,
                                          Properties properties, MatsimScenarioAssembler scenarioAssembler,
                                          MatsimData matsimData, Random random) {
@@ -521,6 +480,47 @@ public final class MatsimTransportModelMELHealth implements TransportModel {
         bikePedConfig.transit().setUsingTransitInMobsim(false);
         bikePedConfig.controller().setRoutingAlgorithmType(ControllerConfigGroup.RoutingAlgorithmType.Dijkstra);
 
+    }
+
+    // Static final attribute lists for efficiency
+    private static final List<ToDoubleFunction<Link>> BIKE_ATTRIBUTES = Arrays.asList(
+            MatsimTransportModelMELHealth::bikeGradient,
+            MatsimTransportModelMELHealth::bikeStress,
+            MatsimTransportModelMELHealth::bikeVgvi,
+            MatsimTransportModelMELHealth::bikeSpeedLimit
+    );
+    private static final List<ToDoubleFunction<Link>> WALK_ATTRIBUTES = Arrays.asList(
+            MatsimTransportModelMELHealth::walkGradient,
+            MatsimTransportModelMELHealth::walkVgvi,
+            MatsimTransportModelMELHealth::walkSpeedLimit,
+            MatsimTransportModelMELHealth::walkJctStress
+    );
+
+    private static double bikeGradient(Link l) {
+        return Math.max(Math.min(Gradient.getGradient(l), 0.5), 0.);
+    }
+    private static double bikeStress(Link l) {
+        return LinkStress.getStress(l, TransportMode.bike);
+    }
+    private static double bikeVgvi(Link l) {
+        return Math.max(0., 0.81 - LinkAmbience.getVgviFactor(l));
+    }
+    private static double bikeSpeedLimit(Link l) {
+        Object attr = l.getAttributes().getAttribute("speedLimitMPH");
+        return attr instanceof Number ? Math.min(1., ((Number) attr).doubleValue() / 50.) : 0.;
+    }
+    private static double walkGradient(Link l) {
+        return Math.max(Math.min(Gradient.getGradient(l), 0.5), 0.);
+    }
+    private static double walkVgvi(Link l) {
+        return Math.max(0., 0.81 - LinkAmbience.getVgviFactor(l));
+    }
+    private static double walkSpeedLimit(Link l) {
+        Object attr = l.getAttributes().getAttribute("speedLimitMPH");
+        return attr instanceof Number ? Math.min(1., ((Number) attr).doubleValue() / 50.) : 0.;
+    }
+    private static double walkJctStress(Link l) {
+        return JctStress.getStressProp(l, TransportMode.walk);
     }
 
     public static double[] calculateActiveModeWeights(String mode, Person person) {
