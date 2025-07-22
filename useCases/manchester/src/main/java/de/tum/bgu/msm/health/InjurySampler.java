@@ -200,6 +200,7 @@ public class InjurySampler {
         // Process each person for all modes
         // todo: there is a theoretical probability that an agent is injured by multiple modes during the sample sampling iteration
 
+        Map<String, Integer> nbFatalities = new HashMap<>();
         for (Person person : dataContainer.getHouseholdDataManager().getPersons()) {
             int personId = person.getId();
             PersonHealth personHealth = (PersonHealth) person;
@@ -211,7 +212,8 @@ public class InjurySampler {
 
                 if (injuredPersonsByMode.get(mode).contains(personId)) {
                     // Process injury for this mode
-                    processInjuryRisk(person, modeAlias, fatalInjury, severeInjury);
+                    int fatalityCount = processInjuryRisk(person, modeAlias, fatalInjury, severeInjury);
+                    nbFatalities.put(mode, nbFatalities.getOrDefault(mode, 0) + fatalityCount);
                 } else {
                     // Set zero probability for non-injured persons
                     personHealth.getCurrentDiseaseProb().putIfAbsent(severeInjury, 0.0f);
@@ -238,6 +240,7 @@ public class InjurySampler {
         // Process each person for all modes
         // todo: there is a theoretical probability that an agent is injured by multiple modes during the sample sampling iteration
 
+        Map<String, Integer> nbFatalities = new HashMap<>();
         for (Person person : dataContainer.getHouseholdDataManager().getPersons()) {
             int personId = person.getId();
             PersonHealth personHealth = (PersonHealth) person;
@@ -249,7 +252,8 @@ public class InjurySampler {
 
                 if (injuredPersonsByMode.get(mode).contains(personId)) {
                     // Process injury for this mode
-                    processInjuryRisk(person, modeAlias, fatalInjury, severeInjury);
+                    int fatalityCount = processInjuryRisk(person, modeAlias, fatalInjury, severeInjury);
+                    nbFatalities.put(mode, nbFatalities.getOrDefault(mode, 0) + fatalityCount);
                 } else {
                     // Set zero probability for non-injured persons
                     personHealth.getCurrentDiseaseProb().putIfAbsent(severeInjury, 0.0f);
@@ -257,9 +261,14 @@ public class InjurySampler {
                 }
             }
         }
+
+        // Log fatalities by mode
+        logger.warn("Number of car fatalities is " + nbFatalities.getOrDefault("Car", 0));
+        logger.warn("Number of bike fatalities is " + nbFatalities.getOrDefault("Bike", 0));
+        logger.warn("Number of ped fatalities is " + nbFatalities.getOrDefault("Walk", 0));
     }
 
-    private void processInjuryRisk(Person person, String probabilityKey, Diseases fatalDisease, Diseases injuryDisease) {
+    private int processInjuryRisk(Person person, String probabilityKey, Diseases fatalDisease, Diseases injuryDisease) {
         PersonHealth personHealth = (PersonHealth) person;
 
         // Determine age group
@@ -297,9 +306,11 @@ public class InjurySampler {
         if (random.nextDouble() < pFatal) {
             personHealth.getCurrentDiseaseProb().put(fatalDisease, 1.0f);
             personHealth.getCurrentDiseaseProb().put(injuryDisease, 0.0f);
+            return 1;
         } else {
             personHealth.getCurrentDiseaseProb().put(fatalDisease, 0.0f);
             personHealth.getCurrentDiseaseProb().put(injuryDisease, 1.0f);
+            return 0;
         }
     }
 
