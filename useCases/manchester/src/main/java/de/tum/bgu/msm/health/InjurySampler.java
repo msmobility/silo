@@ -1,9 +1,12 @@
 package de.tum.bgu.msm.health;
 
 import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.Mode;
+import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.health.data.PersonHealth;
 import de.tum.bgu.msm.health.disease.Diseases;
+import de.tum.bgu.msm.properties.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -13,6 +16,13 @@ public class InjurySampler {
 
     private static final Logger logger = LogManager.getLogger(HealthExposureModelMCR.class);
     private static final Random random = new Random();
+    private CalibrationFactors calibrationFactors;
+    private Properties properties;
+
+    InjurySampler(Properties properties, CalibrationFactors calibrationFactors) {
+        this.calibrationFactors = calibrationFactors;
+        this.properties = properties;
+    }
 
     /**
      * Samples injuries for a single mode and returns a list of injured person IDs.
@@ -94,6 +104,10 @@ public class InjurySampler {
         // Collect injury risks for the mode
         for (Person person : dataContainer.getHouseholdDataManager().getPersons()) {
             double injuryRisk = ((PersonHealth) person).getWeeklyAccidentRisk("severeFatalInjury" + mode);
+
+            // adjust injury risk by applying age/gender relative risks + finalCalibration to fit link based stats
+            injuryRisk = injuryRisk * getCasualtyRR_byAge_Gender(person.getGender(), person.getAge(), mode, (HealthDataContainerImpl) dataContainer) * calibrationFactors.getCalibrationFactor(properties.main.scenarioName, mode) ;
+
             if (random.nextDouble() < injuryRisk) {
                 injuredPersons.add(person.getId());
             }
@@ -101,6 +115,48 @@ public class InjurySampler {
 
         // Log results ??
         return injuredPersons;
+    }
+
+    double getCasualtyRR_byAge_Gender(Gender gender, int age, String mode, HealthDataContainerImpl dataContainer) {
+        // Parameter validation
+        if (gender == null || mode == null) {
+            throw new IllegalArgumentException("Gender and mode cannot be null");
+        }
+
+        final int MIN_AGE = 0;
+        final int MAX_AGE = 100;
+
+        // Clamp age value
+        age = Math.max(MIN_AGE, Math.min(age, MAX_AGE));
+
+        // Determine mode string
+        String modeStr;
+        switch (mode) {
+            case "Car":
+                modeStr = "Driver";
+                break;
+            case "Bike":
+                modeStr = "Cyclist";
+                break;
+            case "Walk":
+                modeStr = "Pedestrian";
+                break;
+            default:
+                logger.warn("Impossible to compute injury relative risk for mode " + mode);
+                return 1.0; // Consider if this is the appropriate default
+        }
+
+        // Safely retrieve the value
+        try {
+            return ((HealthDataContainerImpl) dataContainer)
+                    .getHealthInjuryRRdata()
+                    .get(modeStr)
+                    .get(gender)
+                    .get(age);
+        } catch (NullPointerException e) {
+            logger.error("Missing data for mode: " + modeStr + ", gender: " + gender + ", age: " + age, e);
+            return 1.0; // Or consider throwing an exception
+        }
     }
 
     /**

@@ -294,7 +294,7 @@ public class AccidentRateModelOsmMCR {
 
         try {
             writeOutCasualtyRate();
-            //writeOutHourlyCasualtyRate();
+            writeOutHourlyCasualtyRate();
         } catch (FileNotFoundException e) {
             log.error("Error writing casualty rates", e);
         }

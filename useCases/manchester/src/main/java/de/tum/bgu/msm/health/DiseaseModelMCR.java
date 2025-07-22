@@ -178,9 +178,10 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
         if(activateInjuries){
             // Prepare fatalities map by mode and age (gender ??)
             Map<String, Map<String, Double>> FatalityProbabilities = createProbabilityMap();
+            CalibrationFactors calibrationFactors = new CalibrationFactors();
 
             // Set up the injury sampler and process the injured people
-            InjurySampler injSampler = new InjurySampler();
+            InjurySampler injSampler = new InjurySampler(properties, calibrationFactors);
 
             // The target come from the accidentModel, they should be add to the HealthDataContainer
             /*
