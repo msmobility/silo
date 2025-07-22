@@ -109,7 +109,7 @@ public class InjurySampler {
             double injuryRisk = ((PersonHealth) person).getWeeklyAccidentRisk("severeFatalInjury" + mode);
 
             // adjust injury risk by applying age/gender relative risks + finalCalibration to fit link based stats
-            injuryRisk = injuryRisk * getCasualtyRR_byAge_Gender(person.getGender(), person.getAge(), mode, (HealthDataContainerImpl) dataContainer) * calibrationFactors.getCalibrationFactor(properties.main.scenarioName, mode) ;
+            injuryRisk = injuryRisk; //* getCasualtyRR_byAge_Gender(person.getGender(), person.getAge(), mode, (HealthDataContainerImpl) dataContainer) * calibrationFactors.getCalibrationFactor(properties.main.scenarioName, mode) ;
 
             if (random.nextDouble() < injuryRisk) {
                 injuredPersons.add(person.getId());
