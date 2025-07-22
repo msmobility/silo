@@ -19,13 +19,13 @@ public class CalibrationFactors {
                 if (scenario.equals("base")) {
                     switch (mode) {
                         case "Bike":
-                            modeFactors.put("Cycle", 2.314814815);
+                            modeFactors.put(mode, 2.314814815);
                             break;
                         case "Car":
-                            modeFactors.put("Driver", 1.266666667);
+                            modeFactors.put(mode, 1.266666667);
                             break;
                         case "Walk":
-                            modeFactors.put("Walk", 0.741854637);
+                            modeFactors.put(mode, 0.741854637);
                             break;
                     }
                 } else {
