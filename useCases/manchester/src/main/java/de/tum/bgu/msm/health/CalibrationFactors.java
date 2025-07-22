@@ -9,7 +9,7 @@ public class CalibrationFactors {
     static {
         // Initialize scenarios
         String[] scenarios = {"base", "both", "green", "safeStreet", "goDutch"};
-        String[] modes = {"Cycle", "Driver", "Walk"};
+        String[] modes = {"Car", "Bike", "Walk"};
 
         // Populate the map
         for (String scenario : scenarios) {
@@ -18,14 +18,14 @@ public class CalibrationFactors {
                 // Set base scenario values
                 if (scenario.equals("base")) {
                     switch (mode) {
-                        case "Cycle":
-                            modeFactors.put(mode, 2.314814815);
+                        case "Bike":
+                            modeFactors.put("Cycle", 2.314814815);
                             break;
-                        case "Driver":
-                            modeFactors.put(mode, 1.266666667);
+                        case "Car":
+                            modeFactors.put("Driver", 1.266666667);
                             break;
                         case "Walk":
-                            modeFactors.put(mode, 0.741854637);
+                            modeFactors.put("Walk", 0.741854637);
                             break;
                     }
                 } else {
