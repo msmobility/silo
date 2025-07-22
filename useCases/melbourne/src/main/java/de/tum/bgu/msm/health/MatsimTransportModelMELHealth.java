@@ -301,33 +301,8 @@ public final class MatsimTransportModelMELHealth implements TransportModel {
 
             logger.warn("MATSim truck population: " + day + "|" + year + "|" + populationCarTruck.getPersons().size());
 
-            //Add through car plans from tfgm (static)
-            Population populationThroughTraffic = PopulationUtils.createPopulation(ConfigUtils.createConfig());
-
-            String throughPlans = properties.main.baseDirectory + properties.healthData.throughTraffic_plan_file;
-            PopulationUtils.readPopulation(populationThroughTraffic, throughPlans);
-
-            double throughCarSample = 0.;
-            if(day.equals(Day.thursday)) {
-                throughCarSample = 1.;
-            } else if (day.equals(Day.saturday)) {
-                throughCarSample = 0.79;
-            } else if (day.equals(Day.sunday)) {
-                throughCarSample = 0.46;
-            } else {
-                throw new RuntimeException("Unrecognised day " + day);
-            }
-
-            logger.info(day + " through traffic sample: " + throughCarSample);
-            if(throughCarSample < 1.) {
-                PopulationUtils.sampleDown(populationThroughTraffic, throughCarSample);
-            }
-
-            for (Person pp : populationThroughTraffic.getPersons().values()) {
-                populationCarTruck.addPerson(pp);
-            }
-
-            logger.warn("MATSim truck/through population: " + day + "|" + year + "|" + populationCarTruck.getPersons().size());
+            // Through traffic not estimated for Melbourne; omitted
+            // See Manchester implementation for approach for re-adding this
 
             // Add car plans from MITO
             for (Person pp : assembledScenario.getPopulation().getPersons().values()) {
@@ -337,7 +312,7 @@ public final class MatsimTransportModelMELHealth implements TransportModel {
                 }
             }
 
-            logger.warn("MATSim car/truck/through population: " + day + "|" + year + "|" + populationCarTruck.getPersons().size());
+            logger.warn("MATSim car/truck: " + day + "|" + year + "|" + populationCarTruck.getPersons().size());
 
 
             logger.warn("Running MATSim transport model for " + day + " car scenario " + year + ".");
