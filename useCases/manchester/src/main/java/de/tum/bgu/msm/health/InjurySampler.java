@@ -109,7 +109,7 @@ public class InjurySampler {
             double injuryRisk = ((PersonHealth) person).getWeeklyAccidentRisk("severeFatalInjury" + mode);
 
             // adjust injury risk by applying age/gender relative risks + finalCalibration to fit link based stats
-            injuryRisk = injuryRisk; //* getCasualtyRR_byAge_Gender(person.getGender(), person.getAge(), mode, (HealthDataContainerImpl) dataContainer) * calibrationFactors.getCalibrationFactor(properties.main.scenarioName, mode) ;
+            injuryRisk = injuryRisk * getCasualtyRR_byAge_Gender(person.getGender(), person.getAge(), mode, (HealthDataContainerImpl) dataContainer) * calibrationFactors.getCalibrationFactor(properties.main.scenarioName, mode) ;
 
             if (random.nextDouble() < injuryRisk) {
                 injuredPersons.add(person.getId());
@@ -211,7 +211,7 @@ public class InjurySampler {
 
                 if (injuredPersonsByMode.get(mode).contains(personId)) {
                     // Process injury for this mode
-                    processInjuryRisk(person, mode, fatalInjury, severeInjury);
+                    processInjuryRisk(person, modeAlias, fatalInjury, severeInjury);
                 } else {
                     // Set zero probability for non-injured persons
                     personHealth.getCurrentDiseaseProb().putIfAbsent(severeInjury, 0.0f);
@@ -314,9 +314,9 @@ public class InjurySampler {
             case "Car":
                 return "Driver";
             case "Bike":
-                return "Cyclist";
+                return "Cycle";
             case "Walk":
-                return "Pedestrian";
+                return "Walk";
             default:
                 throw new IllegalArgumentException("Unknown mode: " + mode);
         }
