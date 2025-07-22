@@ -194,7 +194,7 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
              */
 
             // Process injury transitions
-            injSampler.processInjuries2(dataContainer, FatalityProbabilities);
+            injSampler.processInjuries2(dataContainer);
         }
     }
 

@@ -221,7 +221,7 @@ public class InjurySampler {
         }
     }
 
-    public void processInjuries2(DataContainer dataContainer, Map<String, Map<String, Double>> fatalityProbabilities) {
+    public void processInjuries2(DataContainer dataContainer) {
         List<String> modes = Arrays.asList("Car", "Bike", "Walk");
         Map<String, List<Integer>> injuredPersonsByMode = new HashMap<>();
 
@@ -230,6 +230,10 @@ public class InjurySampler {
             List<Integer> injuredPersons = sampleInjuries2(dataContainer, mode);
             injuredPersonsByMode.put(mode, injuredPersons);
         }
+
+        logger.warn("Number of car casualties is " + injuredPersonsByMode.get("Car").size());
+        logger.warn("Number of bike casualties is " + injuredPersonsByMode.get("Bike").size());
+        logger.warn("Number of ped casualties is " + injuredPersonsByMode.get("Walk").size());
 
         // Process each person for all modes
         // todo: there is a theoretical probability that an agent is injured by multiple modes during the sample sampling iteration
