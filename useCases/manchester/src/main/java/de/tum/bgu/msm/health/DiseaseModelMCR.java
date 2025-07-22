@@ -194,25 +194,32 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
             injSampler.processInjuries2(dataContainer, FatalityProbabilities);
         }
     }
-
     private void initializeHealthDiseaseStates() {
         Map<Integer, List<Diseases>> prevData = ((HealthDataContainerImpl) dataContainer).getPrevalenceData();
+
+        // Flatten the List<Diseases> values and collect only non-null entries
+        List<List<Diseases>> availableDiseaseLists = prevData.values().stream()
+                .filter(list -> list != null && !list.contains(null))
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        // Shuffle to ensure randomness
+        Collections.shuffle(availableDiseaseLists, new Random());
+
+        Iterator<List<Diseases>> diseaseIterator = availableDiseaseLists.iterator();
+
         for (Person person : dataContainer.getHouseholdDataManager().getPersons()) {
-            if (prevData.keySet().contains(person.getId()) && (!prevData.get(person.getId()).contains(null)) &&
-                    person.getAge() > 17) {
-                List<String> diseaseList = prevData.get(person.getId())  // Returns List<Diseases>
-                        .stream()                                      // Convert List to Stream
-                        .map(Enum::name)                               // Map each enum to its name
-                        .collect(Collectors.toList());                 // Collect into List<String>
+            if (person.getAge() > 17 && diseaseIterator.hasNext()) {
+                List<Diseases> diseaseEnums = diseaseIterator.next(); // Get next unique disease list
+                List<String> diseaseList = diseaseEnums.stream()
+                        .map(Enum::name)
+                        .collect(Collectors.toList());
                 ((PersonHealth) person).getHealthDiseaseTracker().put(Properties.get().main.startYear - 1, diseaseList);
             } else {
-                //start year-1 as initial state
+                // Either person is 17 or younger OR no more unique disease data available
                 ((PersonHealth) person).getHealthDiseaseTracker().put(Properties.get().main.startYear - 1, Arrays.asList("healthy"));
             }
         }
     }
-
-
 
     public void updateHealthDiseaseStates(int year) {
         for (Person person : dataContainer.getHouseholdDataManager().getPersons()) {
