@@ -1213,12 +1213,6 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
             throw new IllegalArgumentException("Gender and mode cannot be null");
         }
 
-        final int MIN_AGE = 0;
-        final int MAX_AGE = 100;
-
-        // Clamp age value
-        age = Math.max(MIN_AGE, Math.min(age, MAX_AGE));
-
         // Determine mode string
         String modeStr;
         switch (mode) {
@@ -1227,14 +1221,34 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                 modeStr = "Driver";
                 break;
             case bicycle:
-                modeStr = "Cyclist";
+                modeStr = "Cycle";
                 break;
             case walk:
-                modeStr = "Pedestrian";
+                modeStr = "Walk";
                 break;
             default:
                 logger.warn("Impossible to compute injury relative risk for mode " + mode);
                 return 1.0; // Consider if this is the appropriate default
+        }
+
+        // Determine age group
+        String ageGroup;
+        if (age < 17) {
+            ageGroup = "< 17";
+        } else if (age <= 20) {
+            ageGroup = "17-20";
+        } else if (age <= 29) {
+            ageGroup = "21-29";
+        } else if (age <= 39) {
+            ageGroup = "30-39";
+        } else if (age <= 49) {
+            ageGroup = "40-49";
+        } else if (age <= 59) {
+            ageGroup = "50-59";
+        } else if (age <= 69) {
+            ageGroup = "60-69";
+        } else {
+            ageGroup = "70+";
         }
 
         // Safely retrieve the value
@@ -1243,7 +1257,8 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
                     .getHealthInjuryRRdata()
                     .get(modeStr)
                     .get(gender)
-                    .get(age);
+                    .get(ageGroup)
+                    .rr;
         } catch (NullPointerException e) {
             logger.error("Missing data for mode: " + modeStr + ", gender: " + gender + ", age: " + age, e);
             return 1.0; // Or consider throwing an exception

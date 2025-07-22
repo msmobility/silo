@@ -8,6 +8,7 @@ import de.tum.bgu.msm.health.data.*;
 import de.tum.bgu.msm.health.disease.Diseases;
 import de.tum.bgu.msm.health.disease.HealthExposures;
 import de.tum.bgu.msm.health.disease.RelativeRisksDisease;
+import de.tum.bgu.msm.health.io.InjuryRRTableReader;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
@@ -179,9 +180,10 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
             // Prepare fatalities map by mode and age (gender ??)
             Map<String, Map<String, Double>> FatalityProbabilities = createProbabilityMap();
             CalibrationFactors calibrationFactors = new CalibrationFactors();
+            Map<String, EnumMap<Gender, Map<String, InjuryRRTableReader. DataEntry>>> injuryData = ((HealthDataContainerImpl) dataContainer).getHealthInjuryRRdata();
 
             // Set up the injury sampler and process the injured people
-            InjurySampler injSampler = new InjurySampler(properties, calibrationFactors);
+            InjurySampler injSampler = new InjurySampler(properties, calibrationFactors, injuryData);
 
             // The target come from the accidentModel, they should be add to the HealthDataContainer
             /*

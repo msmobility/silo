@@ -6,6 +6,7 @@ import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.health.data.PersonHealth;
 import de.tum.bgu.msm.health.disease.Diseases;
+import de.tum.bgu.msm.health.io.InjuryRRTableReader;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,10 +19,12 @@ public class InjurySampler {
     private static final Random random = new Random();
     private CalibrationFactors calibrationFactors;
     private Properties properties;
+    private Map<String, EnumMap<Gender, Map<String, InjuryRRTableReader. DataEntry>>> injuryData;
 
-    InjurySampler(Properties properties, CalibrationFactors calibrationFactors) {
+    InjurySampler(Properties properties, CalibrationFactors calibrationFactors, Map<String, EnumMap<Gender, Map<String, InjuryRRTableReader. DataEntry>>> injuryData) {
         this.calibrationFactors = calibrationFactors;
         this.properties = properties;
+        this.injuryData = injuryData;
     }
 
     /**
@@ -123,12 +126,6 @@ public class InjurySampler {
             throw new IllegalArgumentException("Gender and mode cannot be null");
         }
 
-        final int MIN_AGE = 0;
-        final int MAX_AGE = 100;
-
-        // Clamp age value
-        age = Math.max(MIN_AGE, Math.min(age, MAX_AGE));
-
         // Determine mode string
         String modeStr;
         switch (mode) {
@@ -136,14 +133,34 @@ public class InjurySampler {
                 modeStr = "Driver";
                 break;
             case "Bike":
-                modeStr = "Cyclist";
+                modeStr = "Cycle";
                 break;
             case "Walk":
-                modeStr = "Pedestrian";
+                modeStr = "Walk";
                 break;
             default:
                 logger.warn("Impossible to compute injury relative risk for mode " + mode);
                 return 1.0; // Consider if this is the appropriate default
+        }
+
+        // Determine age group
+        String ageGroup;
+        if (age < 17) {
+            ageGroup = "< 17";
+        } else if (age <= 20) {
+            ageGroup = "17-20";
+        } else if (age <= 29) {
+            ageGroup = "21-29";
+        } else if (age <= 39) {
+            ageGroup = "30-39";
+        } else if (age <= 49) {
+            ageGroup = "40-49";
+        } else if (age <= 59) {
+            ageGroup = "50-59";
+        } else if (age <= 69) {
+            ageGroup = "60-69";
+        } else {
+            ageGroup = "70+";
         }
 
         // Safely retrieve the value
@@ -152,9 +169,10 @@ public class InjurySampler {
                     .getHealthInjuryRRdata()
                     .get(modeStr)
                     .get(gender)
-                    .get(age);
+                    .get(ageGroup)
+                    .rr;
         } catch (NullPointerException e) {
-            logger.error("Missing data for mode: " + modeStr + ", gender: " + gender + ", age: " + age, e);
+            logger.error("Missing data for mode: " + modeStr + ", gender: " + gender + ", age: " + ageGroup, e);
             return 1.0; // Or consider throwing an exception
         }
     }
@@ -193,7 +211,7 @@ public class InjurySampler {
 
                 if (injuredPersonsByMode.get(mode).contains(personId)) {
                     // Process injury for this mode
-                    processInjuryRisk(person, modeAlias, fatalInjury, severeInjury, fatalityProbabilities);
+                    processInjuryRisk(person, mode, fatalInjury, severeInjury);
                 } else {
                     // Set zero probability for non-injured persons
                     personHealth.getCurrentDiseaseProb().putIfAbsent(severeInjury, 0.0f);
@@ -227,7 +245,7 @@ public class InjurySampler {
 
                 if (injuredPersonsByMode.get(mode).contains(personId)) {
                     // Process injury for this mode
-                    processInjuryRisk(person, modeAlias, fatalInjury, severeInjury, fatalityProbabilities);
+                    processInjuryRisk(person, modeAlias, fatalInjury, severeInjury);
                 } else {
                     // Set zero probability for non-injured persons
                     personHealth.getCurrentDiseaseProb().putIfAbsent(severeInjury, 0.0f);
@@ -237,10 +255,40 @@ public class InjurySampler {
         }
     }
 
-    private void processInjuryRisk(Person person, String probabilityKey, Diseases fatalDisease, Diseases injuryDisease, Map<String, Map<String, Double>> FatalityTable) {
+    private void processInjuryRisk(Person person, String probabilityKey, Diseases fatalDisease, Diseases injuryDisease) {
         PersonHealth personHealth = (PersonHealth) person;
 
-        double pFatal = FatalityTable.get(probabilityKey).get(getAgeGroup(person.getAge()));
+        // Determine age group
+        int age = person.getAge();
+        String ageGroup;
+        if (age < 17) {
+            ageGroup = "< 17";
+        } else if (age <= 20) {
+            ageGroup = "17-20";
+        } else if (age <= 29) {
+            ageGroup = "21-29";
+        } else if (age <= 39) {
+            ageGroup = "30-39";
+        } else if (age <= 49) {
+            ageGroup = "40-49";
+        } else if (age <= 59) {
+            ageGroup = "50-59";
+        } else if (age <= 69) {
+            ageGroup = "60-69";
+        } else {
+            ageGroup = "70+";
+        }
+
+        // Get probability of fatality
+        double pFatal = 0.0;
+        try {
+            pFatal = injuryData.get(probabilityKey)
+                    .get(person.getGender())
+                    .get(ageGroup)
+                    .percentKilled;
+        } catch (NullPointerException e) {
+            logger.error("Missing fatality data for mode: " + probabilityKey + ", gender: " + person.getGender() + ", ageGroup: " + ageGroup, e);
+        }
 
         if (random.nextDouble() < pFatal) {
             personHealth.getCurrentDiseaseProb().put(fatalDisease, 1.0f);
