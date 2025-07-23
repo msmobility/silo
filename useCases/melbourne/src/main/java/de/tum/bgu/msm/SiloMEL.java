@@ -1,5 +1,6 @@
 package de.tum.bgu.msm;
 
+import com.google.common.io.Resources;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.health.DataBuilderHealth;
 import de.tum.bgu.msm.health.HealthDataContainerImpl;
@@ -27,26 +28,6 @@ public class SiloMEL {
 
     private final static Logger logger = LogManager.getLogger(SiloMEL.class);
 
-    private static void checkConfiguredExposureData(Properties properties, int scenarioYear) {
-        String exposureFilePath = properties.healthData.baseExposureFile;
-        if (exposureFilePath == null || !Files.exists(Paths.get(exposureFilePath))) {
-            logger.error("Exposure data file '{}' not found. Please run health.RunExposureHealthOffline before proceeding.", exposureFilePath);
-            throw new RuntimeException("Exposure data file not found: " + exposureFilePath);
-        } else {
-            try {
-                if (Files.size(Paths.get(exposureFilePath)) == 0) {
-                    logger.error("Exposure data file '{}' is empty. Please run health.RunExposureHealthOffline before proceeding.", exposureFilePath);
-                    throw new RuntimeException("Exposure data file not found: " + exposureFilePath);
-                } else {
-                    logger.info("Using configured exposure data file: {}", exposureFilePath);
-                }
-            } catch (IOException e) {
-                logger.error("Error checking exposure data file '{}': {}", exposureFilePath, e.getMessage());
-                throw new RuntimeException("Error checking exposure data file: " + exposureFilePath, e);
-            }
-        }
-    }
-
     public static void main(String[] args) throws IOException {
 
         Properties properties = SiloUtil.siloInitialization(args[0]);
@@ -69,5 +50,25 @@ public class SiloMEL {
         //model.addResultMonitor(new ModalSharesResultMonitor(dataContainer, properties));
         model.runModel();
         logger.info("Finished SILO.");
+    }
+
+    static void checkConfiguredExposureData(Properties properties, int scenarioYear) {
+        String exposureFilePath = Paths.get(properties.main.baseDirectory, properties.healthData.baseExposureFile).toString();
+        if (exposureFilePath == null || !Files.exists(Paths.get(exposureFilePath))) {
+            logger.error("Exposure data file '{}' not found. Please run health.RunExposureHealthOffline before proceeding.", exposureFilePath);
+            throw new RuntimeException("Exposure data file not found: " + exposureFilePath);
+        } else {
+            try {
+                if (Files.size(Paths.get(exposureFilePath)) == 0) {
+                    logger.error("Exposure data file '{}' is empty. Please run health.RunExposureHealthOffline before proceeding.", exposureFilePath);
+                    throw new RuntimeException("Exposure data file is incomplete: " + exposureFilePath);
+                } else {
+                    logger.info("Using configured exposure data file: {}", exposureFilePath);
+                }
+            } catch (IOException e) {
+                logger.error("Error checking exposure data file '{}': {}", exposureFilePath, e.getMessage());
+                throw new RuntimeException("Error checking exposure data file: " + exposureFilePath, e);
+            }
+        }
     }
 }
