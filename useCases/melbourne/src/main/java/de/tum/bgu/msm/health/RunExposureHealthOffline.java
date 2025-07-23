@@ -31,6 +31,7 @@ public class RunExposureHealthOffline {
         }
         assert config != null;
         logger.info("Started SILO land use model for the Greater Melbourne");
+        int endYear = properties.main.endYear;
         HealthDataContainerImpl dataContainer = DataBuilderHealth.getModelDataForMelbourne(properties, config);
         DataBuilderHealth.read(properties, dataContainer, config);
 
@@ -40,12 +41,12 @@ public class RunExposureHealthOffline {
         HealthExposureModelMEL exposureModelMCR = new HealthExposureModelMEL(dataContainer, properties, SiloUtil.provideNewRandom(),config);
         DiseaseModelMEL diseaseModelMEL = new DiseaseModelMEL(dataContainer, properties, SiloUtil.provideNewRandom());
 
-        //airPollutantModel.endYear(2021);
-        //noiseModel.endYear(2021);
-        sportPAModelMCR.endYear(2021);
-        exposureModelMCR.endYear(2021);
+        airPollutantModel.endYear(endYear);
+        noiseModel.endYear(endYear);
+        sportPAModelMCR.endYear(endYear);
+        exposureModelMCR.endYear(endYear);
         diseaseModelMEL.setup();
-        diseaseModelMEL.endYear(2021);
+        diseaseModelMEL.endYear(endYear);
         dataContainer.endSimulation();
 
         logger.info("Finished SILO.");

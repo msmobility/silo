@@ -28,14 +28,15 @@ public class RunHomeBasedExposureOffline {
             config = ConfigUtils.loadConfig(args[1]);
         }
         logger.info("Started SILO land use model for the Greater Melbourne");
+        int endYear = properties.main.endYear;
         HealthDataContainerImpl dataContainer = DataBuilderHealth.getModelDataForMelbourne(properties, config);
         DataBuilderHealth.read(properties, dataContainer, config);
 
         HealthExposureModelMEL exposureModelMCR = new HealthExposureModelMEL(dataContainer, properties, SiloUtil.provideNewRandom(),config);
 
 
-        exposureModelMCR.calculateHomeBasedExposureOnly(2021);
-        dataContainer.writePersonHomeBasedExposureData(2021);
+        exposureModelMCR.calculateHomeBasedExposureOnly(endYear);
+        dataContainer.writePersonHomeBasedExposureData(endYear);
 
         logger.info("Finished SILO.");
     }
