@@ -64,7 +64,7 @@ public class MCRHbefaRoadTypeMapping extends HbefaRoadTypeMapping {
                 }
                 return "URB/" + type + "/" + speedRange;
             }else{
-                logger.error("Link id: " + link.getId() + " has no attribute: " + OSMTYPE_NAME);
+                logger.error("Link id: {} has no attribute: {}", link.getId(),OSMTYPE_NAME);
                 return "URB/Trunk-Nat./70";
             }
         }
