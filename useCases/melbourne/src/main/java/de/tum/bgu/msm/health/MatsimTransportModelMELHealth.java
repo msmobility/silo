@@ -187,7 +187,7 @@ public final class MatsimTransportModelMELHealth implements TransportModel {
         assembledMultiScenario = scenarioAssembler.assembleMultiScenarios(initialMatsimConfig, year, travelTimes);
 
         //run car truck simulation
-        runCarTruckSimulation(year, assembledMultiScenario);
+//        runCarTruckSimulation(year, assembledMultiScenario);
 
         //run bike ped simulation
         runBikePedSimulation(year, assembledMultiScenario);

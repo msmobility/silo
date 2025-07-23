@@ -46,12 +46,12 @@ public class ExtractCoefficient {
                     if (rowKey == null) continue;
                     Map<String, Double> row = new ConcurrentHashMap<>();
                     for (String col : parser.getHeaderNames()) {
-                        String value = record.get(col);
+                        String value = record.get(targetColumn);
                         if (value != null) {
                             try {
                                 row.put(col, Double.valueOf(value));
                             } catch (NumberFormatException e) {
-                                // Ignore parse errors for now
+                                logger.warn("Invalid number format for value '{}': {}", value, e.getMessage());
                             }
                         }
                     }
