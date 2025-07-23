@@ -89,12 +89,10 @@ public class SportPAModelMEL extends AbstractModel implements ModelUpdateListene
         }
 
         // occupation
-        if (person.getOccupation().equals(Occupation.RETIREE)){
-            predictor += coef.get("workstat_retired");
+        if (person.getOccupation().equals(Occupation.EMPLOYED)){
+            predictor += coef.get("is_employed");
         }else if(person.getOccupation().equals(Occupation.STUDENT)){
-            predictor += coef.get("workstat_student");
-        }else if(person.getOccupation().equals(Occupation.UNEMPLOYED)){
-            predictor += coef.get("workstat_unemployed");
+            predictor += coef.get("is_student");
         }
 
         // imd10
