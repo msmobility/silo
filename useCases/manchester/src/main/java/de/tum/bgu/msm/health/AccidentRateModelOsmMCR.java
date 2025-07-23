@@ -88,7 +88,7 @@ public class AccidentRateModelOsmMCR {
 
          */
         // TODO: generalize for other networks
-        String networkFile = properties.main.baseDirectory + "input/mito/trafficAssignment/" + "network(1).xml";
+        String networkFile = properties.main.baseDirectory + "input/mito/trafficAssignment/" + "network_" + properties.main.scenarioName + ".xml";
         new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
         log.info("Reading network file... Done.");
 
