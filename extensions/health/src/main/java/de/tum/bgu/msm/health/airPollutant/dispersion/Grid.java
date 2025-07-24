@@ -158,12 +158,28 @@ public abstract class Grid<T> {
 
         quadTree = new QuadTree<>(envelope.getMinX(), envelope.getMinY(), envelope.getMaxX(), envelope.getMaxY());
 
+        int nanCount = 0;
+        int outOfBoundsCount = 0;
+        List<Coordinate> outOfBoundsCoords = new ArrayList<>();
+
         for (Coordinate coordinate : receiverPoints){
             if (Double.isNaN(coordinate.x) || Double.isNaN(coordinate.y)) {
-                logger.warn("Skipping coordinate with NaN values: {}", coordinate);
+                nanCount++;
                 continue;
             }
-            quadTree.put(coordinate.x, coordinate.y, new Cell<>(coordinate, initialValueSupplier.get()));
+            if (bounds.contains(geometryFactory.createPoint(coordinate))) {
+                quadTree.put(coordinate.x, coordinate.y, new Cell<>(coordinate, initialValueSupplier.get()));
+            } else {
+                outOfBoundsCount++;
+                outOfBoundsCoords.add(coordinate);
+            }
+        }
+        logger.warn("generateReceiverPoints: {} coordinates skipped due to NaN values, {} coordinates skipped for being outside bounds.", nanCount, outOfBoundsCount);
+        if (outOfBoundsCount > 0) {
+            logger.warn("To see the specific coordinates outside bounds, enable DEBUG logging.");
+            for (Coordinate c : outOfBoundsCoords) {
+                logger.debug("Coordinate outside bounds: {}", c);
+            }
         }
     }
 
