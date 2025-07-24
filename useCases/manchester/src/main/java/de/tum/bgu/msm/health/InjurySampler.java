@@ -1,9 +1,13 @@
 package de.tum.bgu.msm.health;
 
 import de.tum.bgu.msm.container.DataContainer;
+import de.tum.bgu.msm.data.Mode;
+import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.health.data.PersonHealth;
 import de.tum.bgu.msm.health.disease.Diseases;
+import de.tum.bgu.msm.health.io.InjuryRRTableReader;
+import de.tum.bgu.msm.properties.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -13,6 +17,15 @@ public class InjurySampler {
 
     private static final Logger logger = LogManager.getLogger(HealthExposureModelMCR.class);
     private static final Random random = new Random();
+    private CalibrationFactors calibrationFactors;
+    private Properties properties;
+    private Map<String, EnumMap<Gender, Map<String, InjuryRRTableReader. DataEntry>>> injuryData;
+
+    InjurySampler(Properties properties, CalibrationFactors calibrationFactors, Map<String, EnumMap<Gender, Map<String, InjuryRRTableReader. DataEntry>>> injuryData) {
+        this.calibrationFactors = calibrationFactors;
+        this.properties = properties;
+        this.injuryData = injuryData;
+    }
 
     /**
      * Samples injuries for a single mode and returns a list of injured person IDs.
@@ -94,6 +107,10 @@ public class InjurySampler {
         // Collect injury risks for the mode
         for (Person person : dataContainer.getHouseholdDataManager().getPersons()) {
             double injuryRisk = ((PersonHealth) person).getWeeklyAccidentRisk("severeFatalInjury" + mode);
+
+            // adjust injury risk by applying age/gender relative risks + finalCalibration to fit link based stats
+            injuryRisk = injuryRisk * getCasualtyRR_byAge_Gender(person.getGender(), person.getAge(), mode, (HealthDataContainerImpl) dataContainer) * calibrationFactors.getCalibrationFactor(properties.main.scenarioName, mode) ;
+
             if (random.nextDouble() < injuryRisk) {
                 injuredPersons.add(person.getId());
             }
@@ -101,6 +118,63 @@ public class InjurySampler {
 
         // Log results ??
         return injuredPersons;
+    }
+
+    double getCasualtyRR_byAge_Gender(Gender gender, int age, String mode, HealthDataContainerImpl dataContainer) {
+        // Parameter validation
+        if (gender == null || mode == null) {
+            throw new IllegalArgumentException("Gender and mode cannot be null");
+        }
+
+        // Determine mode string
+        String modeStr;
+        switch (mode) {
+            case "Car":
+                modeStr = "Driver";
+                break;
+            case "Bike":
+                modeStr = "Cycle";
+                break;
+            case "Walk":
+                modeStr = "Walk";
+                break;
+            default:
+                logger.warn("Impossible to compute injury relative risk for mode " + mode);
+                return 1.0; // Consider if this is the appropriate default
+        }
+
+        // Determine age group
+        String ageGroup;
+        if (age < 17) {
+            ageGroup = "< 17";
+        } else if (age <= 20) {
+            ageGroup = "17-20";
+        } else if (age <= 29) {
+            ageGroup = "21-29";
+        } else if (age <= 39) {
+            ageGroup = "30-39";
+        } else if (age <= 49) {
+            ageGroup = "40-49";
+        } else if (age <= 59) {
+            ageGroup = "50-59";
+        } else if (age <= 69) {
+            ageGroup = "60-69";
+        } else {
+            ageGroup = "70+";
+        }
+
+        // Safely retrieve the value
+        try {
+            return ((HealthDataContainerImpl) dataContainer)
+                    .getHealthInjuryRRdata()
+                    .get(modeStr)
+                    .get(gender)
+                    .get(ageGroup)
+                    .rr;
+        } catch (NullPointerException e) {
+            logger.error("Missing data for mode: " + modeStr + ", gender: " + gender + ", age: " + ageGroup, e);
+            return 1.0; // Or consider throwing an exception
+        }
     }
 
     /**
@@ -126,6 +200,7 @@ public class InjurySampler {
         // Process each person for all modes
         // todo: there is a theoretical probability that an agent is injured by multiple modes during the sample sampling iteration
 
+        Map<String, Integer> nbFatalities = new HashMap<>();
         for (Person person : dataContainer.getHouseholdDataManager().getPersons()) {
             int personId = person.getId();
             PersonHealth personHealth = (PersonHealth) person;
@@ -137,7 +212,8 @@ public class InjurySampler {
 
                 if (injuredPersonsByMode.get(mode).contains(personId)) {
                     // Process injury for this mode
-                    processInjuryRisk(person, modeAlias, fatalInjury, severeInjury, fatalityProbabilities);
+                    int fatalityCount = processInjuryRisk(person, modeAlias, fatalInjury, severeInjury);
+                    nbFatalities.put(mode, nbFatalities.getOrDefault(mode, 0) + fatalityCount);
                 } else {
                     // Set zero probability for non-injured persons
                     personHealth.getCurrentDiseaseProb().putIfAbsent(severeInjury, 0.0f);
@@ -147,7 +223,7 @@ public class InjurySampler {
         }
     }
 
-    public void processInjuries2(DataContainer dataContainer, Map<String, Map<String, Double>> fatalityProbabilities) {
+    public void processInjuries2(DataContainer dataContainer) {
         List<String> modes = Arrays.asList("Car", "Bike", "Walk");
         Map<String, List<Integer>> injuredPersonsByMode = new HashMap<>();
 
@@ -157,9 +233,14 @@ public class InjurySampler {
             injuredPersonsByMode.put(mode, injuredPersons);
         }
 
+        logger.warn("Number of car casualties is " + injuredPersonsByMode.get("Car").size());
+        logger.warn("Number of bike casualties is " + injuredPersonsByMode.get("Bike").size());
+        logger.warn("Number of ped casualties is " + injuredPersonsByMode.get("Walk").size());
+
         // Process each person for all modes
         // todo: there is a theoretical probability that an agent is injured by multiple modes during the sample sampling iteration
 
+        Map<String, Integer> nbFatalities = new HashMap<>();
         for (Person person : dataContainer.getHouseholdDataManager().getPersons()) {
             int personId = person.getId();
             PersonHealth personHealth = (PersonHealth) person;
@@ -171,7 +252,8 @@ public class InjurySampler {
 
                 if (injuredPersonsByMode.get(mode).contains(personId)) {
                     // Process injury for this mode
-                    processInjuryRisk(person, modeAlias, fatalInjury, severeInjury, fatalityProbabilities);
+                    int fatalityCount = processInjuryRisk(person, modeAlias, fatalInjury, severeInjury);
+                    nbFatalities.put(mode, nbFatalities.getOrDefault(mode, 0) + fatalityCount);
                 } else {
                     // Set zero probability for non-injured persons
                     personHealth.getCurrentDiseaseProb().putIfAbsent(severeInjury, 0.0f);
@@ -179,19 +261,56 @@ public class InjurySampler {
                 }
             }
         }
+
+        // Log fatalities by mode
+        logger.warn("Number of car fatalities is " + nbFatalities.getOrDefault("Car", 0));
+        logger.warn("Number of bike fatalities is " + nbFatalities.getOrDefault("Bike", 0));
+        logger.warn("Number of ped fatalities is " + nbFatalities.getOrDefault("Walk", 0));
     }
 
-    private void processInjuryRisk(Person person, String probabilityKey, Diseases fatalDisease, Diseases injuryDisease, Map<String, Map<String, Double>> FatalityTable) {
+    private int processInjuryRisk(Person person, String probabilityKey, Diseases fatalDisease, Diseases injuryDisease) {
         PersonHealth personHealth = (PersonHealth) person;
 
-        double pFatal = FatalityTable.get(probabilityKey).get(getAgeGroup(person.getAge()));
+        // Determine age group
+        int age = person.getAge();
+        String ageGroup;
+        if (age < 17) {
+            ageGroup = "< 17";
+        } else if (age <= 20) {
+            ageGroup = "17-20";
+        } else if (age <= 29) {
+            ageGroup = "21-29";
+        } else if (age <= 39) {
+            ageGroup = "30-39";
+        } else if (age <= 49) {
+            ageGroup = "40-49";
+        } else if (age <= 59) {
+            ageGroup = "50-59";
+        } else if (age <= 69) {
+            ageGroup = "60-69";
+        } else {
+            ageGroup = "70+";
+        }
+
+        // Get probability of fatality
+        double pFatal = 0.0;
+        try {
+            pFatal = injuryData.get(probabilityKey)
+                    .get(person.getGender())
+                    .get(ageGroup)
+                    .percentKilled;
+        } catch (NullPointerException e) {
+            logger.error("Missing fatality data for mode: " + probabilityKey + ", gender: " + person.getGender() + ", ageGroup: " + ageGroup, e);
+        }
 
         if (random.nextDouble() < pFatal) {
             personHealth.getCurrentDiseaseProb().put(fatalDisease, 1.0f);
             personHealth.getCurrentDiseaseProb().put(injuryDisease, 0.0f);
+            return 1;
         } else {
             personHealth.getCurrentDiseaseProb().put(fatalDisease, 0.0f);
             personHealth.getCurrentDiseaseProb().put(injuryDisease, 1.0f);
+            return 0;
         }
     }
 
@@ -206,9 +325,9 @@ public class InjurySampler {
             case "Car":
                 return "Driver";
             case "Bike":
-                return "Cyclist";
+                return "Cycle";
             case "Walk":
-                return "Pedestrian";
+                return "Walk";
             default:
                 throw new IllegalArgumentException("Unknown mode: " + mode);
         }
