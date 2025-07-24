@@ -13,6 +13,7 @@ import java.util.*;
 
 public class PersonHealthMEL implements PersonWithSchool, PersonHealth {
 
+    private static final org.apache.logging.log4j.Logger logger = org.apache.logging.log4j.LogManager.getLogger(PersonHealthMEL.class);
     private final Person delegate;
 
     private int schoolType = 0;
@@ -254,12 +255,18 @@ public class PersonHealthMEL implements PersonWithSchool, PersonHealth {
 
     @Override
     public float getWeeklyExposureByPollutantNormalised(String pollutant) {
+    if (weeklyExposureByPollutantNormalised == null) {
+        logger.warn("Weekly exposure by pollutant normalised is null; this will likely result in a NullPointerException being thrown.");
+    }
         return weeklyExposureByPollutantNormalised.get(pollutant);
     }
 
     @Override
     public void setWeeklyExposureByPollutantNormalised(Map<String, Float> exposureMap) {
         this.weeklyExposureByPollutantNormalised = exposureMap;
+        if (this.weeklyExposureByPollutantNormalised == null) {
+            logger.warn("Weekly exposure by pollutant normalised is null.");
+        }
     }
 
     @Override
