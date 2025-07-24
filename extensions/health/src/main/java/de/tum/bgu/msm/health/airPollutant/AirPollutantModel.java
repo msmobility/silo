@@ -278,6 +278,11 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
 
             Grid.Cell<Map<Pollutant,Float>> locationCell = grid.getCell(coordinate);
 
+            if(locationCell == null) {
+                logger.warn("No grid cell found for activity location coordinate: {}. Skipping concentration update for this location.", coordinate);
+                continue;
+            }
+
             for(Pollutant pollutant : pollutantSet){
                 if(exposure2Pollutant2TimeBin.get(pollutant)==null){
                     OpenIntFloatHashMap exposureByTimeBin = new OpenIntFloatHashMap();
