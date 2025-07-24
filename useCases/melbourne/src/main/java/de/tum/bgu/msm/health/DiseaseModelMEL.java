@@ -26,9 +26,25 @@ public class DiseaseModelMEL extends AbstractModel implements ModelUpdateListene
     @Override
     public void setup() {
         logger.warn("Set up health model relative risk and disease state");
+        boolean baseExposureFileMissingOrEmpty = false;
         if (properties.healthData.baseExposureFile == null) {
+            logger.warn("Base exposure file property is null.");
+            baseExposureFileMissingOrEmpty = true;
+        } else {
+            java.io.File file = new java.io.File(properties.healthData.baseExposureFile);
+            if (!file.exists()) {
+                logger.warn("Base exposure file '{}' does not exist.", properties.healthData.baseExposureFile);
+                baseExposureFileMissingOrEmpty = true;
+            } else if (file.length() == 0) {
+                logger.warn("Base exposure file '{}' exists but is empty.", properties.healthData.baseExposureFile);
+                baseExposureFileMissingOrEmpty = true;
+            } else {
+                logger.info("Base exposure file '{}' found and is not empty.", properties.healthData.baseExposureFile);
+            }
+        }
+        if (baseExposureFileMissingOrEmpty) {
             initializeRelativeRisk();
-        }else {
+        } else {
             calculateRelativeRisk();
         }
         initializeHealthDiseaseStates();
