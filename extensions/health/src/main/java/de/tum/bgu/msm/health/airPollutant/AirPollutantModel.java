@@ -203,16 +203,19 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
 
     private void runEmissionGridAnalyzer(int year, Day day, String eventsFileWithEmission, double scalingFactor) {
         logger.info("Creating grid cell air pollutant exposure for year " + year + ", day " + day);
-
         logger.info("Apply scale factor: " + scalingFactor + " to emission grid analyzer.");
 
-        EmissionSpatialDispersion gridAnalyzer =	new	EmissionSpatialDispersion.Builder()
+        double buffer = EMISSION_GRID_SIZE * 2;
+        org.locationtech.jts.geom.Polygon boundsPolygon = createEnvelopePolygon(receiverPoints, buffer);
+
+        EmissionSpatialDispersion gridAnalyzer = new EmissionSpatialDispersion.Builder()
                 .withNetwork(scenario.getNetwork())
                 .withTimeBinSize(EMISSION_TIME_BIN_SIZE)
                 .withGridSize(EMISSION_GRID_SIZE)
                 .withSmoothingRadius(EMISSION_SMOOTH_RADIUS)
                 .withCountScaleFactor(1./scalingFactor)
                 .withGridType(EmissionSpatialDispersion.GridType.Square)
+                .withBounds(boundsPolygon)
                 .build();
 
         gridAnalyzer.processTimeBinsWithEmissions(eventsFileWithEmission);
@@ -270,19 +273,17 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
 
         logger.warn("Updating activity location air pollutant concentration for year: " + year + "| day of week: " + day + "| time of day: " + gridEmissionMap.getFirst() + ".");
 
+        int skippedActivityLocations = 0;
+        List<Coordinate> skippedCoordinates = new ArrayList<>();
         for(ActivityLocation activityLocation : ((DataContainerHealth)dataContainer).getActivityLocations().values()){
-
             Map<Pollutant, OpenIntFloatHashMap> exposure2Pollutant2TimeBin =  ((DataContainerHealth)dataContainer).getActivityLocations().get(activityLocation.getLocationId()).getExposure2Pollutant2TimeBin();
-
             Coordinate coordinate = activityLocation.getCoordinate();
-
             Grid.Cell<Map<Pollutant,Float>> locationCell = grid.getCell(coordinate);
-
             if(locationCell == null) {
-                logger.warn("No grid cell found for activity location coordinate: {}. Skipping concentration update for this location.", coordinate);
+                skippedActivityLocations++;
+                skippedCoordinates.add(coordinate);
                 continue;
             }
-
             for(Pollutant pollutant : pollutantSet){
                 if(exposure2Pollutant2TimeBin.get(pollutant)==null){
                     OpenIntFloatHashMap exposureByTimeBin = new OpenIntFloatHashMap();
@@ -291,6 +292,12 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
                 }else {
                     exposure2Pollutant2TimeBin.get(pollutant).put(startTime, locationCell.getValue().getOrDefault(pollutant,0.f));
                 }
+            }
+        }
+        if (skippedActivityLocations > 0) {
+            logger.warn("{} activity locations skipped due to missing grid cell. Enable DEBUG to see coordinates.", skippedActivityLocations);
+            for (Coordinate c : skippedCoordinates) {
+                logger.debug("Skipped activity location coordinate: {}", c);
             }
         }
 
@@ -371,5 +378,33 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
         scenario.getConfig().plans().setInputFile(populationFile);
 
         return scenario.getConfig();
+    }
+
+    private org.locationtech.jts.geom.Polygon createEnvelopePolygon(List<Coordinate> receiverPoints, double buffer) {
+        double minX = Double.POSITIVE_INFINITY;
+        double minY = Double.POSITIVE_INFINITY;
+        double maxX = Double.NEGATIVE_INFINITY;
+        double maxY = Double.NEGATIVE_INFINITY;
+        for (Coordinate coord : receiverPoints) {
+            if (Double.isNaN(coord.x) || Double.isNaN(coord.y)) continue;
+            if (coord.x < minX) minX = coord.x;
+            if (coord.y < minY) minY = coord.y;
+            if (coord.x > maxX) maxX = coord.x;
+            if (coord.y > maxY) maxY = coord.y;
+        }
+        minX -= buffer;
+        minY -= buffer;
+        maxX += buffer;
+        maxY += buffer;
+        org.locationtech.jts.geom.GeometryFactory geometryFactory = new org.locationtech.jts.geom.GeometryFactory();
+        org.locationtech.jts.geom.Coordinate[] envelopeCoords = new org.locationtech.jts.geom.Coordinate[] {
+            new org.locationtech.jts.geom.Coordinate(minX, minY),
+            new org.locationtech.jts.geom.Coordinate(minX, maxY),
+            new org.locationtech.jts.geom.Coordinate(maxX, maxY),
+            new org.locationtech.jts.geom.Coordinate(maxX, minY),
+            new org.locationtech.jts.geom.Coordinate(minX, minY)
+        };
+        org.locationtech.jts.geom.LinearRing ring = geometryFactory.createLinearRing(envelopeCoords);
+        return geometryFactory.createPolygon(ring, null);
     }
 }
