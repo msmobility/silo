@@ -41,8 +41,8 @@ public class RunExposureHealthOffline {
         HealthExposureModelMEL exposureModelMCR = new HealthExposureModelMEL(dataContainer, properties, SiloUtil.provideNewRandom(),config);
         DiseaseModelMEL diseaseModelMEL = new DiseaseModelMEL(dataContainer, properties, SiloUtil.provideNewRandom());
 
-        airPollutantModel.endYear(endYear);
-        noiseModel.endYear(endYear);
+//        airPollutantModel.endYear(endYear);
+//        noiseModel.endYear(endYear);
         sportPAModelMCR.endYear(endYear);
         exposureModelMCR.endYear(endYear);
         diseaseModelMEL.setup();

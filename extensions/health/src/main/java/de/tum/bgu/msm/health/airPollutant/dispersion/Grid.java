@@ -49,7 +49,7 @@ public abstract class Grid<T> {
     }
 
     /**
-     * retrieve cell for a given coordinate. Cell with closest centroid will be returne
+     * retrieve cell for a given coordinate. Cell with closest centroid will be returned
      *
      * @param coordinate coordinate within a cell
      * @return Cell with closest centroid.
@@ -174,7 +174,9 @@ public abstract class Grid<T> {
                 outOfBoundsCoords.add(coordinate);
             }
         }
-        logger.warn("generateReceiverPoints: {} coordinates skipped due to NaN values, {} coordinates skipped for being outside bounds.", nanCount, outOfBoundsCount);
+        if (nanCount > 0 || outOfBoundsCount > 0) {
+            logger.warn("generateReceiverPoints: {} coordinates skipped due to NaN values, {} coordinates skipped for being outside bounds.", nanCount, outOfBoundsCount);
+        }
         if (outOfBoundsCount > 0) {
             logger.warn("To see the specific coordinates outside bounds, enable DEBUG logging.");
             for (Coordinate c : outOfBoundsCoords) {

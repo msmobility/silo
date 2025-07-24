@@ -73,35 +73,43 @@ public class SportPAModelMEL extends AbstractModel implements ModelUpdateListene
 
         // age
         if (person.getAge() < 25) {
-            predictor += coef.get("age_group_under25");
+            predictor += handleCoefficient(coef.get("age_group_under25"), "age_group_under25");
         }else if (person.getAge() < 35) {
-            predictor += coef.get("age_group_25_34");
+            predictor += handleCoefficient(coef.get("age_group_25_34"), "age_group_25_34");
         }else if (person.getAge() < 45) {
-            predictor += coef.get("age_group_35_44");
+            predictor += handleCoefficient(coef.get("age_group_35_44"), "age_group_35_44");
         }else if (person.getAge() < 55) {
-            predictor += coef.get("age_group_45_54");
+            predictor += handleCoefficient(coef.get("age_group_45_54"), "age_group_45_54");
         }else if (person.getAge() < 65) {
-            predictor += coef.get("age_group_55_64");
+            predictor += handleCoefficient(coef.get("age_group_55_64"), "age_group_55_64");
         }else if (person.getAge() < 75) {
-            predictor += coef.get("age_group_65_74");
+            predictor += handleCoefficient(coef.get("age_group_65_74"), "age_group_65_74");
         }else {
-            predictor += coef.get("age_group_over75");
+            predictor += handleCoefficient(coef.get("age_group_over75"), "age_group_over75");
         }
 
         // occupation
         if (person.getOccupation().equals(Occupation.EMPLOYED)){
-            predictor += coef.get("is_employed");
+            predictor += handleCoefficient(coef.get("is_employed"), "is_employed");
         }else if(person.getOccupation().equals(Occupation.STUDENT)){
-            predictor += coef.get("is_student");
+            predictor += handleCoefficient(coef.get("student_status"), "is_student");
         }
 
         // imd10
         int zoneId = dataContainer.getRealEstateDataManager().getDwelling(person.getHousehold().getDwellingId()).getZoneId();
         ZoneMEL zoneMEL = (ZoneMEL) dataContainer.getGeoData().getZones().get(zoneId);
 
-        predictor += zoneMEL.getImd10() * coef.get("imd10");
+        predictor += zoneMEL.getImd10() * handleCoefficient(coef.get("IRSD"), "imd10");
 
         return predictor;
+    }
+
+    private double handleCoefficient(Double coefValue, String coefName) {
+        if (coefValue == null) {
+            logger.warn("Missing coefficient for key '{}'. Using default value 0.0.", coefName);
+            return 0.0;
+        }
+        return coefValue;
     }
 
 }
