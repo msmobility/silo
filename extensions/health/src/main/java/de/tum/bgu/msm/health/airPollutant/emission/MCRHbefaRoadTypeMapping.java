@@ -79,7 +79,7 @@ public class MCRHbefaRoadTypeMapping extends HbefaRoadTypeMapping {
                 type = "MW-City";
                 speedRange = "60";
             } else {
-                logger.info("Road {} classified with lower cat: {} = {}", link.getId(), osmType, freeFlowSpeed_kmh);
+                logger.debug("Road {} classified with lower cat: {} = {}", link.getId(), osmType, freeFlowSpeed_kmh);
                 type = "Distr";
                 speedRange = "50";
             }
@@ -91,7 +91,7 @@ public class MCRHbefaRoadTypeMapping extends HbefaRoadTypeMapping {
                 type = "Trunk-City";
                 speedRange = "50";
             } else {
-                logger.info("Road {} classified with lower cat: {} = {}", link.getId(), osmType, freeFlowSpeed_kmh);
+                logger.debug("Road {} classified with lower cat: {} = {}", link.getId(), osmType, freeFlowSpeed_kmh);
                 type = "Distr";
                 speedRange = "50";
             }

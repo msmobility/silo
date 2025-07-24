@@ -130,19 +130,61 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
 
     }
 
+    private void logNaNRecords(String sourceName, int count, List<?> records) {
+        if (count > 0) {
+            logger.warn("{} {} have NaN coordinates.", count, sourceName);
+            for (Object record : records) {
+                logger.debug("{} with NaN coordinate: {}", sourceName, record);
+            }
+        }
+    }
+
     private List<Coordinate> assembleReceiverPoints(Network network) {
         List<Coordinate> receiverPoints = new ArrayList<>();
+        int nodeNaNCount = 0;
+        int linkNaNCount = 0;
+        int activityLocationNaNCount = 0;
+        List<Node> nanNodes = new ArrayList<>();
+        List<Link> nanLinks = new ArrayList<>();
+        List<ActivityLocation> nanActivityLocations = new ArrayList<>();
+
         // for link concentration, from node, to node and middle points are used
         for(Node node : network.getNodes().values()){
-            receiverPoints.add(new Coordinate(node.getCoord().getX(), node.getCoord().getY()));
+            double x = node.getCoord().getX();
+            double y = node.getCoord().getY();
+            if (Double.isNaN(x) || Double.isNaN(y)) {
+                nodeNaNCount++;
+                nanNodes.add(node);
+                continue;
+            }
+            receiverPoints.add(new Coordinate(x, y));
         }
+        logNaNRecords("network nodes", nodeNaNCount, nanNodes);
 
         for(Link link : network.getLinks().values()){
-            receiverPoints.add(new Coordinate(link.getCoord().getX(), link.getCoord().getY()));
+            double x = link.getCoord().getX();
+            double y = link.getCoord().getY();
+            if (Double.isNaN(x) || Double.isNaN(y)) {
+                linkNaNCount++;
+                nanLinks.add(link);
+                continue;
+            }
+            receiverPoints.add(new Coordinate(x, y));
         }
+        logNaNRecords("network links", linkNaNCount, nanLinks);
 
         // all activity locations are considered as pollutant receiver points
-        receiverPoints.addAll(((DataContainerHealth) dataContainer).getActivityLocations().values().stream().map(ActivityLocation::getCoordinate).collect(Collectors.toList()));
+        for (ActivityLocation activityLocation : ((DataContainerHealth) dataContainer).getActivityLocations().values()) {
+            Coordinate coord = activityLocation.getCoordinate();
+            if (Double.isNaN(coord.x) || Double.isNaN(coord.y)) {
+                activityLocationNaNCount++;
+                nanActivityLocations.add(activityLocation);
+                continue;
+            }
+            receiverPoints.add(coord);
+        }
+        logNaNRecords("activity locations", activityLocationNaNCount, nanActivityLocations);
+
         logger.info("{} receiver points created for air pollutant concentration, having bounds: {}.", receiverPoints.size(),
                 receiverPoints.stream()
                         .map(Envelope::new)
