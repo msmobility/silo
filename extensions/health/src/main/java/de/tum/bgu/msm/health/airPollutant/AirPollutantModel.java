@@ -17,6 +17,7 @@ import de.tum.bgu.msm.properties.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
@@ -142,7 +143,13 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
 
         // all activity locations are considered as pollutant receiver points
         receiverPoints.addAll(((DataContainerHealth) dataContainer).getActivityLocations().values().stream().map(ActivityLocation::getCoordinate).collect(Collectors.toList()));
-
+        logger.info("{} receiver points created for air pollutant concentration, having bounds: {}.", receiverPoints.size(),
+                receiverPoints.stream()
+                        .map(Envelope::new)
+                        .reduce((a, b) -> {
+                            a.expandToInclude(b);
+                            return a;
+                        }).orElse(null));
         return receiverPoints;
     }
 
