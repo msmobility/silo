@@ -349,11 +349,11 @@ public class InjurySampler {
     private Diseases getFatalInjuryDisease(String mode) {
         switch (mode) {
             case "Car":
-                return Diseases.killed_car;
+                return Diseases.dead_car;
             case "Bike":
-                return Diseases.killed_bike;
+                return Diseases.dead_bike;
             case "Walk":
-                return Diseases.killed_walk;
+                return Diseases.dead_walk;
             default:
                 throw new IllegalArgumentException("Unknown mode: " + mode);
         }

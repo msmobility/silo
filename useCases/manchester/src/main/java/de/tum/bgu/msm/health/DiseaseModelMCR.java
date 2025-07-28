@@ -65,7 +65,7 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
                 EnumMap<Diseases, Float> rr = new EnumMap<>(Diseases.class);
 
                 for (Diseases diseases : ((DataContainerHealth) dataContainer).getDoseResponseData().get(exposures).keySet()) {
-                    if (diseases.equals(Diseases.killed_bike) || diseases.equals(Diseases.killed_walk) || diseases.equals(Diseases.killed_car) ||
+                    if (diseases.equals(Diseases.dead_bike) || diseases.equals(Diseases.dead_walk) || diseases.equals(Diseases.dead_car) ||
                             diseases.equals(Diseases.severely_injured_car) || diseases.equals(Diseases.severely_injured_walk) || diseases.equals(Diseases.severely_injured_bike)) {
                         continue;
                     }
@@ -197,11 +197,11 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
             injSampler.processInjuries2(dataContainer);
         }
     }
-
     private void initializeHealthDiseaseStates() {
         Map<Integer, List<Diseases>> prevData = ((HealthDataContainerImpl) dataContainer).getPrevalenceData();
         for (Person person : dataContainer.getHouseholdDataManager().getPersons()) {
-            if (prevData.keySet().contains(person.getId()) && (!prevData.get(person.getId()).contains(null))) {
+            if (prevData.keySet().contains(person.getId()) && (!prevData.get(person.getId()).contains(null)) &&
+                    person.getAge() > 17) {
                 List<String> diseaseList = prevData.get(person.getId())  // Returns List<Diseases>
                         .stream()                                      // Convert List to Stream
                         .map(Enum::name)                               // Map each enum to its name
@@ -255,7 +255,9 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
                 }
             } else {
                 List<String> fullDisease = new ArrayList<>();
-                if (personHealth.getHealthDiseaseTracker().get(year - 1) != null) {
+                // DO NOT add previous states when a person has died in the injury model. These states are exclusive.
+                if (personHealth.getHealthDiseaseTracker().get(year - 1) != null &&
+                        !(newDisease.equals(Diseases.dead_bike) || newDisease.equals(Diseases.dead_walk) || newDisease.equals(Diseases.dead_car))) {
                     fullDisease.addAll(personHealth.getHealthDiseaseTracker().get(year - 1)); // get old diseases
                 }
                 fullDisease.addAll(newDisease); // add new diseases
