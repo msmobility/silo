@@ -2,38 +2,28 @@ package de.tum.bgu.msm.models.relocation;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Region;
-import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
-import de.tum.bgu.msm.data.accessibility.CommutingTimeProbability;
 import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManagerImpl;
 import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.household.*;
-import de.tum.bgu.msm.data.job.Job;
-import de.tum.bgu.msm.data.job.JobDataManager;
-import de.tum.bgu.msm.data.job.JobMuc;
 import de.tum.bgu.msm.data.person.Nationality;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoice;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoiceMapping;
-import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
-import de.tum.bgu.msm.models.relocation.moves.DwellingProbabilityStrategy;
-import de.tum.bgu.msm.models.relocation.moves.HousingStrategy;
-import de.tum.bgu.msm.models.relocation.moves.RegionProbabilityStrategy;
+import de.tum.bgu.msm.models.relocation.moves.*;
+import de.tum.bgu.msm.models.relocation.moves.DwellingUtilityStrategy;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
-import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.matsim.api.core.v01.TransportMode;
 
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.atomic.LongAdder;
 
 import static de.tum.bgu.msm.data.dwelling.RealEstateUtils.RENT_CATEGORIES;
@@ -71,7 +61,7 @@ public class HousingStrategyMuc implements HousingStrategy {
     private final DwellingProbabilityStrategy dwellingProbabilityStrategy;
     private final DwellingUtilityStrategy dwellingUtilityStrategy;
 
-    private final RegionUtilityStrategyMuc regionUtilityStrategyMuc;
+    private final RegionUtilityStrategy regionUtilityStrategyMuc;
     private final RegionProbabilityStrategy regionProbabilityStrategy;
 
     private final LongAdder totalVacantDd = new LongAdder();
@@ -88,7 +78,7 @@ public class HousingStrategyMuc implements HousingStrategy {
                               TravelTimes travelTimes,
                               DwellingProbabilityStrategy dwellingProbabilityStrategy,
                               DwellingUtilityStrategy dwellingUtilityStrategy,
-                              RegionUtilityStrategyMuc regionUtilityStrategyMuc, RegionProbabilityStrategy regionProbabilityStrategy, CommuteModeChoice commuteModeChoice) {
+                              RegionUtilityStrategy regionUtilityStrategy, RegionProbabilityStrategy regionProbabilityStrategy, CommuteModeChoice commuteModeChoice) {
         this.dataContainer = dataContainer;
         this.properties = properties;
         this.accessibility = dataContainer.getAccessibility();
@@ -97,7 +87,7 @@ public class HousingStrategyMuc implements HousingStrategy {
         this.travelTimes = travelTimes;
         this.dwellingProbabilityStrategy = dwellingProbabilityStrategy;
         this.dwellingUtilityStrategy = dwellingUtilityStrategy;
-        this.regionUtilityStrategyMuc = regionUtilityStrategyMuc;
+        this.regionUtilityStrategyMuc = regionUtilityStrategy;
         this.regionProbabilityStrategy = regionProbabilityStrategy;
         this.commuteModeChoice = commuteModeChoice;
     }
@@ -216,8 +206,8 @@ public class HousingStrategyMuc implements HousingStrategy {
                         regAcc = 0;
                     }
 
-                    double utility = regionUtilityStrategyMuc.calculateRegionUtility(incomeCategory,
-                            nationality, priceUtil, regAcc, (float) regionalShareForeigners.getIndexed(region.getId()));
+                    double utility = regionUtilityStrategyMuc.calculateSelectRegionProbability(incomeCategory,
+                            priceUtil, regAcc, (float) regionalShareForeigners.getIndexed(region.getId()));
 
                     switch (NORMALIZER) {
                         case POPULATION:

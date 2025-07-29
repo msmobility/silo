@@ -3,9 +3,11 @@ package de.tum.bgu.msm;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.matsim.*;
 import de.tum.bgu.msm.mito.MitoMatsimScenarioAssembler;
+import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
+import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipModelMuc;
 import de.tum.bgu.msm.models.construction.ConstructionDemandStrategyMuc;
 import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
-import de.tum.bgu.msm.models.relocation.moves.RegionProbabilityStrategyImpl;
+import de.tum.bgu.msm.models.relocation.moves.*;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
@@ -13,9 +15,6 @@ import de.tum.bgu.msm.data.mito.MitoDataConverterMuc;
 import de.tum.bgu.msm.data.person.PersonFactory;
 import de.tum.bgu.msm.models.EducationModelMuc;
 import de.tum.bgu.msm.models.MarriageModelMuc;
-import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
-import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipModelMuc;
-import de.tum.bgu.msm.models.carOwnership.UpdateCarOwnershipModelMuc;
 import de.tum.bgu.msm.models.demography.birth.BirthModelImpl;
 import de.tum.bgu.msm.models.demography.birth.DefaultBirthStrategy;
 import de.tum.bgu.msm.models.demography.birthday.BirthdayModel;
@@ -49,14 +48,10 @@ import de.tum.bgu.msm.models.realEstate.pricing.PricingModelImpl;
 import de.tum.bgu.msm.models.realEstate.renovation.DefaultRenovationStrategy;
 import de.tum.bgu.msm.models.realEstate.renovation.RenovationModel;
 import de.tum.bgu.msm.models.realEstate.renovation.RenovationModelImpl;
-import de.tum.bgu.msm.models.relocation.DwellingUtilityStrategyImpl;
 import de.tum.bgu.msm.models.relocation.HousingStrategyMuc;
 import de.tum.bgu.msm.models.relocation.InOutMigrationMuc;
 import de.tum.bgu.msm.models.relocation.RegionUtilityStrategyMucImpl;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigration;
-import de.tum.bgu.msm.models.relocation.moves.DefaultDwellingProbabilityStrategy;
-import de.tum.bgu.msm.models.relocation.moves.DefaultMovesStrategy;
-import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
@@ -88,12 +83,14 @@ public class ModelBuilderMuc {
                         dataContainer.getTravelTimes(),
                         new DefaultDwellingProbabilityStrategy(),
                         new DwellingUtilityStrategyImpl(),
-                        new RegionUtilityStrategyMucImpl(),
+                        new RegionUtilityStrategyImpl(),
                         new RegionProbabilityStrategyImpl(),
                         new SimpleCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom())
                 ), SiloUtil.provideNewRandom());
 
-        CreateCarOwnershipModel carOwnershipModel = new CreateCarOwnershipModelMuc(dataContainer);
+        //todo convert to Java code
+        //CreateCarOwnershipModel carOwnershipModel = new CreateCarOwnershipModel(dataContainer);
+        CreateCarOwnershipModel carOwnershipModel = null;
 
         DivorceModel divorceModel = new DivorceModelImpl(
                 dataContainer, movesModel, carOwnershipModel, hhFactory,
@@ -163,7 +160,9 @@ public class ModelBuilderMuc {
                 construction, demolition, pricing, renovation,
                 constructionOverwrite, inOutMigration, movesModel, transportModel);
 
-        modelContainer.registerModelUpdateListener(new UpdateCarOwnershipModelMuc(dataContainer, properties, SiloUtil.provideNewRandom()));
+        //todo migrate to Java code
+        //modelContainer.registerModelUpdateListener(new UpdateCarOwnershipModelMuc(dataContainer, properties, SiloUtil.provideNewRandom()));
+        modelContainer.registerModelUpdateListener(null);
 
         return modelContainer;
     }

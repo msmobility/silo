@@ -45,15 +45,10 @@ import de.tum.bgu.msm.models.realEstate.demolition.DemolitionModelImpl;
 import de.tum.bgu.msm.models.realEstate.renovation.DefaultRenovationStrategy;
 import de.tum.bgu.msm.models.realEstate.renovation.RenovationModel;
 import de.tum.bgu.msm.models.realEstate.renovation.RenovationModelImpl;
-import de.tum.bgu.msm.models.relocation.DwellingUtilityStrategyImpl;
 import de.tum.bgu.msm.models.relocation.HousingStrategyMuc;
 import de.tum.bgu.msm.models.relocation.InOutMigrationMuc;
-import de.tum.bgu.msm.models.relocation.RegionUtilityStrategyMucImpl;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigration;
-import de.tum.bgu.msm.models.relocation.moves.DefaultDwellingProbabilityStrategy;
-import de.tum.bgu.msm.models.relocation.moves.DefaultMovesStrategy;
-import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
-import de.tum.bgu.msm.models.relocation.moves.RegionProbabilityStrategyImpl;
+import de.tum.bgu.msm.models.relocation.moves.*;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.matsim.api.core.v01.Scenario;
@@ -82,7 +77,7 @@ public class ModelBuilderMucHealth {
                             dataContainer.getTravelTimes(),
                             new DefaultDwellingProbabilityStrategy(),
                             new DwellingUtilityStrategyImpl(),
-                            new RegionUtilityStrategyMucImpl(),
+                            new RegionUtilityStrategyImpl(),
                             new RegionProbabilityStrategyImpl(),
                             new SimpleCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom())
                     ), SiloUtil.provideNewRandom());
