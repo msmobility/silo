@@ -5,6 +5,7 @@ import de.tum.bgu.msm.matsim.*;
 import de.tum.bgu.msm.mito.MitoMatsimScenarioAssembler;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipModelMuc;
+import de.tum.bgu.msm.models.carOwnership.UpdateCarOwnershipModelMuc;
 import de.tum.bgu.msm.models.construction.ConstructionDemandStrategyMuc;
 import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
 import de.tum.bgu.msm.models.relocation.moves.*;
@@ -88,9 +89,8 @@ public class ModelBuilderMuc {
                         new SimpleCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom())
                 ), SiloUtil.provideNewRandom());
 
-        //todo convert to Java code
-        //CreateCarOwnershipModel carOwnershipModel = new CreateCarOwnershipModel(dataContainer);
-        CreateCarOwnershipModel carOwnershipModel = null;
+
+        CreateCarOwnershipModel carOwnershipModel = new CreateCarOwnershipModelMuc(dataContainer);
 
         DivorceModel divorceModel = new DivorceModelImpl(
                 dataContainer, movesModel, carOwnershipModel, hhFactory,
@@ -161,8 +161,7 @@ public class ModelBuilderMuc {
                 constructionOverwrite, inOutMigration, movesModel, transportModel);
 
         //todo migrate to Java code
-        //modelContainer.registerModelUpdateListener(new UpdateCarOwnershipModelMuc(dataContainer, properties, SiloUtil.provideNewRandom()));
-        modelContainer.registerModelUpdateListener(null);
+        modelContainer.registerModelUpdateListener(new UpdateCarOwnershipModelMuc(dataContainer, properties, SiloUtil.provideNewRandom()));
 
         return modelContainer;
     }
