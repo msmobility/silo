@@ -15,6 +15,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.jupiter.api.RepeatedTest;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -35,7 +36,7 @@ public class SiloMucTest {
 
     private static final Logger log = LogManager.getLogger(SiloMucTest.class);
 
-    @Test
+    @RepeatedTest(100)
     public final void testMain() {
 
         runThisTest();
@@ -62,6 +63,8 @@ public class SiloMucTest {
         SiloModel siloModel = new SiloModel(properties, dataContainer, modelContainer);
         siloModel.addResultMonitor(resultsMonitor);
         siloModel.runModel();
+
+        Properties.reset();
     }
 
     private void checkPersons() {

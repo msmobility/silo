@@ -86,4 +86,12 @@ public final class Properties {
 
 
     }
+
+    public static void reset() {
+        if (instance != null) {
+            instance = null;
+        } else {
+            throw new RuntimeException("Properties not initialized yet! Make sure to call initializeProperties Method first!");
+        }
+    }
 }
