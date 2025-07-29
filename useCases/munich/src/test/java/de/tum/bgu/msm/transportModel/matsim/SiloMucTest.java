@@ -16,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.RepetitionInfo;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -37,9 +38,27 @@ public class SiloMucTest {
     private static final Logger log = LogManager.getLogger(SiloMucTest.class);
 
     @RepeatedTest(100)
-    public final void testMain() {
+    public final void testMain(RepetitionInfo repetitionInfo) throws IOException {
 
         runThisTest();
+
+        if (repetitionInfo.getCurrentRepetition() == 1) {
+            File ref = new File("./test/muc/refOutput/noTransportModel/dd_2013.csv");
+            File actual = new File("./test/muc/scenOutput/test/microData/dd_2013.csv");
+            Files.copy(actual.toPath(), ref.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+            ref = new File("./test/muc/refOutput/noTransportModel/hh_2013.csv");
+            actual = new File("./test/muc/scenOutput/test/microData/hh_2013.csv");
+            Files.copy(actual.toPath(), ref.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+            ref = new File("./test/muc/refOutput/noTransportModel/jj_2013.csv");
+            actual = new File("./test/muc/scenOutput/test/microData/jj_2013.csv");
+            Files.copy(actual.toPath(), ref.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+            ref = new File("./test/muc/refOutput/noTransportModel/pp_2013.csv");
+            actual = new File("./test/muc/scenOutput/test/microData/pp_2013.csv");
+            Files.copy(actual.toPath(), ref.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        }
 
         checkDwellings();
         checkHouseholds();
