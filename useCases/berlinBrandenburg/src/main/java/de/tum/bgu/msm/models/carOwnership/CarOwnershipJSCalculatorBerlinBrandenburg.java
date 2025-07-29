@@ -7,9 +7,9 @@ import java.io.Reader;
 /**
  * Created by matthewokrah on 29/09/2017.
  */
-public class CarOwnershipJSCalculatorMuc extends JavaScriptCalculator<double[]> {
+public class CarOwnershipJSCalculatorBerlinBrandenburg extends JavaScriptCalculator<double[]> {
 
-    public CarOwnershipJSCalculatorMuc(Reader reader){
+    public CarOwnershipJSCalculatorBerlinBrandenburg(Reader reader){
         super(reader);
     }
 
