@@ -70,7 +70,7 @@ public class MainProperties {
     /**
      * Returns the number of logical threads available at runtime.
      */
-    public int numberOfThreads;
+    public final int numberOfThreads;
 
     /**
      * Returns the sub-sample of the population to be simulated in SILO

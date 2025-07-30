@@ -55,8 +55,8 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
     private final Map<HouseholdType, Double> averageHousingSatisfaction = new ConcurrentHashMap<>();
     private final Map<Integer, Double> satisfactionByHousehold = new ConcurrentHashMap<>();
-    private final Map<Integer, Integer> householdsByZone = new ConcurrentHashMap<>();
-    private final Map<Integer, Double > sumOfSatisfactionsByZone = new ConcurrentHashMap<>();
+    private final Map<Integer, Integer> householdsByZone = new HashMap<>();
+    private final Map<Integer, Double > sumOfSatisfactionsByZone = new HashMap<>();
     private YearByYearCsvModelTracker relocationTracker;
 
 
@@ -98,18 +98,18 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         for (Household hh : dataContainer.getHouseholdDataManager().getHouseholds()) {
             events.add(new MoveEvent(hh.getId()));
         }
-//        if (threaded) {
-//            final int threads = Math.max(properties.main.numberOfThreads - 1, 1);
-//            UtilityUtils.startThreads(housingStrategy, threads);
-//            logger.info("=========> Started " + threads + " background threads for dwelling utility evaluation");
-//        }
+        if (threaded) {
+            final int threads = Math.max(properties.main.numberOfThreads - 1, 1);
+            UtilityUtils.startThreads(housingStrategy, threads);
+            logger.info("=========> Started " + threads + " background threads for dwelling utility evaluation");
+        }
 
         return events;
     }
 
     @Override
     public void endYear(int year) {
-//        UtilityUtils.endYear();
+        UtilityUtils.endYear();
     }
 
     @Override
@@ -233,37 +233,37 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         /** No household will evaluate more than {@link MAX_NUMBER_DWELLINGS} dwellings */
         int maxNumberOfDwellings = Math.min(MAX_NUMBER_DWELLINGS, vacantDwellings.size());
 
-        reset(maxNumberOfDwellings);
+        UtilityUtils.reset(maxNumberOfDwellings);
 
         Collections.shuffle(vacantDwellings, this.random);
         for (int i = 0; i < maxNumberOfDwellings; i++) {
             Dwelling dwelling = vacantDwellings.get(i);
             if (housingStrategy.isHouseholdEligibleToLiveHere(household, dwelling)) {
                 if (threaded) {
-//                    UtilityUtils.queue.add(new UtilityTask(i, dwelling, household));
+                    UtilityUtils.queue.add(new UtilityTask(i, dwelling, household));
                 } else {
                     double util = housingStrategy.calculateHousingUtility(household, dwelling);
                     double prob = housingStrategy.calculateSelectDwellingProbability(util);
-                    probabilities[i] = prob;
-                    dwellings[i] = dwelling;
+                    UtilityUtils.probabilities[i] = prob;
+                    UtilityUtils.dwellings[i] = dwelling;
                 }
             } else {
-                probabilities[i] = 0.;
-                dwellings[i] = dwelling;
+                UtilityUtils.probabilities[i] = 0.0;
+                UtilityUtils.dwellings[i] = dwelling;
             }
         }
 
 
-//        if (threaded) {
-//            try {
-//                UtilityUtils.barrier.await();
-//                UtilityUtils.barrier.await();
-//            } catch (InterruptedException | BrokenBarrierException e) {
-//                e.printStackTrace();
-//            }
-//        }
+        if (threaded) {
+            try {
+                UtilityUtils.barrier.await();
+                UtilityUtils.barrier.await();
+            } catch (InterruptedException | BrokenBarrierException e) {
+                e.printStackTrace();
+            }
+        }
 
-        Sampler<Dwelling> sampler = new Sampler<>(dwellings, probabilities, this.random);
+        Sampler<Dwelling> sampler = new Sampler<>(UtilityUtils.dwellings, UtilityUtils.probabilities, this.random);
         try {
             return sampler.sampleObject().getId();
         } catch (SampleException e) {
@@ -297,55 +297,41 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         final Collection<Household> households = householdDataManager.getHouseholds();
         ConcurrentHashMultiset<HouseholdType> hhByType = ConcurrentHashMultiset.create();
 
-//        int numberOfTasks;
-//
-//        if (threaded) {
-//            numberOfTasks = Properties.get().main.numberOfThreads;
-//        } else {
-//            numberOfTasks = 1;
-//        }
-//        final int partitionSize = (int) ((double) households.size() / (numberOfTasks)) + 1;
-//        Iterable<List<Household>> partitions = Iterables.partition(households, partitionSize);
-//        ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Properties.get().main.numberOfThreads);
-//
-//        logger.info("=========> Using " + numberOfTasks + " thread(s)" +
-//                " with partitions of size " + partitionSize);
+        int numberOfTasks;
 
-//        for (final List<Household> partition : partitions) {
-//            HousingStrategy strategy = housingStrategy.duplicate();
-//            executor.addTaskToQueue(() -> {
-//                try {
-//                    for (Household hh : partition) {
-//                        final HouseholdType householdType = hh.getHouseholdType();
-//                        hhByType.add(householdType);
-//                        Dwelling dd = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId());
-//                        final double util = strategy.calculateHousingUtility(hh, dd);
-//                        satisfactionByHousehold.put(hh.getId(), util);
-//                        householdsByZone.put(dd.getZoneId(), householdsByZone.getOrDefault(dd.getZoneId(), 0) + 1);
-//                        sumOfSatisfactionsByZone.put(dd.getZoneId(), sumOfSatisfactionsByZone.getOrDefault(dd.getZoneId(), 0.) + util);
-//                        averageHousingSatisfaction.merge(householdType, util, (oldUtil, newUtil) -> oldUtil + newUtil);
-//                    }
-//                } catch (Exception e) {
-//                    throw new RuntimeException(e);
-//                }
-//                return null;
-//            });
-//        }
-//        executor.execute();
-
-
-
-        for (Household hh : dataContainer.getHouseholdDataManager().getHouseholds()) {
-            final HouseholdType householdType = hh.getHouseholdType();
-            hhByType.add(householdType);
-            Dwelling dd = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId());
-            final double util = housingStrategy.calculateHousingUtility(hh, dd);
-            satisfactionByHousehold.put(hh.getId(), util);
-            householdsByZone.put(dd.getZoneId(), householdsByZone.getOrDefault(dd.getZoneId(), 0) + 1);
-            sumOfSatisfactionsByZone.put(dd.getZoneId(), sumOfSatisfactionsByZone.getOrDefault(dd.getZoneId(), 0.) + util);
-            averageHousingSatisfaction.merge(householdType, util, (oldUtil, newUtil) -> oldUtil + newUtil);
+        if (threaded) {
+            numberOfTasks = Properties.get().main.numberOfThreads;
+        } else {
+            numberOfTasks = 1;
         }
+        final int partitionSize = (int) ((double) households.size() / (numberOfTasks)) + 1;
+        Iterable<List<Household>> partitions = Iterables.partition(households, partitionSize);
+        ConcurrentExecutor<Void> executor = ConcurrentExecutor.fixedPoolService(Properties.get().main.numberOfThreads);
 
+        logger.info("=========> Using " + numberOfTasks + " thread(s)" +
+                " with partitions of size " + partitionSize);
+
+        for (final List<Household> partition : partitions) {
+            HousingStrategy strategy = housingStrategy.duplicate();
+            executor.addTaskToQueue(() -> {
+                try {
+                    for (Household hh : partition) {
+                        final HouseholdType householdType = hh.getHouseholdType();
+                        hhByType.add(householdType);
+                        Dwelling dd = dataContainer.getRealEstateDataManager().getDwelling(hh.getDwellingId());
+                        final double util = strategy.calculateHousingUtility(hh, dd);
+                        satisfactionByHousehold.put(hh.getId(), util);
+                        householdsByZone.put(dd.getZoneId(), householdsByZone.getOrDefault(dd.getZoneId(), 0) + 1);
+                        sumOfSatisfactionsByZone.put(dd.getZoneId(), sumOfSatisfactionsByZone.getOrDefault(dd.getZoneId(), 0.) + util);
+                        averageHousingSatisfaction.merge(householdType, util, (oldUtil, newUtil) -> oldUtil + newUtil);
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                return null;
+            });
+        }
+        executor.execute();
         logger.info("Done evaluating average housing utility.");
 
         averageHousingSatisfaction.replaceAll((householdType, satisfaction) ->
@@ -383,116 +369,99 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         }
     }
 
-    /**
-     * static array that is used to store probabilities of dwelling evaluations accessed
-     * from different threads
-     */
-    private static double[] probabilities;
+    private static class UtilityUtils extends Thread {
 
-    /**
-     * static array that is used to store dwellings of evaluations accessed
-     * from different threads
-     */
-    private static Dwelling[] dwellings;
-    private static void reset(int maxNumberOfDwellings) {
-        probabilities = new double[maxNumberOfDwellings];
-        dwellings = new Dwelling[maxNumberOfDwellings];
+        /**
+         * The queue that each thread listens to to poll for new dwelling evaluations.
+         * Tasks are put into the queue from the main thread inside the searchForNewDwelling method
+         */
+        private static final Queue<UtilityTask> queue = new ConcurrentLinkedQueue<>();
+
+        private static CyclicBarrier barrier;
+
+        /**
+         * boolean that is used to stop threads once they're running.
+         */
+        private static boolean run = false;
+
+        /**
+         * static array that is used to store probabilities of dwelling evaluations accessed
+         * from different threads
+         */
+        private static double[] probabilities;
+
+        /**
+         * static array that is used to store dwellings of evaluations accessed
+         * from different threads
+         */
+        private static Dwelling[] dwellings;
+
+        /**
+         * the strategy for each thread that is used for dwelling evaluation
+         */
+        private HousingStrategy strategy;
+
+        private UtilityUtils(HousingStrategy strategy) {
+            this.strategy = strategy;
+        }
+
+        /**
+         * reset static probability and dwelling arrays for the next dwelling search.
+         * reset the job counter.
+         */
+        private static void reset(int maxNumber) {
+            probabilities = new double[maxNumber];
+            dwellings = new Dwelling[maxNumber];
+        }
+
+        /**
+         * start the given number of background threads with the given housing strategy.
+         * The strategy will be duplicated for each thread to ensure thread-safety.
+         */
+        private static void startThreads(HousingStrategy strategy, int threads) {
+            run = true;
+            barrier = new CyclicBarrier(threads +1);
+            for (int i = 0; i < threads; i++) {
+                UtilityUtils thread = new UtilityUtils(strategy.duplicate());
+                thread.setDaemon(true);
+                thread.start();
+            }
+        }
+
+        /**
+         * stop the background threads from running
+         */
+        private static void endYear() {
+            run = false;
+        }
+
+        /**
+         * when running, a thread polls the queue for utility tasks. for each task
+         * a dwelling has to be evaluated. after the evaluation, the probabilities
+         * are stored in the static array that is shared among the threads and the
+         * jobcounter is incremented
+         */
+        @Override
+        public void run() {
+            while (run) {
+                final UtilityTask poll = queue.poll();
+                if (poll != null) {
+                    final Dwelling dwelling = poll.dwelling;
+                    final double util = strategy.calculateHousingUtility(poll.household, dwelling);
+                    double probability = strategy.calculateSelectDwellingProbability(util);
+                    final int i = poll.id;
+                    probabilities[i] = probability;
+                    dwellings[i] = dwelling;
+                } else {
+                    try {
+                        barrier.await();
+                    } catch (InterruptedException | BrokenBarrierException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
     }
-
-
-//    private static class UtilityUtils extends Thread {
-//
-//        /**
-//         * The queue that each thread listens to poll for new dwelling evaluations.
-//         * Tasks are put into the queue from the main thread inside the searchForNewDwelling method
-//         */
-//        private static final Queue<UtilityTask> queue = new ConcurrentLinkedQueue<>();
-//
-//        private static CyclicBarrier barrier;
-//
-//        /**
-//         * boolean that is used to stop threads once they're running.
-//         */
-//        private static boolean run = false;
-//
-//        /**
-//         * static array that is used to store probabilities of dwelling evaluations accessed
-//         * from different threads
-//         */
-//        private static double[] probabilities;
-//
-//        /**
-//         * static array that is used to store dwellings of evaluations accessed
-//         * from different threads
-//         */
-//        private static Dwelling[] dwellings;
-//
-//        /**
-//         * the strategy for each thread that is used for dwelling evaluation
-//         */
-//        private HousingStrategy strategy;
-//
-//        private UtilityUtils(HousingStrategy strategy) {
-//            this.strategy = strategy;
-//        }
-//
-//        /**
-//         * reset static probability and dwelling arrays for the next dwelling search.
-//         * reset the job counter.
-//         */
-//        private static void reset(int maxNumberOfDwellings) {
-//            probabilities = new double[maxNumberOfDwellings];
-//            dwellings = new Dwelling[maxNumberOfDwellings];
-//        }
-//
-//        /**
-//         * start the given number of background threads with the given housing strategy.
-//         * The strategy will be duplicated for each thread to ensure thread-safety.
-//         */
-//        private static void startThreads(HousingStrategy strategy, int threads) {
-//            run = true;
-//            barrier = new CyclicBarrier(threads +1);
-//            for (int i = 0; i < threads; i++) {
-//                UtilityUtils thread = new UtilityUtils(strategy.duplicate());
-//                thread.setDaemon(true);
-//                thread.start();
-//            }
-//        }
-//
-//        /**
-//         * stop the background threads from running
-//         */
-//        private static void endYear() {
-//            run = false;
-//        }
-//
-//        /**
-//         * when running, a thread polls the queue for utility tasks. for each task
-//         * a dwelling has to be evaluated. after the evaluation, the probabilities
-//         * are stored in the static array that is shared among the threads and the
-//         * jobcounter is incremented
-//         */
-//        @Override
-//        public void run() {
-//            while (run) {
-//                final UtilityTask poll = queue.poll();
-//                if (poll != null) {
-//                    final Dwelling dwelling = poll.dwelling;
-//                    final double util = strategy.calculateHousingUtility(poll.household, dwelling);
-//                    double probability = strategy.calculateSelectDwellingProbability(util);
-//                    final int i = poll.id;
-//                    probabilities[i] = probability;
-//                    dwellings[i] = dwelling;
-//                } else {
-//                    try {
-//                        barrier.await();
-//                    } catch (InterruptedException | BrokenBarrierException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            }
-//        }
-//    }
 
     public Map<Integer, Integer> getHouseholdsByZone() {
         return householdsByZone;

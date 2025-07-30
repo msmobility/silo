@@ -1,9 +1,5 @@
 package de.tum.bgu.msm.data.household;
 
-import cern.jet.random.tdouble.Normal;
-import cern.jet.random.tdouble.engine.DRand;
-import cern.jet.random.tdouble.engine.DoubleMersenneTwister;
-import cern.jet.random.tdouble.engine.DoubleRandomEngine;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;

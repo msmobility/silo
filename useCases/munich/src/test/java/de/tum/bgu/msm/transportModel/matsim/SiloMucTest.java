@@ -77,7 +77,7 @@ public class SiloMucTest {
         String path = "./test/muc/siloMucTest.properties";
         Properties properties = SiloUtil.siloInitialization(path);
         properties.main.scenarioName = "test" + repetition;
-        properties.main.numberOfThreads = 1;
+//        properties.main.numberOfThreads = 1;
 
         DataContainerWithSchools dataContainer = DataBuilder.getModelDataForMuc(properties, null);
         DataBuilder.read(properties, dataContainer);
