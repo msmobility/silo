@@ -20,7 +20,7 @@ public class MainProperties {
     /**
      * Name of the scenario and of the output folder.
      */
-    public final String scenarioName;
+    public String scenarioName;
 
     /**
      * Track model runtime (true or false)
@@ -70,7 +70,7 @@ public class MainProperties {
     /**
      * Returns the number of logical threads available at runtime.
      */
-    public final int numberOfThreads;
+    public int numberOfThreads;
 
     /**
      * Returns the sub-sample of the population to be simulated in SILO

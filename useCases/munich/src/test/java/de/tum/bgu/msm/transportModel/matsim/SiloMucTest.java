@@ -26,6 +26,9 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Scanner;
 
+
+// TODO: increase number of years
+
 /**
  * @author dziemke, nico
  */
@@ -37,41 +40,45 @@ public class SiloMucTest {
 
     private static final Logger log = LogManager.getLogger(SiloMucTest.class);
 
-    @RepeatedTest(100)
+    @RepeatedTest(400)
     public final void testMain(RepetitionInfo repetitionInfo) throws IOException {
 
-        runThisTest();
+        int currentRepetition = repetitionInfo.getCurrentRepetition();
+        runThisTest(currentRepetition);
 
-        if (repetitionInfo.getCurrentRepetition() == 1) {
+        if (currentRepetition == 1) {
             File ref = new File("./test/muc/refOutput/noTransportModel/dd_2013.csv");
-            File actual = new File("./test/muc/scenOutput/test/microData/dd_2013.csv");
+            File actual = new File("./test/muc/scenOutput/test"+ currentRepetition + "/microData/dd_2013.csv");
             Files.copy(actual.toPath(), ref.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
             ref = new File("./test/muc/refOutput/noTransportModel/hh_2013.csv");
-            actual = new File("./test/muc/scenOutput/test/microData/hh_2013.csv");
+            actual = new File("./test/muc/scenOutput/test"+ currentRepetition + "/microData/hh_2013.csv");
             Files.copy(actual.toPath(), ref.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
             ref = new File("./test/muc/refOutput/noTransportModel/jj_2013.csv");
-            actual = new File("./test/muc/scenOutput/test/microData/jj_2013.csv");
+            actual = new File("./test/muc/scenOutput/test"+ currentRepetition + "/microData/jj_2013.csv");
             Files.copy(actual.toPath(), ref.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
             ref = new File("./test/muc/refOutput/noTransportModel/pp_2013.csv");
-            actual = new File("./test/muc/scenOutput/test/microData/pp_2013.csv");
+            actual = new File("./test/muc/scenOutput/test" + currentRepetition + "/microData/pp_2013.csv");
             Files.copy(actual.toPath(), ref.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
 
-        checkDwellings();
-        checkHouseholds();
-        checkJobs();
-        checkPersons();
+        checkDwellings(currentRepetition);
+        checkHouseholds(currentRepetition);
+        checkJobs(currentRepetition);
+        checkPersons(currentRepetition);
+
     }
 
-    private void runThisTest() {
+    private void runThisTest(int repetition) throws IOException {
         SiloTestUtils.cleanUpMicrodataFiles();
         SiloTestUtils.cleanUpOtherFiles();
 
         String path = "./test/muc/siloMucTest.properties";
         Properties properties = SiloUtil.siloInitialization(path);
+        properties.main.scenarioName = "test" + repetition;
+        properties.main.numberOfThreads = 1;
 
         DataContainerWithSchools dataContainer = DataBuilder.getModelDataForMuc(properties, null);
         DataBuilder.read(properties, dataContainer);
@@ -86,10 +93,10 @@ public class SiloMucTest {
         Properties.reset();
     }
 
-    private void checkPersons() {
+    private void checkPersons(int currentRepetition) {
         log.info("checking SILO population file ...");
         final File ref = new File("./test/muc/refOutput/noTransportModel/pp_2013.csv");
-        final File actual = new File("./test/muc/scenOutput/test/microData/pp_2013.csv");
+        final File actual = new File("./test/muc/scenOutput/test"+ currentRepetition + "/microData/pp_2013.csv");
         FileAssert.assertEquals("persons are different.", ref, actual);
 
         if (CLEANUP_AFTER_TEST) {
@@ -97,10 +104,10 @@ public class SiloMucTest {
         }
     }
 
-    private void checkJobs() {
+    private void checkJobs(int currentRepetition) {
         log.info("Checking jobs file ...");
         final File ref = new File("./test/muc/refOutput/noTransportModel/jj_2013.csv");
-        final File actual = new File("./test/muc/scenOutput/test/microData/jj_2013.csv");
+        final File actual = new File("./test/muc/scenOutput/test" + currentRepetition + "/microData/jj_2013.csv");
         FileAssert.assertEquals("jobs are different.", ref, actual);
 
         if (CLEANUP_AFTER_TEST) {
@@ -108,10 +115,10 @@ public class SiloMucTest {
         }
     }
 
-    private void checkHouseholds() {
+    private void checkHouseholds(int currentRepetition) {
         log.info("Checking households file ...");
         final File ref = new File("./test/muc/refOutput/noTransportModel/hh_2013.csv");
-        final File actual = new File("./test/muc/scenOutput/test/microData/hh_2013.csv");
+        final File actual = new File("./test/muc/scenOutput/test" + currentRepetition + "/microData/hh_2013.csv");
         FileAssert.assertEquals("households are different.", ref, actual);
 
         if (CLEANUP_AFTER_TEST) {
@@ -119,10 +126,10 @@ public class SiloMucTest {
         }
     }
 
-    private void checkDwellings() {
+    private void checkDwellings(int currentRepetition) {
         log.info("Checking dwellings file ...");
         final File ref = new File("./test/muc/refOutput/noTransportModel/dd_2013.csv");
-        final File actual = new File("./test/muc/scenOutput/test/microData/dd_2013.csv");
+        final File actual = new File("./test/muc/scenOutput/test" + currentRepetition + "/microData/dd_2013.csv");
         log.info("Ref file exists: " + ref.exists() + ". Actual file exists: " + actual.exists());
         try {
             log.info("Content is equal: " + FileUtils.contentEquals(ref, actual));
@@ -137,40 +144,40 @@ public class SiloMucTest {
         }
     }
 
-    @Ignore
-    @Test
+//    @Ignore
+//    @Test
     /**
      * Replaces the reference files by the results of the test,
      * so the test will be updated. Do not use if you are not sure.
      * The part of the code that makes this changes is commented
      * to prevent undesired uses.
      */
-    public final void resetTestFiles() throws IOException {
-
-        runThisTest();
-
-        File ref = new File("./test/muc/refOutput/noTransportModel/dd_2013.csv");
-        File actual = new File("./test/muc/scenOutput/test/microData/dd_2013.csv");
-        //Files.copy(actual.toPath(), ref.toPath(), StandardCopyOption.REPLACE_EXISTING);
-
-        ref = new File("./test/muc/refOutput/noTransportModel/hh_2013.csv");
-        actual = new File("./test/muc/scenOutput/test/microData/hh_2013.csv");
-        //Files.copy(actual.toPath(), ref.toPath(), StandardCopyOption.REPLACE_EXISTING);
-
-        ref = new File("./test/muc/refOutput/noTransportModel/jj_2013.csv");
-        actual = new File("./test/muc/scenOutput/test/microData/jj_2013.csv");
-        //Files.copy(actual.toPath(), ref.toPath(), StandardCopyOption.REPLACE_EXISTING);
-
-        ref = new File("./test/muc/refOutput/noTransportModel/pp_2013.csv");
-        actual = new File("./test/muc/scenOutput/test/microData/pp_2013.csv");
-        //Files.copy(actual.toPath(), ref.toPath(), StandardCopyOption.REPLACE_EXISTING);
-
-        checkDwellings();
-        checkHouseholds();
-        checkJobs();
-        checkPersons();
-
-    }
+//    public final void resetTestFiles() throws IOException {
+//
+//        runThisTest();
+//
+//        File ref = new File("./test/muc/refOutput/noTransportModel/dd_2013.csv");
+//        File actual = new File("./test/muc/scenOutput/test/microData/dd_2013.csv");
+//        //Files.copy(actual.toPath(), ref.toPath(), StandardCopyOption.REPLACE_EXISTING);
+//
+//        ref = new File("./test/muc/refOutput/noTransportModel/hh_2013.csv");
+//        actual = new File("./test/muc/scenOutput/test/microData/hh_2013.csv");
+//        //Files.copy(actual.toPath(), ref.toPath(), StandardCopyOption.REPLACE_EXISTING);
+//
+//        ref = new File("./test/muc/refOutput/noTransportModel/jj_2013.csv");
+//        actual = new File("./test/muc/scenOutput/test/microData/jj_2013.csv");
+//        //Files.copy(actual.toPath(), ref.toPath(), StandardCopyOption.REPLACE_EXISTING);
+//
+//        ref = new File("./test/muc/refOutput/noTransportModel/pp_2013.csv");
+//        actual = new File("./test/muc/scenOutput/test/microData/pp_2013.csv");
+//        //Files.copy(actual.toPath(), ref.toPath(), StandardCopyOption.REPLACE_EXISTING);
+//
+//        checkDwellings();
+//        checkHouseholds();
+//        checkJobs();
+//        checkPersons();
+//
+//    }
 
 
 }
