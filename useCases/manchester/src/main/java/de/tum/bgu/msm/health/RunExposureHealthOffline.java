@@ -54,18 +54,18 @@ public class RunExposureHealthOffline {
         DataBuilderHealth.read(properties, dataContainer, config);
 
         // setup
-        //SportPAModelMCR sportPAModelMCR = new SportPAModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
-        //AccidentModelMCR accidentModel = new AccidentModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
+        SportPAModelMCR sportPAModelMCR = new SportPAModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
+        AccidentModelMCR accidentModel = new AccidentModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
         HealthExposureModelMCR exposureModelMCR = new HealthExposureModelMCR(dataContainer, properties, SiloUtil.provideNewRandom(),config);
         DiseaseModelMCR diseaseModelMCR = new DiseaseModelMCR(dataContainer, properties, SiloUtil.provideNewRandom());
 
         // disease model only
-        exposureModelMCR.setup();
+        // exposureModelMCR.setup();
 
         // runs
-        //sportPAModelMCR.endYear(2021);
-        //accidentModel.endYear(2021);
-        //exposureModelMCR.endYear(2021);
+        sportPAModelMCR.endYear(2021);
+        accidentModel.endYear(2021);
+        exposureModelMCR.endYear(2021);
         diseaseModelMCR.setup();
         diseaseModelMCR.endYear(2021);
         dataContainer.endSimulation();

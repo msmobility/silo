@@ -30,7 +30,7 @@ public enum Diseases {
     severely_injured_car,
     severely_injured_walk,
     severely_injured_bike,
-    killed_car,
-    killed_walk,
-    killed_bike
+    dead_car,
+    dead_walk,
+    dead_bike
 }

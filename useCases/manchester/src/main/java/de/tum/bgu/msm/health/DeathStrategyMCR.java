@@ -38,9 +38,9 @@ public class DeathStrategyMCR implements DeathStrategy {
 
         // check killed by injury
         Set<Diseases> killedInAccident = Set.of(
-                Diseases.killed_car,
-                Diseases.killed_bike,
-                Diseases.killed_walk
+                Diseases.dead_car,
+                Diseases.dead_bike,
+                Diseases.dead_walk
         );
 
         if (!Collections.disjoint(((PersonHealth) person).getCurrentDisease(), killedInAccident)) {
@@ -71,10 +71,10 @@ public class DeathStrategyMCR implements DeathStrategy {
                 Diseases.endometrial_cancer,
                 Diseases.colon_cancer,
                 Diseases.bladder_cancer,
-                Diseases.esophageal_cancer,
-                Diseases.gastric_cardia_cancer,
+                //Diseases.esophageal_cancer,
+                //Diseases.gastric_cardia_cancer,
                 Diseases.head_neck_cancer,
-                Diseases.liver_cancer,
+                //Diseases.liver_cancer,
                 Diseases.lung_cancer,
                 Diseases.rectum_cancer
         );
@@ -114,6 +114,7 @@ public class DeathStrategyMCR implements DeathStrategy {
         }
 
 
+
         // todo: what happens with people < 18
         if (!Collections.disjoint(currentDiseases, injuries)) {
             if (person.getGender().equals(Gender.MALE)) {
@@ -122,6 +123,7 @@ public class DeathStrategyMCR implements DeathStrategy {
                 alpha *= 1.74;
             }
         }
+
         return alpha;
     }
 }
