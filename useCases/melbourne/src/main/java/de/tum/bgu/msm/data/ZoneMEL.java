@@ -8,8 +8,8 @@ public class ZoneMEL extends ZoneImpl {
 
     private final AreaTypes.RType areaType;
     private Coordinate popCentroidCoord;
-    private String lsoaCode;
-    private int imd10; //index of multiple deprivation 2010
+    private String catchmentCode;
+    private int SocioEconomicDisadvantageDeciles; //index of multiple deprivation 2010
 
     public ZoneMEL(int id, float area, AreaTypes.RType areaType, Coordinate coordinate, Region region) {
 
@@ -38,19 +38,19 @@ public class ZoneMEL extends ZoneImpl {
         }
     }
 
-    public String getLsoaCode() {
-        return lsoaCode;
+    public String getCatchmentCode() {
+        return catchmentCode;
     }
 
-    public void setCatchmentCode(String lsoaCode) {
-        this.lsoaCode = lsoaCode;
+    public void setCatchmentCode(String catchmentCode) {
+        this.catchmentCode = catchmentCode;
     }
 
-    public int getImd10() {
-        return imd10;
+    public int getSocioEconomicDisadvantageDeciles() {
+        return SocioEconomicDisadvantageDeciles;
     }
 
-    public void setSocioEconomicDisadvantageDeciles(int imd10) {
-        this.imd10 = imd10;
+    public void setSocioEconomicDisadvantageDeciles(int SocioEconomicDisadvantageDeciles) {
+        this.SocioEconomicDisadvantageDeciles = SocioEconomicDisadvantageDeciles;
     }
 }

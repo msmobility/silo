@@ -38,14 +38,14 @@ public class RunExposureHealthOffline {
 
         AirPollutantModel airPollutantModel = new AirPollutantModel(dataContainer, properties, SiloUtil.provideNewRandom(),config);
         NoiseModel noiseModel = new NoiseModel(dataContainer,properties, SiloUtil.provideNewRandom(),config);
-        SportPAModelMEL sportPAModelMCR = new SportPAModelMEL(dataContainer, properties, SiloUtil.provideNewRandom());
-        HealthExposureModelMEL exposureModelMCR = new HealthExposureModelMEL(dataContainer, properties, SiloUtil.provideNewRandom(),config);
+        SportPAModelMEL sportPAModelMEL = new SportPAModelMEL(dataContainer, properties, SiloUtil.provideNewRandom());
+        HealthExposureModelMEL exposureModelMEL = new HealthExposureModelMEL(dataContainer, properties, SiloUtil.provideNewRandom(),config);
         DiseaseModelMEL diseaseModelMEL = new DiseaseModelMEL(dataContainer, properties, SiloUtil.provideNewRandom());
 
         airPollutantModel.endYear(endYear);
         noiseModel.endYear(endYear);
-        sportPAModelMCR.endYear(endYear);
-        exposureModelMCR.endYear(endYear);
+        sportPAModelMEL.endYear(endYear);
+        exposureModelMEL.endYear(endYear);
         diseaseModelMEL.setup();
         diseaseModelMEL.endYear(endYear);
         dataContainer.endSimulation();

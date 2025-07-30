@@ -135,7 +135,7 @@ public class DiseaseModelMEL extends AbstractModel implements ModelUpdateListene
                 }
 
                 int zoneId = dataContainer.getRealEstateDataManager().getDwelling(person.getHousehold().getDwellingId()).getZoneId();
-                String location = ((ZoneMEL)dataContainer.getGeoData().getZones().get(zoneId)).getLsoaCode();
+                String location = ((ZoneMEL)dataContainer.getGeoData().getZones().get(zoneId)).getCatchmentCode();
                 String compositeKey = ((DataContainerHealth) dataContainer).createTransitionLookupIndex(Math.min(person.getAge(), 100), person.getGender(), location);
                 if (((DataContainerHealth) dataContainer).getHealthTransitionData().get(diseases).get(compositeKey)==null){
                     logger.warn("No health transition data for disease: " + diseases + "| " + compositeKey);

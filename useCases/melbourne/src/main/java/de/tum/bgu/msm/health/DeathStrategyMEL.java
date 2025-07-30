@@ -34,7 +34,7 @@ public class DeathStrategyMEL implements DeathStrategy {
         }
 
         int zoneId = dataContainer.getRealEstateDataManager().getDwelling(person.getHousehold().getDwellingId()).getZoneId();
-        String location = ((ZoneMEL)dataContainer.getGeoData().getZones().get(zoneId)).getLsoaCode();
+        String location = ((ZoneMEL)dataContainer.getGeoData().getZones().get(zoneId)).getCatchmentCode();
         String compositeKey = ((DataContainerHealth) dataContainer).createTransitionLookupIndex(Math.min(person.getAge(), 100), person.getGender(), location);
 
         double alpha = dataContainer.getHealthTransitionData().get(Diseases.all_cause_mortality).get(compositeKey);
