@@ -137,9 +137,9 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
         // Step 1: Consider relocation if household is not very satisfied or if
         // household income exceed restriction for low-income dwelling
-//        if (!moveOrNot(household)) {
-//            return false;
-//        }
+        if (!moveOrNot(household)) {
+            return false;
+        }
 
         final int idOldDd = household.getDwellingId();
         // Step 2: Choose new dwelling

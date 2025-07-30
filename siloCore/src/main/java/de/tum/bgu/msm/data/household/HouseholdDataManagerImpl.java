@@ -302,10 +302,6 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
         executor.execute();
 
 
-//        for (Person person : householdData.getPersons()) {
-//            IncomeAdjustment task = new IncomeAdjustment(person, meanIncomeChange, currentIncomeDistribution, previousIncomeDistribution);
-//            task.call();
-//        }
     }
 
 

@@ -77,11 +77,11 @@ public class SimpleCommuteModeChoice implements CommuteModeChoice {
                 double ptUtility = B_PT + B_TIME * commutingTimeProbabilityPt;
 
 
-//                if (!pp.hasDriverLicense() || (int) (household.getVehicles().stream().filter(v-> v.getType().equals(VehicleType.CAR)).count()) == 0) {
-//                    CommuteModeChoiceMapping.CommuteMode ptCommuteMode =
-//                            new CommuteModeChoiceMapping.CommuteMode(TransportMode.pt, Math.pow(commutingTimeProbabilityPt, B_EXP_HOUSING_UTILITY));
-//                    commuteModeChoiceMapping.assignMode(ptCommuteMode, pp);
-//                } else {
+                if (!pp.hasDriverLicense() || (int) (household.getVehicles().stream().filter(v-> v.getType().equals(VehicleType.CAR)).count()) == 0) {
+                    CommuteModeChoiceMapping.CommuteMode ptCommuteMode =
+                            new CommuteModeChoiceMapping.CommuteMode(TransportMode.pt, Math.pow(commutingTimeProbabilityPt, B_EXP_HOUSING_UTILITY));
+                    commuteModeChoiceMapping.assignMode(ptCommuteMode, pp);
+                } else {
                     int carMinutes = (int) travelTimes.getTravelTime(from, job,
                             job.getStartTimeInSeconds().orElse((int) properties.transportModel.peakHour_s), TransportMode.car);
                     double commutingTimeProbabilityCar = this.commutingTimeProbability.getCommutingTimeProbability(carMinutes, TransportMode.car);
@@ -105,31 +105,29 @@ public class SimpleCommuteModeChoice implements CommuteModeChoice {
                         probabilityAsKey += random.nextDouble();
                     }
                     personByProbability.put(probabilityAsKey, pp);
-//                }
+                }
             }
         }
 
         int counter =(int) (household.getVehicles().stream().filter(v-> v.getType().equals(VehicleType.CAR)).count()) ;
 
         for (Map.Entry<Double, Person> personForProbability : personByProbability.descendingMap().entrySet()) {
-//            Person person = personForProbability.getValue();
-////            CommuteModeChoiceMapping.CommuteMode commuteMode;
-////            if(counter == 0) {
-////                commuteMode = new CommuteModeChoiceMapping.CommuteMode(TransportMode.pt,
-////                        commuteModesByPerson.get(person.getId()).get(TransportMode.pt));
-////            } else {
-////                if (random.nextDouble() < personForProbability.getKey()) {
-////                    commuteMode =
-////                            new CommuteModeChoiceMapping.CommuteMode(TransportMode.car,
-////                                    commuteModesByPerson.get(person.getId()).get(TransportMode.car));
-////                    counter--;
-////                } else {
-////                    commuteMode = new CommuteModeChoiceMapping.CommuteMode(TransportMode.pt, commuteModesByPerson.get(person.getId()).get(TransportMode.pt));
-////                }
-////            }
-////            commuteModeChoiceMapping.assignMode(commuteMode, person);
-            commuteModeChoiceMapping.assignMode(new CommuteModeChoiceMapping.CommuteMode(TransportMode.car, 0.0), personForProbability.getValue());
-
+            Person person = personForProbability.getValue();
+            CommuteModeChoiceMapping.CommuteMode commuteMode;
+            if(counter == 0) {
+                commuteMode = new CommuteModeChoiceMapping.CommuteMode(TransportMode.pt,
+                        commuteModesByPerson.get(person.getId()).get(TransportMode.pt));
+            } else {
+                if (random.nextDouble() < personForProbability.getKey()) {
+                    commuteMode =
+                            new CommuteModeChoiceMapping.CommuteMode(TransportMode.car,
+                                    commuteModesByPerson.get(person.getId()).get(TransportMode.car));
+                    counter--;
+                } else {
+                    commuteMode = new CommuteModeChoiceMapping.CommuteMode(TransportMode.pt, commuteModesByPerson.get(person.getId()).get(TransportMode.pt));
+                }
+            }
+            commuteModeChoiceMapping.assignMode(commuteMode, person);
         }
 
         return commuteModeChoiceMapping;

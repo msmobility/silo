@@ -162,14 +162,6 @@ public class ModelBuilderMuc {
                 construction, demolition, pricing, renovation,
                 constructionOverwrite, inOutMigration, movesModel, transportModel);
 
-//        final ModelContainer modelContainer = new ModelContainer(
-//                birthModel, birthdayModel,
-//                deathModel, marriageModel,
-//                divorceModel, driversLicenseModel,
-//                null, null,
-//                null, null,
-//                null, null, null, null,
-//                null, null, movesModel, null);
 
         //todo migrate to Java code
         modelContainer.registerModelUpdateListener(new UpdateCarOwnershipModelMuc(dataContainer, properties, SiloUtil.provideNewRandom()));

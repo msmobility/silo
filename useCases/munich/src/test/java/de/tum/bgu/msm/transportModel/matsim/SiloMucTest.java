@@ -27,7 +27,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.Scanner;
 
 
-// TODO: increase number of years
 
 /**
  * @author dziemke, nico
