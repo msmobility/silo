@@ -300,6 +300,8 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
             executor.addTaskToQueue(new IncomeAdjustment(person, meanIncomeChange, currentIncomeDistribution, previousIncomeDistribution));
         }
         executor.execute();
+
+
     }
 
 

@@ -44,7 +44,7 @@ public class HouseholdUtil {
         if (household.getPersons().isEmpty()) {
             return false;
         }
-        return household.getPersons().values().stream().allMatch(pp -> pp.getAge() < 16);
+        return household.getPersons().values().stream().allMatch(pp -> pp.getRole().equals(PersonRole.CHILD));
     }
 
     public static HouseholdType defineHouseholdType(Household household) {

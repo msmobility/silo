@@ -23,6 +23,7 @@
         <module>fabiland</module>
         <module>bangkok</module>
         <module>manchester</module>
+        <module>berlinBrandenburg</module>
     </modules>
 
     <dependencies>

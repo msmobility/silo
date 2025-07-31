@@ -20,7 +20,7 @@ public class MainProperties {
     /**
      * Name of the scenario and of the output folder.
      */
-    public final String scenarioName;
+    public String scenarioName;
 
     /**
      * Track model runtime (true or false)

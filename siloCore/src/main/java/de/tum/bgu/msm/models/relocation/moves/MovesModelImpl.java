@@ -233,7 +233,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         /** No household will evaluate more than {@link MAX_NUMBER_DWELLINGS} dwellings */
         int maxNumberOfDwellings = Math.min(MAX_NUMBER_DWELLINGS, vacantDwellings.size());
 
-        UtilityUtils.reset();
+        UtilityUtils.reset(maxNumberOfDwellings);
 
         Collections.shuffle(vacantDwellings, this.random);
         for (int i = 0; i < maxNumberOfDwellings; i++) {
@@ -248,7 +248,8 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
                     UtilityUtils.dwellings[i] = dwelling;
                 }
             } else {
-                maxNumberOfDwellings--;
+                UtilityUtils.probabilities[i] = 0.0;
+                UtilityUtils.dwellings[i] = dwelling;
             }
         }
 
@@ -408,9 +409,9 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
          * reset static probability and dwelling arrays for the next dwelling search.
          * reset the job counter.
          */
-        private static void reset() {
-            probabilities = new double[MAX_NUMBER_DWELLINGS];
-            dwellings = new Dwelling[MAX_NUMBER_DWELLINGS];
+        private static void reset(int maxNumber) {
+            probabilities = new double[maxNumber];
+            dwellings = new Dwelling[maxNumber];
         }
 
         /**
