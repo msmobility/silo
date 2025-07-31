@@ -158,7 +158,7 @@ public class Trip implements Id {
         newExposures.forEach((k, v) -> travelExposureMap.merge(k, v, (v1, v2) -> v1 + v2));
     }
 
-    public Map<String, Float> getActivityExposureMap() { return activityExposureMap; }
+    public Map<String, Double> getActivityExposureMap() { return activityExposureMap; }
 
     public void setActivityExposureMap(Map<String, Float> exposureMap) {
         this.activityExposureMap = exposureMap;

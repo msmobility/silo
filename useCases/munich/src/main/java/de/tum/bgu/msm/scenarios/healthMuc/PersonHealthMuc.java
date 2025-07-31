@@ -288,8 +288,9 @@ public class PersonHealthMuc implements PersonWithSchool, PersonHealth {
         return new float[0];
     }
 
-    public void updateWeeklyPollutionExposures(Map<String, Float> newExposures) {
-        newExposures.forEach((k, v) -> weeklyExposureByPollutant.merge(k, v, Float::sum));
+    @Override
+    public void updateWeeklyPollutionExposures(Map<String, Double> newExposures) {
+        newExposures.forEach((k, v) -> weeklyExposureByPollutant.merge(k, v.floatValue(), Float::sum));
     }
 
     public float getAllCauseRR() {return allCauseRR;}
