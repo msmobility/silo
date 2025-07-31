@@ -9,8 +9,8 @@ import org.matsim.api.core.v01.network.Link;
 import java.util.Collection;
 import java.util.Map;
 
-public class AccidentRateCalculationMCR {
-    private static final Logger log = LogManager.getLogger( AccidentRateCalculationMCR.class );
+public class AccidentRateCalculationMEL {
+    private static final Logger log = LogManager.getLogger( AccidentRateCalculationMEL.class );
     private final double SCALEFACTOR;
     private AnalysisEventHandler analzyer;
     private AccidentsContext accidentsContext;
@@ -21,7 +21,7 @@ public class AccidentRateCalculationMCR {
     private AccidentSeverity accidentSeverity;
 
 
-    public AccidentRateCalculationMCR(double scaleFactor, AccidentsContext accidentsContext, AnalysisEventHandler analzyer, AccidentType accidentType, AccidentSeverity accidentSeverity, String basePath) {
+    public AccidentRateCalculationMEL(double scaleFactor, AccidentsContext accidentsContext, AnalysisEventHandler analzyer, AccidentType accidentType, AccidentSeverity accidentSeverity, String basePath) {
         this.SCALEFACTOR = scaleFactor;
         this.accidentsContext = accidentsContext;
         this.analzyer = analzyer;

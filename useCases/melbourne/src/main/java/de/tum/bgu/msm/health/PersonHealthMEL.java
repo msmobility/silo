@@ -13,7 +13,6 @@ import java.util.*;
 
 public class PersonHealthMEL implements PersonWithSchool, PersonHealth {
 
-    private static final org.apache.logging.log4j.Logger logger = org.apache.logging.log4j.LogManager.getLogger(PersonHealthMEL.class);
     private final Person delegate;
 
     private int schoolType = 0;
@@ -29,7 +28,7 @@ public class PersonHealthMEL implements PersonWithSchool, PersonHealth {
     //for exposure model
     private Map<Mode, Float> weeklyMarginalMetHours = new HashMap<>();
     private float weeklyMarginalMetHoursSport = 0.f;
-    private Map<String, Float> weeklyAccidentRisks = new HashMap<>();
+    private Map<String, Double> weeklyAccidentRisks = new HashMap<>();
     private Map<String, float[]> weeklyExposureByPollutantByHour = new HashMap<>();
     private Map<String, Float> weeklyExposureByPollutantNormalised;
 
@@ -39,6 +38,7 @@ public class PersonHealthMEL implements PersonWithSchool, PersonHealth {
     private float noiseHighSleepDisturbancePercentage = 0.f;
     private float weeklyNdviExposure = 0.f;
     private float weeklyNdviExposureNormalised = 0.f;
+    private List<VisitedLink> visitedLinks = new ArrayList<>();
 
 
     //for disease model
@@ -47,6 +47,8 @@ public class PersonHealthMEL implements PersonWithSchool, PersonHealth {
     private List<Diseases> currentDisease = new ArrayList<>();
     private Map<Diseases, Float> currentDiseaseProb = new HashMap<>();
 
+    // Injuries
+    // private InjuryStatus injuryStatus = InjuryStatus.NO_INJURY;
 
     public PersonHealthMEL(int id, int age,
                            Gender gender, Occupation occupation,
@@ -255,28 +257,23 @@ public class PersonHealthMEL implements PersonWithSchool, PersonHealth {
 
     @Override
     public float getWeeklyExposureByPollutantNormalised(String pollutant) {
-    if (weeklyExposureByPollutantNormalised == null) {
-        logger.warn("Weekly exposure by pollutant normalised is null; this will likely result in a NullPointerException being thrown.");
-    }
         return weeklyExposureByPollutantNormalised.get(pollutant);
     }
 
     @Override
     public void setWeeklyExposureByPollutantNormalised(Map<String, Float> exposureMap) {
         this.weeklyExposureByPollutantNormalised = exposureMap;
-        if (this.weeklyExposureByPollutantNormalised == null) {
-            logger.warn("Weekly exposure by pollutant normalised is null.");
-        }
     }
 
     @Override
-    public float getWeeklyAccidentRisk(String type) {
-        return weeklyAccidentRisks.getOrDefault(type, 0.f);
+    public double getWeeklyAccidentRisk(String type) {
+        return weeklyAccidentRisks.getOrDefault(type, 0.0);
     }
 
     @Override
-    public void updateWeeklyAccidentRisks(Map<String, Float> newRisks) {
-        newRisks.forEach((k, v) -> weeklyAccidentRisks.merge(k, v, (v1, v2) -> v1 + v2 - v1*v2));
+    public void updateWeeklyAccidentRisks(Map<String, Double> newRisks) {
+        //newRisks.forEach((k, v) -> weeklyAccidentRisks.merge(k, v, (v1, v2) -> v1 + v2 - v1*v2));
+        newRisks.forEach((k, v) -> weeklyAccidentRisks.merge(k, v, (v1, v2) -> v1 + v2));
     }
 
     public float[] getWeeklyNoiseExposureByHour() {
@@ -377,6 +374,15 @@ public class PersonHealthMEL implements PersonWithSchool, PersonHealth {
 
     public void setNoiseHighSleepDisturbancePercentage(float noiseHighSleepDisturbancePercentage) {
         this.noiseHighSleepDisturbancePercentage = noiseHighSleepDisturbancePercentage;
+    }
+
+    // For injuries Manchester
+    List<VisitedLink> getVisitedLinks(){
+        return visitedLinks;
+    }
+
+    void addVisitedLinks(List<VisitedLink> visitedLink){
+        this.visitedLinks.addAll(visitedLink);
     }
 
     //For Munich

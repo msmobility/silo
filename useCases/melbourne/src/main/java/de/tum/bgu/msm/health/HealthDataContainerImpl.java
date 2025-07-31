@@ -17,6 +17,7 @@ import de.tum.bgu.msm.health.data.LinkInfo;
 import de.tum.bgu.msm.health.data.ActivityLocation;
 import de.tum.bgu.msm.health.disease.Diseases;
 import de.tum.bgu.msm.health.disease.HealthExposures;
+import de.tum.bgu.msm.health.io.InjuryRRTableReader;
 import de.tum.bgu.msm.io.NoiseDwellingWriter;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
@@ -43,7 +44,7 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     private EnumMap<HealthExposures, EnumMap<Diseases, TableDataSet>> doseResponseData;
     private Map<Integer, Map<Integer, List<String>>> healthDiseaseTrackerRemovedPerson = new HashMap<>();
     private Map<Integer, List<Diseases>> healthPrevalenceData;
-    private Map<String, EnumMap<Gender, Map<Integer, Double>>> healthInjuryRRdata;
+    private Map<String, EnumMap<Gender, Map<String, InjuryRRTableReader.DataEntry>>> healthInjuryRRdata;
 
     public HealthDataContainerImpl(DataContainerWithSchools delegate,
                                    Properties properties) {
@@ -226,11 +227,11 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
         return healthPrevalenceData;
     }
 
-    public void setHealthInjuryRRdata(Map<String, EnumMap<Gender, Map<Integer, Double>>> healthInjuryRRdata){
+    public void setHealthInjuryRRdata(Map<String, EnumMap<Gender, Map<String, InjuryRRTableReader.DataEntry>>> healthInjuryRRdata){
         this.healthInjuryRRdata = healthInjuryRRdata;
     }
 
-    public Map<String, EnumMap<Gender, Map<Integer, Double>>> getHealthInjuryRRdata(){
+    public Map<String, EnumMap<Gender, Map<String, InjuryRRTableReader.DataEntry>>> getHealthInjuryRRdata(){
         return healthInjuryRRdata;
     }
 

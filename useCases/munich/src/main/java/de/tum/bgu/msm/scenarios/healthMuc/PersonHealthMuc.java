@@ -233,12 +233,14 @@ public class PersonHealthMuc implements PersonWithSchool, PersonHealth {
 
     }
 
-    public float getWeeklyAccidentRisk(String type) {
+    public double getWeeklyAccidentRisk(String type) {
         return weeklyAccidentRisks.getOrDefault(type, 0.f);
     }
 
-    public void updateWeeklyAccidentRisks(Map<String, Float> newRisks) {
-        newRisks.forEach((k, v) -> weeklyAccidentRisks.merge(k, v, (v1, v2) -> v1 + v2 - v1*v2));
+    public void updateWeeklyAccidentRisks(Map<String, Double> newRisks) {
+        newRisks.forEach((k, v) ->
+                weeklyAccidentRisks.merge(k, v.floatValue(), (v1, v2) -> v1 + v2 - v1 * v2)
+        );
     }
 
     @Override
@@ -286,6 +288,7 @@ public class PersonHealthMuc implements PersonWithSchool, PersonHealth {
         return new float[0];
     }
 
+    @Override
     public void updateWeeklyPollutionExposures(Map<String, Float> newExposures) {
         newExposures.forEach((k, v) -> weeklyExposureByPollutant.merge(k, v, Float::sum));
     }

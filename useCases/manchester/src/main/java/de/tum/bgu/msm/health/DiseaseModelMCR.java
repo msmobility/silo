@@ -8,6 +8,7 @@ import de.tum.bgu.msm.health.data.*;
 import de.tum.bgu.msm.health.disease.Diseases;
 import de.tum.bgu.msm.health.disease.HealthExposures;
 import de.tum.bgu.msm.health.disease.RelativeRisksDisease;
+import de.tum.bgu.msm.health.io.InjuryRRTableReader;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
@@ -64,7 +65,7 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
                 EnumMap<Diseases, Float> rr = new EnumMap<>(Diseases.class);
 
                 for (Diseases diseases : ((DataContainerHealth) dataContainer).getDoseResponseData().get(exposures).keySet()) {
-                    if (diseases.equals(Diseases.killed_bike) || diseases.equals(Diseases.killed_walk) || diseases.equals(Diseases.killed_car) ||
+                    if (diseases.equals(Diseases.dead_bike) || diseases.equals(Diseases.dead_walk) || diseases.equals(Diseases.dead_car) ||
                             diseases.equals(Diseases.severely_injured_car) || diseases.equals(Diseases.severely_injured_walk) || diseases.equals(Diseases.severely_injured_bike)) {
                         continue;
                     }
@@ -178,9 +179,11 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
         if(activateInjuries){
             // Prepare fatalities map by mode and age (gender ??)
             Map<String, Map<String, Double>> FatalityProbabilities = createProbabilityMap();
+            CalibrationFactors calibrationFactors = new CalibrationFactors();
+            Map<String, EnumMap<Gender, Map<String, InjuryRRTableReader. DataEntry>>> injuryData = ((HealthDataContainerImpl) dataContainer).getHealthInjuryRRdata();
 
             // Set up the injury sampler and process the injured people
-            InjurySampler injSampler = new InjurySampler();
+            InjurySampler injSampler = new InjurySampler(properties, calibrationFactors, injuryData);
 
             // The target come from the accidentModel, they should be add to the HealthDataContainer
             /*
@@ -191,14 +194,14 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
              */
 
             // Process injury transitions
-            injSampler.processInjuries2(dataContainer, FatalityProbabilities);
+            injSampler.processInjuries2(dataContainer);
         }
     }
-
     private void initializeHealthDiseaseStates() {
         Map<Integer, List<Diseases>> prevData = ((HealthDataContainerImpl) dataContainer).getPrevalenceData();
         for (Person person : dataContainer.getHouseholdDataManager().getPersons()) {
-            if (prevData.keySet().contains(person.getId()) && (!prevData.get(person.getId()).contains(null))) {
+            if (prevData.keySet().contains(person.getId()) && (!prevData.get(person.getId()).contains(null)) &&
+                    person.getAge() > 17) {
                 List<String> diseaseList = prevData.get(person.getId())  // Returns List<Diseases>
                         .stream()                                      // Convert List to Stream
                         .map(Enum::name)                               // Map each enum to its name
@@ -252,7 +255,12 @@ public class DiseaseModelMCR extends AbstractModel implements ModelUpdateListene
                 }
             } else {
                 List<String> fullDisease = new ArrayList<>();
-                if (personHealth.getHealthDiseaseTracker().get(year - 1) != null) {
+                Set<Diseases> currentDiseases = new HashSet<>(((PersonHealth) personHealth).getCurrentDisease());
+                // DO NOT add previous states when a person has died in the injury model. These states are exclusive.
+                if (personHealth.getHealthDiseaseTracker().get(year - 1) != null &&
+                        !(newDisease.equals(Diseases.dead_bike) || newDisease.equals(Diseases.dead_walk) || newDisease.equals(Diseases.dead_car)) &&
+                        !(currentDiseases.contains(Diseases.dead_bike) || currentDiseases.contains(Diseases.dead_walk) || currentDiseases.contains(Diseases.dead_car)))
+                {
                     fullDisease.addAll(personHealth.getHealthDiseaseTracker().get(year - 1)); // get old diseases
                 }
                 fullDisease.addAll(newDisease); // add new diseases

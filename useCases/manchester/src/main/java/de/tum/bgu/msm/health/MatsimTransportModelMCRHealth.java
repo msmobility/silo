@@ -127,7 +127,7 @@ public final class MatsimTransportModelMCRHealth implements TransportModel {
 
         if (properties.transportModel.matsimInitialEventsFile == null) {
             //TODO: comment out for longitudinal simulation. need to make it more general
-            //runTransportModel(properties.main.startYear);
+            runTransportModel(properties.main.startYear);
             logger.warn("This is a temporary fix, we don't want to run again the transport model in the longitudinal scenario");
         } else {
             String eventsFile = properties.main.baseDirectory + properties.transportModel.matsimInitialEventsFile;
@@ -187,7 +187,7 @@ public final class MatsimTransportModelMCRHealth implements TransportModel {
         runCarTruckSimulation(year, assembledMultiScenario);
 
         //run bike ped simulation
-        //runBikePedSimulation(year, assembledMultiScenario);
+        runBikePedSimulation(year, assembledMultiScenario);
     }
 
     private void runBikePedSimulation(int year, Map<Day, Scenario> assembledMultiScenario) {

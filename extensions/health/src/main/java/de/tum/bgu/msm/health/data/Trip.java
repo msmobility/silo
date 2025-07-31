@@ -149,7 +149,8 @@ public class Trip implements Id {
     public Map<String, Float> getTravelRiskMap() { return travelRiskMap; }
 
     public void updateTravelRiskMap(Map<String, Float> newRisks) {
-        newRisks.forEach((k, v) -> travelRiskMap.merge(k, v, (v1, v2) -> v1 + v2 - v1*v2));
+        // newRisks.forEach((k, v) -> travelRiskMap.merge(k, v, (v1, v2) -> v1 + v2 - v1*v2));
+        newRisks.forEach((k, v) -> travelRiskMap.merge(k, v, (v1, v2) -> v1 + v2));
     }
 
     public Map<String, Float> getTravelExposureMap() { return travelExposureMap; }
