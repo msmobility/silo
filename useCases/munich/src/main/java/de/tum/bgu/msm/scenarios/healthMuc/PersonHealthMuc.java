@@ -237,8 +237,10 @@ public class PersonHealthMuc implements PersonWithSchool, PersonHealth {
         return weeklyAccidentRisks.getOrDefault(type, 0.f);
     }
 
-    public void updateWeeklyAccidentRisks(Map<String, Float> newRisks) {
-        newRisks.forEach((k, v) -> weeklyAccidentRisks.merge(k, v, (v1, v2) -> v1 + v2 - v1*v2));
+    public void updateWeeklyAccidentRisks(Map<String, Double> newRisks) {
+        newRisks.forEach((k, v) ->
+                weeklyAccidentRisks.merge(k, v.floatValue(), (v1, v2) -> v1 + v2 - v1 * v2)
+        );
     }
 
     @Override

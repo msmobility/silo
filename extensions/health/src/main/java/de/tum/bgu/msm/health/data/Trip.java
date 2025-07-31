@@ -3,7 +3,6 @@ package de.tum.bgu.msm.health.data;
 import de.tum.bgu.msm.data.*;
 import org.matsim.api.core.v01.Coord;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -146,7 +145,7 @@ public class Trip implements Id {
         this.travelNdviExposure += travelNdviExposure;
     }
 
-    public Map<String, Float> getTravelRiskMap() { return travelRiskMap; }
+    public Map<String, Double> getTravelRiskMap() { return travelRiskMap; }
 
     public void updateTravelRiskMap(Map<String, Float> newRisks) {
         // newRisks.forEach((k, v) -> travelRiskMap.merge(k, v, (v1, v2) -> v1 + v2 - v1*v2));
