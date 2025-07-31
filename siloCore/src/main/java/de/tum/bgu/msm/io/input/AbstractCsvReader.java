@@ -1,7 +1,8 @@
 package de.tum.bgu.msm.io.input;
 
 import de.tum.bgu.msm.data.DataSet;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,7 +12,7 @@ import java.nio.file.Path;
 
 public abstract class AbstractCsvReader extends AbstractInputReader{
 
-    private static final Logger logger = Logger.getLogger(AbstractCsvReader.class);
+    private static final Logger logger = LogManager.getLogger(AbstractCsvReader.class);
 
     private BufferedReader reader;
 

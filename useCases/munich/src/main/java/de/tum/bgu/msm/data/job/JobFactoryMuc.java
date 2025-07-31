@@ -20,10 +20,11 @@ public class JobFactoryMuc implements JobFactory {
     @Override
     public JobMuc createJob(int id, int zoneId, Coordinate coordinate, int workerId, String type) {
         JobMuc job = new JobMuc(id, zoneId, coordinate, workerId, type);
-        job.setJobWorkingTime((int) (SiloUtil.select(startTimeDistributionByJobType.get(job.getType())) +
-                        intervalInSecondsForPreferredTimes * SiloUtil.getRandomNumberAsDouble()),
-                (int) (SiloUtil.select(workingTimeDistributionByJobType.get(job.getType())) +
-                        intervalInSecondsForPreferredTimes * SiloUtil.getRandomNumberAsDouble()));
+        //Todo check how to deal with jobs with unknown work start time
+        //job.setJobWorkingTime((int) (SiloUtil.select(startTimeDistributionByJobType.get(job.getType())) +
+        //                intervalInSecondsForPreferredTimes * SiloUtil.getRandomNumberAsDouble()),
+        //        (int) (SiloUtil.select(workingTimeDistributionByJobType.get(job.getType())) +
+        //                intervalInSecondsForPreferredTimes * SiloUtil.getRandomNumberAsDouble()));
         return job;
     }
 

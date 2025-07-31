@@ -21,7 +21,8 @@ import de.tum.bgu.msm.utils.SampleException;
 import de.tum.bgu.msm.utils.Sampler;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.commons.math3.util.Precision;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.nio.file.Path;
@@ -44,7 +45,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
     public static boolean track = false;
 
-    protected final static Logger logger = Logger.getLogger(MovesModelImpl.class);
+    protected final static Logger logger = LogManager.getLogger(MovesModelImpl.class);
     private static final int MAX_NUMBER_DWELLINGS = 20;
 
     private final MovesStrategy movesStrategy;
@@ -232,7 +233,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         /** No household will evaluate more than {@link MAX_NUMBER_DWELLINGS} dwellings */
         int maxNumberOfDwellings = Math.min(MAX_NUMBER_DWELLINGS, vacantDwellings.size());
 
-        UtilityUtils.reset();
+        UtilityUtils.reset(maxNumberOfDwellings);
 
         Collections.shuffle(vacantDwellings, this.random);
         for (int i = 0; i < maxNumberOfDwellings; i++) {
@@ -247,7 +248,8 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
                     UtilityUtils.dwellings[i] = dwelling;
                 }
             } else {
-                maxNumberOfDwellings--;
+                UtilityUtils.probabilities[i] = 0.0;
+                UtilityUtils.dwellings[i] = dwelling;
             }
         }
 
@@ -407,9 +409,9 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
          * reset static probability and dwelling arrays for the next dwelling search.
          * reset the job counter.
          */
-        private static void reset() {
-            probabilities = new double[MAX_NUMBER_DWELLINGS];
-            dwellings = new Dwelling[MAX_NUMBER_DWELLINGS];
+        private static void reset(int maxNumber) {
+            probabilities = new double[maxNumber];
+            dwellings = new Dwelling[maxNumber];
         }
 
         /**

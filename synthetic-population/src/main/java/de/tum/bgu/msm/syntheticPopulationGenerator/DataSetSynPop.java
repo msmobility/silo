@@ -6,9 +6,10 @@ import com.google.common.collect.Table;
 import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.common.matrix.Matrix;
 import de.tum.bgu.msm.data.dwelling.DwellingType;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.geotools.api.feature.simple.SimpleFeature;
 import org.locationtech.jts.geom.Coordinate;
-import org.opengis.feature.simple.SimpleFeature;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,7 +22,7 @@ import java.util.Map;
 
 public class DataSetSynPop {
 
-    private static final Logger logger = Logger.getLogger(DataSetSynPop.class);
+    private static final Logger logger = LogManager.getLogger(DataSetSynPop.class);
 
     private TableDataSet weights;
     private TableDataSet frequencyMatrix;
@@ -48,6 +49,7 @@ public class DataSetSynPop {
     private ArrayList<Integer> municipalitiesWithZeroPopulation;
 
     private Matrix distanceTazToTaz;
+    private Matrix commuteFlowTazToTaz;
     private float[] areas;
     private Matrix distanceUtilityHBW;
 
@@ -357,6 +359,14 @@ public class DataSetSynPop {
 
     public void setTazAttributes(HashMap<Integer, HashMap<String, Float>> tazAttributes) {
         this.tazAttributes = tazAttributes;
+    }
+
+    public Matrix getCommuteFlowTazToTaz() {
+        return commuteFlowTazToTaz;
+    }
+
+    public void setCommuteFlowTazToTaz(Matrix commuteFlowTazToTaz) {
+        this.commuteFlowTazToTaz = commuteFlowTazToTaz;
     }
 
     public Table<Integer, String, Integer> getZoneCoordinates() {

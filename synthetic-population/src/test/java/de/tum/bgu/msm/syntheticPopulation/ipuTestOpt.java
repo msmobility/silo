@@ -4,7 +4,8 @@ import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.models.realEstate.construction.DefaultConstructionDemandStrategy;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -29,7 +30,7 @@ public class ipuTestOpt {
     private int[] cityID;
     private int[] countyID;
     private HashMap<Integer, ArrayList> municipalitiesByCounty;
-    static Logger logger = Logger.getLogger(ipuTestOpt.class);
+    static Logger logger = LogManager.getLogger(ipuTestOpt.class);
     private ArrayList<Integer> municipalities;
     private ArrayList<Integer> counties;
 

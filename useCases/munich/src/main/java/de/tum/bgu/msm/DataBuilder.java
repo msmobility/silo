@@ -58,7 +58,7 @@ public class DataBuilder {
 
 
         JobFactoryMuc jobFactory = new JobFactoryMuc();
-        jobFactory.readWorkingTimeDistributions(properties);
+        //jobFactory.readWorkingTimeDistributions(properties);
 
 
         RealEstateDataManager realEstateDataManager = new RealEstateDataManagerImpl(

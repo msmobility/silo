@@ -9,7 +9,8 @@ import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.properties.Properties;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author moeckel
@@ -20,7 +21,7 @@ import org.apache.log4j.Logger;
  */
 public class DefaultDataContainer implements DataContainer {
 
-    private final static Logger logger = Logger.getLogger(DefaultDataContainer.class);
+    private final static Logger logger = LogManager.getLogger(DefaultDataContainer.class);
 
     private final HouseholdDataManager householdDataManager;
     private final RealEstateDataManager realEstateDataManager;

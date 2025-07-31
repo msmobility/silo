@@ -18,7 +18,8 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.ModuleSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.bangkok.allocation.*;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,7 +28,7 @@ import java.util.Map;
 
 public class Allocation extends ModuleSynPop{
 
-    private static final Logger logger = Logger.getLogger(Allocation.class);
+    private static final Logger logger = LogManager.getLogger(Allocation.class);
     private final  DataContainerWithSchools dataContainer;
     private HashMap<Person, Integer> educationalLevel;
 

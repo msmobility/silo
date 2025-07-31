@@ -1,6 +1,7 @@
 package inputGeneration;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -21,7 +22,7 @@ import java.util.List;
 
 public class PTScheduleCreator {
 	
-	private final static Logger LOG = Logger.getLogger(PTScheduleCreator.class);
+	private final static Logger LOG = LogManager.getLogger(PTScheduleCreator.class);
 
 	private static final double PT_HEADWAY = 10 * 60.;
 	private static final double PT_OPERATION_START_TIME = 6 * 3600.;

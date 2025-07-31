@@ -2,12 +2,13 @@ package de.tum.bgu.msm.data.person;
 
 import de.tum.bgu.msm.data.household.Household;
 import org.matsim.utils.objectattributes.attributable.Attributes;
+import org.matsim.utils.objectattributes.attributable.AttributesImpl;
 
 import java.util.Optional;
 
 public class PersonImpl implements Person {
 
-    private final Attributes attributes = new Attributes();
+    private final Attributes attributes = new AttributesImpl();
 
     // Note: if attributes are edited, remember to edit attributes for inmigrants in \relocation\InOutMigration\setupInOutMigration.java and \relocation\InOutMigration\inmigrateHh.java as well
     //Attributes that must be initialized when one person is generated

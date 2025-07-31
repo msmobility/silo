@@ -42,6 +42,7 @@ public final class Properties {
     public final MovesProperties moves;
     public final TrackProperties track;
     public final SchoolDataProperties schoolData;
+    public final HealthModelProperties healthData;
     private final String path;
 
     private Properties(String path) {
@@ -71,6 +72,7 @@ public final class Properties {
         moves = new MovesProperties(bundle);
         track = new TrackProperties(bundle);
         schoolData = new SchoolDataProperties(bundle);
+        healthData = new HealthModelProperties(bundle);
 
 
 
@@ -83,5 +85,13 @@ public final class Properties {
         // had the resourceBundle directly at the JVM file system root.  kai (and possibly already changed by dz before), aug'16
 
 
+    }
+
+    public static void reset() {
+        if (instance != null) {
+            instance = null;
+        } else {
+            throw new RuntimeException("Properties not initialized yet! Make sure to call initializeProperties Method first!");
+        }
     }
 }

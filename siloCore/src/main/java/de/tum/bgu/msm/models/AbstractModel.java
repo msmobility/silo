@@ -3,13 +3,14 @@ package de.tum.bgu.msm.models;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.simulator.UpdateListener;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Random;
 
 public class AbstractModel implements UpdateListener {
 
-    private final static Logger logger = Logger.getLogger(AbstractModel.class);
+    private final static Logger logger = LogManager.getLogger(AbstractModel.class);
 
     protected final DataContainer dataContainer;
     protected final Properties properties;

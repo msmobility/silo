@@ -24,7 +24,6 @@ public class EventAnalysis {
         CongestionEventHandler congestionEventHandler = new CongestionEventHandler(scenario.getNetwork());
         eventsManager.addHandler(congestionEventHandler);
         EventsUtils.readEvents(eventsManager,eventFileName);
-        System.out.println("1");
         //new MatsimEventsReader(eventsManager).readFile(eventFileName);
         return congestionEventHandler.getPersons();
     }

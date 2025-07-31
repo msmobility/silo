@@ -17,7 +17,8 @@ import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.models.carOwnership.SwitchToAutonomousVehicleModelMuc;
 import de.tum.bgu.msm.properties.Properties;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
 import java.io.File;
@@ -32,7 +33,7 @@ public class AVOwnershipResultsMonitor implements ResultsMonitor {
     private DataContainer dataContainer;
     private final Properties properties;
     private PrintWriter resultWriter;
-    private final static Logger logger = Logger.getLogger(SwitchToAutonomousVehicleModelMuc.class);
+    private final static Logger logger = LogManager.getLogger(SwitchToAutonomousVehicleModelMuc.class);
 
     public AVOwnershipResultsMonitor(ModelContainer modelContainer, DataContainer dataContainer, Properties properties) {
         this.dataContainer = dataContainer;

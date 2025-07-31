@@ -8,15 +8,16 @@ import de.tum.bgu.msm.data.geo.RegionImpl;
 import de.tum.bgu.msm.data.geo.ZoneImpl;
 import de.tum.bgu.msm.io.input.GeoDataReader;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.geotools.api.feature.simple.SimpleFeature;
 import org.matsim.core.utils.gis.ShapeFileReader;
-import org.opengis.feature.simple.SimpleFeature;
 
 import java.util.Map;
 
 public class GeoDataReaderPerth implements GeoDataReader {
 
-    private final static Logger logger = Logger.getLogger(GeoDataReaderPerth.class);
+    private final static Logger logger = LogManager.getLogger(GeoDataReaderPerth.class);
 
     private final String ZONE_ID_COLUMN = "Zone";
     private final String SHAPE_IDENTIFIER = "SA1_7DIG11";

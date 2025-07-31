@@ -11,7 +11,8 @@ import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -27,20 +28,14 @@ import java.util.stream.Collectors;
  */
 public class UpdateCarOwnershipModelMuc extends AbstractModel implements ModelUpdateListener {
 
-    private static Logger logger = Logger.getLogger(UpdateCarOwnershipModelMuc.class);
-
+    private static Logger logger = LogManager.getLogger(UpdateCarOwnershipModelMuc.class);
     private double[][][][][][][][] carUpdateProb; // [previousCars][hhSize+][hhSize-][income+][income-][license+][changeRes][three probabilities]
-
-    private final Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("UpdateCarOwnershipCalc"));
-
     public UpdateCarOwnershipModelMuc(DataContainer dataContainer, Properties properties, Random rnd) {
         super(dataContainer, properties, rnd);
     }
 
     @Override
     public void setup() {
-//        Reader reader = new InputStreamReader(this.getClass().getResourceAsStream("UpdateCarOwnershipCalc"));
-        CarOwnershipJSCalculatorMuc calculator = new CarOwnershipJSCalculatorMuc(reader);
         //set car update probabilities
         carUpdateProb = new double[4][2][2][2][2][2][2][3];
         for (int prevCar = 0; prevCar < 4; prevCar++){
@@ -51,7 +46,7 @@ public class UpdateCarOwnershipModelMuc extends AbstractModel implements ModelUp
                             for (int licPlus = 0; licPlus < 2; licPlus++){
                                 for (int changeRes = 0; changeRes < 2; changeRes++){
                                     carUpdateProb[prevCar][sizePlus][sizeMinus][incPlus][incMinus][licPlus][changeRes] =
-                                            calculator.calculateCarOwnerShipProbabilities(prevCar, sizePlus, sizeMinus, incPlus, incMinus, licPlus, changeRes);
+                                            calculateCarOwnerShipProbabilities(prevCar, sizePlus, sizeMinus, incPlus, incMinus, licPlus, changeRes);
                                 }
                             }
                         }
@@ -60,6 +55,49 @@ public class UpdateCarOwnershipModelMuc extends AbstractModel implements ModelUp
             }
         }
     }
+
+    private double[] calculateCarOwnerShipProbabilities(int previousCars, int hhSizePlus, int hhSizeMinus,
+                                                        int hhIncomePlus, int hhIncomeMinus, int licensePlus, int changeResidence) {
+
+        double[] intercept = {-3.0888, -5.6650};
+        double[] betaPreviousCars = {-0.5201, 1.3526};
+        double[] betaHHSizePlus = {2.0179, 0.0};
+        double[] betaHHSizeMinus = {0.0, 1.1027};
+        double[] betaIncomePlus = {0.4842, 0.0};
+        double[] betaIncomeMinus = {0.0, 0.3275};
+        double[] betaLicensePlus = {1.8213, 0.0};
+        double[] betaChangeResidence = {1.1440, 0.9055};
+
+        double[] results = new double[3];
+        double sum = 0.0;
+
+        for (int i = 0; i < 2; i++) {
+            double utility = intercept[i]
+                    + betaPreviousCars[i] * previousCars
+                    + betaHHSizePlus[i] * hhSizePlus
+                    + betaHHSizeMinus[i] * hhSizeMinus
+                    + betaIncomePlus[i] * hhIncomePlus
+                    + betaIncomeMinus[i] * hhIncomeMinus
+                    + betaLicensePlus[i] * licensePlus
+                    + betaChangeResidence[i] * changeResidence;
+
+            results[i + 1] = Math.exp(utility);
+            sum += results[i + 1];
+        }
+
+        double probNoChange = 1.0 / (sum + 1.0);
+        double sumProb = 0.0;
+
+        for (int i = 0; i < 2; i++) {
+            results[i + 1] *= probNoChange;
+            sumProb += results[i + 1];
+        }
+
+        results[0] = 1.0 - sumProb;
+
+        return results;
+    }
+
 
     @Override
     public void prepareYear(int year) {

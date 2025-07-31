@@ -16,7 +16,8 @@ import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.modules.MovesProperties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 
@@ -27,7 +28,7 @@ import java.util.*;
  **/
 public class InOutMigrationImpl extends AbstractModel implements InOutMigration {
 
-    private final static Logger logger = Logger.getLogger(InOutMigrationImpl.class);
+    private final static Logger logger = LogManager.getLogger(InOutMigrationImpl.class);
 
     private final EmploymentModel employment;
     private final MovesModelImpl movesModel;

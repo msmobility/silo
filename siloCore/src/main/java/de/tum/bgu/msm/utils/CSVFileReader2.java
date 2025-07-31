@@ -1,7 +1,8 @@
 package de.tum.bgu.msm.utils;
 import de.tum.bgu.msm.common.datafile.DataTypes;
 import de.tum.bgu.msm.common.datafile.TableDataSet;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.net.URL;
@@ -11,7 +12,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 public class CSVFileReader2 extends TableDataFileReader2 implements DataTypes {
-    protected static transient Logger logger = Logger.getLogger("com.pb.common.datafile");
+    protected static transient Logger logger = LogManager.getLogger("com.pb.common.datafile");
     private char delimiter = 44;
     private String pattern = ",(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))";
     private Pattern regexPattern;

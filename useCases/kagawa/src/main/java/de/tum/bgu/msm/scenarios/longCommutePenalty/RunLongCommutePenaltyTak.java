@@ -9,13 +9,14 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.run.DataBuilderTak;
 import de.tum.bgu.msm.scenarios.oneCarPolicy.OneCarPolicyModelBuilderTak;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 
 public class RunLongCommutePenaltyTak {
 
-    private static final Logger logger = Logger.getLogger(RunLongCommutePenaltyTak.class);
+    private static final Logger logger = LogManager.getLogger(RunLongCommutePenaltyTak.class);
 
     public static void main(String[] args) {
         Properties properties = SiloUtil.siloInitialization(args[0]);

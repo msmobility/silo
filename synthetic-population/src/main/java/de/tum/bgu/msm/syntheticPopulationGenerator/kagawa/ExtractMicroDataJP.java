@@ -6,7 +6,8 @@ import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.common.util.ResourceUtil;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -65,7 +66,7 @@ public class ExtractMicroDataJP {
     protected String[] attributesMunicipality;
 
 
-    static Logger logger = Logger.getLogger(ExtractMicroDataJP.class);
+    static Logger logger = LogManager.getLogger(ExtractMicroDataJP.class);
     private String[] attributesControlTotal;
     private TableDataSet variables;
     private HashMap<String, String[]> attributesMicroData;

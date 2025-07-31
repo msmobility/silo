@@ -25,7 +25,7 @@ public class EVResultMonitor implements ResultsMonitor {
 
     private PrintWriter resultWriter;
     private PrintWriter resultWriterSpatial;
-    private final static Logger logger = Logger.getLogger(EVResultMonitor.class);
+    private final static Logger logger = LogManager.getLogger(EVResultMonitor.class);
 
     public EVResultMonitor(ModelContainer modelContainer, DataContainer dataContainer, Properties properties) {
         this.dataContainer = dataContainer;

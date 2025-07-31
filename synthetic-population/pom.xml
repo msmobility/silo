@@ -10,58 +10,61 @@
 
     <parent>
         <artifactId>silo-parent</artifactId>
-        <groupId>de.tum.bgu.msm</groupId>
+        <groupId>de.tum.bgu.msm.silo</groupId>
         <version>0.1.0-SNAPSHOT</version>
     </parent>
 
     <dependencies>
         <dependency>
-            <groupId>de.tum.bgu.msm</groupId>
+            <groupId>de.tum.bgu.msm.silo</groupId>
             <artifactId>schools</artifactId>
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>de.tum.bgu.msm</groupId>
+            <groupId>de.tum.bgu.msm.silo</groupId>
             <artifactId>siloCore</artifactId>
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>de.tum.bgu.msm</groupId>
+            <groupId>de.tum.bgu.msm.silo</groupId>
             <artifactId>munich</artifactId>
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>de.tum.bgu.msm</groupId>
+            <groupId>de.tum.bgu.msm.silo</groupId>
             <artifactId>maryland</artifactId>
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>de.tum.bgu.msm</groupId>
+            <groupId>de.tum.bgu.msm.silo</groupId>
             <artifactId>perth</artifactId>
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.1</version>
-            <type>jar</type>
-            <scope>provided</scope>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>de.tum.bgu.msm</groupId>
+            <groupId>de.tum.bgu.msm.silo</groupId>
             <artifactId>capeTown</artifactId>
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>de.tum.bgu.msm</groupId>
+            <groupId>de.tum.bgu.msm.silo</groupId>
             <artifactId>kagawa</artifactId>
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>de.tum.bgu.msm</groupId>
+            <groupId>de.tum.bgu.msm.silo</groupId>
             <artifactId>bangkok</artifactId>
             <version>0.1.0-SNAPSHOT</version>
-            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.tum.bgu.msm.silo</groupId>
+            <artifactId>manchester</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>

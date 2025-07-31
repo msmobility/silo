@@ -20,7 +20,8 @@ import de.tum.bgu.msm.models.modeChoice.SimpleCommuteModeChoice;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Collections;
 import java.util.EnumMap;
@@ -31,7 +32,7 @@ import static de.tum.bgu.msm.data.dwelling.RealEstateUtils.RENT_CATEGORIES;
 
 public class SimpleCommuteModeChoiceHousingStrategyImpl implements HousingStrategy {
 
-    private final static Logger logger = Logger.getLogger(SimpleCommuteModeChoiceHousingStrategyImpl.class);
+    private final static Logger logger = LogManager.getLogger(SimpleCommuteModeChoiceHousingStrategyImpl.class);
 
     private enum Normalizer {
         /**

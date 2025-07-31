@@ -6,7 +6,9 @@ import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.matsim.MatsimData;
 import de.tum.bgu.msm.matsim.SiloMatsimUtils;
 import de.tum.bgu.msm.properties.Properties;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.geotools.api.feature.simple.SimpleFeature;
 import org.locationtech.jts.geom.Geometry;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
@@ -22,7 +24,6 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.facilities.*;
-import org.opengis.feature.simple.SimpleFeature;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +31,7 @@ import java.util.TreeMap;
 
 public class AccessibilityModule {
 
-    private static final Logger logger = Logger.getLogger(AccessibilityModule.class);
+    private static final Logger logger = LogManager.getLogger(AccessibilityModule.class);
     private final MatsimData data;
     private final DataContainer dataContainer;
 

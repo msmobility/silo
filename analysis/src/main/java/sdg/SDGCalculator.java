@@ -12,7 +12,8 @@ import de.tum.bgu.msm.data.household.IncomeCategory;
 import de.tum.bgu.msm.data.person.*;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.MitoUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import sdg.data.AnalyzedPerson;
 import sdg.data.DataContainerSdg;
@@ -25,7 +26,7 @@ import java.util.stream.Collectors;
 
 public class SDGCalculator {
 
-    private static Logger logger = Logger.getLogger(SDGCalculator.class);
+    private static Logger logger = LogManager.getLogger(SDGCalculator.class);
     private Collection<Household> households = new ArrayList<>();
     private Collection<Dwelling> dwellings = new ArrayList<>();
     private Collection<Person> persons = new ArrayList<>();

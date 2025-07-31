@@ -7,14 +7,15 @@ import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonMuc;
 import de.tum.bgu.msm.io.output.PersonWriter;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.io.PrintWriter;
 
 public class PersonWriterMucMito implements PersonWriter {
 
-    private final static Logger logger = Logger.getLogger(PersonWriterMucMito.class);
+    private final static Logger logger = LogManager.getLogger(PersonWriterMucMito.class);
 
     private final HouseholdDataManager householdData;
 

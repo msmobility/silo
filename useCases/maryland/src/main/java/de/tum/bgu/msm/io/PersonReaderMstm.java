@@ -9,7 +9,8 @@ import de.tum.bgu.msm.data.person.Gender;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.PersonRole;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -17,7 +18,7 @@ import java.io.IOException;
 
 public class PersonReaderMstm {
 
-    private final static Logger logger = Logger.getLogger(PersonReaderMstm.class);
+    private final static Logger logger = LogManager.getLogger(PersonReaderMstm.class);
     private final HouseholdDataManager householdDataManager;
     private final PersonfactoryMstm factory;
 

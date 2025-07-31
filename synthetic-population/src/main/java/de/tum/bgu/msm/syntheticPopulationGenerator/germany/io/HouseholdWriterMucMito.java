@@ -6,7 +6,8 @@ import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdMuc;
 import de.tum.bgu.msm.io.output.HouseholdWriter;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.PrintWriter;
 
@@ -14,7 +15,7 @@ public class HouseholdWriterMucMito implements HouseholdWriter {
 
     private final HouseholdDataManager householdData;
     private final RealEstateDataManager realEstateData;
-    private final static Logger logger = Logger.getLogger(HouseholdWriterMucMito.class);
+    private final static Logger logger = LogManager.getLogger(HouseholdWriterMucMito.class);
 
     public HouseholdWriterMucMito(HouseholdDataManager householdData, RealEstateDataManager realEstateData) {
         this.householdData = householdData;

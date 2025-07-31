@@ -33,6 +33,7 @@ public final class GeoProperties {
     public final boolean useCapacityForDwellings;
     public final String parkingZonalDataFile;
 
+    public final String poiFileName;
 
     public GeoProperties(ResourceBundle bundle) {
         PropertiesUtil.newPropertySubmodule("Geo properties");
@@ -45,6 +46,7 @@ public final class GeoProperties {
         useCapacityForDwellings = PropertiesUtil.getBooleanProperty(bundle, "use.growth.capacity.data", false);
 
         parkingZonalDataFile = PropertiesUtil.getStringProperty(bundle, "parking.zone.data", "scenarios/av/parking_by_zone.csv");
+        poiFileName = PropertiesUtil.getStringProperty(bundle, "poi.file", "input/mito/microDestinationAttraction.csv");
     }
 }
 

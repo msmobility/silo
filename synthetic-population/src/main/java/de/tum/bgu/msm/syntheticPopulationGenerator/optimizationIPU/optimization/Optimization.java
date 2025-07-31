@@ -7,11 +7,12 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.ModuleSynPop;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Optimization extends ModuleSynPop{
 
-    private static final Logger logger = Logger.getLogger(Optimization.class);
+    private static final Logger logger = LogManager.getLogger(Optimization.class);
 
     public Optimization(DataSetSynPop dataSetSynPop){
         super(dataSetSynPop);

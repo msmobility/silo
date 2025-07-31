@@ -12,14 +12,15 @@ import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipJSCalculatorMuc;
 import de.tum.bgu.msm.models.carOwnership.CreateCarOwnershipModelMuc;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
 
 public class OneCarCreateCarOwnershipModelMuc implements CreateCarOwnershipModel {
 
-    private static Logger logger = Logger.getLogger(CreateCarOwnershipModelMuc.class);
+    private static Logger logger = LogManager.getLogger(CreateCarOwnershipModelMuc.class);
     private final DataContainer dataContainer;
     private final DefaultGeoData geoData;
 

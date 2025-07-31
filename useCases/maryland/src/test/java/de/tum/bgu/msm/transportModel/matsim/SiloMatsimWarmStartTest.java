@@ -3,10 +3,11 @@ package de.tum.bgu.msm.transportModel.matsim;
 import de.tum.bgu.msm.run.SiloMatsim;
 import de.tum.bgu.msm.transportModel.SiloTestUtils;
 import junitx.framework.FileAssert;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
@@ -22,15 +23,16 @@ import java.nio.file.Paths;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.matsim.utils.eventsfilecomparison.EventsFileComparator.Result.FILES_ARE_EQUAL;
+import static org.matsim.utils.eventsfilecomparison.ComparisonResult.FILES_ARE_EQUAL;
 
 /**
  * @author dziemke, nagel
  */
+@ExtendWith(MatsimTestUtils.class)
 public class SiloMatsimWarmStartTest {
-    private static final Logger log = Logger.getLogger(SiloMatsimTest.class);
+    private static final Logger log = LogManager.getLogger(SiloMatsimTest.class);
 
-    @Rule public MatsimTestUtils utils = new MatsimTestUtils();
+    public MatsimTestUtils utils = new MatsimTestUtils();
 
     @Test
     public final void testMain() {
@@ -49,11 +51,11 @@ public class SiloMatsimWarmStartTest {
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
         }
-        config.controler().setOutputDirectory(utils.getOutputDirectory());
+        config.controller().setOutputDirectory(utils.getOutputDirectory());
         config.global().setNumberOfThreads(1);
-        config.parallelEventHandling().setNumberOfThreads(1);
+        config.global().setNumberOfThreads(1);
         config.qsim().setNumberOfThreads(1);
-        config.plansCalcRoute().setRoutingRandomness(0);
+        config.routing().setRoutingRandomness(0);
 
         try {
             SiloMatsim siloMatsim = new SiloMatsim(arg, config);

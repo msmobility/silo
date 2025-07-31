@@ -5,16 +5,17 @@ import de.tum.bgu.msm.data.development.Development;
 import de.tum.bgu.msm.data.Location;
 import de.tum.bgu.msm.data.Region;
 import de.tum.bgu.msm.data.Zone;
+import de.tum.bgu.msm.data.geo.ZoneImpl;
 import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.io.output.OmxTravelTimesWriter;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix2D;
+import org.geotools.api.feature.simple.SimpleFeature;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.matsim.api.core.v01.TransportMode;
-import org.opengis.feature.simple.SimpleFeature;
 
 import java.io.File;
 import java.util.Collections;
@@ -28,7 +29,7 @@ public class OmxSkimTest {
     @Before
     public void init() {
         SiloUtil.loadHdf5Lib();
-        mockZone = new Zone() {
+        mockZone = new ZoneImpl(1,1.f, null) {
 
             @Override
             public Region getRegion() {

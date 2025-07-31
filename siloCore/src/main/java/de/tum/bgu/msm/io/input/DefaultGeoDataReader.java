@@ -7,9 +7,10 @@ import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.geo.RegionImpl;
 import de.tum.bgu.msm.data.geo.ZoneImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.geotools.api.feature.simple.SimpleFeature;
 import org.matsim.core.utils.gis.ShapeFileReader;
-import org.opengis.feature.simple.SimpleFeature;
 
 public class DefaultGeoDataReader implements GeoDataReader {
 
@@ -18,7 +19,7 @@ public class DefaultGeoDataReader implements GeoDataReader {
     private final String SHAPE_IDENTIFIER = "Id";
     private final String ZONE_ID_COLUMN = "Id";
 
-    private final static Logger logger = Logger.getLogger(DefaultGeoDataReader.class);
+    private final static Logger logger = LogManager.getLogger(DefaultGeoDataReader.class);
 
     public DefaultGeoDataReader(GeoData geoData) {
         this.geoData = geoData;
@@ -54,10 +55,11 @@ public class DefaultGeoDataReader implements GeoDataReader {
             throw new RuntimeException("No shape file found!");
         }
         for (SimpleFeature feature : ShapeFileReader.getAllFeatures(path)) {
+            SimpleFeature simpleFeature = feature;
             int zoneId = Integer.parseInt(feature.getAttribute(SHAPE_IDENTIFIER).toString());
             Zone zone = geoData.getZones().get(zoneId);
             if (zone != null) {
-                zone.setZoneFeature(feature);
+                zone.setZoneFeature(simpleFeature);
             } else {
                 logger.warn("zoneId: " + zoneId + " does not exist in silo zone system");
             }

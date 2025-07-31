@@ -19,11 +19,12 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.munich.microlocation.Microloc
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.Preparation;
 import de.tum.bgu.msm.syntheticPopulationGenerator.optimizationIPU.optimization.Optimization;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class SyntheticPopDeTrampa implements SyntheticPopI {
 
-    public static final Logger logger = Logger.getLogger(SyntheticPopDe.class);
+    public static final Logger logger = LogManager.getLogger(SyntheticPopDe.class);
     private final DataSetSynPop dataSetSynPop;
     private Properties properties;
 

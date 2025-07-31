@@ -8,7 +8,8 @@ import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -20,7 +21,7 @@ import java.util.Random;
  * Created on 18 August 2014 in College Park, MD
  **/
 public class MaryLandUpdateCarOwnershipModel extends AbstractModel implements ModelUpdateListener {
-    private static Logger logger = Logger.getLogger(MaryLandUpdateCarOwnershipModel.class);
+    private static Logger logger = LogManager.getLogger(MaryLandUpdateCarOwnershipModel.class);
 
     private final Accessibility accessibility;
     private double[][][][][][] autoOwnerShipUtil;   // [three probabilities][hhsize][workers][income][transitAcc][density]

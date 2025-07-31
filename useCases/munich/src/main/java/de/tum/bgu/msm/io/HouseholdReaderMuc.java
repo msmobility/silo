@@ -6,7 +6,8 @@ import de.tum.bgu.msm.data.household.HouseholdFactoryMuc;
 import de.tum.bgu.msm.data.household.HouseholdMuc;
 import de.tum.bgu.msm.io.input.HouseholdReader;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -14,7 +15,7 @@ import java.io.IOException;
 
 public class HouseholdReaderMuc implements HouseholdReader {
 
-    private final static Logger logger = Logger.getLogger(HouseholdReaderMuc.class);
+    private final static Logger logger = LogManager.getLogger(HouseholdReaderMuc.class);
     private final HouseholdDataManager hhData;
     private final HouseholdFactoryMuc factory;
 

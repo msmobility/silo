@@ -3,7 +3,8 @@ package de.tum.bgu.msm.io.output;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.vehicle.VehicleType;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.PrintWriter;
 import java.util.Collection;
@@ -11,7 +12,7 @@ import java.util.Collection;
 public class DefaultHouseholdWriter implements HouseholdWriter {
 
     private final Collection<Household> householdData;
-    private final static Logger logger = Logger.getLogger(DefaultHouseholdWriter.class);
+    private final static Logger logger = LogManager.getLogger(DefaultHouseholdWriter.class);
 
     public DefaultHouseholdWriter(Collection<Household> households) {
         this.householdData = households;

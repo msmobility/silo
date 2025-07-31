@@ -3,7 +3,7 @@ package de.tum.bgu.msm.syntheticPopulationGenerator.properties;
 import de.tum.bgu.msm.common.datafile.TableDataSet;
 import de.tum.bgu.msm.properties.PropertiesUtil;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.commons.math.distribution.GammaDistributionImpl;
+import org.apache.commons.math3.distribution.GammaDistribution;
 
 import java.util.ResourceBundle;
 
@@ -80,7 +80,7 @@ public class GermanyPropertiesSynPop extends AbstractPropertiesSynPop {
         double incomeRate = PropertiesUtil.getDoubleProperty(bundle, "income.gamma.rate", 0.0006869439);
         //todo consider to read it from another source e.g. a JS calculator or CSV file
         //this is not a property but a variable?
-        incomeGammaDistribution = new GammaDistributionImpl(incomeShape, 1 / incomeRate);
+        incomeGammaDistribution = new GammaDistribution(incomeShape, 1 / incomeRate);
 
         //todo this properties will be doubled with silo model run properties
         weightsFileName = PropertiesUtil.getStringProperty(bundle, "weights.matrix", "microData/" + state +  "/interimFiles/weigthsMatrix.csv");

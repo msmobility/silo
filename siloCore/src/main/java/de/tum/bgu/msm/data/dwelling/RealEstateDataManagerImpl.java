@@ -13,7 +13,8 @@ import de.tum.bgu.msm.data.household.IncomeCategory;
 import de.tum.bgu.msm.io.output.DefaultDwellingWriter;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
@@ -29,7 +30,7 @@ import static de.tum.bgu.msm.data.dwelling.RealEstateUtils.RENT_CATEGORIES;
  **/
 public class RealEstateDataManagerImpl implements RealEstateDataManager {
 
-    private final static Logger logger = Logger.getLogger(RealEstateDataManagerImpl.class);
+    private final static Logger logger = LogManager.getLogger(RealEstateDataManagerImpl.class);
 
     private final DwellingData dwellingData;
 
