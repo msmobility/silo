@@ -2,9 +2,7 @@ name: Cloudsmith Deployment
 
 on:
   schedule:
-    - cron: '0 1 * * 1' 
-
-
+    - cron: '0 1 * * 1'
 
 jobs:
   build:
@@ -12,27 +10,28 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Set up JDK 11
-        uses: actions/setup-java@v3
+
+      - name: Set up JDK 21 for build
+        uses: actions/setup-java@v4
         with:
-          distribution: 'adopt' # See 'Supported distributions' for available options
-          java-version: '11'
+          distribution: 'temurin'
+          java-version: '21'
           cache: 'maven'
+
       - name: Build with Maven
         run: mvn test -DforkMode=always --fail-at-end --batch-mode -Dmatsim.preferLocalDtds=true
-      
-      - name: Set up Cloudsmith
-        uses: actions/setup-java@v2
-        with: # running setup-java again overwrites the settings.xml
-          distribution: 'adopt' # See 'Supported distributions' for available options
-          java-version: '11'
-          server-id: msm # Value of the distributionManagement/repository/id field of the pom.xml
-          server-username: CLOUDSMITH_USERNAME # env variable for username in deploy
-          server-password: CLOUDSMITH_TOKEN # env variable for token in deploy       
+
+      - name: Set up JDK 21 for Cloudsmith (and configure server credentials)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          server-id: msm
+          server-username: CLOUDSMITH_USERNAME
+          server-password: CLOUDSMITH_TOKEN
 
       - name: Publish to Cloudsmith
         run: mvn deploy -DskipTests=true --fail-at-end --batch-mode -Dmatsim.preferLocalDtds=true
         env:
           CLOUDSMITH_USERNAME: carlos-llorca
           CLOUDSMITH_TOKEN: ${{ secrets.cloudsmithToken }}
-          
