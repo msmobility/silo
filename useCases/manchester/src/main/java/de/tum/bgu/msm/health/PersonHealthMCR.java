@@ -387,7 +387,7 @@ public class PersonHealthMCR implements PersonWithSchool, PersonHealth {
 
     //For Munich
     @Override
-    public void updateWeeklyPollutionExposures(Map<String, Double> exposureMap) {}
+    public void updateWeeklyPollutionExposures(Map<String, Float> exposureMap) {}
 
     @Override
     public void setRelativeRisks(Map<String, Float> relativeRisks) {}

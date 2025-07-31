@@ -39,6 +39,7 @@ import org.matsim.core.scenario.ScenarioUtils;
 import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import static org.matsim.contrib.emissions.Pollutant.*;
 
@@ -352,14 +353,14 @@ public class HealthModelMuc extends AbstractModel implements ModelUpdateListener
             pathExposureNo2 += linkExposureNo2;
         }
 
-        Map<String, Double> accidentRiskMap = new HashMap<>();
+        Map<String, Float> accidentRiskMap = new HashMap<>();
         //accidentRiskMap.put("lightInjury", pathLightInjuryRisk);
-        accidentRiskMap.put("severeInjury", (double) pathSevereInjuryRisk);
-        accidentRiskMap.put("fatality", (double) pathFatalityRisk);
+        accidentRiskMap.put("severeInjury", (float) pathSevereInjuryRisk);
+        accidentRiskMap.put("fatality", (float) pathFatalityRisk);
 
-        Map<String, Double> exposureMap = new HashMap<>();
-        exposureMap.put("pm2.5", pathExposurePm25);
-        exposureMap.put("no2", pathExposureNo2);
+        Map<String, Float> exposureMap = new HashMap<>();
+        exposureMap.put("pm2.5", (float) pathExposurePm25);
+        exposureMap.put("no2", (float) pathExposureNo2);
 
         trip.updateMatsimTravelDistance(pathLength);
         trip.updateMatsimTravelTime(pathTime);
@@ -454,7 +455,13 @@ public class HealthModelMuc extends AbstractModel implements ModelUpdateListener
                 continue;
             }
 
-            ((PersonHealth) siloPerson).updateWeeklyAccidentRisks(mitoTrip.getTravelRiskMap());
+            ((PersonHealth) siloPerson).updateWeeklyAccidentRisks(
+                mitoTrip.getTravelRiskMap().entrySet().stream()
+                    .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> e.getValue().doubleValue()
+                    ))
+            );
             ((PersonHealth) siloPerson).updateWeeklyMarginalMetHours(mitoTrip.getTripMode(), (float) mitoTrip.getMarginalMetHours());
             ((PersonHealth) siloPerson).updateWeeklyPollutionExposures(mitoTrip.getTravelExposureMap());
             ((PersonHealth) siloPerson).updateWeeklyTravelSeconds((float) mitoTrip.getMatsimTravelTime());
@@ -473,9 +480,9 @@ public class HealthModelMuc extends AbstractModel implements ModelUpdateListener
         for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
             double minutesAtHome = Math.max(0., 10080. - (((PersonHealth) person).getWeeklyTravelSeconds() / 60.) - (((PersonHealth) person).getWeeklyActivityMinutes()));
 
-            Map<String, Double> exposureMap = new HashMap<>();
-            exposureMap.put("pm2.5", PollutionExposure.getHomeExposurePm25(minutesAtHome));
-            exposureMap.put("no2", PollutionExposure.getHomeExposureNo2(minutesAtHome));
+            Map<String, Float> exposureMap = new HashMap<>();
+            exposureMap.put("pm2.5", (float) PollutionExposure.getHomeExposurePm25(minutesAtHome));
+            exposureMap.put("no2", (float) PollutionExposure.getHomeExposureNo2(minutesAtHome));
 
             ((PersonHealth) person).setWeeklyHomeMinutes((float) minutesAtHome);
             ((PersonHealth) person).updateWeeklyPollutionExposures(exposureMap);

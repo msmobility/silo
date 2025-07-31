@@ -76,7 +76,7 @@ public interface PersonHealth extends Person {
     void resetHealthData();
 
     //TODO: these are methods currently used for Munich health, need to adapt Munich health model
-    void updateWeeklyPollutionExposures(Map<String, Double> exposureMap);
+    void updateWeeklyPollutionExposures(Map<String, Float> exposureMap);
 
     void setRelativeRisks(Map<String, Float> relativeRisks);
 

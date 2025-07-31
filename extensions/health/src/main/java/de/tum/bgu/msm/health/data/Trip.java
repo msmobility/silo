@@ -3,6 +3,7 @@ package de.tum.bgu.msm.health.data;
 import de.tum.bgu.msm.data.*;
 import org.matsim.api.core.v01.Coord;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,8 +44,8 @@ public class Trip implements Id {
     private double matsimTravelDistance = 0.;
 
     private double marginalMetHours = 0.;
-    private Map<String, Double> travelRiskMap = new HashMap<>();
-    private Map<String, Double> travelExposureMap = new HashMap<>();
+    private Map<String, Float> travelRiskMap = new HashMap<>();
+    private Map<String, Float> travelExposureMap = new HashMap<>();
     private double travelNoiseExposure = 0.;
     private double travelNdviExposure = 0.;
 
@@ -145,20 +146,20 @@ public class Trip implements Id {
         this.travelNdviExposure += travelNdviExposure;
     }
 
-    public Map<String, Double> getTravelRiskMap() { return travelRiskMap; }
+    public Map<String, Float> getTravelRiskMap() { return travelRiskMap; }
 
-    public void updateTravelRiskMap(Map<String, Double> newRisks) {
+    public void updateTravelRiskMap(Map<String, Float> newRisks) {
         // newRisks.forEach((k, v) -> travelRiskMap.merge(k, v, (v1, v2) -> v1 + v2 - v1*v2));
         newRisks.forEach((k, v) -> travelRiskMap.merge(k, v, (v1, v2) -> v1 + v2));
     }
 
-    public Map<String, Double> getTravelExposureMap() { return travelExposureMap; }
+    public Map<String, Float> getTravelExposureMap() { return travelExposureMap; }
 
-    public void updateTravelExposureMap(Map<String, Double> newExposures) {
+    public void updateTravelExposureMap(Map<String, Float> newExposures) {
         newExposures.forEach((k, v) -> travelExposureMap.merge(k, v, (v1, v2) -> v1 + v2));
     }
 
-    public Map<String, Double> getActivityExposureMap() { return activityExposureMap; }
+    public Map<String, Float> getActivityExposureMap() { return activityExposureMap; }
 
     public void setActivityExposureMap(Map<String, Float> exposureMap) {
         this.activityExposureMap = exposureMap;
