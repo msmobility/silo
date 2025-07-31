@@ -98,7 +98,7 @@ public class HealthExposureModelMEL extends AbstractModel implements ModelUpdate
     public void endYear(int year) {
         //TODO: clean up the code to be compatible for different simulation setting
         if((properties.healthData.baseExposureFile ==null && year == properties.main.startYear) || properties.healthData.exposureModelYears.contains(year)) {
-            logger.warn("Health model end year:" + year);
+            logger.info("Health model end year:{}", year);
             TreeSet<Integer> sortedYears = new TreeSet<>(properties.transportModel.transportModelYears);
             latestMatsimYear = sortedYears.floor(year);
             latestMITOYear = year;
@@ -116,13 +116,13 @@ public class HealthExposureModelMEL extends AbstractModel implements ModelUpdate
 
             // assemble travel-activity health exposure data
             for(Day day : simulatedDays){
-                logger.warn("Health model setup for " + day);
+                logger.info("Health model setup for {}", day);
 
                 replyLinkInfoFromFile(day);
                 replyActivityLocationInfoFromFile(day);
                 System.gc();
 
-                logger.warn("Run health exposure model for " + day);
+                logger.info("Run health exposure model for {}", day);
 
                 for(Mode mode : Mode.values()){
                     switch (mode){
@@ -337,7 +337,7 @@ public class HealthExposureModelMEL extends AbstractModel implements ModelUpdate
         }
         executor.execute();
 
-        logger.info("No path trips for mode " + mode + " : " + NO_PATH_TRIP.get());
+        logger.info("No path trips for mode {}: {}",mode, NO_PATH_TRIP.get());
     }
 
     private void processPtLegExposures(Trip trip, Mode legMode, double legDist_m, double legTime_s, double startTimeInSecond) {
@@ -559,7 +559,7 @@ public class HealthExposureModelMEL extends AbstractModel implements ModelUpdate
         }
         executor.execute();
 
-        logger.info("No path trips for mode " + mode + " : " + NO_PATH_TRIP.get());
+        logger.info("No path trips for mode {} : {}", mode, NO_PATH_TRIP.get());
 
     }
 
@@ -579,8 +579,21 @@ public class HealthExposureModelMEL extends AbstractModel implements ModelUpdate
         double pathExposureNoise = 0.;
 
         double pathExposureGreen = 0.;
+
+        // Injury variables
+        // Munich
         double pathSevereInjuryRisk = 0;
         double pathFatalityRisk = 0;
+
+        // JIBE (Manchester and Melbourne)
+        double pathInjuryRisk = 1.0;
+        Day currentDay; // by default
+        if(trip.getDepartureDay().equals(Day.saturday) || trip.getDepartureDay().equals(Day.sunday)){
+            currentDay = trip.getDepartureDay();
+        }else{
+            currentDay = Day.thursday;
+        }
+
         float[] hourOccupied = new float[24*7];
 
         for(Link link : path.links) {
@@ -588,8 +601,13 @@ public class HealthExposureModelMEL extends AbstractModel implements ModelUpdate
             double linkLength = link.getLength();
             double linkTime = travelTime.getLinkTravelTime(link,enterTimeInSecond,null,vehicle);
 
+            // Munich
             double linkSevereInjuryRisk = 0.;
             double linkFatalityRisk = 0.;
+
+            // JIBE
+            double linkInjuryRisk = 0.;
+
             double linkMarginalMetHour = 0.;
             double linkExposureGreen = 0.;
             double linkExposurePm25 = 0.;
@@ -602,6 +620,7 @@ public class HealthExposureModelMEL extends AbstractModel implements ModelUpdate
             //double[] severeFatalRisk = getLinkSevereFatalInjuryRisk(mode, (int) (enterTimeInSecond / 3600.), linkInfo);
             //linkSevereInjuryRisk = severeFatalRisk[0];
             //linkFatalityRisk = severeFatalRisk[1];
+            LinkInfo linkInfoByDay = ((HealthDataContainerImpl) dataContainer).getLinkInfoByDay(currentDay).get(link.getId());
 
             // PHYSICAL ACTIVITY
             double linkMarginalMet = PhysicalActivity.getMMet(mode, linkLength, linkTime, link);
@@ -669,8 +688,30 @@ public class HealthExposureModelMEL extends AbstractModel implements ModelUpdate
 
             pathLength += linkLength;
             pathTime += linkTime;
-            pathSevereInjuryRisk += linkSevereInjuryRisk - (pathSevereInjuryRisk * linkSevereInjuryRisk);
-            pathFatalityRisk += linkFatalityRisk - (pathFatalityRisk * linkFatalityRisk);
+
+            // INJURIES
+            if(linkInfoByDay != null) {
+                // Injuries
+                // pathSevereInjuryRisk += linkSevereInjuryRisk - (pathSevereInjuryRisk * linkSevereInjuryRisk);
+                // pathFatalityRisk += linkFatalityRisk - (pathFatalityRisk * linkFatalityRisk);
+
+                //
+                if (weekdays.contains(trip.getDepartureDay())){
+                    linkInjuryRisk = getLinkInjuryRisk(mode, (int) enterTimeInSecond, linkInfoByDay)/5;
+                } else {
+                    linkInjuryRisk = getLinkInjuryRisk(mode, (int) enterTimeInSecond, linkInfoByDay);
+                }
+
+                //
+                int agePerson = dataContainer.getHouseholdDataManager().getPersonFromId(trip.getPerson()).getAge();
+                Gender genderPerson = dataContainer.getHouseholdDataManager().getPersonFromId(trip.getPerson()).getGender();
+
+                double AgeGenderRR = 1.;
+                //AgeGenderRR = getCasualtyRR_byAge_Gender(genderPerson, agePerson, trip.getTripMode());
+                pathInjuryRisk *= (1 - linkInjuryRisk * AgeGenderRR);
+                //pathInjuryRisk += (linkInjuryRisk * AgeGenderRR);
+            }
+
             pathMarginalMetHours += linkMarginalMetHour;
             pathExposureGreen += linkExposureGreen;
         }
@@ -680,10 +721,11 @@ public class HealthExposureModelMEL extends AbstractModel implements ModelUpdate
         trip.updateMatsimLinkCount(path.links.size());
 
         trip.updateMarginalMetHours(pathMarginalMetHours);
-        trip.updateTravelRiskMap(Map.of(
-                "severeInjury", (float) pathSevereInjuryRisk,
-                "fatality", (float) pathFatalityRisk
-        ));
+
+        // JIBE
+        pathInjuryRisk = 1- pathInjuryRisk;
+
+        trip.updateTravelRiskMap(Map.of("severeFatalInjury", (float) pathInjuryRisk));
 
         trip.updateTravelExposureMap(Map.of(
                 "pm2.5", (float) pathExposurePm25,
@@ -694,9 +736,22 @@ public class HealthExposureModelMEL extends AbstractModel implements ModelUpdate
 
         PersonHealth siloPerson = ((PersonHealth)dataContainer.getHouseholdDataManager().getPersonFromId(trip.getPerson()));
         siloPerson.updateWeeklyTravelSeconds((float) pathTime);
-        siloPerson.updateWeeklyAccidentRisks(Map.of(
-                "severeInjury", (float) pathSevereInjuryRisk,
-                "fatality", (float) pathFatalityRisk));
+
+        switch(mode){
+            case autoDriver:
+            case autoPassenger:
+                siloPerson.updateWeeklyAccidentRisks(Map.of("severeFatalInjuryCar", (float) pathInjuryRisk));
+                break;
+            case bicycle:
+                siloPerson.updateWeeklyAccidentRisks(Map.of("severeFatalInjuryBike", (float) pathInjuryRisk));
+                break;
+            case walk:
+                siloPerson.updateWeeklyAccidentRisks(Map.of("severeFatalInjuryWalk", (float) pathInjuryRisk));
+                break;
+            default:
+                throw new RuntimeException("Undefined mode " + mode);
+        }
+
         siloPerson.updateWeeklyMarginalMetHours(trip.getTripMode(), (float) pathMarginalMetHours);
 
         siloPerson.updateWeeklyPollutionExposuresByHour(Map.of(
@@ -706,6 +761,59 @@ public class HealthExposureModelMEL extends AbstractModel implements ModelUpdate
         siloPerson.updateWeeklyNoiseExposuresByHour(pathExposureNoiseByHour);
         siloPerson.updateWeeklyGreenExposures((float) pathExposureGreen);
         siloPerson.updateWeeklyTravelActivityHourOccupied(hourOccupied);
+    }
+
+    /**
+     * Retrieves the relative risk of casualty for a given gender, age, and transportation mode.
+     *
+     * @param gender The gender of the individual
+     * @param age The age of the individual (will be clamped to 0-100)
+     * @param mode The trip mode
+     * @return The relative risk as a double value
+     * @throws IllegalArgumentException if gender or mode is null
+     */
+
+    double getCasualtyRR_byAge_Gender(Gender gender, int age, Mode mode) {
+        // Parameter validation
+        if (gender == null || mode == null) {
+            throw new IllegalArgumentException("Gender and mode cannot be null");
+        }
+
+        final int MIN_AGE = 0;
+        final int MAX_AGE = 100;
+
+        // Clamp age value
+        age = Math.max(MIN_AGE, Math.min(age, MAX_AGE));
+
+        // Determine mode string
+        String modeStr;
+        switch (mode) {
+            case autoDriver:
+            case autoPassenger:
+                modeStr = "Driver";
+                break;
+            case bicycle:
+                modeStr = "Cyclist";
+                break;
+            case walk:
+                modeStr = "Pedestrian";
+                break;
+            default:
+                logger.warn("Impossible to compute injury relative risk for mode " + mode);
+                return 1.0; // Consider if this is the appropriate default
+        }
+
+        // Safely retrieve the value
+        try {
+            return ((HealthDataContainerImpl) dataContainer)
+                    .getHealthInjuryRRdata()
+                    .get(modeStr)
+                    .get(gender)
+                    .get(age);
+        } catch (NullPointerException e) {
+            logger.error("Missing data for mode: " + modeStr + ", gender: " + gender + ", age: " + age, e);
+            return 1.0; // Or consider throwing an exception
+        }
     }
 
     private void calculateActivityExposures(Trip trip) {
@@ -723,6 +831,10 @@ public class HealthExposureModelMEL extends AbstractModel implements ModelUpdate
         int dayCode = trip.getDepartureDay().getDayCode();
         double startDayHour = (trip.getDepartureTimeInMinutes() + trip.getMatsimTravelTime()/60.) / 60.;
         double endDayHour = (startDayHour + activityDurationInMinutes/60.);
+
+
+        PersonHealth siloPerson =  ((PersonHealth)dataContainer.getHouseholdDataManager().getPersonFromId(trip.getPerson()));
+        double sportweekmMETh =  siloPerson.getWeeklyMarginalMetHoursSport();
 
 
         for(double currentDayHour = startDayHour; currentDayHour < endDayHour;) {
@@ -753,10 +865,22 @@ public class HealthExposureModelMEL extends AbstractModel implements ModelUpdate
                         activityLocation.getExposure2Pollutant2TimeBin().get(Pollutant.PM2_5_non_exhaust).get(exactDayHour);
                 double locationIncrementalNO2 = activityLocation.getExposure2Pollutant2TimeBin().get(Pollutant.NO2).get(exactDayHour);
 
-                double exposurePM25 = PollutionExposure.getActivityExposurePm25(durationInThisHour * 60, locationIncrementalPM25);
-                double exposureNo2 = PollutionExposure.getActivityExposureNo2(durationInThisHour * 60, locationIncrementalNO2);
-                activityExposurePM25ByHour[exactWeekHour] = (float) exposurePM25;
-                activityExposureNo2ByHour[exactWeekHour] = (float) exposureNo2;
+                // Corin paper implementation
+                // double exposurePM25 = PollutionExposure.getActivityExposurePm25(durationInThisHour * 60, locationIncrementalPM25);
+                // double exposureNo2 = PollutionExposure.getActivityExposureNo2(durationInThisHour * 60, locationIncrementalNO2);
+
+                // new ventilation
+                double exposurePM25 = PollutionExposure.getActivityExposurePm25_newvent(durationInThisHour * 60, sportweekmMETh, locationIncrementalPM25);
+                double exposureNo2 = PollutionExposure.getActivityExposureNo2_newvent(durationInThisHour * 60, sportweekmMETh, locationIncrementalNO2);
+                activityExposurePM25 += exposurePM25;
+                activityExposureNo2 += exposureNo2;
+
+                // Noise level
+                if(!activityLocation.getNoiseLevel2TimeBin().isEmpty()){
+                    double noiseExposure = activityLocation.getNoiseLevel2TimeBin().get(exactDayHour) * durationInThisHour;
+                    activityNoiseExposureByHour[exactWeekHour] = (float) noiseExposure;
+                    activityNoiseExposure += noiseExposure;
+                }
 
                 activityExposurePM25 += exposurePM25;
                 activityExposureNo2 += exposureNo2;
@@ -786,8 +910,6 @@ public class HealthExposureModelMEL extends AbstractModel implements ModelUpdate
         ));
         trip.setActivityNoiseExposure(activityNoiseExposure);
         trip.setActivityNdviExposure(activityGreenExposure);
-
-        PersonHealth siloPerson =  ((PersonHealth)dataContainer.getHouseholdDataManager().getPersonFromId(trip.getPerson()));
 
         siloPerson.updateWeeklyActivityMinutes((float) activityDurationInMinutes);
         siloPerson.updateWeeklyTravelActivityHourOccupied(hourOccupied);
@@ -831,9 +953,13 @@ public class HealthExposureModelMEL extends AbstractModel implements ModelUpdate
                             activityLocation.getExposure2Pollutant2TimeBin().get(Pollutant.PM2_5_non_exhaust).get(dayHour);
                     double locationIncrementalNO2 = activityLocation.getExposure2Pollutant2TimeBin().get(Pollutant.NO2).get(dayHour);
 
-                    exposurePM25[weekHour] = (float) PollutionExposure.getHomeExposurePm25(remainingHour * 60, dayHour, locationIncrementalPM25);
-                    exposureNo2[weekHour] = (float) PollutionExposure.getHomeExposureNo2(remainingHour * 60, dayHour, locationIncrementalNO2);
+                    // Corin paper implementation
+                    // exposurePM25[weekHour] = (float) PollutionExposure.getHomeExposurePm25(remainingHour * 60, dayHour, locationIncrementalPM25);
+                    // exposureNo2[weekHour] = (float) PollutionExposure.getHomeExposureNo2(remainingHour * 60, dayHour, locationIncrementalNO2);
 
+                    // new ventilation
+                    exposurePM25[weekHour] = (float) PollutionExposure.getHomeExposurePm25_newvent(remainingHour * 60, dayHour, locationIncrementalPM25);
+                    exposureNo2[weekHour] = (float) PollutionExposure.getHomeExposureNo2_newvent(remainingHour * 60, dayHour, locationIncrementalNO2);
                     // Noise level
                     if(!activityLocation.getNoiseLevel2TimeBin().isEmpty()){
                         exposureNoise[weekHour] = activityLocation.getNoiseLevel2TimeBin().get(dayHour) * remainingHour;
@@ -940,13 +1066,52 @@ public class HealthExposureModelMEL extends AbstractModel implements ModelUpdate
         }else if ("school".equals(tripDestinationType)){
             return "ss" + tripDestinationMicroId;
         }else {
-            logger.warn("Unknown receiver point type: " + tripDestinationType);
+            logger.warn("Unknown receiver point type: {}", tripDestinationType);
         }
 
         return null;
     }
 
+    private double getLinkInjuryRisk(Mode mode, int time, LinkInfo linkInfo){
+        double linkInjuryRisk = 0.;
+        switch (mode) {
+            case autoDriver:
+            case autoPassenger:
+                linkInjuryRisk =
+                        getRiskValue(linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime(),
+                                AccidentType.CAR_ONEWAY, time) +
+                                getRiskValue(linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime(),
+                                        AccidentType.CAR_TWOWAY, time);
+                break;
+            case bicycle:
+                linkInjuryRisk =
+                        getRiskValue(linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime(),
+                                AccidentType.BIKE_MAJOR, time) +
+                                getRiskValue(linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime(),
+                                        AccidentType.BIKE_MINOR, time);
+                break;
+            case walk:
+                linkInjuryRisk =
+                        getRiskValue(linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime(),
+                                AccidentType.PED, time);
+                break;
+            default:
+                throw new RuntimeException("Undefined mode " + mode);
+        }
+        return linkInjuryRisk;
+    }
+
+    // Helper method to safely get values from OpenIntFloatHashMap
+    private float getRiskValue(Map<AccidentType, OpenIntFloatHashMap> exposureMap,
+                               AccidentType type, float time) {
+        if (exposureMap == null) return 0f;
+        OpenIntFloatHashMap timeMap = exposureMap.get(type);
+        if (timeMap == null) return 0f;
+        return timeMap.get((int)(time / 3600.));
+    }
+
     private double[] getLinkSevereFatalInjuryRisk(Mode mode, int hour, LinkInfo linkInfo) {
+        // Munich
         double FATAL_CAR_DRIVER = 0.077;
         double FATAL_BIKECAR_BIKE = 0.024;
         double FATAL_BIKEBIKE_BIKE = 0.051;

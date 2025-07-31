@@ -73,38 +73,39 @@ public class SportPAModelMEL extends AbstractModel implements ModelUpdateListene
 
         // age
         if (person.getAge() < 25) {
-            predictor += handleCoefficient(coef.get("age_group_under25"), "age_group_under25");
-        }else if (person.getAge() < 35) {
-            predictor += handleCoefficient(coef.get("age_group_25_34"), "age_group_25_34");
-        }else if (person.getAge() < 45) {
-            predictor += handleCoefficient(coef.get("age_group_35_44"), "age_group_35_44");
-        }else if (person.getAge() < 55) {
-            predictor += handleCoefficient(coef.get("age_group_45_54"), "age_group_45_54");
-        }else if (person.getAge() < 65) {
-            predictor += handleCoefficient(coef.get("age_group_55_64"), "age_group_55_64");
-        }else if (person.getAge() < 75) {
-            predictor += handleCoefficient(coef.get("age_group_65_74"), "age_group_65_74");
-        }else {
-            predictor += handleCoefficient(coef.get("age_group_over75"), "age_group_over75");
+            predictor += handleCoefficient(coef, "age_group_under25");
+        } else if (person.getAge() < 35) {
+            predictor += handleCoefficient(coef, "age_group_25_34");
+        } else if (person.getAge() < 45) {
+            predictor += handleCoefficient(coef, "age_group_35_44");
+        } else if (person.getAge() < 55) {
+            predictor += handleCoefficient(coef, "age_group_45_54");
+        } else if (person.getAge() < 65) {
+            predictor += handleCoefficient(coef, "age_group_55_64");
+        } else if (person.getAge() < 75) {
+            predictor += handleCoefficient(coef, "age_group_65_74");
+        } else {
+            predictor += handleCoefficient(coef, "age_group_over75");
         }
 
         // occupation
         if (person.getOccupation().equals(Occupation.EMPLOYED)){
-            predictor += handleCoefficient(coef.get("is_employed"), "is_employed");
-        }else if(person.getOccupation().equals(Occupation.STUDENT)){
-            predictor += handleCoefficient(coef.get("student_status"), "is_student");
+            predictor += handleCoefficient(coef, "is_employed");
+        } else if(person.getOccupation().equals(Occupation.STUDENT)){
+            predictor += handleCoefficient(coef, "student_status");
         }
 
-        // imd10
+        // Socio-economic disadvantage deciles
         int zoneId = dataContainer.getRealEstateDataManager().getDwelling(person.getHousehold().getDwellingId()).getZoneId();
         ZoneMEL zoneMEL = (ZoneMEL) dataContainer.getGeoData().getZones().get(zoneId);
 
-        predictor += zoneMEL.getImd10() * handleCoefficient(coef.get("IRSD"), "imd10");
+        predictor += zoneMEL.getSocioEconomicDisadvantageDeciles() * handleCoefficient(coef, "IRSD");
 
         return predictor;
     }
 
-    private double handleCoefficient(Double coefValue, String coefName) {
+    private double handleCoefficient(Map<String, Double> coef, String coefName) {
+        Double coefValue = coef.get(coefName);
         if (coefValue == null) {
             logger.warn("Missing coefficient for key '{}'. Using default value 0.0.", coefName);
             return 0.0;
