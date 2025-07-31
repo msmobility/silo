@@ -22,6 +22,8 @@ public class MatsimPlansAnalyzer {
 
         checkForDuplicatePersonIds(scenario.getPopulation());
 
+        System.out.println(scenario.getPopulation().getPersons().size());
+
     }
 
     public static void checkForDuplicatePersonIds(Population population) {

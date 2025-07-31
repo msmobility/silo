@@ -28,7 +28,7 @@ public class PersonHealthMCR implements PersonWithSchool, PersonHealth {
     //for exposure model
     private Map<Mode, Float> weeklyMarginalMetHours = new HashMap<>();
     private float weeklyMarginalMetHoursSport = 0.f;
-    private Map<String, Float> weeklyAccidentRisks = new HashMap<>();
+    private Map<String, Double> weeklyAccidentRisks = new HashMap<>();
     private Map<String, float[]> weeklyExposureByPollutantByHour = new HashMap<>();
     private Map<String, Float> weeklyExposureByPollutantNormalised;
 
@@ -38,6 +38,7 @@ public class PersonHealthMCR implements PersonWithSchool, PersonHealth {
     private float noiseHighSleepDisturbancePercentage = 0.f;
     private float weeklyNdviExposure = 0.f;
     private float weeklyNdviExposureNormalised = 0.f;
+    private List<VisitedLink> visitedLinks = new ArrayList<>();
 
 
     //for disease model
@@ -265,14 +266,14 @@ public class PersonHealthMCR implements PersonWithSchool, PersonHealth {
     }
 
     @Override
-    public float getWeeklyAccidentRisk(String type) {
-        return weeklyAccidentRisks.getOrDefault(type, 0.f);
+    public double getWeeklyAccidentRisk(String type) {
+        return weeklyAccidentRisks.getOrDefault(type, 0.0);
     }
 
     @Override
-    public void updateWeeklyAccidentRisks(Map<String, Float> newRisks) {
-        newRisks.forEach((k, v) -> weeklyAccidentRisks.merge(k, v, (v1, v2) -> v1 + v2 - v1*v2));
-        //newRisks.forEach((k, v) -> weeklyAccidentRisks.merge(k, v, (v1, v2) -> v1 + v2));
+    public void updateWeeklyAccidentRisks(Map<String, Double> newRisks) {
+        //newRisks.forEach((k, v) -> weeklyAccidentRisks.merge(k, v, (v1, v2) -> v1 + v2 - v1*v2));
+        newRisks.forEach((k, v) -> weeklyAccidentRisks.merge(k, v, (v1, v2) -> v1 + v2));
     }
 
     public float[] getWeeklyNoiseExposureByHour() {
@@ -373,6 +374,15 @@ public class PersonHealthMCR implements PersonWithSchool, PersonHealth {
 
     public void setNoiseHighSleepDisturbancePercentage(float noiseHighSleepDisturbancePercentage) {
         this.noiseHighSleepDisturbancePercentage = noiseHighSleepDisturbancePercentage;
+    }
+
+    // For injuries Manchester
+    List<VisitedLink> getVisitedLinks(){
+        return visitedLinks;
+    }
+
+    void addVisitedLinks(List<VisitedLink> visitedLink){
+        this.visitedLinks.addAll(visitedLink);
     }
 
     //For Munich
