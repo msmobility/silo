@@ -33,7 +33,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class AccidentRateModelMEL {
-    private static final Logger log = LogManager.getLogger( AccidentRateModelMCR.class );
+    private static final Logger log = LogManager.getLogger( AccidentRateModelMEL.class );
     private Scenario scenario;
     private final float SCALEFACTOR;
     private AccidentsContext accidentsContext = new AccidentsContext();
@@ -57,8 +57,8 @@ public class AccidentRateModelMEL {
     private Day day;
 
     //
-    private static final Set<AccidentType> ACCIDENT_TYPE_MCR = Set.of(AccidentType.CAR, AccidentType.BIKECAR, AccidentType.BIKEBIKE);
-    private static final Set<AccidentSeverity> ACCIDENT_SEVERITY_MCR = Set.of(AccidentSeverity.LIGHT);
+    private static final Set<AccidentType> ACCIDENT_TYPE_MEL = Set.of(AccidentType.CAR, AccidentType.BIKECAR, AccidentType.BIKEBIKE);
+    private static final Set<AccidentSeverity> ACCIDENT_SEVERITY_MEL = Set.of(AccidentSeverity.LIGHT);
 
     //
     public static final Set<String> MAJOR = Set.of(
@@ -79,7 +79,7 @@ public class AccidentRateModelMEL {
         this.day = day;
     }
 
-    public void runAgentInjuryRiskOfflineMCR() {
+    public void runAgentInjuryRiskOfflineMEL() {
         com.google.inject.Injector injector = Injector.createInjector( scenario.getConfig() , new AbstractModule(){
             @Override public void install(){
                 install( new ScenarioByInstanceModule( scenario ) );
@@ -168,7 +168,7 @@ public class AccidentRateModelMEL {
         for (AccidentType accidentType : AccidentType.values()){
             for (AccidentSeverity accidentSeverity : AccidentSeverity.values()){
                 String basePath = scenario.getScenarioElement("accidentModelFile").toString();
-                AccidentRateCalculationMCR calculator = new AccidentRateCalculationMCR(SCALEFACTOR, accidentsContext, analysisEventHandler, accidentType, accidentSeverity,basePath);
+                AccidentRateCalculationMEL calculator = new AccidentRateCalculationMEL(SCALEFACTOR, accidentsContext, analysisEventHandler, accidentType, accidentSeverity,basePath);
                 calculator.run(this.scenario.getNetwork().getLinks().values());
                 log.info("Calculating " + accidentType + "_" + accidentSeverity + " crash rate done.");
             }
@@ -323,7 +323,7 @@ public class AccidentRateModelMEL {
         for (AccidentType accidentType : AccidentType.values()){
             for (AccidentSeverity accidentSeverity : AccidentSeverity.values()){
                 String basePath = scenario.getScenarioElement("accidentModelFile").toString();
-                AccidentRateCalculationMCR calculator = new AccidentRateCalculationMCR(SCALEFACTOR, accidentsContext, analysisEventHandler, accidentType, accidentSeverity,basePath);
+                AccidentRateCalculationMEL calculator = new AccidentRateCalculationMEL(SCALEFACTOR, accidentsContext, analysisEventHandler, accidentType, accidentSeverity,basePath);
                 calculator.run(this.scenario.getNetwork().getLinks().values());
                 log.info("Calculating " + accidentType + "_" + accidentSeverity + " crash rate done.");
             }
@@ -389,7 +389,7 @@ public class AccidentRateModelMEL {
         System.gc();
     }
 
-    public void runCasualtyRateMCR() {
+    public void runCasualtyRateMEL() {
         com.google.inject.Injector injector = Injector.createInjector( scenario.getConfig() , new AbstractModule(){
             @Override public void install(){
                 install( new ScenarioByInstanceModule( scenario ) );
@@ -515,16 +515,16 @@ public class AccidentRateModelMEL {
 
         log.info("Link casualty frequency calculation (by type by time of day) start.");
         for (AccidentType accidentType : AccidentType.values()){
-            if (ACCIDENT_TYPE_MCR.contains(accidentType)){
+            if (ACCIDENT_TYPE_MEL.contains(accidentType)){
                 continue;
             }
             for (AccidentSeverity accidentSeverity : AccidentSeverity.values()){
-                if(ACCIDENT_SEVERITY_MCR.contains(accidentSeverity)){
+                if(ACCIDENT_SEVERITY_MEL.contains(accidentSeverity)){
                     continue;
                 }
 
                 String basePath = scenario.getScenarioElement("accidentModelFile").toString();
-                CasualtyRateCalculationMCR calculator = new CasualtyRateCalculationMCR(SCALEFACTOR, accidentsContext, analysisEventHandler, accidentType, accidentSeverity, basePath, scenario, calibrationFactor);
+                CasualtyRateCalculationMEL calculator = new CasualtyRateCalculationMEL(SCALEFACTOR, accidentsContext, analysisEventHandler, accidentType, accidentSeverity, basePath, scenario, calibrationFactor);
 
                 Map<Id<Link>, Link> placeholderMap = new HashMap<>();
                 placeholderMap.putAll(extractLinkSpecific((Map<Id<Link>, Link>) scenario.getNetwork().getLinks(), accidentType));
@@ -550,7 +550,7 @@ public class AccidentRateModelMEL {
         /*
         log.info("Link casualty exposure calculation start.");
         for (Link link : this.scenario.getNetwork().getLinks().values()) {
-            computeLinkCasualtyExposureMCR(link);
+            computeLinkCasualtyExposureMEL(link);
         }
 
         try {
@@ -575,7 +575,7 @@ public class AccidentRateModelMEL {
                 count++;
                 continue;
             }
-            computeAgentCrashRiskMCR(pp.getValue());
+            computeAgentCrashRiskMEL(pp.getValue());
             popSize++;
         }
 
@@ -589,7 +589,7 @@ public class AccidentRateModelMEL {
                 count++;
                 continue;
             }
-            computeAgentCrashRiskMCR(personInfo);
+            computeAgentCrashRiskMEL(personInfo);
             popSize++;
         }
          */
@@ -614,7 +614,7 @@ public class AccidentRateModelMEL {
         // Compute link-level injury risk R=1/v (v= traffic volume)
         log.info("Link casualty exposure calculation start.");
         for (Link link : this.scenario.getNetwork().getLinks().values()) {
-            computeLinkCasualtyExposureMCR(link);
+            computeLinkCasualtyExposureMEL(link);
         }
         log.info("Link casualty exposure completed.");
 
@@ -635,7 +635,7 @@ public class AccidentRateModelMEL {
                 count++;
                 continue;
             }
-            computeAgentCrashRiskMCR(pp.getValue());
+            computeAgentCrashRiskMEL(pp.getValue());
             popSize++;
         }
         log.info("Agent injury risk calculation completed.");
@@ -851,7 +851,7 @@ public class AccidentRateModelMEL {
         for (AccidentType accidentType : AccidentType.values()){
             for (AccidentSeverity accidentSeverity : AccidentSeverity.values()){
                 String basePath = scenario.getScenarioElement("accidentModelFile").toString();
-                AccidentRateCalculationMCR calculator = new AccidentRateCalculationMCR(SCALEFACTOR, accidentsContext, analysisEventHandler, accidentType, accidentSeverity,basePath);
+                AccidentRateCalculationMEL calculator = new AccidentRateCalculationMEL(SCALEFACTOR, accidentsContext, analysisEventHandler, accidentType, accidentSeverity,basePath);
                 calculator.run(this.scenario.getNetwork().getLinks().values());
                 log.info("Calculating " + accidentType + "_" + accidentSeverity + " crash rate done.");
             }
@@ -877,7 +877,7 @@ public class AccidentRateModelMEL {
         }
     }
 
-    private void computeAgentCrashRiskMCR(AccidentAgentInfo personInfo) {
+    private void computeAgentCrashRiskMEL(AccidentAgentInfo personInfo) {
         Map<String, Double> injuryRiskByMode = new HashMap<>();
 
         injuryRiskByMode.put("car", 1.0);
@@ -954,7 +954,7 @@ public class AccidentRateModelMEL {
     }
 
     /*
-    private void computeAgentCrashRiskMCR(AccidentAgentInfo personInfo) {
+    private void computeAgentCrashRiskMEL(AccidentAgentInfo personInfo) {
 
         //double lightInjuryRisk = .0;
         Double severeInjuryRisk = .0;
@@ -1106,7 +1106,7 @@ public class AccidentRateModelMEL {
         }
     }
 
-    private void computeLinkCasualtyExposureMCR(Link link) {
+    private void computeLinkCasualtyExposureMEL(Link link) {
         for (AccidentType accidentType : AccidentType.values()){
             String mode;
             switch (accidentType){
@@ -1277,11 +1277,11 @@ public class AccidentRateModelMEL {
 
         for (Link link : this.scenario.getNetwork().getLinks().values()) {
             for(AccidentSeverity accidentSeverity : AccidentSeverity.values()){
-                if(ACCIDENT_SEVERITY_MCR.contains(accidentSeverity)){
+                if(ACCIDENT_SEVERITY_MEL.contains(accidentSeverity)){
                     continue;
                 }
                 for(AccidentType accidentType : AccidentType.values()){
-                    if (ACCIDENT_TYPE_MCR.contains(accidentType)){
+                    if (ACCIDENT_TYPE_MEL.contains(accidentType)){
                         continue;
                     }
                     double totalCasualty = 0.;
@@ -1348,11 +1348,11 @@ public class AccidentRateModelMEL {
 
         for (Link link : this.scenario.getNetwork().getLinks().values()) {
             for(AccidentSeverity accidentSeverity : AccidentSeverity.values()){
-                if(ACCIDENT_SEVERITY_MCR.contains(accidentSeverity)){
+                if(ACCIDENT_SEVERITY_MEL.contains(accidentSeverity)){
                     continue;
                 }
                 for(AccidentType accidentType : AccidentType.values()){
-                    if (ACCIDENT_TYPE_MCR.contains(accidentType)){
+                    if (ACCIDENT_TYPE_MEL.contains(accidentType)){
                         continue;
                     }
                     double totalCasualty = 0.;

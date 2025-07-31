@@ -454,7 +454,12 @@ public class HealthModelMuc extends AbstractModel implements ModelUpdateListener
                 continue;
             }
 
-            ((PersonHealth) siloPerson).updateWeeklyAccidentRisks(mitoTrip.getTravelRiskMap());
+            Map<String, Double> doubleMap = mitoTrip.getTravelRiskMap();
+            Map<String, Float> floatMap = new HashMap<>();
+            for (Map.Entry<String, Double> entry : doubleMap.entrySet()) {
+                floatMap.put(entry.getKey(), entry.getValue().floatValue());
+            }
+            ((PersonHealth) siloPerson).updateWeeklyAccidentRisks(floatMap);
             ((PersonHealth) siloPerson).updateWeeklyMarginalMetHours(mitoTrip.getTripMode(), (float) mitoTrip.getMarginalMetHours());
             ((PersonHealth) siloPerson).updateWeeklyPollutionExposures(mitoTrip.getTravelExposureMap());
             ((PersonHealth) siloPerson).updateWeeklyTravelSeconds((float) mitoTrip.getMatsimTravelTime());

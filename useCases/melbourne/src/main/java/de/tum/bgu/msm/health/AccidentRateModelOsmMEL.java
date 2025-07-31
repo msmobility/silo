@@ -66,7 +66,7 @@ public class AccidentRateModelOsmMEL {
         this.day = day;
     }
 
-    public void runCasualtyRateMCR() {
+    public void runCasualtyRateMEL() {
         // Initialize injector
         com.google.inject.Injector injector = Injector.createInjector(scenario.getConfig(), new AbstractModule() {
             @Override
@@ -280,7 +280,7 @@ public class AccidentRateModelOsmMEL {
             if (ACCIDENT_TYPES_EXCLUDED.contains(accidentType)) continue;
             for (AccidentSeverity accidentSeverity : AccidentSeverity.values()) {
                 if (ACCIDENT_SEVERITIES_EXCLUDED.contains(accidentSeverity)) continue;
-                CasualtyRateCalculationOsmMCR calculator = new CasualtyRateCalculationOsmMCR(
+                CasualtyRateCalculationOsmMEL calculator = new CasualtyRateCalculationOsmMEL(
                         accidentsContext,
                         accidentType,
                         accidentSeverity,

@@ -10,7 +10,7 @@ import java.util.Collection;
 import java.util.Map;
 
 public class AccidentRateCalculationMEL {
-    private static final Logger log = LogManager.getLogger( AccidentRateCalculationMCR.class );
+    private static final Logger log = LogManager.getLogger( AccidentRateCalculationMEL.class );
     private final double SCALEFACTOR;
     private AnalysisEventHandler analzyer;
     private AccidentsContext accidentsContext;

@@ -101,14 +101,14 @@ public class AccidentModelMEL extends AbstractModel implements ModelUpdateListen
             //System.exit(0);
 
             // injury model (old version)
-            //AccidentRateModelMCR model = new AccidentRateModelMCR(scenario, 1.f / scalingFactor, day);
-            //model.runCasualtyRateMCR(); // number of casualties per link (max 1 per link, otherwise 0)
+            //AccidentRateModelMEL model = new AccidentRateModelMEL(scenario, 1.f / scalingFactor, day);
+            //model.runCasualtyRateMEL(); // number of casualties per link (max 1 per link, otherwise 0)
             // model.computeLinkLevelInjuryRisk(); // R=1/v where v is the traffic volume
             // model.computePersonLevelInjuryRiskOffline();
 
             // osm-based injury model (new version)
-            AccidentRateModelOsmMCR model = new AccidentRateModelOsmMCR(properties, scenario, 1.f / scalingFactor, day);
-            model.runCasualtyRateMCR();
+            AccidentRateModelOsmMEL model = new AccidentRateModelOsmMEL(properties, scenario, 1.f / scalingFactor, day);
+            model.runCasualtyRateMEL();
 
             for (Id<Link> linkId : model.getAccidentsContext().getLinkId2info().keySet()) {
                 //((de.tum.bgu.msm.scenarios.health.HealthDataContainerImpl)dataContainer).getLinkInfoByDay().get(day).get(linkId).setLightCasualityExposureByAccidentTypeByTime(model.getAccidentsContext().getLinkId2info().get(linkId).getLightCasualityExposureByAccidentTypeByTime());

@@ -396,8 +396,8 @@ public class HealthExposureModelMEL extends AbstractModel implements ModelUpdate
         trip.updateMatsimTravelTime(legTime_s);
         trip.updateMarginalMetHours(legMarginalMetHours);
         trip.updateTravelExposureMap(Map.of(
-                "pm2.5", (float) legExposurePm25,
-                "no2", (float) legExposureNo2
+                "pm2.5", (double) legExposurePm25,
+                "no2", (double) legExposureNo2
         ));
 
         PersonHealth siloPerson = ((PersonHealth)dataContainer.getHouseholdDataManager().getPersonFromId(trip.getPerson()));
@@ -725,11 +725,11 @@ public class HealthExposureModelMEL extends AbstractModel implements ModelUpdate
         // JIBE
         pathInjuryRisk = 1- pathInjuryRisk;
 
-        trip.updateTravelRiskMap(Map.of("severeFatalInjury", (float) pathInjuryRisk));
+        trip.updateTravelRiskMap(Map.of("severeFatalInjury", (double) pathInjuryRisk));
 
         trip.updateTravelExposureMap(Map.of(
-                "pm2.5", (float) pathExposurePm25,
-                "no2", (float) pathExposureNo2
+                "pm2.5", (double) pathExposurePm25,
+                "no2", (double) pathExposureNo2
         ));
         trip.updateTravelNoiseExposure(pathExposureNoise);
         trip.updateTravelNdviExposure(pathExposureGreen);
@@ -740,13 +740,13 @@ public class HealthExposureModelMEL extends AbstractModel implements ModelUpdate
         switch(mode){
             case autoDriver:
             case autoPassenger:
-                siloPerson.updateWeeklyAccidentRisks(Map.of("severeFatalInjuryCar", (float) pathInjuryRisk));
+                siloPerson.updateWeeklyAccidentRisks(Map.of("severeFatalInjuryCar", (double) pathInjuryRisk));
                 break;
             case bicycle:
-                siloPerson.updateWeeklyAccidentRisks(Map.of("severeFatalInjuryBike", (float) pathInjuryRisk));
+                siloPerson.updateWeeklyAccidentRisks(Map.of("severeFatalInjuryBike", (double) pathInjuryRisk));
                 break;
             case walk:
-                siloPerson.updateWeeklyAccidentRisks(Map.of("severeFatalInjuryWalk", (float) pathInjuryRisk));
+                siloPerson.updateWeeklyAccidentRisks(Map.of("severeFatalInjuryWalk", (double) pathInjuryRisk));
                 break;
             default:
                 throw new RuntimeException("Undefined mode " + mode);
