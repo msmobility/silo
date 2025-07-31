@@ -179,7 +179,7 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     @Override
     public Map<Id<Link>, LinkInfo> getLinkInfoByDay(Day day){
         return linkInfoByDay.get(day);
-    };
+    }
 
 
     @Override
