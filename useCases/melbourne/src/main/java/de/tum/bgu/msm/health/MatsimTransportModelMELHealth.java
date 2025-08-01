@@ -542,7 +542,7 @@ public final class MatsimTransportModelMELHealth implements TransportModel {
     }
 
     public static double[] calculateBikeWeights(Person person) {
-        return calculateActiveModeWeights("bike", person);
+        return calculateActiveModeWeights("bicycle", person);
     }
 
     public static double[] calculateWalkWeights(Person person) {

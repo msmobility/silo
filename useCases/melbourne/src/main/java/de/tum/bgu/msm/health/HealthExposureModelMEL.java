@@ -1713,7 +1713,7 @@ public class HealthExposureModelMEL extends AbstractModel implements ModelUpdate
     }
 
     public static double[] calculateBikeWeights(org.matsim.api.core.v01.population.Person person) {
-        return calculateActiveModeWeights("bike", person);
+        return calculateActiveModeWeights("bicycle", person);
     }
 
     public static double[] calculateWalkWeights(org.matsim.api.core.v01.population.Person person) {
