@@ -5,7 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import de.tum.bgu.msm.data.accessibility.Accessibility;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jfree.util.Log;
 import org.matsim.api.core.v01.Id;
 import org.matsim.contrib.accessibility.FacilityDataExchangeInterface;
@@ -21,7 +22,7 @@ import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
  * @author dziemke
  **/
 public class MatsimAccessibility implements Accessibility, FacilityDataExchangeInterface {
-	private static final Logger logger = Logger.getLogger(MatsimAccessibility.class);
+	private static final Logger logger = LogManager.getLogger(MatsimAccessibility.class);
 
 	private final GeoData geoData;
 
@@ -47,7 +48,7 @@ public class MatsimAccessibility implements Accessibility, FacilityDataExchangeI
 			accessibilitiesMap.get(key).put(mode, accessibility);
 		}
 	}
-		
+
 	@Override
 	public void finish() { }
 

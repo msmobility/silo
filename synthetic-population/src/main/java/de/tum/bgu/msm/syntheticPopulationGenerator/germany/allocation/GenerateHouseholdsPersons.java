@@ -12,7 +12,8 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.germany.preparation.MicroData
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.disability.DisabilityBase;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.io.InputStream;
@@ -22,7 +23,7 @@ import java.util.*;
 
 public class GenerateHouseholdsPersons {
 
-    private static final Logger logger = Logger.getLogger(GenerateHouseholdsPersons.class);
+    private static final Logger logger = LogManager.getLogger(GenerateHouseholdsPersons.class);
 
     private final DataContainer dataContainer;
 

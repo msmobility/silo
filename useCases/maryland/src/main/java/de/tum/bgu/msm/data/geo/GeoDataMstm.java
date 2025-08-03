@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.data.geo;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,7 +14,7 @@ import java.util.Map;
  **/
 public class GeoDataMstm extends DefaultGeoData {
 
-    private final static Logger logger = Logger.getLogger(GeoDataMstm.class);
+    private final static Logger logger = LogManager.getLogger(GeoDataMstm.class);
 
     private final Map<Integer, County> counties = new HashMap<>();
 

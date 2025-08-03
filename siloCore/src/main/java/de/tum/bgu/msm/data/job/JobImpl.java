@@ -4,6 +4,7 @@ import de.tum.bgu.msm.data.MicroLocation;
 import de.tum.bgu.msm.data.Zone;
 import org.locationtech.jts.geom.Coordinate;
 import org.matsim.utils.objectattributes.attributable.Attributes;
+import org.matsim.utils.objectattributes.attributable.AttributesImpl;
 
 import java.util.Optional;
 
@@ -15,7 +16,7 @@ public class JobImpl implements Job, MicroLocation {
     private Coordinate coordinate;
     private int zoneId;
 
-    private final Attributes attributes = new Attributes();
+    private final Attributes attributes = new AttributesImpl();
 
     JobImpl (int id, int zoneId, Coordinate coordinate, int workerId, String type) {
         this.id = id;

@@ -7,7 +7,8 @@ import de.tum.bgu.msm.events.DisabilityEvent;
 import de.tum.bgu.msm.io.input.PersonReader;
 import de.tum.bgu.msm.models.disability.DefaultDisabilityStrategy;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -15,7 +16,7 @@ import java.io.IOException;
 
 public class PersonReaderMucDisability implements PersonReader {
 
-    private final static Logger logger = Logger.getLogger(PersonReaderMucDisability.class);
+    private final static Logger logger = LogManager.getLogger(PersonReaderMucDisability.class);
     private final HouseholdDataManager householdDataManager;
     private final DefaultDisabilityStrategy strategy;
 

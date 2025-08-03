@@ -3,7 +3,8 @@ package de.tum.bgu.msm.matsim;
 import de.tum.bgu.msm.common.matrix.Matrix;
 
 import de.tum.bgu.msm.properties.Properties;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.population.*;
@@ -22,7 +23,7 @@ import java.util.Map;
  * @author dziemke
  */
 public class SiloMatsimUtils {
-	private final static Logger LOG = Logger.getLogger(SiloMatsimUtils.class);
+	private final static Logger LOG = LogManager.getLogger(SiloMatsimUtils.class);
 
 	public static void checkSiloPropertiesAndMatsimConfigConsistency (Config matsimConfig, Properties properties) {
 		double matsimScalingFactor = properties.transportModel.matsimScaleFactor;
@@ -88,7 +89,7 @@ public class SiloMatsimUtils {
 		LOG.info("Extent of facilities is: xmin = " + xmin + "; xmax = " + xmax + "; ymin = " + ymin + "; ymax = " + ymax);
 	}
 
-	static TravelTime getAnEmptyNetworkTravelTime(){
+	public static TravelTime getAnEmptyNetworkTravelTime(){
 		return new TravelTime() {
 			@Override
 			public double getLinkTravelTime(Link link, double time, Person person, Vehicle vehicle) {
@@ -97,7 +98,7 @@ public class SiloMatsimUtils {
 		};
 	}
 
-	static TravelDisutility getAnEmptyNetworkTravelDisutility(){
+	public static TravelDisutility getAnEmptyNetworkTravelDisutility(){
 		return new TravelDisutility() {
 			@Override
 			public double getLinkTravelDisutility(Link link, double time, Person person, Vehicle vehicle) {

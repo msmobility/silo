@@ -6,12 +6,13 @@ import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.household.HouseholdUtil;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class CreateCarOwnershipBangkok implements CreateCarOwnershipModel {
 
 
-    private static Logger logger = Logger.getLogger(CreateCarOwnershipBangkok.class);
+    private static Logger logger = LogManager.getLogger(CreateCarOwnershipBangkok.class);
     private final DataContainer dataContainer;
 
     public CreateCarOwnershipBangkok(DataContainer dataContainer) {

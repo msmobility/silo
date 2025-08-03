@@ -8,7 +8,8 @@ import de.tum.bgu.msm.events.MicroEvent;
 import de.tum.bgu.msm.events.impls.household.MoveEvent;
 import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.properties.Properties;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -19,7 +20,7 @@ import java.util.Map;
 
 public class HouseholdSatisfactionMonitor implements ResultsMonitor {
 
-    private final static Logger logger = Logger.getLogger(HouseholdSatisfactionMonitor.class);
+    private final static Logger logger = LogManager.getLogger(HouseholdSatisfactionMonitor.class);
     private DataContainer dataContainer;
     private Properties properties;
     private ModelContainer modelContainer;

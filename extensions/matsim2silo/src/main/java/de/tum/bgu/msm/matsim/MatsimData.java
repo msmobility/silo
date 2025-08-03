@@ -11,8 +11,7 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
-import org.matsim.core.mobsim.qsim.pt.TransitVehicle;
+import org.matsim.core.config.groups.RoutingConfigGroup;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.TransportModeNetworkFilter;
 import org.matsim.core.population.PopulationUtils;
@@ -39,6 +38,11 @@ public final class MatsimData {
     private SwissRailRaptorData raptorDataOneToAll;
 
     private final int nThreads;
+
+    public Config getConfig() {
+        return config;
+    }
+
     private Config config;
 
     private Network carNetwork;
@@ -81,6 +85,33 @@ public final class MatsimData {
         this.raptorParameters = RaptorUtils.createParameters(config);
         this.nThreads = threads;
         this.schedule = schedule;
+        this.zoneConnectorManager = zoneConnectorManager;
+        filterNetwork(network);
+    }
+
+    public MatsimData(Config config, Properties properties,
+                      ZoneConnectorManagerImpl.ZoneConnectorMethod method,
+                      DataContainer dataContainer, Network network) {
+        int threads = properties.main.numberOfThreads;
+        final Collection<Zone> zones = dataContainer.getGeoData().getZones().values();
+        ZoneConnectorManager zoneConnectorManager;
+        switch (method) {
+            case RANDOM:
+                zoneConnectorManager = ZoneConnectorManagerImpl.createRandomZoneConnectors(zones, NUMBER_OF_CALC_POINTS);
+                break;
+            case WEIGHTED_BY_POPULATION:
+                zoneConnectorManager = ZoneConnectorManagerImpl.createWeightedZoneConnectors(zones,
+                        dataContainer.getRealEstateDataManager(),
+                        dataContainer.getHouseholdDataManager());
+                break;
+            default:
+                throw new RuntimeException("No valid zone connector method defined!");
+        }
+
+        ConfigUtils.setVspDefaults(config); // Needs to be done before config becomes locked for those changes
+        this.config = config;
+        this.nThreads = threads;
+        this.schedule = null;
         this.zoneConnectorManager = zoneConnectorManager;
         filterNetwork(network);
     }
@@ -129,7 +160,7 @@ public final class MatsimData {
         this.travelDisutility = travelDisutility;
         this.travelTime = travelTime;
 
-        this.leastCostPathCalculatorFactory = new FastAStarLandmarksFactory(nThreads);
+        this.leastCostPathCalculatorFactory = new AStarLandmarksFactory(nThreads);
 
         if (config.transit().isUseTransit() && schedule != null) {
             RaptorStaticConfig raptorConfig = RaptorUtils.createStaticConfig(config);
@@ -155,21 +186,19 @@ public final class MatsimData {
     }
 
     MultiNodePathCalculator createFreeSpeedMultiNodePathCalculator() {
-        FreespeedTravelTimeAndDisutility freespeed = new FreespeedTravelTimeAndDisutility(config.planCalcScore());
+        FreespeedTravelTimeAndDisutility freespeed = new FreespeedTravelTimeAndDisutility(config.scoring());
         return (MultiNodePathCalculator) multiNodeFactory.createPathCalculator(carNetwork, freespeed, freespeed);
     }
 
     TripRouter createTripRouter() {
         Scenario scenario = ScenarioUtils.loadScenario(config);
-        RoutingModule accessEgressToNetworkRouter = DefaultRoutingModules.createTeleportationRouter(TransportMode.walk, scenario, config.plansCalcRoute().getModeRoutingParams().get(TransportMode.walk));
+        RoutingModule accessEgressToNetworkRouter = DefaultRoutingModules.createTeleportationRouter(TransportMode.walk, scenario, config.routing().getModeRoutingParams().get(TransportMode.walk));
 
         RoutingModule carRoutingModule;
         LeastCostPathCalculator routeAlgo = leastCostPathCalculatorFactory.createPathCalculator(carNetwork, travelDisutility, travelTime);
 //        if (config.plansCalcRoute().isInsertingAccessEgressWalk()) { // in matsim-12
-        if ( !config.plansCalcRoute().getAccessEgressType().equals(PlansCalcRouteConfigGroup.AccessEgressType.none) ) { // in matsim-13-w37
-            carRoutingModule = DefaultRoutingModules.createAccessEgressNetworkRouter(
-                    TransportMode.car, routeAlgo, scenario, carNetwork, accessEgressToNetworkRouter,
-                    accessEgressToNetworkRouter, TimeInterpretation.create(scenario.getConfig())); // TODO take access egress type correctly
+        if ( !config.routing().getAccessEgressType().equals(RoutingConfigGroup.AccessEgressType.none) ) { // in matsim-13-w37
+            carRoutingModule = DefaultRoutingModules.createAccessEgressNetworkRouter(TransportMode.car, routeAlgo, scenario, carNetwork, accessEgressToNetworkRouter, TimeInterpretation.create(scenario.getConfig()),null); // TODO take access egress type correctly
         } else {
             carRoutingModule = DefaultRoutingModules.createPureNetworkRouter(
                     TransportMode.car, PopulationUtils.getFactory(), carNetwork, routeAlgo);
@@ -181,7 +210,7 @@ public final class MatsimData {
             ptRoutingModule = new SwissRailRaptorRoutingModule(swissRailRaptor, schedule, ptNetwork, accessEgressToNetworkRouter);
         } else {
             ptRoutingModule = DefaultRoutingModules.createPseudoTransitRouter(TransportMode.pt, PopulationUtils.getFactory(), carNetwork,
-                    leastCostPathCalculatorFactory.createPathCalculator(carNetwork, travelDisutility, travelTime), config.plansCalcRoute().getOrCreateModeRoutingParams(TransportMode.pt));
+                    leastCostPathCalculatorFactory.createPathCalculator(carNetwork, travelDisutility, travelTime), config.routing().getOrCreateModeRoutingParams(TransportMode.pt));
         }
 
         TripRouter.Builder bd = new TripRouter.Builder(config);
@@ -213,7 +242,7 @@ public final class MatsimData {
         Scenario scenario = ScenarioUtils.loadScenario(config);
         return DefaultRoutingModules.createTeleportationRouter(
 //                mode, PopulationUtils.getFactory(), config.plansCalcRoute().getOrCreateModeRoutingParams(mode));
-                mode, scenario, config.plansCalcRoute().getModeRoutingParams().get(mode));
+                mode, scenario, config.routing().getModeRoutingParams().get(mode));
     }
 
     SwissRailRaptorData getRaptorData(RaptorStaticConfig.RaptorOptimization optimization) {

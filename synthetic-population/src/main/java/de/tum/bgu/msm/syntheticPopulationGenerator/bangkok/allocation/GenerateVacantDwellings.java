@@ -6,13 +6,14 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.MicroDataManager;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 
 public class GenerateVacantDwellings {
 
-    private static final Logger logger = Logger.getLogger(GenerateVacantDwellings.class);
+    private static final Logger logger = LogManager.getLogger(GenerateVacantDwellings.class);
 
     private final DataSetSynPop dataSetSynPop;
     private final MicroDataManager microDataManager;
@@ -80,7 +81,7 @@ public class GenerateVacantDwellings {
                 Collections.shuffle(dwellingForCopy);
                 for (int draw = 0; draw < vacantDwellings; draw++){
                     int tazSelected = municipality;
-                    int newDdId = highestDwellingIdInUse++;
+                    int newDdId = ++highestDwellingIdInUse;
                     Dwelling idDwellingToCopy = dwellingForCopy.get(draw);
                     int floorSpace = idDwellingToCopy.getFloorSpace();
                     int year = idDwellingToCopy.getYearBuilt();

@@ -19,7 +19,7 @@ import org.matsim.core.config.*;
  */
 public class SiloMucEV {
 
-    private final static Logger logger = Logger.getLogger(SiloMucEV.class);
+    private final static Logger logger = LogManager.getLogger(SiloMucEV.class);
 
     public static void main(String[] args) {
 

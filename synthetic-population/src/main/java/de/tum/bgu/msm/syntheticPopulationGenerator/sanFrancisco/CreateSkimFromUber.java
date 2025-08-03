@@ -5,9 +5,10 @@ import de.tum.bgu.msm.data.travelTimes.SkimTravelTimes;
 import de.tum.bgu.msm.io.output.OmxMatrixWriter;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix2D;
 import de.tum.bgu.msm.utils.SiloUtil;
+import org.geotools.api.feature.simple.SimpleFeature;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.core.utils.gis.ShapeFileReader;
-import org.opengis.feature.simple.SimpleFeature;
+
 
 import java.io.BufferedReader;
 import java.io.FileReader;

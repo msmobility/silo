@@ -25,10 +25,12 @@ import de.tum.bgu.msm.data.person.PersonRole;
 import de.tum.bgu.msm.events.impls.person.LeaveParentsEvent;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.autoOwnership.CreateCarOwnershipModel;
+import de.tum.bgu.msm.models.relocation.moves.MovesModel;
 import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,17 +44,17 @@ import java.util.Random;
  **/
 public class LeaveParentHhModelImpl extends AbstractModel implements LeaveParentHhModel {
 
-    private final static Logger logger = Logger.getLogger(LeaveParentHhModelImpl.class);
+    private final static Logger logger = LogManager.getLogger(LeaveParentHhModelImpl.class);
 
     private final CreateCarOwnershipModel createCarOwnershipModel;
     private final HouseholdFactory hhFactory;
-    private final MovesModelImpl movesModel;
+    private final MovesModel movesModel;
     private HouseholdDataManager householdDataManager;
     private final LeaveParentalHouseholdStrategy strategy;
     private int lackOfDwellingFailedLeavingChild;
 
 
-    public LeaveParentHhModelImpl(DataContainer dataContainer, MovesModelImpl move,
+    public LeaveParentHhModelImpl(DataContainer dataContainer, MovesModel move,
                                   CreateCarOwnershipModel createCarOwnershipModel, HouseholdFactory hhFactory,
                                   Properties properties, LeaveParentalHouseholdStrategy strategy, Random rnd) {
         super(dataContainer, properties, rnd);

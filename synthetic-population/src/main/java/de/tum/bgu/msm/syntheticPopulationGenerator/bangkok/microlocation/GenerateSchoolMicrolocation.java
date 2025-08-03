@@ -11,7 +11,8 @@ import de.tum.bgu.msm.schools.SchoolUtils;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.util.HashMap;
@@ -19,7 +20,7 @@ import java.util.Map;
 
 public class GenerateSchoolMicrolocation {
 
-    private static final Logger logger = Logger.getLogger(GenerateSchoolMicrolocation.class);
+    private static final Logger logger = LogManager.getLogger(GenerateSchoolMicrolocation.class);
 
     private final DataContainerWithSchools dataContainer;
     private final DataSetSynPop dataSetSynPop;

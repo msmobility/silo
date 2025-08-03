@@ -10,7 +10,8 @@ import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix2D;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
@@ -20,11 +21,12 @@ import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.api.core.v01.population.Route;
 import org.matsim.core.config.Config;
-import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
+import org.matsim.core.config.groups.*;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.router.*;
 import org.matsim.core.utils.geometry.CoordUtils;
+import org.matsim.core.utils.misc.OptionalTime;
 import org.matsim.core.utils.misc.Time;
 import org.matsim.facilities.ActivityFacilitiesFactory;
 import org.matsim.facilities.ActivityFacilitiesFactoryImpl;
@@ -38,7 +40,7 @@ import java.util.*;
  */
 public final class MatsimTravelTimesAndCosts implements TravelTimes {
 
-    private final static Logger logger = Logger.getLogger(MatsimTravelTimesAndCosts.class);
+    private final static Logger logger = LogManager.getLogger(MatsimTravelTimesAndCosts.class);
 
     private MatsimData matsimData;
 
@@ -161,7 +163,7 @@ public final class MatsimTravelTimesAndCosts implements TravelTimes {
     public double getGeneralizedTravelCosts(Location origin, Location destination, double timeOfDay_s, String mode) {
         List<? extends PlanElement> planElements = getRoute(origin, destination, timeOfDay_s, mode, null);
         RoutingModule routingModule = tripRouter.getRoutingModule(mode);
-        PlanCalcScoreConfigGroup cnScoringGroup = config.planCalcScore();
+        ScoringConfigGroup cnScoringGroup = config.scoring();
 
         double utility = 0.;
         if (routingModule instanceof NetworkRoutingModule || routingModule instanceof NetworkRoutingInclAccessEgressModule) {
@@ -261,7 +263,7 @@ public final class MatsimTravelTimesAndCosts implements TravelTimes {
                     } else {
                         logger.warn("No schedule/ network provided for pt. Will use freespeed factor.");
                         skim = matsimSkimCreator.createFreeSpeedFactorSkim(zones.values(),
-                                config.plansCalcRoute().getModeRoutingParams().get(TransportMode.pt).getTeleportedModeFreespeedFactor(),
+                                config.routing().getModeRoutingParams().get(TransportMode.pt).getTeleportedModeFreespeedFactor(),
                                 Properties.get().main.numberOfThreads, Properties.get().transportModel.peakHour_s);
                         break;
                     }

@@ -7,7 +7,8 @@
 //import de.tum.bgu.msm.data.geo.ZoneImpl;
 //import de.tum.bgu.msm.properties.Properties;
 //import de.tum.bgu.msm.utils.SiloUtil;
-//import org.apache.log4j.Logger;
+//import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 //
 ///**
 // * Interface to store zonal, county and regional data used by the SILO Model
@@ -17,7 +18,7 @@
 //
 //public class GeoDataPerth extends DefaultGeoData {
 //
-//    private static final Logger logger = Logger.getLogger(GeoDataPerth.class);
+//    private static final Logger logger = LogManager.getLogger(GeoDataPerth.class);
 //
 //    public GeoDataPerth() {
 //        super("Zone", "Region", "id");

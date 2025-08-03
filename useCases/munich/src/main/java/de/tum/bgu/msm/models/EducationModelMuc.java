@@ -8,7 +8,8 @@ import de.tum.bgu.msm.events.impls.person.EducationEvent;
 import de.tum.bgu.msm.models.demography.education.EducationModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,7 +24,7 @@ import java.util.Random;
  **/
 public class EducationModelMuc extends AbstractModel implements EducationModel {
 
-    private static final Logger logger = Logger.getLogger(EducationModelMuc.class);
+    private static final Logger logger = LogManager.getLogger(EducationModelMuc.class);
     private static final int MIN_PRIMARY_AGE = 6;
     private static final int MIN_SECONDARY_AGE = 10;
     private static final int MIN_TERTIARY_AGE = 18;
@@ -69,7 +70,7 @@ public class EducationModelMuc extends AbstractModel implements EducationModel {
                 case STUDENT:
                     int oldSchoolType = -1;
                     if(((PersonMuc)person).getSchoolId()> 0){
-                        oldSchoolType = ((DataContainerWithSchoolsImpl)dataContainer).getSchoolData().getSchoolFromId(((PersonMuc)person).getSchoolId()).getType();
+                        oldSchoolType = ((DataContainerWithSchools)dataContainer).getSchoolData().getSchoolFromId(((PersonMuc)person).getSchoolId()).getType();
                     }else if(((PersonMuc)person).getSchoolId()== -2){
                         oldSchoolType = SchoolDataImpl.guessSchoolType((PersonWithSchool) person);
                     }else{
@@ -105,7 +106,7 @@ public class EducationModelMuc extends AbstractModel implements EducationModel {
                     if(pp.getSchoolId()== -2) {
                         currentSchoolType = pp.getSchoolType();
                     }else{
-                        currentSchoolType = ((DataContainerWithSchoolsImpl)dataContainer).getSchoolData().getSchoolFromId(pp.getSchoolId()).getType();
+                        currentSchoolType = ((DataContainerWithSchools)dataContainer).getSchoolData().getSchoolFromId(pp.getSchoolId()).getType();
                     }
 
                     if (currentSchoolType == 3) {
@@ -154,7 +155,7 @@ public class EducationModelMuc extends AbstractModel implements EducationModel {
             person.setSchoolId(-1);
             person.setSchoolType(-1);
         }else{
-            School school = ((DataContainerWithSchoolsImpl)dataContainer).getSchoolData().getSchoolFromId(person.getSchoolId());
+            School school = ((DataContainerWithSchools)dataContainer).getSchoolData().getSchoolFromId(person.getSchoolId());
             school.setOccupancy(school.getOccupancy() + 1);
             person.setSchoolId(-1);
         }
@@ -167,6 +168,6 @@ public class EducationModelMuc extends AbstractModel implements EducationModel {
     }
 
     public School findSchool(Person person, int schoolType) {
-        return ((DataContainerWithSchoolsImpl)dataContainer).getSchoolData().getClosestSchool(person, schoolType);
+        return ((DataContainerWithSchools)dataContainer).getSchoolData().getClosestSchool(person, schoolType);
     }
 }

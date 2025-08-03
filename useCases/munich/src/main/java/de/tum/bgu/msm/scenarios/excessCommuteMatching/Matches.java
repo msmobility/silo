@@ -12,7 +12,8 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.schools.DataContainerWithSchools;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.config.ConfigUtils;
@@ -32,7 +33,7 @@ import java.util.stream.Collectors;
 
 public class Matches {
 
-    private final static Logger logger = Logger.getLogger(Matches.class);
+    private final static Logger logger = LogManager.getLogger(Matches.class);
 
 
     public static void main(String[] args) {
@@ -50,7 +51,7 @@ public class Matches {
         new MatsimNetworkReader(network).readFile("C:\\Users\\Nico\\tum\\fabilut\\gitproject\\muc/input\\mito\\trafficAssignment/studyNetworkDense.xml");
 
         LeastCostPathCalculatorFactory multiNodeFactory = new FastMultiNodeDijkstraFactory(true);
-        FreespeedTravelTimeAndDisutility freespeed = new FreespeedTravelTimeAndDisutility(ConfigUtils.createConfig().planCalcScore());
+        FreespeedTravelTimeAndDisutility freespeed = new FreespeedTravelTimeAndDisutility(ConfigUtils.createConfig().scoring());
 
 
 

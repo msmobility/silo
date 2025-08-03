@@ -5,13 +5,14 @@ import de.tum.bgu.msm.data.dwelling.DwellingMstm;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.io.output.DwellingWriter;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.PrintWriter;
 
 public class DwellingWriterMstm implements DwellingWriter {
 
-    private final static Logger logger = Logger.getLogger(DwellingWriterMstm.class);
+    private final static Logger logger = LogManager.getLogger(DwellingWriterMstm.class);
     private final RealEstateDataManager dwellingData;
 
     public DwellingWriterMstm(RealEstateDataManager dwellingData) {

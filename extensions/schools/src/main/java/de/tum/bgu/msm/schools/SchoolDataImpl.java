@@ -23,9 +23,10 @@ import de.tum.bgu.msm.data.geo.GeoData;
 import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
-import org.geotools.data.FileDataStore;
-import org.geotools.data.FileDataStoreFinder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.geotools.api.data.FileDataStore;
+import org.geotools.api.data.FileDataStoreFinder;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.matsim.core.utils.collections.QuadTree;
@@ -43,7 +44,7 @@ import java.util.concurrent.ConcurrentHashMap;
  **/
 public class SchoolDataImpl implements SchoolData {
 
-    private final static Logger logger = Logger.getLogger(SchoolDataImpl.class);
+    private final static Logger logger = LogManager.getLogger(SchoolDataImpl.class);
     private static final int MIN_SECONDARY_AGE = 10;
     private static final int MIN_TERTIARY_AGE = 18;
 

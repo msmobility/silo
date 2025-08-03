@@ -17,7 +17,8 @@ import de.tum.bgu.msm.data.vehicle.VehicleType;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.PrintWriter;
 import java.util.HashMap;
@@ -31,7 +32,7 @@ import java.util.Map;
  **/
 public final class SummarizeData {
     private static final String DEVELOPMENT_FILE = "development"; ;
-    private final static Logger logger = Logger.getLogger(SummarizeData.class);
+    private final static Logger logger = LogManager.getLogger(SummarizeData.class);
 
     private static PrintWriter spatialResultWriter;
     private static PrintWriter spatialResultWriter_2;

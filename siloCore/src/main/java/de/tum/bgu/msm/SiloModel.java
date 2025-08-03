@@ -28,7 +28,8 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.simulator.Simulator;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.utils.TimeTracker;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -40,7 +41,7 @@ import java.util.Set;
  */
 public final class SiloModel {
 
-	private final static Logger logger = Logger.getLogger(SiloModel.class);
+	private final static Logger logger = LogManager.getLogger(SiloModel.class);
 
     private final Set<Integer> scalingYears = new HashSet<>();
 	private final Properties properties;

@@ -13,7 +13,8 @@ import de.tum.bgu.msm.events.MicroEvent;
 import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.PrintWriter;
 import java.util.HashMap;
@@ -25,7 +26,7 @@ import static java.util.Collections.EMPTY_LIST;
 
 public class MstmMonitor implements ResultsMonitor {
 
-    private final static Logger logger = Logger.getLogger(MstmMonitor.class);
+    private final static Logger logger = LogManager.getLogger(MstmMonitor.class);
 
     /**
      * For compatibility with this legacy code, taken from configurable property

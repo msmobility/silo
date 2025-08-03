@@ -3,7 +3,8 @@ package de.tum.bgu.msm.io;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.io.input.DwellingReader;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.io.BufferedReader;
@@ -12,7 +13,7 @@ import java.io.IOException;
 
 public class DwellingReaderTak implements DwellingReader {
 
-    private final static Logger logger = Logger.getLogger(DwellingReaderTak.class);
+    private final static Logger logger = LogManager.getLogger(DwellingReaderTak.class);
     private final DwellingData dwellingData;
 
     public DwellingReaderTak(DwellingData dwellingData) {

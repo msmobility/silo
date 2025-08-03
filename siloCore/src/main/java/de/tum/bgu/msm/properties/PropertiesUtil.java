@@ -1,7 +1,8 @@
 package de.tum.bgu.msm.properties;
 
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -15,7 +16,7 @@ public class PropertiesUtil {
     private final static String FORMAT = "%-60s%s";
     private final static String FORMAT_DEFAULT = "%-80s%s";
     private final static Map<Integer, String> propertiesInUse = new HashMap<>();
-    private final static Logger logger = Logger.getLogger(PropertiesUtil.class);
+    private final static Logger logger = LogManager.getLogger(PropertiesUtil.class);
 
     public static int getIntProperty(ResourceBundle bundle, String key, int defaultValue) {
         try {

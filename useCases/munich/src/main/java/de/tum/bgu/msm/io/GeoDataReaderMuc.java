@@ -9,13 +9,14 @@ import de.tum.bgu.msm.data.geo.ZoneMuc;
 import de.tum.bgu.msm.data.geo.RegionImpl;
 import de.tum.bgu.msm.io.input.GeoDataReader;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.geotools.api.feature.simple.SimpleFeature;
 import org.matsim.core.utils.gis.ShapeFileReader;
-import org.opengis.feature.simple.SimpleFeature;
 
 public class GeoDataReaderMuc implements GeoDataReader {
 
-    private static Logger logger = Logger.getLogger(GeoDataReaderMuc.class);
+    private static Logger logger = LogManager.getLogger(GeoDataReaderMuc.class);
 
     private GeoData geoDataMuc;
 
@@ -63,9 +64,13 @@ public class GeoDataReaderMuc implements GeoDataReader {
         int counter = 0;
         for (SimpleFeature feature : ShapeFileReader.getAllFeatures(path)) {
             int zoneId = Integer.parseInt(feature.getAttribute(SHAPE_IDENTIFIER).toString());
-            Zone zone = geoDataMuc.getZones().get(zoneId);
+            ZoneMuc zone = (ZoneMuc) geoDataMuc.getZones().get(zoneId);
             if (zone != null) {
                 zone.setZoneFeature(feature);
+                final Object ags = feature.getAttribute("AGS");
+                if(ags != null) {
+                    zone.setAgs(Integer.parseInt(ags.toString()));
+                }
             } else {
                 counter++;
             }

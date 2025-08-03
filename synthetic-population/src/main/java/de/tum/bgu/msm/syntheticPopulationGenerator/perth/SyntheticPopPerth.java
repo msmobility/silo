@@ -9,7 +9,8 @@ import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.syntheticPopulationGenerator.SyntheticPopI;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import run.DataBuilder;
 
 import java.io.PrintWriter;
@@ -33,7 +34,7 @@ SyntheticPopPerth implements SyntheticPopI
     // protected static final String PROPERTIES_COUNTY_VACANCY_RATES    = "county.vacancy.rates";
     // protected static final String PROPERTIES_VALIDATE_SYNTH_POP      = "validate.synth.pop";
 
-    protected transient Logger logger = Logger.getLogger(SyntheticPopPerth.class);
+    protected transient Logger logger = LogManager.getLogger(SyntheticPopPerth.class);
 
     private ResourceBundle rb;
     //protected HashMap<Integer, int[]> tazByWorkZonePuma;

@@ -36,7 +36,8 @@ import de.tum.bgu.msm.simulator.UpdateListener;
 import de.tum.bgu.msm.utils.SampleException;
 import de.tum.bgu.msm.utils.Sampler;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
 import java.io.PrintWriter;
@@ -51,7 +52,7 @@ import java.util.concurrent.ConcurrentHashMap;
  **/
 public class JobDataManagerWithCommuteModeChoice implements UpdateListener, JobDataManager {
 
-    private final static Logger logger = Logger.getLogger(JobDataManagerWithCommuteModeChoice.class);
+    private final static Logger logger = LogManager.getLogger(JobDataManagerWithCommuteModeChoice.class);
 
     private final GeoData geoData;
     private final Properties properties;

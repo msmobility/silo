@@ -6,7 +6,8 @@ import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.util.Collection;
@@ -15,7 +16,7 @@ import java.util.Map;
 
 public class GenerateDwellingMicrolocation {
 
-    private static final Logger logger = Logger.getLogger(GenerateDwellingMicrolocation.class);
+    private static final Logger logger = LogManager.getLogger(GenerateDwellingMicrolocation.class);
     private static final double PENALTY = 0.5;
     private final DataContainer dataContainer;
     private final DataSetSynPop dataSetSynPop;

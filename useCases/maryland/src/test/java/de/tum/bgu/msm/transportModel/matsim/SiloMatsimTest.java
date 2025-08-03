@@ -3,9 +3,9 @@ package de.tum.bgu.msm.transportModel.matsim;
 import de.tum.bgu.msm.run.SiloMatsim;
 import de.tum.bgu.msm.transportModel.SiloTestUtils;
 import junitx.framework.FileAssert;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
@@ -22,15 +22,15 @@ import java.nio.file.Paths;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.matsim.utils.eventsfilecomparison.EventsFileComparator.Result.FILES_ARE_EQUAL;
+import static org.matsim.utils.eventsfilecomparison.ComparisonResult.FILES_ARE_EQUAL;
 
 /**
  * @author dziemke, nagel
  */
 public class SiloMatsimTest {
-	private static final Logger log = Logger.getLogger(SiloMatsimTest.class);
+	private static final Logger log = LogManager.getLogger(SiloMatsimTest.class);
 
-	@Rule public MatsimTestUtils utils = new MatsimTestUtils();
+	public MatsimTestUtils utils = new MatsimTestUtils();
 	
 	/**
 	 * This test does only test the downstream coupling: SILO data is given to MATSim and then iterated.
@@ -53,9 +53,9 @@ public class SiloMatsimTest {
 		} catch (NoSuchMethodException e) {
 			e.printStackTrace();
 		}
-		config.controler().setOutputDirectory(utils.getOutputDirectory());
+		config.controller().setOutputDirectory(utils.getOutputDirectory());
 		config.global().setNumberOfThreads(1);
-		config.parallelEventHandling().setNumberOfThreads(1);
+		config.global().setNumberOfThreads(1);
 		config.qsim().setNumberOfThreads(1);
 
 		try {

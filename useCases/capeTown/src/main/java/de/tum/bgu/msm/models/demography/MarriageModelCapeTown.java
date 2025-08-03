@@ -17,13 +17,14 @@ import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
 import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 
 public class MarriageModelCapeTown extends AbstractModel implements MarriageModel {
 
-    private final static Logger logger = Logger.getLogger(MarriageModelCapeTown.class);
+    private final static Logger logger = LogManager.getLogger(MarriageModelCapeTown.class);
 
     private final InOutMigrationImpl iomig;
     private final MovesModelImpl movesModel;

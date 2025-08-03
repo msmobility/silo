@@ -27,9 +27,9 @@ import de.tum.bgu.msm.models.realEstate.construction.*;
 import de.tum.bgu.msm.models.realEstate.demolition.*;
 import de.tum.bgu.msm.models.realEstate.pricing.*;
 import de.tum.bgu.msm.models.realEstate.renovation.*;
-import de.tum.bgu.msm.models.relocation.DwellingUtilityStrategyImpl;
-import de.tum.bgu.msm.models.relocation.*;
-import de.tum.bgu.msm.models.relocation.migration.*;
+import de.tum.bgu.msm.models.relocation.HousingStrategyMuc;
+import de.tum.bgu.msm.models.relocation.InOutMigrationMuc;
+import de.tum.bgu.msm.models.relocation.migration.InOutMigration;
 import de.tum.bgu.msm.models.relocation.moves.*;
 import de.tum.bgu.msm.models.transportModel.*;
 import de.tum.bgu.msm.properties.*;
@@ -62,7 +62,7 @@ public class ModelBuilderMucWithEVModel {
                         dataContainer.getTravelTimes(),
                         new DefaultDwellingProbabilityStrategy(),
                         new DwellingUtilityStrategyImpl(),
-                        new RegionUtilityStrategyMucImpl(),
+                        new RegionUtilityStrategyImpl(),
                         new RegionProbabilityStrategyImpl(),
                         new SimpleCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom())
                 ), SiloUtil.provideNewRandom());

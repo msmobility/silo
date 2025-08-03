@@ -4,14 +4,15 @@ import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.io.output.JobWriter;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.io.PrintWriter;
 
 public class JobWriterBangkok implements JobWriter {
 
-    private final static Logger logger = Logger.getLogger(JobWriterBangkok.class);
+    private final static Logger logger = LogManager.getLogger(JobWriterBangkok.class);
 
     private final JobDataManager jobDataManager;
 

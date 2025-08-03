@@ -3,7 +3,8 @@ package de.tum.bgu.msm.properties.modules;
 
 import de.tum.bgu.msm.data.household.IncomeCategory;
 import de.tum.bgu.msm.properties.PropertiesUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,12 +15,12 @@ import java.util.stream.Collectors;
 
 public class MainProperties {
 
-    private final static Logger logger = Logger.getLogger(MainProperties.class);
+    private final static Logger logger = LogManager.getLogger(MainProperties.class);
 
     /**
      * Name of the scenario and of the output folder.
      */
-    public final String scenarioName;
+    public String scenarioName;
 
     /**
      * Track model runtime (true or false)

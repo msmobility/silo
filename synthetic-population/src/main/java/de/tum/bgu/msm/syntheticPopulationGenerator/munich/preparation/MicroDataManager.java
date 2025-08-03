@@ -11,15 +11,15 @@ import de.tum.bgu.msm.data.person.PersonRole;
 import de.tum.bgu.msm.data.person.Race;
 import de.tum.bgu.msm.syntheticPopulationGenerator.properties.PropertiesSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
-import org.apache.commons.math.MathException;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class MicroDataManager {
 
-    private static final Logger logger = Logger.getLogger(MicroDataManager.class);
+    private static final Logger logger = LogManager.getLogger(MicroDataManager.class);
 
     private final DataSetSynPop dataSetSynPop;
 
@@ -387,7 +387,7 @@ public class MicroDataManager {
         try {
             income = PropertiesSynPop.get().main.incomeGammaDistribution.inverseCumulativeProbability(cummulativeProb);
             valueCode = (int) income;
-        } catch (MathException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return valueCode;

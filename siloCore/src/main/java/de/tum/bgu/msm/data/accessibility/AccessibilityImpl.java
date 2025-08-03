@@ -13,7 +13,8 @@ import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix1D;
 import de.tum.bgu.msm.util.matrices.IndexedDoubleMatrix2D;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
 import java.util.Collection;
@@ -28,7 +29,7 @@ import java.util.stream.Collectors;
  **/
 public class AccessibilityImpl implements Accessibility {
 
-    private static final Logger logger = Logger.getLogger(AccessibilityImpl.class);
+    private static final Logger logger = LogManager.getLogger(AccessibilityImpl.class);
 
     private final GeoData geoData;
     private final TravelTimes travelTimes;

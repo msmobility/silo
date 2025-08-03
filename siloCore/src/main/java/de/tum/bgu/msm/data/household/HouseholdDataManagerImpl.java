@@ -28,7 +28,8 @@ import de.tum.bgu.msm.io.output.DefaultPersonWriter;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import de.tum.bgu.msm.utils.SiloUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -41,7 +42,7 @@ import java.util.Map;
  */
 public class HouseholdDataManagerImpl implements HouseholdDataManager {
 
-    private final static Logger logger = Logger.getLogger(HouseholdDataManagerImpl.class);
+    private final static Logger logger = LogManager.getLogger(HouseholdDataManagerImpl.class);
 
     private final HouseholdData householdData;
     private final DwellingData dwellingData;
@@ -299,6 +300,8 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
             executor.addTaskToQueue(new IncomeAdjustment(person, meanIncomeChange, currentIncomeDistribution, previousIncomeDistribution));
         }
         executor.execute();
+
+
     }
 
 

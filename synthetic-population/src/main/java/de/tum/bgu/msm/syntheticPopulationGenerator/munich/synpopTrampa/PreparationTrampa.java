@@ -4,11 +4,12 @@ import de.tum.bgu.msm.syntheticPopulationGenerator.DataSetSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.ModuleSynPop;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.Preparation;
 import de.tum.bgu.msm.syntheticPopulationGenerator.munich.preparation.ReadZonalData;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class PreparationTrampa extends ModuleSynPop {
 
-    private static final Logger logger = Logger.getLogger(Preparation.class);
+    private static final Logger logger = LogManager.getLogger(Preparation.class);
 
     public PreparationTrampa(DataSetSynPop dataSetSynPop) {
         super(dataSetSynPop);

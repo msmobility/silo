@@ -19,6 +19,7 @@ package de.tum.bgu.msm.data.dwelling;
 import de.tum.bgu.msm.data.MicroLocation;
 import org.locationtech.jts.geom.Coordinate;
 import org.matsim.utils.objectattributes.attributable.Attributes;
+import org.matsim.utils.objectattributes.attributable.AttributesImpl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +31,7 @@ import java.util.Optional;
  */
 public final class DwellingImpl implements Dwelling, MicroLocation {
 
-    private final Attributes attributes = new Attributes();
+    private final Attributes attributes = new AttributesImpl();
 
     private final int id;
 
