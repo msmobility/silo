@@ -33,7 +33,7 @@ public class HealthTransitionTableReader {
             int posGender= SiloUtil.findPositionInArray("sex", header);
             int posLocation = SiloUtil.findPositionInArray("lsoa21cd", header);
             int posCause= SiloUtil.findPositionInArray("cause", header);
-            int posProb= SiloUtil.findPositionInArray("prob", header);
+            int posProb= SiloUtil.findPositionInArray("rate", header);
 
             // read line
             while ((recString = in.readLine()) != null) {
