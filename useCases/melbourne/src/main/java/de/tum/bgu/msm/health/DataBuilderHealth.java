@@ -17,6 +17,8 @@ import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.health.data.LinkInfo;
 import de.tum.bgu.msm.health.io.DefaultSpeedReader;
 import de.tum.bgu.msm.health.io.DoseResponseLookupReader;
+import de.tum.bgu.msm.health.io.InjuryRRTableReader;
+import de.tum.bgu.msm.health.io.PrevalenceDataReader;
 import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.io.input.*;
 import de.tum.bgu.msm.matsim.MatsimTravelTimesAndCosts;
@@ -145,6 +147,8 @@ public class DataBuilderHealth {
         DoseResponseLookupReader doseResponseReader = new DoseResponseLookupReader();
         doseResponseReader.readData(properties.main.baseDirectory + properties.healthData.basePath);
         dataContainer.setDoseResponseData(doseResponseReader.getDoseResponseData());
+        dataContainer.setHealthPrevalenceData(new PrevalenceDataReader().readData(properties.main.baseDirectory + properties.healthData.prevalenceDataFile));
+        dataContainer.setHealthInjuryRRdata(new InjuryRRTableReader().readData(properties.main.baseDirectory + properties.healthData.healthInjuryRRDataFile));
 
         MicroDataScaler microDataScaler = new MicroDataScaler(dataContainer, properties);
         microDataScaler.scale();
