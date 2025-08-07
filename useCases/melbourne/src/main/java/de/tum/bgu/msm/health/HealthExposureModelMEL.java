@@ -1675,7 +1675,7 @@ public class HealthExposureModelMEL extends AbstractModel implements ModelUpdate
         double vgvi = 0.0;
         double speed = 0.0;
 
-        MitoGender gender = (MitoGender) person.getAttributes().getAttribute("sex");
+        MitoGender gender = MitoGender.valueOf((String) person.getAttributes().getAttribute("sex"));
         int age = (int) person.getAttributes().getAttribute("age");
 
         for (String purposeString : mitoProperties.getProperty("trip.purposes").split(",")) {
