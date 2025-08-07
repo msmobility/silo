@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.health;
 
 import de.tum.bgu.msm.common.datafile.TableDataSet;
+import de.tum.bgu.msm.data.Day;
 import de.tum.bgu.msm.data.MelbourneDwellingTypes;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
@@ -131,11 +132,22 @@ public class DataBuilderHealth {
         new PoiReader(dataContainer).readData(properties.main.baseDirectory + properties.geo.poiFileName);
 
         Network network = NetworkUtils.readNetwork(config.network().getInputFile());
+
+        // Initialize the main linkInfo map
         Map<Id<Link>, LinkInfo> linkInfoMap = new HashMap<>();
         for (Link link : network.getLinks().values()) {
             linkInfoMap.put(link.getId(), new LinkInfo(link.getId()));
         }
         dataContainer.setLinkInfo(linkInfoMap);
+
+        // Initialize separate LinkInfo instances for each day
+        for (Day day : new Day[]{Day.thursday, Day.saturday, Day.sunday}) {
+            Map<Id<Link>, LinkInfo> dayMap = new HashMap<>();
+            for (Link link : network.getLinks().values()) {
+                dayMap.put(link.getId(), new LinkInfo(link.getId()));
+            }
+            dataContainer.setLinkInfoByDay(dayMap, day);
+        }
 
         new PtSkimsReaderMEL(dataContainer).read();
 
