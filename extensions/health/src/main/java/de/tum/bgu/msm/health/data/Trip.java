@@ -44,7 +44,7 @@ public class Trip implements Id {
     private double matsimTravelDistance = 0.;
 
     private double marginalMetHours = 0.;
-    private Map<String, Float> travelRiskMap = new HashMap<>();
+    private Map<String, Double> travelRiskMap = new HashMap<>();
     private Map<String, Float> travelExposureMap = new HashMap<>();
     private double travelNoiseExposure = 0.;
     private double travelNdviExposure = 0.;
@@ -146,11 +146,11 @@ public class Trip implements Id {
         this.travelNdviExposure += travelNdviExposure;
     }
 
-    public Map<String, Float> getTravelRiskMap() { return travelRiskMap; }
+    public Map<String, Double> getTravelRiskMap() { return travelRiskMap; }
 
     public void updateTravelRiskMap(Map<String, Float> newRisks) {
         // newRisks.forEach((k, v) -> travelRiskMap.merge(k, v, (v1, v2) -> v1 + v2 - v1*v2));
-        newRisks.forEach((k, v) -> travelRiskMap.merge(k, v, (v1, v2) -> v1 + v2));
+        newRisks.forEach((k, v) -> travelRiskMap.merge(k, Double.valueOf(v), (v1, v2) -> v1 + v2));
     }
 
     public Map<String, Float> getTravelExposureMap() { return travelExposureMap; }
