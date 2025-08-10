@@ -46,7 +46,8 @@ public class InjuryRRTableReader {
             // read line
             while ((recString = in.readLine()) != null) {
                 recCount++;
-                String[] lineElements = recString.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+                String[] lineElements = recString.split(",");
+                // String[] lineElements = recString.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
                 for (int i = 0; i < lineElements.length; i++) {
                     lineElements[i] = lineElements[i].trim().replaceAll("^\"|\"$", "");
                 }
