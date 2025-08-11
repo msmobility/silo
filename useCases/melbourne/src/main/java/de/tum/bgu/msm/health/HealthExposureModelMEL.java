@@ -1675,7 +1675,7 @@ public class HealthExposureModelMEL extends AbstractModel implements ModelUpdate
         double vgvi = 0.0;
         double speed = 0.0;
 
-        MitoGender gender = (MitoGender) person.getAttributes().getAttribute("sex");
+        MitoGender gender = MitoGender.valueOf((String) person.getAttributes().getAttribute("sex"));
         int age = (int) person.getAttributes().getAttribute("age");
 
         for (String purposeString : mitoProperties.getProperty("trip.purposes").split(",")) {
@@ -1713,7 +1713,7 @@ public class HealthExposureModelMEL extends AbstractModel implements ModelUpdate
     }
 
     public static double[] calculateBikeWeights(org.matsim.api.core.v01.population.Person person) {
-        return calculateActiveModeWeights("bike", person);
+        return calculateActiveModeWeights("bicycle", person);
     }
 
     public static double[] calculateWalkWeights(org.matsim.api.core.v01.population.Person person) {

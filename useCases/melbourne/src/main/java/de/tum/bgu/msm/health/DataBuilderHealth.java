@@ -1,6 +1,7 @@
 package de.tum.bgu.msm.health;
 
 import de.tum.bgu.msm.common.datafile.TableDataSet;
+import de.tum.bgu.msm.data.Day;
 import de.tum.bgu.msm.data.MelbourneDwellingTypes;
 import de.tum.bgu.msm.data.Zone;
 import de.tum.bgu.msm.data.accessibility.Accessibility;
@@ -17,6 +18,8 @@ import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.health.data.LinkInfo;
 import de.tum.bgu.msm.health.io.DefaultSpeedReader;
 import de.tum.bgu.msm.health.io.DoseResponseLookupReader;
+import de.tum.bgu.msm.health.io.InjuryRRTableReader;
+import de.tum.bgu.msm.health.io.PrevalenceDataReader;
 import de.tum.bgu.msm.io.*;
 import de.tum.bgu.msm.io.input.*;
 import de.tum.bgu.msm.matsim.MatsimTravelTimesAndCosts;
@@ -129,11 +132,22 @@ public class DataBuilderHealth {
         new PoiReader(dataContainer).readData(properties.main.baseDirectory + properties.geo.poiFileName);
 
         Network network = NetworkUtils.readNetwork(config.network().getInputFile());
+
+        // Initialize the main linkInfo map
         Map<Id<Link>, LinkInfo> linkInfoMap = new HashMap<>();
         for (Link link : network.getLinks().values()) {
             linkInfoMap.put(link.getId(), new LinkInfo(link.getId()));
         }
         dataContainer.setLinkInfo(linkInfoMap);
+
+        // Initialize separate LinkInfo instances for each day
+        for (Day day : new Day[]{Day.thursday, Day.saturday, Day.sunday}) {
+            Map<Id<Link>, LinkInfo> dayMap = new HashMap<>();
+            for (Link link : network.getLinks().values()) {
+                dayMap.put(link.getId(), new LinkInfo(link.getId()));
+            }
+            dataContainer.setLinkInfoByDay(dayMap, day);
+        }
 
         new PtSkimsReaderMEL(dataContainer).read();
 
@@ -145,6 +159,8 @@ public class DataBuilderHealth {
         DoseResponseLookupReader doseResponseReader = new DoseResponseLookupReader();
         doseResponseReader.readData(properties.main.baseDirectory + properties.healthData.basePath);
         dataContainer.setDoseResponseData(doseResponseReader.getDoseResponseData());
+        dataContainer.setHealthPrevalenceData(new PrevalenceDataReader().readData(properties.main.baseDirectory + properties.healthData.prevalenceDataFile));
+        dataContainer.setHealthInjuryRRdata(new InjuryRRTableReader().readData(properties.main.baseDirectory + properties.healthData.healthInjuryRRDataFile));
 
         MicroDataScaler microDataScaler = new MicroDataScaler(dataContainer, properties);
         microDataScaler.scale();
