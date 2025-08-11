@@ -897,6 +897,11 @@ public class HealthExposureModelMEL extends AbstractModel implements ModelUpdate
                         org.matsim.api.core.v01.population.Person person = null;
                         if(mode.equals(Mode.walk)||mode.equals(Mode.bicycle)) {
                             Person siloPerson = dataContainer.getHouseholdDataManager().getPersonFromId(trip.getPerson());
+                            if (siloPerson == null) {
+                                logger.warn("Person with id " + trip.getPerson() + " not found in data container.");
+                                NO_PATH_TRIP.getAndIncrement();
+                                continue;
+                            }
                             MitoGender gender = MitoGender.valueOf(siloPerson.getGender().toString());
                             int age = siloPerson.getAge();
 
