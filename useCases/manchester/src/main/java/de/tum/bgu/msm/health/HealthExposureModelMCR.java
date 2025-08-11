@@ -1595,7 +1595,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
     }
 
     private double getRiskValue2(Map<AccidentType, OpenIntFloatHashMap> exposureMap,
-                               AccidentType type, int time) {
+                                 AccidentType type, int time) {
         if (exposureMap == null) return 0f;
         OpenIntFloatHashMap timeMap = exposureMap.get(type);
         if (timeMap == null) return 0f;

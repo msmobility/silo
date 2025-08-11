@@ -17,6 +17,7 @@ import de.tum.bgu.msm.properties.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
@@ -129,20 +130,68 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
 
     }
 
+    private void logNaNRecords(String sourceName, int count, List<?> records) {
+        if (count > 0) {
+            logger.warn("{} {} have NaN coordinates.", count, sourceName);
+            for (Object record : records) {
+                logger.debug("{} with NaN coordinate: {}", sourceName, record);
+            }
+        }
+    }
+
     private List<Coordinate> assembleReceiverPoints(Network network) {
         List<Coordinate> receiverPoints = new ArrayList<>();
+        int nodeNaNCount = 0;
+        int linkNaNCount = 0;
+        int activityLocationNaNCount = 0;
+        List<Node> nanNodes = new ArrayList<>();
+        List<Link> nanLinks = new ArrayList<>();
+        List<ActivityLocation> nanActivityLocations = new ArrayList<>();
+
         // for link concentration, from node, to node and middle points are used
         for(Node node : network.getNodes().values()){
-            receiverPoints.add(new Coordinate(node.getCoord().getX(), node.getCoord().getY()));
+            double x = node.getCoord().getX();
+            double y = node.getCoord().getY();
+            if (Double.isNaN(x) || Double.isNaN(y)) {
+                nodeNaNCount++;
+                nanNodes.add(node);
+                continue;
+            }
+            receiverPoints.add(new Coordinate(x, y));
         }
+        logNaNRecords("network nodes", nodeNaNCount, nanNodes);
 
         for(Link link : network.getLinks().values()){
-            receiverPoints.add(new Coordinate(link.getCoord().getX(), link.getCoord().getY()));
+            double x = link.getCoord().getX();
+            double y = link.getCoord().getY();
+            if (Double.isNaN(x) || Double.isNaN(y)) {
+                linkNaNCount++;
+                nanLinks.add(link);
+                continue;
+            }
+            receiverPoints.add(new Coordinate(x, y));
         }
+        logNaNRecords("network links", linkNaNCount, nanLinks);
 
         // all activity locations are considered as pollutant receiver points
-        receiverPoints.addAll(((DataContainerHealth) dataContainer).getActivityLocations().values().stream().map(ActivityLocation::getCoordinate).collect(Collectors.toList()));
+        for (ActivityLocation activityLocation : ((DataContainerHealth) dataContainer).getActivityLocations().values()) {
+            Coordinate coord = activityLocation.getCoordinate();
+            if (Double.isNaN(coord.x) || Double.isNaN(coord.y)) {
+                activityLocationNaNCount++;
+                nanActivityLocations.add(activityLocation);
+                continue;
+            }
+            receiverPoints.add(coord);
+        }
+        logNaNRecords("activity locations", activityLocationNaNCount, nanActivityLocations);
 
+        logger.info("{} receiver points created for air pollutant concentration, having bounds: {}.", receiverPoints.size(),
+                receiverPoints.stream()
+                        .map(Envelope::new)
+                        .reduce((a, b) -> {
+                            a.expandToInclude(b);
+                            return a;
+                        }).orElse(null));
         return receiverPoints;
     }
 
@@ -196,16 +245,19 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
 
     private void runEmissionGridAnalyzer(int year, Day day, String eventsFileWithEmission, double scalingFactor) {
         logger.info("Creating grid cell air pollutant exposure for year " + year + ", day " + day);
-
         logger.info("Apply scale factor: " + scalingFactor + " to emission grid analyzer.");
 
-        EmissionSpatialDispersion gridAnalyzer =	new	EmissionSpatialDispersion.Builder()
+        double buffer = EMISSION_GRID_SIZE * 2;
+        org.locationtech.jts.geom.Polygon boundsPolygon = createEnvelopePolygon(receiverPoints, buffer);
+
+        EmissionSpatialDispersion gridAnalyzer = new EmissionSpatialDispersion.Builder()
                 .withNetwork(scenario.getNetwork())
                 .withTimeBinSize(EMISSION_TIME_BIN_SIZE)
                 .withGridSize(EMISSION_GRID_SIZE)
                 .withSmoothingRadius(EMISSION_SMOOTH_RADIUS)
                 .withCountScaleFactor(1./scalingFactor)
                 .withGridType(EmissionSpatialDispersion.GridType.Square)
+                .withBounds(boundsPolygon)
                 .build();
 
         gridAnalyzer.processTimeBinsWithEmissions(eventsFileWithEmission);
@@ -263,14 +315,17 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
 
         logger.warn("Updating activity location air pollutant concentration for year: " + year + "| day of week: " + day + "| time of day: " + gridEmissionMap.getFirst() + ".");
 
+        int skippedActivityLocations = 0;
+        List<Coordinate> skippedCoordinates = new ArrayList<>();
         for(ActivityLocation activityLocation : ((DataContainerHealth)dataContainer).getActivityLocations().values()){
-
             Map<Pollutant, OpenIntFloatHashMap> exposure2Pollutant2TimeBin =  ((DataContainerHealth)dataContainer).getActivityLocations().get(activityLocation.getLocationId()).getExposure2Pollutant2TimeBin();
-
             Coordinate coordinate = activityLocation.getCoordinate();
-
             Grid.Cell<Map<Pollutant,Float>> locationCell = grid.getCell(coordinate);
-
+            if(locationCell == null) {
+                skippedActivityLocations++;
+                skippedCoordinates.add(coordinate);
+                continue;
+            }
             for(Pollutant pollutant : pollutantSet){
                 if(exposure2Pollutant2TimeBin.get(pollutant)==null){
                     OpenIntFloatHashMap exposureByTimeBin = new OpenIntFloatHashMap();
@@ -279,6 +334,12 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
                 }else {
                     exposure2Pollutant2TimeBin.get(pollutant).put(startTime, locationCell.getValue().getOrDefault(pollutant,0.f));
                 }
+            }
+        }
+        if (skippedActivityLocations > 0) {
+            logger.warn("{} activity locations skipped due to missing grid cell. Enable DEBUG to see coordinates.", skippedActivityLocations);
+            for (Coordinate c : skippedCoordinates) {
+                logger.debug("Skipped activity location coordinate: {}", c);
             }
         }
 
@@ -359,5 +420,33 @@ public class AirPollutantModel extends AbstractModel implements ModelUpdateListe
         scenario.getConfig().plans().setInputFile(populationFile);
 
         return scenario.getConfig();
+    }
+
+    private org.locationtech.jts.geom.Polygon createEnvelopePolygon(List<Coordinate> receiverPoints, double buffer) {
+        double minX = Double.POSITIVE_INFINITY;
+        double minY = Double.POSITIVE_INFINITY;
+        double maxX = Double.NEGATIVE_INFINITY;
+        double maxY = Double.NEGATIVE_INFINITY;
+        for (Coordinate coord : receiverPoints) {
+            if (Double.isNaN(coord.x) || Double.isNaN(coord.y)) continue;
+            if (coord.x < minX) minX = coord.x;
+            if (coord.y < minY) minY = coord.y;
+            if (coord.x > maxX) maxX = coord.x;
+            if (coord.y > maxY) maxY = coord.y;
+        }
+        minX -= buffer;
+        minY -= buffer;
+        maxX += buffer;
+        maxY += buffer;
+        org.locationtech.jts.geom.GeometryFactory geometryFactory = new org.locationtech.jts.geom.GeometryFactory();
+        org.locationtech.jts.geom.Coordinate[] envelopeCoords = new org.locationtech.jts.geom.Coordinate[] {
+            new org.locationtech.jts.geom.Coordinate(minX, minY),
+            new org.locationtech.jts.geom.Coordinate(minX, maxY),
+            new org.locationtech.jts.geom.Coordinate(maxX, maxY),
+            new org.locationtech.jts.geom.Coordinate(maxX, minY),
+            new org.locationtech.jts.geom.Coordinate(minX, minY)
+        };
+        org.locationtech.jts.geom.LinearRing ring = geometryFactory.createLinearRing(envelopeCoords);
+        return geometryFactory.createPolygon(ring, null);
     }
 }

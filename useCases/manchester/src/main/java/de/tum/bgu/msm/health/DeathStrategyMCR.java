@@ -8,7 +8,6 @@ import de.tum.bgu.msm.health.data.PersonHealth;
 import de.tum.bgu.msm.health.disease.Diseases;
 import de.tum.bgu.msm.health.disease.HealthExposures;
 import de.tum.bgu.msm.models.demography.death.DeathStrategy;
-import de.tum.bgu.msm.properties.Properties;
 
 import java.util.*;
 
@@ -23,7 +22,7 @@ public class DeathStrategyMCR implements DeathStrategy {
     }
 
     @Override
-    public double calculateDeathProbability(Person person, Random random) {
+    public double calculateDeathProbability(Person person) {
         final int personAge = Math.min(person.getAge(), 100);
         Gender personSex = person.getGender();
 

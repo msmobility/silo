@@ -4,6 +4,7 @@ import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Day;
 import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
 import de.tum.bgu.msm.health.data.DataContainerHealth;
+import de.tum.bgu.msm.health.io.CRSDetector;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
 import de.tum.bgu.msm.properties.Properties;
@@ -116,8 +117,9 @@ public class NoiseModel extends AbstractModel implements ModelUpdateListener {
         noiseParameters.setConsiderNoiseBarriers(true);
         noiseParameters.setConsiderNoiseReflection(false);
         noiseParameters.setNoiseBarriersFilePath(properties.healthData.noiseBarriersFile);
-        noiseParameters.setNoiseBarriersSourceCRS("EPSG:27700");
-        config.global().setCoordinateSystem("EPSG:27700");
+        String detectedCRS = CRSDetector.detectCRS(properties.healthData.noiseBarriersFile);
+        noiseParameters.setNoiseBarriersSourceCRS(detectedCRS);
+        config.global().setCoordinateSystem(detectedCRS);
         config.addModule(noiseParameters);
 
         NoiseOfflineCalculation noiseOfflineCalculation = new NoiseOfflineCalculation(scenario, outputDirectoryRoot);

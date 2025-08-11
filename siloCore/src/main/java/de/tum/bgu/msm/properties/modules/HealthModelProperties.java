@@ -31,7 +31,7 @@ public class HealthModelProperties {
     public final Boolean adjustByRelativeRisk;
     public final String baseExposureFile;
     public final List<Integer> exposureModelYears;
-    public final String bus_network;
+//    public final String bus_network;
     public final String noiseBarriersFile;
     public final String sportPAmodel;
     public final String busLinkConcentration;
@@ -92,9 +92,9 @@ public class HealthModelProperties {
 
         exposureModelYears = Arrays.stream((PropertiesUtil.getIntPropertyArray(bundle, "exposure.model.years", new int[]{-1}))).boxed().collect(Collectors.toList());
 
-        bus_network = PropertiesUtil.getStringProperty(bundle, "matsim.network.bus", "input/mito/trafficAssignment/network_transit_hbefa.xml");
+//        bus_network = PropertiesUtil.getStringProperty(bundle, "matsim.network.bus", "input/mito/trafficAssignment/network_transit_hbefa.xml");
 
-        noiseBarriersFile = PropertiesUtil.getStringProperty(bundle, "noise.barriers.file", "input/buildingShapefile/mrcBuildings.geojson");
+        noiseBarriersFile = PropertiesUtil.getStringProperty(bundle, "noise.barriers.file", "input/buildingShapefile/buildings.geojson");
 
         sportPAmodel = PropertiesUtil.getStringProperty(bundle, "sportPA.model", "input/health/sportPAmodel.csv");
 

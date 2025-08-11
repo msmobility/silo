@@ -32,6 +32,7 @@ public class TripReaderHealth {
 
             // read header
             String[] header = recString.split(",");
+            logger.info("Header of mito trip file: " + String.join(",", header));
             int posId = SiloUtil.findPositionInArray("t.id", header);
             int posPurpose = SiloUtil.findPositionInArray("t.purpose", header);
             int posOriginZone = SiloUtil.findPositionInArray("originZone", header);

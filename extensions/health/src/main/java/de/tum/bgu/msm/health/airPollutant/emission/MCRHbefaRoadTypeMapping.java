@@ -12,7 +12,7 @@ public class MCRHbefaRoadTypeMapping extends HbefaRoadTypeMapping {
 
     private static final Logger logger = LogManager.getLogger(MCRHbefaRoadTypeMapping.class);
     private static final String OSMTYPE_NAME = "type";
-    private static final List<String> minorRoadTypes = Arrays.asList("residential","access","service","living","track",
+    private static final List<String> minorRoadTypes = Arrays.asList("residential","access","corridor", "service","living","track",
             "unclassified","pedestrian","path","footway","bridleway","bus","cycleway","road","steps");
 
     /**
@@ -64,7 +64,7 @@ public class MCRHbefaRoadTypeMapping extends HbefaRoadTypeMapping {
                 }
                 return "URB/" + type + "/" + speedRange;
             }else{
-                logger.error("Link id: " + link.getId() + " has no attribute: " + OSMTYPE_NAME);
+                logger.error("Link id: {} has no attribute: {}", link.getId(),OSMTYPE_NAME);
                 return "URB/Trunk-Nat./70";
             }
         }
@@ -79,7 +79,7 @@ public class MCRHbefaRoadTypeMapping extends HbefaRoadTypeMapping {
                 type = "MW-City";
                 speedRange = "60";
             } else {
-                logger.error("Road classified with lower cat: " + osmType + " - " + freeFlowSpeed_kmh);
+                logger.debug("Road {} classified with lower cat: {} = {}", link.getId(), osmType, freeFlowSpeed_kmh);
                 type = "Distr";
                 speedRange = "50";
             }
@@ -91,7 +91,7 @@ public class MCRHbefaRoadTypeMapping extends HbefaRoadTypeMapping {
                 type = "Trunk-City";
                 speedRange = "50";
             } else {
-                logger.error("Road classified with lower cat: " + osmType + " - " + freeFlowSpeed_kmh);
+                logger.debug("Road {} classified with lower cat: {} = {}", link.getId(), osmType, freeFlowSpeed_kmh);
                 type = "Distr";
                 speedRange = "50";
             }
@@ -101,12 +101,12 @@ public class MCRHbefaRoadTypeMapping extends HbefaRoadTypeMapping {
         } else if (osmType.equals("tertiary")){
             type = "Local";
             speedRange = "50";
-        } else if (minorRoadTypes.contains(osmType)){
+        } else if (minorRoadTypes.contains(osmType) || freeFlowSpeed_kmh <= 30) {
             type = "Access";
             speedRange = "30";
         } else {
             logger.error(osmType + " - " + freeFlowSpeed_kmh);
-            throw new RuntimeException("road type not known");
+            throw new RuntimeException("Road type not known");
         }
 
         return "URB/" + type + "/" + speedRange;

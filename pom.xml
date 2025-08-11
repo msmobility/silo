@@ -16,19 +16,16 @@
 	</licenses>
 
 	<scm>
-		<url>https://github.com/msmobility/silo</url>
-		<connection>scm:git:git://github.com/msmobility/silo.git</connection>
-		<developerConnection>scm:git:git@github.com:msmobility/silo.git</developerConnection>
+		<url>https://github.com/jibeproject/silo</url>
+		<connection>scm:git:git://github.com/jibeproject/silo.git</connection>
+		<developerConnection>scm:git:git@github.com:jibeproject/silo.git</developerConnection>
 	</scm>
 
 	<distributionManagement>
-		<snapshotRepository>
-			<id>msm</id>
-			<url>https://maven.cloudsmith.io/msmobility/silo/</url>
-		</snapshotRepository>
 		<repository>
-			<id>msm-snapshots</id>
-			<url>https://maven.cloudsmith.io/msmobility/silo/</url>
+			<id>github</id>
+			<name>GitHub Packages</name>
+			<url>https://maven.pkg.github.com/jibeproject/silo</url>
 		</repository>
 	</distributionManagement>
 
@@ -36,6 +33,18 @@
 		<repository>
 			<id>msm</id>
 			<url>https://dl.cloudsmith.io/public/msmobility/msm/maven/</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>github</id>
+			<url>https://maven.pkg.github.com/jibeproject/mito</url>
 			<releases>
 				<enabled>true</enabled>
 				<updatePolicy>always</updatePolicy>
@@ -115,6 +124,13 @@
 		</resources>
 		<plugins>
 			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.3.1</version>
+				<configuration>
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
+			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>buildnumber-maven-plugin</artifactId>
 				<version>1.0</version>
@@ -154,7 +170,8 @@
 
 					<!--execute each test in separate JVM (slow, but otherwise it does not-->
 					<!--work, and no problem as long as there are only integration tests):-->
-					<forkMode>always</forkMode>
+					<forkCount>1</forkCount>
+					<reuseForks>false</reuseForks>
 
 					<!-- avoid out of memory errors: -->
 					<argLine>-Xmx2000m -Djava.awt.headless=true
@@ -184,5 +201,7 @@
 		<matsimVersion>2025.0-PR3643</matsimVersion>
 		<jackson.version>2.9.5</jackson.version>
 		<junit.version>5.10.3</junit.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
 </project>

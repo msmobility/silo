@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Supplier;
 
-import de.tum.bgu.msm.data.Zone;
 import org.locationtech.jts.geom.*;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
@@ -21,6 +20,7 @@ import org.matsim.core.utils.collections.QuadTree;
  */
 public abstract class Grid<T> {
 
+    private static final org.apache.logging.log4j.Logger logger = org.apache.logging.log4j.LogManager.getLogger(Grid.class);
     private static final GeometryFactory geometryFactory = new GeometryFactory();
     final double horizontalCentroidDistance;
     QuadTree<Cell<T>> quadTree;
@@ -45,11 +45,11 @@ public abstract class Grid<T> {
 
     public Grid(List<Coordinate> receiverPoints, final double horizontalCentroidDistance, final Supplier<T> initialValueSupplier, final PreparedGeometry bounds) {
         this.horizontalCentroidDistance = horizontalCentroidDistance;
-        generateReceiverPonts(receiverPoints,initialValueSupplier, bounds);
+        generateReceiverPoints(receiverPoints,initialValueSupplier, bounds);
     }
 
     /**
-     * retrieve cell for a given coordinate. Cell with closest centroid will be returne
+     * retrieve cell for a given coordinate. Cell with closest centroid will be returned
      *
      * @param coordinate coordinate within a cell
      * @return Cell with closest centroid.
@@ -153,13 +153,35 @@ public abstract class Grid<T> {
         }
     }
 
-    private void generateReceiverPonts(List<Coordinate> receiverPoints, Supplier<T> initialValueSupplier, final PreparedGeometry bounds) {
+    private void generateReceiverPoints(List<Coordinate> receiverPoints, Supplier<T> initialValueSupplier, final PreparedGeometry bounds) {
         Envelope envelope = bounds.getGeometry().getEnvelopeInternal();
 
         quadTree = new QuadTree<>(envelope.getMinX(), envelope.getMinY(), envelope.getMaxX(), envelope.getMaxY());
 
+        int nanCount = 0;
+        int outOfBoundsCount = 0;
+        List<Coordinate> outOfBoundsCoords = new ArrayList<>();
+
         for (Coordinate coordinate : receiverPoints){
-            quadTree.put(coordinate.x, coordinate.y, new Cell<>(coordinate, initialValueSupplier.get()));
+            if (Double.isNaN(coordinate.x) || Double.isNaN(coordinate.y)) {
+                nanCount++;
+                continue;
+            }
+            if (bounds.contains(geometryFactory.createPoint(coordinate))) {
+                quadTree.put(coordinate.x, coordinate.y, new Cell<>(coordinate, initialValueSupplier.get()));
+            } else {
+                outOfBoundsCount++;
+                outOfBoundsCoords.add(coordinate);
+            }
+        }
+        if (nanCount > 0 || outOfBoundsCount > 0) {
+            logger.warn("generateReceiverPoints: {} coordinates skipped due to NaN values, {} coordinates skipped for being outside bounds.", nanCount, outOfBoundsCount);
+        }
+        if (outOfBoundsCount > 0) {
+            logger.warn("To see the specific coordinates outside bounds, enable DEBUG logging.");
+            for (Coordinate c : outOfBoundsCoords) {
+                logger.debug("Coordinate outside bounds: {}", c);
+            }
         }
     }
 

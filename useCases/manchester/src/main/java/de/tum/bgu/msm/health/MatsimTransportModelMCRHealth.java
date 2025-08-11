@@ -347,17 +347,21 @@ public final class MatsimTransportModelMCRHealth implements TransportModel {
             matsimScenario.setPopulation(populationCarTruck);
 
             //set vehicle types
-            VehicleType car = VehicleUtils.getFactory().createVehicleType(Id.create(TransportMode.car, VehicleType.class));
-            car.setPcuEquivalents(1.);
-            car.setLength(7.5);
-            car.setNetworkMode(TransportMode.car);
-            matsimScenario.getVehicles().addVehicleType(car);
-
-            VehicleType truck = VehicleUtils.getFactory().createVehicleType(Id.create(TransportMode.truck, VehicleType.class));
-            truck.setPcuEquivalents(2.5);
-            truck.setLength(15.);
-            truck.setNetworkMode(TransportMode.truck);
-            matsimScenario.getVehicles().addVehicleType(truck);
+            if (!matsimScenario.getVehicles().getVehicleTypes().containsKey(Id.create(TransportMode.car, VehicleType.class))) {
+                VehicleType car = VehicleUtils.getFactory().createVehicleType(Id.create(TransportMode.car, VehicleType.class));
+                car.setPcuEquivalents(1.);
+                car.setLength(7.5);
+                car.setNetworkMode(TransportMode.car);
+                matsimScenario.getVehicles().addVehicleType(car);
+            }
+            if (!matsimScenario.getVehicles().getVehicleTypes().containsKey(Id.create(TransportMode.truck, VehicleType.class))) {
+                //set up truck vehicle type
+                VehicleType truck = VehicleUtils.getFactory().createVehicleType(Id.create(TransportMode.truck, VehicleType.class));
+                truck.setPcuEquivalents(2.5);
+                truck.setLength(15.);
+                truck.setNetworkMode(TransportMode.truck);
+                matsimScenario.getVehicles().addVehicleType(truck);
+            }
 
             matsimScenario.getConfig().qsim().setVehiclesSource(QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData);
 

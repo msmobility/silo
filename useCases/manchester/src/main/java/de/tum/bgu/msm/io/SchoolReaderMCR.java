@@ -56,8 +56,8 @@ public class SchoolReaderMCR implements SchoolReader {
                 int id = Integer.parseInt(lineElements[posId]);
                 int zoneId = Integer.parseInt(lineElements[posZone]);
                 int type = Integer.parseInt(lineElements[posType]);
-                int capacity = Integer.parseInt(lineElements[posOccupancy]);
-                int occupancy = Integer.parseInt(lineElements[posCapacity]);
+                int capacity = Integer.parseInt(lineElements[posCapacity]);
+                int occupancy = Integer.parseInt(lineElements[posOccupancy]);
 
                 Coordinate coordinate = new Coordinate(Double.parseDouble(lineElements[posCoordX]), Double.parseDouble(lineElements[posCoordY]));
 

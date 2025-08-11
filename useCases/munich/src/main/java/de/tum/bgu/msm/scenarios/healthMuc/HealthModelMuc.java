@@ -39,6 +39,7 @@ import org.matsim.core.scenario.ScenarioUtils;
 import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import static org.matsim.contrib.emissions.Pollutant.*;
 
@@ -454,7 +455,13 @@ public class HealthModelMuc extends AbstractModel implements ModelUpdateListener
                 continue;
             }
 
-            ((PersonHealth) siloPerson).updateWeeklyAccidentRisks(mitoTrip.getTravelRiskMap());
+            ((PersonHealth) siloPerson).updateWeeklyAccidentRisks(
+                mitoTrip.getTravelRiskMap().entrySet().stream()
+                    .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> e.getValue().doubleValue()
+                    ))
+            );
             ((PersonHealth) siloPerson).updateWeeklyMarginalMetHours(mitoTrip.getTripMode(), (float) mitoTrip.getMarginalMetHours());
             ((PersonHealth) siloPerson).updateWeeklyPollutionExposures(mitoTrip.getTravelExposureMap());
             ((PersonHealth) siloPerson).updateWeeklyTravelSeconds((float) mitoTrip.getMatsimTravelTime());

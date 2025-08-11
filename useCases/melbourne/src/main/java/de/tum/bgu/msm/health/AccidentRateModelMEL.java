@@ -1,0 +1,1574 @@
+package de.tum.bgu.msm.health;
+
+import cern.colt.map.tfloat.OpenIntFloatHashMap;
+import de.tum.bgu.msm.data.Day;
+import de.tum.bgu.msm.health.injury.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.Scenario;
+import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.network.Link;
+import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.network.Node;
+import org.matsim.api.core.v01.population.Person;
+import org.matsim.contrib.accidents.AccidentsModule;
+import org.matsim.core.api.experimental.events.EventsManager;
+import org.matsim.core.controler.AbstractModule;
+import org.matsim.core.controler.Injector;
+import org.matsim.core.events.EventsManagerModule;
+import org.matsim.core.events.MatsimEventsReader;
+import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.network.io.MatsimNetworkReader;
+import org.matsim.core.population.io.PopulationReader;
+import org.matsim.core.scenario.ScenarioByInstanceModule;
+import org.matsim.utils.objectattributes.attributable.Attributes;
+import routing.components.JctStress;
+import routing.components.LinkStress;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
+import java.util.*;
+import java.util.stream.Collectors;
+
+public class AccidentRateModelMEL {
+    private static final Logger log = LogManager.getLogger( AccidentRateModelMEL.class );
+    private Scenario scenario;
+    private final float SCALEFACTOR;
+    private AccidentsContext accidentsContext = new AccidentsContext();
+    private AnalysisEventHandler analysisEventHandler;
+
+    private static final float CAR_LIGHT_LIGHT = 1.23f;
+    private static final float CAR_SEVERE_LIGHT = 0.29f;
+    private static final float CAR_SEVERE_SEVERE = 1.01f;
+    private static final float BIKECAR_LIGHT_LIGHT = 0.99f;
+    private static final float BIKECAR_SEVERE_LIGHT = 0.01f;
+    private static final float BIKECAR_SEVERE_SEVERE = 0.99f;
+    private static final float BIKEBIKE_LIGHT_LIGHT = 1.05f;
+    private static final float BIKEBIKE_SEVERE_LIGHT = 0.00f;
+    private static final float BIKEBIKE_SEVERE_SEVERE = 1.00f;
+    private static final float PED_LIGHT_LIGHT = 1.03f;
+    private static final float PED_SEVERE_LIGHT = 0.05f;
+    private static final float PED_SEVERE_SEVERE = 1.00f;
+    private int count;
+    private int counterCar;
+    private int counterBikePed;
+    private Day day;
+
+    //
+    private static final Set<AccidentType> ACCIDENT_TYPE_MEL = Set.of(AccidentType.CAR, AccidentType.BIKECAR, AccidentType.BIKEBIKE);
+    private static final Set<AccidentSeverity> ACCIDENT_SEVERITY_MEL = Set.of(AccidentSeverity.LIGHT);
+
+    //
+    public static final Set<String> MAJOR = Set.of(
+            "primary", "primary_link", "secondary", "secondary_link",
+            "tertiary", "tertiary_link", "trunk", "trunk_link", "bus_guideway", "cycleway"
+    );
+    //            "motorway", "motorway_link"
+
+    public static final Set<String> MINOR = Set.of(
+            "unclassified", "residential", "living_street", "service",
+            "pedestrian", "track", "footway", "bridleway", "steps",
+            "path", "road"
+    );
+
+    public AccidentRateModelMEL(Scenario scenario, float scalefactor, Day day) {
+        this.scenario = scenario;
+        SCALEFACTOR = scalefactor;
+        this.day = day;
+    }
+
+    public void runAgentInjuryRiskOfflineMEL() {
+        com.google.inject.Injector injector = Injector.createInjector( scenario.getConfig() , new AbstractModule(){
+            @Override public void install(){
+                install( new ScenarioByInstanceModule( scenario ) );
+                install( new AccidentsModule()) ;
+                install( new EventsManagerModule());
+            }
+        }) ;
+
+        log.info("Reading network file...");
+        String networkFile;
+        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
+            networkFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + "output_network.xml.gz";
+        } else {
+            networkFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + this.scenario.getConfig().controller().getRunId() + ".output_network.xml.gz";
+        }
+        new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
+        log.info("Reading network file... Done.");
+
+        log.info("Reading car plans file...");
+        PopulationReader popReader = new PopulationReader(scenario);
+        String plansFile;
+        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
+            plansFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + "output_plans.xml.gz";
+        } else {
+            plansFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + this.scenario.getConfig().controller().getRunId() + ".output_plans.xml.gz";
+        }
+        popReader.readFile(plansFile);
+        log.info("Reading car plans file... Done.");
+
+        log.warn("Total population:" + scenario.getPopulation().getPersons().size());
+
+        log.info("Reading bikePed plans file...");
+        String plansFileBikePed;
+        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
+            plansFileBikePed = this.scenario.getConfig().controller().getOutputDirectory() + "bikePed/" + "output_plans.xml.gz";
+        } else {
+            plansFileBikePed = this.scenario.getConfig().controller().getOutputDirectory() + "bikePed/" + this.scenario.getConfig().controller().getRunId() + ".output_plans.xml.gz";
+        }
+        popReader.readFile(plansFileBikePed);
+        log.info("Reading bikePed plans file... Done.");
+        log.warn("Total population:" + scenario.getPopulation().getPersons().size());
+
+
+        analysisEventHandler = new AnalysisEventHandler();
+        analysisEventHandler.setScenario(scenario);
+        analysisEventHandler.setAccidentsContext(accidentsContext);
+        log.info("Reading car events file...");
+        EventsManager events = injector.getInstance( EventsManager.class ) ;
+        MatsimEventsReader eventsReader = new MatsimEventsReader(events);
+        String eventsFile;
+        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
+            eventsFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + "output_events.xml.gz";
+        } else {
+            eventsFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + this.scenario.getConfig().controller().getRunId() + ".output_events.xml.gz";
+        }
+        events.addHandler(analysisEventHandler);
+        eventsReader.readFile(eventsFile); //car AADT are calculated by eventHandler
+        log.info("Reading car events file... Done.");
+
+        log.info("Reading bike&ped events file...");
+        String eventsFileBikePed;
+        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
+            eventsFileBikePed = this.scenario.getConfig().controller().getOutputDirectory() + "bikePed/" + "output_events.xml.gz";
+        } else {
+            eventsFileBikePed = this.scenario.getConfig().controller().getOutputDirectory() + "bikePed/" + this.scenario.getConfig().controller().getRunId() + ".output_events.xml.gz";
+        }
+        eventsReader.readFile(eventsFileBikePed); //car, bike, ped AADT are calculated by eventHandler
+        log.info("Reading bike&ped events file... Done.");
+
+
+        //Preparation
+        for (Link link : this.scenario.getNetwork().getLinks().values()) {
+            AccidentLinkInfo info = new AccidentLinkInfo(link.getId());
+            this.accidentsContext.getLinkId2info().put(link.getId(), info);
+        }
+        log.info("Initializing all link-specific information... Done.");
+
+/*        for (Person person : this.scenario.getPopulation().getPersons().values()) {
+            AccidentAgentInfo info = new AccidentAgentInfo(person.getId());
+            this.accidentsContext.getPersonId2info().put(person.getId(), info);
+        }
+        log.info("Initializing all agent-specific information... Done.");*/
+
+
+        log.info("Link accident frequency calculation (by type by time of day) start.");
+        for (AccidentType accidentType : AccidentType.values()){
+            for (AccidentSeverity accidentSeverity : AccidentSeverity.values()){
+                String basePath = scenario.getScenarioElement("accidentModelFile").toString();
+                AccidentRateCalculationMEL calculator = new AccidentRateCalculationMEL(SCALEFACTOR, accidentsContext, analysisEventHandler, accidentType, accidentSeverity,basePath);
+                calculator.run(this.scenario.getNetwork().getLinks().values());
+                log.info("Calculating " + accidentType + "_" + accidentSeverity + " crash rate done.");
+            }
+        }
+        log.info("Link accident frequency calculation completed.");
+
+
+        try {
+            writeOutCrashFrequency();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        log.info("Link casualty frequency conversion (by type by time of day) start.");
+        for (Link link : this.scenario.getNetwork().getLinks().values()) {
+            casualtyRateCalculation(link);
+        }
+        log.info("Link casualty frequency conversion completed.");
+
+
+        try {
+            writeOutCasualtyRate();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        log.info("Link casualty exposure calculation start.");
+        for (Link link : this.scenario.getNetwork().getLinks().values()) {
+            computeLinkCasualtyExposure(link);
+        }
+        log.info(counterCar + "car links have no hourly traffic volume");
+        log.info(counterBikePed + "bikeped links have no hourly traffic volume");
+        log.info("Link casualty exposure calculation completed.");
+
+
+        try {
+            writeOutExposure();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        //only for offline
+        log.info("Agent crash risk calculation start.");
+        for (Person pp : this.scenario.getPopulation().getPersons().values()){
+            AccidentAgentInfo personInfo = this.accidentsContext.getPersonId2info().get(pp.getId());
+            if(personInfo==null){
+                //log.warn("Person Id: " + pp.getId() + "is not analyzed in the handler!");
+                count++;
+                continue;
+            }
+            computeAgentCrashRisk(personInfo);
+        }
+        log.info(count + " agents are not analyzed in the handler!");
+        log.info("Agent crash risk calculation completed.");
+
+        try {
+            writeOut();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        analysisEventHandler.reset(0);
+        System.gc();
+    }
+
+    public void runAgentInjuryRiskOffline() {
+        com.google.inject.Injector injector = Injector.createInjector( scenario.getConfig() , new AbstractModule(){
+            @Override public void install(){
+                install( new ScenarioByInstanceModule( scenario ) );
+                install( new AccidentsModule()) ;
+                install( new EventsManagerModule());
+            }
+        }) ;
+
+        log.info("Reading network file...");
+        String networkFile;
+        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
+            networkFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + "output_network.xml.gz";
+        } else {
+            networkFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + this.scenario.getConfig().controller().getRunId() + ".output_network.xml.gz";
+        }
+        new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
+        log.info("Reading network file... Done.");
+
+        log.info("Reading car plans file...");
+        PopulationReader popReader = new PopulationReader(scenario);
+        String plansFile;
+        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
+            plansFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + "output_plans.xml.gz";
+        } else {
+            plansFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + this.scenario.getConfig().controller().getRunId() + ".output_plans.xml.gz";
+        }
+        popReader.readFile(plansFile);
+        log.info("Reading car plans file... Done.");
+
+        log.warn("Total population:" + scenario.getPopulation().getPersons().size());
+
+        log.info("Reading bikePed plans file...");
+        String plansFileBikePed;
+        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
+            plansFileBikePed = this.scenario.getConfig().controller().getOutputDirectory() + "bikePed/" + "output_plans.xml.gz";
+        } else {
+            plansFileBikePed = this.scenario.getConfig().controller().getOutputDirectory() + "bikePed/" + this.scenario.getConfig().controller().getRunId() + ".output_plans.xml.gz";
+        }
+        popReader.readFile(plansFileBikePed);
+        log.info("Reading bikePed plans file... Done.");
+        log.warn("Total population:" + scenario.getPopulation().getPersons().size());
+
+
+        analysisEventHandler = new AnalysisEventHandler();
+        analysisEventHandler.setScenario(scenario);
+        analysisEventHandler.setAccidentsContext(accidentsContext);
+        log.info("Reading car events file...");
+        EventsManager events = injector.getInstance( EventsManager.class ) ;
+        MatsimEventsReader eventsReader = new MatsimEventsReader(events);
+        String eventsFile;
+        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
+            eventsFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + "output_events.xml.gz";
+        } else {
+            eventsFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + this.scenario.getConfig().controller().getRunId() + ".output_events.xml.gz";
+        }
+        events.addHandler(analysisEventHandler);
+        eventsReader.readFile(eventsFile); //car AADT are calculated by eventHandler
+        log.info("Reading car events file... Done.");
+
+        log.info("Reading bike&ped events file...");
+        String eventsFileBikePed;
+        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
+            eventsFileBikePed = this.scenario.getConfig().controller().getOutputDirectory() + "bikePed/" + "output_events.xml.gz";
+        } else {
+            eventsFileBikePed = this.scenario.getConfig().controller().getOutputDirectory() + "bikePed/" + this.scenario.getConfig().controller().getRunId() + ".output_events.xml.gz";
+        }
+        eventsReader.readFile(eventsFileBikePed); //car, bike, ped AADT are calculated by eventHandler
+        log.info("Reading bike&ped events file... Done.");
+
+
+        //Preparation
+        for (Link link : this.scenario.getNetwork().getLinks().values()) {
+            AccidentLinkInfo info = new AccidentLinkInfo(link.getId());
+            this.accidentsContext.getLinkId2info().put(link.getId(), info);
+        }
+        log.info("Initializing all link-specific information... Done.");
+
+/*        for (Person person : this.scenario.getPopulation().getPersons().values()) {
+            AccidentAgentInfo info = new AccidentAgentInfo(person.getId());
+            this.accidentsContext.getPersonId2info().put(person.getId(), info);
+        }
+        log.info("Initializing all agent-specific information... Done.");*/
+
+
+        log.info("Link accident frequency calculation (by type by time of day) start.");
+        for (AccidentType accidentType : AccidentType.values()){
+            for (AccidentSeverity accidentSeverity : AccidentSeverity.values()){
+                String basePath = scenario.getScenarioElement("accidentModelFile").toString();
+                AccidentRateCalculationMEL calculator = new AccidentRateCalculationMEL(SCALEFACTOR, accidentsContext, analysisEventHandler, accidentType, accidentSeverity,basePath);
+                calculator.run(this.scenario.getNetwork().getLinks().values());
+                log.info("Calculating " + accidentType + "_" + accidentSeverity + " crash rate done.");
+            }
+        }
+        log.info("Link accident frequency calculation completed.");
+
+
+        try {
+            writeOutCrashFrequency();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        log.info("Link casualty frequency conversion (by type by time of day) start.");
+        for (Link link : this.scenario.getNetwork().getLinks().values()) {
+            casualtyRateCalculation(link);
+        }
+        log.info("Link casualty frequency conversion completed.");
+
+
+        try {
+            writeOutCasualtyRate();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        log.info("Link casualty exposure calculation start.");
+        for (Link link : this.scenario.getNetwork().getLinks().values()) {
+            computeLinkCasualtyExposure(link);
+        }
+        log.info(counterCar + "car links have no hourly traffic volume");
+        log.info(counterBikePed + "bikeped links have no hourly traffic volume");
+        log.info("Link casualty exposure calculation completed.");
+
+
+        try {
+            writeOutExposure();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        //only for offline
+        log.info("Agent crash risk calculation start.");
+        for (Person pp : this.scenario.getPopulation().getPersons().values()){
+            AccidentAgentInfo personInfo = this.accidentsContext.getPersonId2info().get(pp.getId());
+            if(personInfo==null){
+                //log.warn("Person Id: " + pp.getId() + "is not analyzed in the handler!");
+                count++;
+                continue;
+            }
+            computeAgentCrashRisk(personInfo);
+        }
+        log.info(count + " agents are not analyzed in the handler!");
+        log.info("Agent crash risk calculation completed.");
+
+        try {
+            writeOut();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        analysisEventHandler.reset(0);
+        System.gc();
+    }
+
+    public void runCasualtyRateMEL() {
+        com.google.inject.Injector injector = Injector.createInjector( scenario.getConfig() , new AbstractModule(){
+            @Override public void install(){
+                install( new ScenarioByInstanceModule( scenario ) );
+                install( new AccidentsModule()) ;
+                install( new EventsManagerModule());
+            }
+        }) ;
+
+        // network
+        log.info("Reading network file...");
+        String networkFile;
+        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
+            networkFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + "output_network.xml.gz";
+        } else {
+            networkFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + this.scenario.getConfig().controller().getRunId() + ".output_network.xml.gz";
+        }
+
+        //networkFile = "/media/admin/EXTERNAL_USB1/simulation_results_for_paper/base/matsim/2021/thursday/car/2021.output_network.xml.gz";
+        new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
+        log.info("Reading network file... Done.");
+
+        // Aggregate the network
+        // Network networkAggregated = aggregateNetworkByOsmID(scenario.getNetwork());
+
+        // Plans
+        log.info("Reading car plans file...");
+        PopulationReader popReader = new PopulationReader(scenario);
+
+        // carTruck plans
+        /*
+        String plansFile;
+        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
+            plansFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + "output_plans.xml.gz";
+        } else {
+            plansFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + this.scenario.getConfig().controller().getRunId() + ".output_plans.xml.gz";
+        }
+        plansFile = "/media/admin/EXTERNAL_USB1/simulation_results_for_paper/base/matsim/2021/thursday/car/2021.output_plans.xml.gz";
+        popReader.readFile(plansFile);
+        log.info("Reading car plans file... Done.");
+        log.warn("Total population:" + scenario.getPopulation().getPersons().size());
+
+        // bikePed plans
+        log.info("Reading bikePed plans file...");
+        String plansFileBikePed;
+        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
+            plansFileBikePed = this.scenario.getConfig().controller().getOutputDirectory() + "bikePed/" + "output_plans.xml.gz";
+        } else {
+            plansFileBikePed = this.scenario.getConfig().controller().getOutputDirectory() + "bikePed/" + this.scenario.getConfig().controller().getRunId() + ".output_plans.xml.gz";
+        }
+        //plansFileBikePed = "/media/admin/EXTERNAL_USB1/simulation_results_for_paper/base/matsim/2021/thursday/bikePed/2021.output_plans.xml.gz";
+        popReader.readFile(plansFileBikePed);
+        log.info("Reading bikePed plans file... Done.");
+        log.warn("Total population:" + scenario.getPopulation().getPersons().size());
+        */
+
+        // links
+        for (Link link : this.scenario.getNetwork().getLinks().values()) {
+            AccidentLinkInfo info = new AccidentLinkInfo(link.getId());
+            this.accidentsContext.getLinkId2info().put(link.getId(), info);
+        }
+        log.info("Initializing all link-specific information... Done.");
+
+        // persons
+        int nbPersons = 0;
+        for (Person person : this.scenario.getPopulation().getPersons().values()) {
+            AccidentAgentInfo info = new AccidentAgentInfo(person.getId());
+            this.accidentsContext.getPersonId2info().put(person.getId(), info);
+            nbPersons++;
+        }
+        log.info("Initializing all agent-specific information... Done. " + nbPersons);
+        // todo : pop is not initialized at all
+
+        // Read-in traffic volumes
+        analysisEventHandler = new AnalysisEventHandler();
+        analysisEventHandler.setScenario(scenario);
+        analysisEventHandler.setAccidentsContext(accidentsContext);
+
+        // carTruck traffic volumes
+        log.info("Reading car events file...");
+        EventsManager events = injector.getInstance( EventsManager.class ) ;
+        MatsimEventsReader eventsReader = new MatsimEventsReader(events);
+        String eventsFile;
+        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
+            eventsFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + "output_events.xml.gz";
+        } else {
+            eventsFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + this.scenario.getConfig().controller().getRunId() + ".output_events.xml.gz";
+        }
+        // eventsFile = "/media/admin/EXTERNAL_USB1/simulation_results_for_paper/base/matsim/2021/thursday/car/2021.output_events.xml.gz";
+        events.addHandler(analysisEventHandler);
+        eventsReader.readFile(eventsFile); //car AADT are calculated by eventHandler
+        log.info("Reading car events file... Done.");
+
+
+        // bikePed traffic volumes
+        log.info("Reading bike&ped events file...");
+        String eventsFileBikePed;
+        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
+            eventsFileBikePed = this.scenario.getConfig().controller().getOutputDirectory() + "bikePed/" + "output_events.xml.gz";
+        } else {
+            eventsFileBikePed = this.scenario.getConfig().controller().getOutputDirectory() + "bikePed/" + this.scenario.getConfig().controller().getRunId() + ".output_events.xml.gz";
+        }
+        // eventsFileBikePed = "/media/admin/EXTERNAL_USB1/simulation_results_for_paper/base/matsim/2021/thursday/bikePed/2021.output_events.xml.gz";
+        eventsReader.readFile(eventsFileBikePed); //car, bike, ped AADT are calculated by eventHandler
+        log.info("Reading bike&ped events file... Done.");
+
+        Random random = new Random(); // todo: how to do ??
+
+        double calibrationFactor=1.;
+        switch (day){
+            case Day.thursday:
+                calibrationFactor=2.19; //1.31;
+                break;
+            case Day.saturday:
+                calibrationFactor=2.19; //4.26;
+                break;
+            case Day.sunday:
+                calibrationFactor=2.19; //3.48;
+                break;
+            default:
+                // no calibration
+                calibrationFactor=2.19;
+        }
+
+        log.info("Link casualty frequency calculation (by type by time of day) start.");
+        for (AccidentType accidentType : AccidentType.values()){
+            if (ACCIDENT_TYPE_MEL.contains(accidentType)){
+                continue;
+            }
+            for (AccidentSeverity accidentSeverity : AccidentSeverity.values()){
+                if(ACCIDENT_SEVERITY_MEL.contains(accidentSeverity)){
+                    continue;
+                }
+
+                String basePath = scenario.getScenarioElement("accidentModelFile").toString();
+                CasualtyRateCalculationMEL calculator = new CasualtyRateCalculationMEL(SCALEFACTOR, accidentsContext, analysisEventHandler, accidentType, accidentSeverity, basePath, scenario, calibrationFactor);
+
+                Map<Id<Link>, Link> placeholderMap = new HashMap<>();
+                placeholderMap.putAll(extractLinkSpecific((Map<Id<Link>, Link>) scenario.getNetwork().getLinks(), accidentType));
+                //placeholderMap.putAll(extractLinkSpecific2((Map<Id<Link>, Link>) networkAggregated.getLinks(), accidentType));
+                calculator.run(placeholderMap.values(), random);
+                //calculator.run((Collection<? extends Link>) networkAggregated.getLinks(), random);
+
+                log.info("Calculating " + accidentType + "_" + accidentSeverity + " crash rate done.");
+            }
+        }
+        log.info("Link casualty frequency calculation completed.");
+
+
+        try {
+            writeOutCasualtyRate();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        // Compute link-level injury risk R=1/v (v= traffic volume)
+        computeLinkLevelInjuryRisk();
+
+        /*
+        log.info("Link casualty exposure calculation start.");
+        for (Link link : this.scenario.getNetwork().getLinks().values()) {
+            computeLinkCasualtyExposureMEL(link);
+        }
+
+        try {
+            writeOutExposure();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        log.info(counterCar + "car links have no hourly traffic volume");
+        log.info(counterBikePed + "bikeped links have no hourly traffic volume");
+        log.info("Link casualty exposure calculation completed.");
+
+         */
+
+        /*
+        //only for offline todo: read matsim plans
+        int popSize = 0;
+        log.info("Agent injury risk calculation start.");
+        for(Map.Entry<Id<Person>, AccidentAgentInfo> pp : this.accidentsContext.getPersonId2info().entrySet()){
+            if(pp == null){
+                //log.warn("Person Id: " + pp.getId() + "is not analyzed in the handler!");
+                count++;
+                continue;
+            }
+            computeAgentCrashRiskMEL(pp.getValue());
+            popSize++;
+        }
+
+         */
+
+        /*
+        for (Person pp : this.scenario.getPopulation().getPersons().values()){
+            AccidentAgentInfo personInfo = this.accidentsContext.getPersonId2info().get(pp.getId());
+            if(personInfo == null){
+                //log.warn("Person Id: " + pp.getId() + "is not analyzed in the handler!");
+                count++;
+                continue;
+            }
+            computeAgentCrashRiskMEL(personInfo);
+            popSize++;
+        }
+         */
+
+        /*
+        log.info(count + " agents are not analyzed in the handler!");
+        log.info("Agent injury risk calculation completed.");
+        log.info("The size of the population is " + popSize);
+
+        try {
+            writeOut();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+         */
+
+        analysisEventHandler.reset(0);
+        System.gc();
+    }
+
+    public void computeLinkLevelInjuryRisk() {
+        // Compute link-level injury risk R=1/v (v= traffic volume)
+        log.info("Link casualty exposure calculation start.");
+        for (Link link : this.scenario.getNetwork().getLinks().values()) {
+            computeLinkCasualtyExposureMEL(link);
+        }
+        log.info("Link casualty exposure completed.");
+
+        try {
+            writeOutExposure();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void computePersonLevelInjuryRiskOffline(){
+        int popSize = 0;
+        log.info("Agent injury risk calculation start.");
+        for(Map.Entry<Id<Person>, AccidentAgentInfo> pp : this.accidentsContext.getPersonId2info().entrySet()){
+            if(pp == null){
+                //log.warn("Person Id: " + pp.getId() + "is not analyzed in the handler!");
+                count++;
+                continue;
+            }
+            computeAgentCrashRiskMEL(pp.getValue());
+            popSize++;
+        }
+        log.info("Agent injury risk calculation completed.");
+
+
+        try {
+            writeOut();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Map<Id<Link>,Link> extractLinkSpecific2(Map<Id<Link>, Link> links, AccidentType accidentType) {
+        Map<Id<Link>, Link> placeholderMap = new HashMap<>();
+
+        // send only relevant links for which we want to predict casualties
+        switch(accidentType){
+            case PED:
+                for(Link link : links.values()){
+                    if((boolean) link.getAttributes().getAttribute("bike_allowed")){
+                        placeholderMap.put(link.getId(), link);
+                    }
+                }
+                break;
+            case CAR_ONEWAY:
+                for(Link link : links.values()){
+                    boolean twoWay = (boolean) link.getAttributes().getAttribute("two_way");
+                    if(!twoWay){
+                        placeholderMap.put(link.getId(), link);
+                    }
+                }
+                break;
+            case CAR_TWOWAY:
+                for(Link link : links.values()){
+                    boolean twoWay = (boolean) link.getAttributes().getAttribute("two_way");
+                    if(twoWay){
+                        placeholderMap.put(link.getId(), link);
+                    }
+                }
+                break;
+            case BIKE_MINOR:
+                for(Link link : links.values()){
+                    boolean bikeAllowed = (boolean) link.getAttributes().getAttribute("bike_allowed");
+                    if(MINOR.contains(getStringAttribute(link.getAttributes(), "type", "residential")) && bikeAllowed){
+                        placeholderMap.put(link.getId(), link);
+                    }
+                }
+                break;
+            case BIKE_MAJOR:
+                for(Link link : links.values()){
+                    boolean bikeAllowed = (boolean) link.getAttributes().getAttribute("bike_allowed");
+                    if(MAJOR.contains(getStringAttribute(link.getAttributes(), "type", "residential")) && bikeAllowed){
+                        placeholderMap.put(link.getId(), link);
+                    }
+                }
+                break;
+            default:
+                // todo: better to raise error here ??
+                break;
+
+        }
+        return placeholderMap;
+    }
+
+    private Map<Id<Link>,Link> extractLinkSpecific(Map<Id<Link>, Link> links, AccidentType accidentType) {
+        Map<Id<Link>, Link> placeholderMap = new HashMap<>();
+
+        // send only relevant links for which we want to predict casualties
+        switch(accidentType){
+            case PED:
+                for(Link link : links.values()){
+                    if(link.getAllowedModes().contains(TransportMode.walk)){
+                        placeholderMap.put(link.getId(), link);
+                    }
+                }
+                break;
+            case CAR_ONEWAY:
+                for(Link link : links.values()){
+                    String roadType= getStringAttribute(link.getAttributes(), "type", "null");
+
+                    if(!isTwoWayRoad(link, TransportMode.car) && !(roadType.equals("motorway") || roadType.equals("motorway_link"))){
+                        placeholderMap.put(link.getId(), link);
+                    }
+                }
+                break;
+            case CAR_TWOWAY:
+                for(Link link : links.values()){
+                    String roadType= getStringAttribute(link.getAttributes(), "type", "null");
+
+                    if(isTwoWayRoad(link, TransportMode.car) || (roadType.equals("motorway") || roadType.equals("motorway_link"))) {
+                        placeholderMap.put(link.getId(), link);
+                    }
+                }
+                break;
+            case BIKE_MINOR:
+                for(Link link : links.values()){
+                    if(MINOR.contains(getStringAttribute(link.getAttributes(), "type", "null")) && link.getAllowedModes().contains(TransportMode.bike)){
+                        placeholderMap.put(link.getId(), link);
+                    }
+                }
+                break;
+            case BIKE_MAJOR:
+                for(Link link : links.values()){
+                    if(MAJOR.contains(getStringAttribute(link.getAttributes(), "type", "null")) && link.getAllowedModes().contains(TransportMode.bike)){
+                        placeholderMap.put(link.getId(), link);
+                    }
+                }
+                break;
+            default:
+                // todo: better to raise error here ??
+                break;
+
+        }
+        // Print the number of links for the current accident type
+        System.out.println("Number of links for " + accidentType + ": " + placeholderMap.size());
+
+        return placeholderMap;
+    }
+
+    public String getStringAttribute(Attributes attributes, String key, String defaultValue) {
+        Object value = attributes.getAttribute(key);
+        return value != null ? value.toString() : defaultValue;
+    }
+
+    /**
+     * Checks if a link is part of a two-way road for a specific transport mode.
+     * @param link The link to check
+     * @param mode The transport mode to verify
+     * @return true if there exists a reverse link that also allows the specified mode
+     */
+
+    public boolean isTwoWayRoad(Link link, String mode) {
+        // First check if the original link allows the specified mode
+        if (!link.getAllowedModes().contains(mode)) {
+            return false;
+        }
+
+        Node fromNode = link.getFromNode();
+        Node toNode = link.getToNode();
+
+        // Check all outgoing links from the 'to' node (more efficient than scanning all links)
+        for (Link potentialReverse : toNode.getOutLinks().values()) {
+            if (potentialReverse.getToNode().equals(fromNode) && potentialReverse.getAllowedModes().contains(mode)) { //
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void runAccidentRateOffline() {
+        com.google.inject.Injector injector = Injector.createInjector( scenario.getConfig() , new AbstractModule(){
+            @Override public void install(){
+                install( new ScenarioByInstanceModule( scenario ) );
+                install( new AccidentsModule()) ;
+                install( new EventsManagerModule());
+            }
+        }) ;
+
+        log.info("Reading network file...");
+        String networkFile;
+        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
+            networkFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + "output_network.xml.gz";
+        } else {
+            networkFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + this.scenario.getConfig().controller().getRunId() + ".output_network.xml.gz";
+        }
+        new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
+        log.info("Reading network file... Done.");
+
+        analysisEventHandler = new AnalysisEventHandler();
+        analysisEventHandler.setScenario(scenario);
+        analysisEventHandler.setAccidentsContext(accidentsContext);
+        log.info("Reading car events file...");
+        EventsManager events = injector.getInstance( EventsManager.class ) ;
+        MatsimEventsReader eventsReader = new MatsimEventsReader(events);
+        String eventsFile;
+        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
+            eventsFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + "output_events.xml.gz";
+        } else {
+            eventsFile = this.scenario.getConfig().controller().getOutputDirectory() + "car/" + this.scenario.getConfig().controller().getRunId() + ".output_events.xml.gz";
+        }
+        events.addHandler(analysisEventHandler);
+        eventsReader.readFile(eventsFile); //car AADT are calculated by eventHandler
+        log.info("Reading car events file... Done.");
+
+        log.info("Reading bike&ped events file...");
+        String eventsFileBikePed;
+        if (this.scenario.getConfig().controller().getRunId() == null || this.scenario.getConfig().controller().getRunId().equals("")) {
+            eventsFileBikePed = this.scenario.getConfig().controller().getOutputDirectory() + "bikePed/" + "output_events.xml.gz";
+        } else {
+            eventsFileBikePed = this.scenario.getConfig().controller().getOutputDirectory() + "bikePed/" + this.scenario.getConfig().controller().getRunId() + ".output_events.xml.gz";
+        }
+        // todo: this is a temporary fix link to pedBike volumes, just to test.
+        eventsFileBikePed = "C:/Users/saadi/Documents/Cambridge/manchester/scenOutput/base/matsim/2021/saturday/bikePed/2021.output_events_bikePed_saturday.xml.gz";
+        eventsReader.readFile(eventsFileBikePed); //car, bike, ped AADT are calculated by eventHandler
+        log.info("Reading bike&ped events file... Done.");
+
+
+        //Preparation
+        for (Link link : this.scenario.getNetwork().getLinks().values()) {
+            AccidentLinkInfo info = new AccidentLinkInfo(link.getId());
+            this.accidentsContext.getLinkId2info().put(link.getId(), info);
+        }
+        log.info("Initializing all link-specific information... Done.");
+
+        for (Person person : this.scenario.getPopulation().getPersons().values()) {
+            AccidentAgentInfo info = new AccidentAgentInfo(person.getId());
+            this.accidentsContext.getPersonId2info().put(person.getId(), info);
+        }
+        log.info("Initializing all agent-specific information... Done.");
+
+
+        log.info("Link accident frequency calculation (by type by time of day) start.");
+        for (AccidentType accidentType : AccidentType.values()){
+            for (AccidentSeverity accidentSeverity : AccidentSeverity.values()){
+                String basePath = scenario.getScenarioElement("accidentModelFile").toString();
+                AccidentRateCalculationMEL calculator = new AccidentRateCalculationMEL(SCALEFACTOR, accidentsContext, analysisEventHandler, accidentType, accidentSeverity,basePath);
+                calculator.run(this.scenario.getNetwork().getLinks().values());
+                log.info("Calculating " + accidentType + "_" + accidentSeverity + " crash rate done.");
+            }
+        }
+        log.info("Link accident frequency calculation completed.");
+
+        try {
+            writeOutCrashFrequency();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        log.info("Link casualty frequency conversion (by type by time of day) start.");
+        for (Link link : this.scenario.getNetwork().getLinks().values()) {
+            casualtyRateCalculation(link);
+        }
+        log.info("Link casualty frequency conversion completed.");
+
+        try {
+            writeOutCasualtyRate();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void computeAgentCrashRiskMEL(AccidentAgentInfo personInfo) {
+        Map<String, Double> injuryRiskByMode = new HashMap<>();
+
+        injuryRiskByMode.put("car", 1.0);
+        injuryRiskByMode.put("bike", 1.0);
+        injuryRiskByMode.put("walk", 1.0);
+
+        /*
+        if(personInfo.getSevereInjuryRiskByMode() != null){
+            // in case another trip and same agent
+            injuryRiskByMode.putAll(personInfo.getSevereInjuryRiskByMode());
+
+            //
+            for(String key : injuryRiskByMode.keySet()){
+                injuryRiskByMode.put(key, (injuryRiskByMode.get(key)-1)*(-1));
+            }
+        }else{
+            // 1st time
+            injuryRiskByMode.put("car", 1.0);
+            injuryRiskByMode.put("bike", 1.0);
+            injuryRiskByMode.put("walk", 1.0);
+        }
+         */
+
+        Set<String> allowedModes = Set.of("car", "bike", "walk");
+
+        for (Id<Link> linkId : personInfo.getLinkId2time2mode().keySet()) {
+            AccidentLinkInfo linkInfo = accidentsContext.getLinkId2info().get(linkId);
+            if (linkInfo == null) {
+                log.warn("No Link Info for {}", linkId);
+                continue;
+            }
+
+            for (int hour : personInfo.getLinkId2time2mode().get(linkId).keySet()) {
+                String mode = personInfo.getLinkId2time2mode().get(linkId).get(hour);
+                if(allowedModes.contains(mode)){
+                    double currentRisk = calculateRiskForMode(linkInfo, mode, hour);
+                    // personInfo.getPersonId();
+                    // injuryRiskByMode.merge(mode, risk, Double::sum);
+                    injuryRiskByMode.merge(mode, currentRisk, (oldValue, risk) -> oldValue * (1-risk));
+                }
+            }
+        }
+
+        // to have the final person-based risk 1-(1-r1)*(1-r2)*(1-r_i)*...*(1-r_n) , where i is link_i
+        for(String key : injuryRiskByMode.keySet()){
+            injuryRiskByMode.put(key, 1-injuryRiskByMode.get(key));
+        }
+
+        personInfo.setSevereInjuryRiskByMode(injuryRiskByMode);
+    }
+
+    private double calculateRiskForMode(AccidentLinkInfo linkInfo, String mode, int hour) {
+        Map<AccidentType, OpenIntFloatHashMap> exposureByType = linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime();
+
+        switch (mode) {
+            // todo: here normally if ONEWAY is 0 other is non-null and vice versa, same for BIKE ...
+            case "car":
+                return getRisk(exposureByType, AccidentType.CAR_ONEWAY, hour) +
+                        getRisk(exposureByType, AccidentType.CAR_TWOWAY, hour);
+            case "bike":
+                return getRisk(exposureByType, AccidentType.BIKE_MAJOR, hour) +
+                        getRisk(exposureByType, AccidentType.BIKE_MINOR, hour);
+            case "walk":
+                return getRisk(exposureByType, AccidentType.PED, hour);
+            default:
+                return 0.0;
+                //throw new RuntimeException("Undefined mode: " + mode);
+        }
+    }
+
+    private double getRisk(Map<AccidentType, OpenIntFloatHashMap> exposureByType, AccidentType type, int hour) {
+        OpenIntFloatHashMap map = exposureByType.getOrDefault(type, new OpenIntFloatHashMap());
+        return map.get(hour);
+    }
+
+    /*
+    private void computeAgentCrashRiskMEL(AccidentAgentInfo personInfo) {
+
+        //double lightInjuryRisk = .0;
+        Double severeInjuryRisk = .0;
+        Map<String, Double> PersonInjuryRiskByMode = new HashMap<>();
+
+        // Initialize modes
+        PersonInjuryRiskByMode.put("car", 0.0);
+        PersonInjuryRiskByMode.put("bike", 0.0);
+        PersonInjuryRiskByMode.put("walk", 0.0);
+
+        for(Id<Link> linkId : personInfo.getLinkId2time2mode().keySet()){
+            AccidentLinkInfo linkInfo = this.accidentsContext.getLinkId2info().get(linkId);
+            if(linkInfo == null){
+                log.warn(linkId + " has no Link Info.");
+                continue;
+            }
+
+            for(int hour : personInfo.getLinkId2time2mode().get(linkId).keySet()){
+                String mode = personInfo.getLinkId2time2mode().get(linkId).get(hour);
+                switch (mode){
+                    case "car":
+                        if(linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().containsKey(AccidentType.CAR_ONEWAY)){
+                            severeInjuryRisk += linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.CAR_ONEWAY).get(hour);
+                        }
+                        if(linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().containsKey(AccidentType.CAR_TWOWAY)){
+                            severeInjuryRisk += linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.CAR_TWOWAY).get(hour);
+                        }
+                        if(severeInjuryRisk != null){
+                            PersonInjuryRiskByMode.put("car", PersonInjuryRiskByMode.get("car") + severeInjuryRisk);
+                        }
+
+                        severeInjuryRisk = .0;
+                        break;
+                    case "bike":
+                        if(linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().containsKey(AccidentType.BIKE_MAJOR)){
+                            severeInjuryRisk += linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.BIKE_MAJOR).get(hour);
+                        }
+                        if(linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().containsKey(AccidentType.BIKE_MINOR)){
+                            severeInjuryRisk += linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.BIKE_MINOR).get(hour);
+                        }
+                        if(severeInjuryRisk != null){
+                            PersonInjuryRiskByMode.put("bike", PersonInjuryRiskByMode.get("bike") + severeInjuryRisk);
+                        }
+                        severeInjuryRisk = .0;
+                        break;
+                    case "walk":
+                        if(linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().containsKey(AccidentType.PED)){
+                            severeInjuryRisk += linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.PED).get(hour);
+                        }
+                        if(severeInjuryRisk != null){
+                            PersonInjuryRiskByMode.put("walk", PersonInjuryRiskByMode.get("walk") + severeInjuryRisk);
+                        }
+                        severeInjuryRisk = .0;
+                        break;
+                    default:
+                        throw new RuntimeException("Undefined mode " + mode);
+                }
+            }
+        }
+        //personInfo.setSevereInjuryRisk(severeInjuryRisk);
+        personInfo.setSevereInjuryRiskByMode(PersonInjuryRiskByMode);
+    }
+     */
+
+    private void computeAgentCrashRisk(AccidentAgentInfo personInfo) {
+
+        double lightInjuryRisk = .0;
+        double severeInjuryRisk = .0;
+        for(Id<Link> linkId : personInfo.getLinkId2time2mode().keySet()){
+            AccidentLinkInfo linkInfo = this.accidentsContext.getLinkId2info().get(linkId);
+            if(linkInfo==null){
+                log.warn(linkId + " has no Link Info.");
+                continue;
+            }
+            for(int hour : personInfo.getLinkId2time2mode().get(linkId).keySet()){
+                String mode = personInfo.getLinkId2time2mode().get(linkId).get(hour);
+                switch (mode){
+                    case "car":
+                        lightInjuryRisk += linkInfo.getLightCasualityExposureByAccidentTypeByTime().get(AccidentType.CAR).get(hour);
+                        severeInjuryRisk += linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.CAR).get(hour);
+                        break;
+                    case "bike":
+                        lightInjuryRisk += linkInfo.getLightCasualityExposureByAccidentTypeByTime().get(AccidentType.BIKECAR).get(hour);
+                        severeInjuryRisk += linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.BIKECAR).get(hour);
+                        lightInjuryRisk += linkInfo.getLightCasualityExposureByAccidentTypeByTime().get(AccidentType.BIKEBIKE).get(hour);
+                        severeInjuryRisk += linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.BIKEBIKE).get(hour);
+                        break;
+                    case "walk":
+                        lightInjuryRisk += linkInfo.getLightCasualityExposureByAccidentTypeByTime().get(AccidentType.PED).get(hour);
+                        severeInjuryRisk += linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(AccidentType.PED).get(hour);
+                        break;
+                    default:
+                        throw new RuntimeException("Undefined mode " + mode);
+                }
+            }
+        }
+        personInfo.setLightInjuryRisk(lightInjuryRisk);
+        personInfo.setSevereInjuryRisk(severeInjuryRisk);
+    }
+
+    private void casualtyRateCalculation(Link link) {
+        AccidentLinkInfo linkInfo = this.accidentsContext.getLinkId2info().get(link.getId());
+        for (AccidentType accidentType : AccidentType.values()){
+            OpenIntFloatHashMap lightCasualtyByTime = new OpenIntFloatHashMap();
+            OpenIntFloatHashMap severeCasualtyByTime = new OpenIntFloatHashMap();
+            for(int hour = 0; hour<=24; hour++) {
+                float lightCasualty = 0.0f;
+                float severeCasualty = 0.0f;
+                float lightCrash = 0.0f;
+                float severeCrash = 0.0f;
+
+                if(linkInfo.getLightCasualityExposureByAccidentTypeByTime().get(accidentType)!=null){
+                    lightCrash = linkInfo.getLightCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
+                }
+
+                if(linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType)!=null){
+                    severeCrash = linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
+                }
+
+                 switch (accidentType){
+                    case CAR:
+                        lightCasualty += lightCrash * CAR_LIGHT_LIGHT;
+                        lightCasualty += severeCrash * CAR_SEVERE_LIGHT;
+                        severeCasualty += severeCrash * CAR_SEVERE_SEVERE;
+                        break;
+                    case PED:
+                        lightCasualty += lightCrash * PED_LIGHT_LIGHT;
+                        lightCasualty += severeCrash * PED_SEVERE_LIGHT;
+                        severeCasualty += severeCrash * PED_SEVERE_SEVERE;
+                        break;
+                    case BIKECAR:
+                        lightCasualty += lightCrash * BIKECAR_LIGHT_LIGHT;
+                        lightCasualty += severeCrash * BIKECAR_SEVERE_LIGHT;
+                        severeCasualty += severeCrash * BIKECAR_SEVERE_SEVERE;
+                        break;
+                    case BIKEBIKE:
+                        lightCasualty += lightCrash * BIKEBIKE_LIGHT_LIGHT;
+                        lightCasualty += severeCrash * BIKEBIKE_SEVERE_LIGHT;
+                        severeCasualty += severeCrash * BIKEBIKE_SEVERE_SEVERE;
+                        break;
+                    default:
+                        throw new RuntimeException("Undefined accident type " + accidentType);
+                }
+                lightCasualtyByTime.put(hour,lightCasualty);
+                severeCasualtyByTime.put(hour,severeCasualty);
+            }
+            linkInfo.getLightCasualityExposureByAccidentTypeByTime().put(accidentType,lightCasualtyByTime);
+            linkInfo.getSevereFatalCasualityExposureByAccidentTypeByTime().put(accidentType,severeCasualtyByTime);
+        }
+    }
+
+    private void computeLinkCasualtyExposureMEL(Link link) {
+        for (AccidentType accidentType : AccidentType.values()){
+            String mode;
+            switch (accidentType){
+                case CAR_TWOWAY:
+                    mode = "car";
+                    break;
+                case CAR_ONEWAY:
+                    mode = "car";
+                    break;
+                case PED:
+                    mode = "walk";
+                    break;
+                case BIKE_MAJOR:
+                    mode = "bike";
+                    break;
+                case BIKE_MINOR:
+                    mode = "bike";
+                    break;
+                default:
+                    mode = "null";
+            }
+
+            if("null".equals(mode)){
+                //throw new RuntimeException("Undefined accident type " + accidentType);
+                // todo: adjust this error message
+                continue;
+            }
+
+            //OpenIntFloatHashMap lightCasualtyExposureByTime = new OpenIntFloatHashMap();
+            OpenIntFloatHashMap severeCasualtyExposureByTime = new OpenIntFloatHashMap(); // this includes severeFatal
+
+            for(int hour = 0; hour < 24; hour++) {
+                OpenIntFloatHashMap timeMap = this.accidentsContext.getLinkId2info()
+                        .get(link.getId())
+                        .getSevereFatalCasualityExposureByAccidentTypeByTime()
+                        .get(accidentType);
+
+                float severeCasualty = (timeMap != null) ? timeMap.get(hour) : 0.0f;
+
+                //float lightCasualty = this.accidentsContext.getLinkId2info().get(link.getId()).getLightCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
+                //float severeCasualty = this.accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
+                //float lightCasualtyExposure =0.f;
+
+                float severeCasualtyExposure = 0.f;
+                if(mode.equals("car")){
+                    if(analysisEventHandler.getDemand(link.getId(), mode, hour) != 0){
+                        //lightCasualtyExposure = (float) (lightCasualty/((analysisEventHandler.getDemand(link.getId(),mode,hour))*SCALEFACTOR*1.5));
+                        severeCasualtyExposure = (float) (severeCasualty/(analysisEventHandler.getDemand(link.getId(), mode, hour) * SCALEFACTOR)); //* SCALEFACTOR)); // todo: why 1.5 in Munich ?? check if SCALEFACTOR should be applied or not ?
+                    }else{
+                        //log.warn(link.getId()+mode+hour);
+                        counterCar++;
+                        if(severeCasualty == 1){
+                            log.warn("A casualty was predicted in a link with no car flows: " + link.getId());
+                        }
+                    }
+                }else{
+                    if(analysisEventHandler.getDemand(link.getId(), mode, hour) != 0){
+                        //lightCasualtyExposure = (float) (lightCasualty/(analysisEventHandler.getDemand(link.getId(),mode,hour)*SCALEFACTOR));
+                        severeCasualtyExposure = (float) (severeCasualty/(analysisEventHandler.getDemand(link.getId(), mode, hour))); // todo: no scale factor given that we model 100% bikePed , check ??
+                    }else{
+                        counterBikePed++;
+                        if(severeCasualty == 1){
+                            log.warn("A casualty was predicted in a link with no active travel flows: " + link.getId() + " / " + mode);
+                        }
+                    }
+                }
+
+                //lightCasualtyExposureByTime.put(hour,lightCasualtyExposure);
+                // TODO: can be optimized, if 0 do not put
+                //severeCasualtyExposure = severeCasualtyExposure * 2.0f;
+                severeCasualtyExposureByTime.put(hour, severeCasualtyExposure);
+            }
+            //this.accidentsContext.getLinkId2info().get(link.getId()).getLightCasualityExposureByAccidentTypeByTime().put(accidentType,lightCasualtyExposureByTime);
+            this.accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().put(accidentType, severeCasualtyExposureByTime);
+        }
+    }
+
+    private void computeLinkCasualtyExposure(Link link) {
+        for (AccidentType accidentType : AccidentType.values()){
+            String mode;
+            switch (accidentType){
+                case CAR:
+                    mode = "car";
+                    break;
+                case PED:
+                    mode = "walk";
+                    break;
+                case BIKECAR:
+                    mode = "bike";
+                    break;
+                case BIKEBIKE:
+                    mode = "bike";
+                    break;
+                default:
+                    mode = "null";
+            }
+
+            if("null".equals(mode)){
+                throw new RuntimeException("Undefined accident type " + accidentType);
+            }
+
+            OpenIntFloatHashMap lightCasualtyExposureByTime = new OpenIntFloatHashMap();
+            OpenIntFloatHashMap severeCasualtyExposureByTime = new OpenIntFloatHashMap();
+            for(int hour = 0; hour < 24; hour++) {
+                float lightCasualty = this.accidentsContext.getLinkId2info().get(link.getId()).getLightCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
+                float severeCasualty = this.accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
+                float lightCasualtyExposure =0.f;
+                float severeCasualtyExposure = 0.f;
+                if(mode.equals("car")){
+                    if(analysisEventHandler.getDemand(link.getId(),mode,hour)!=0){
+                        lightCasualtyExposure = (float) (lightCasualty/((analysisEventHandler.getDemand(link.getId(),mode,hour))*SCALEFACTOR*1.5));
+                        severeCasualtyExposure = (float) (severeCasualty/((analysisEventHandler.getDemand(link.getId(),mode,hour))*SCALEFACTOR*1.5));
+                    }else{
+                        //log.warn(link.getId()+mode+hour);
+                        counterCar++;
+                    }
+                }else{
+                    if(analysisEventHandler.getDemand(link.getId(),mode,hour)!=0){
+                        lightCasualtyExposure = (float) (lightCasualty/(analysisEventHandler.getDemand(link.getId(),mode,hour)*SCALEFACTOR));
+                        severeCasualtyExposure = (float) (severeCasualty/(analysisEventHandler.getDemand(link.getId(),mode,hour)*SCALEFACTOR));
+                    }else{
+                        counterBikePed++;
+                    }
+                }
+
+                lightCasualtyExposureByTime.put(hour,lightCasualtyExposure);
+                severeCasualtyExposureByTime.put(hour,severeCasualtyExposure);
+            }
+            this.accidentsContext.getLinkId2info().get(link.getId()).getLightCasualityExposureByAccidentTypeByTime().put(accidentType,lightCasualtyExposureByTime);
+            this.accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().put(accidentType,severeCasualtyExposureByTime);
+
+        }
+    }
+
+    public void writeOut () throws FileNotFoundException {
+        String outputRisk = scenario.getConfig().controller().getOutputDirectory() + "PersonInjuryRisk.csv";
+        StringBuilder risk = new StringBuilder();
+
+        System.out.println("check -- " + accidentsContext.getPersonId2info().size());
+
+        //write header
+        risk.append("personId,severeFatalInjuryRiskCar,severeFatalInjuryRiskWalk,severeFatalInjuryRiskBike");
+        risk.append('\n');
+
+        //write data
+        for (Id<Person> person : accidentsContext.getPersonId2info().keySet()){
+
+            risk.append(person.toString());
+            risk.append(',');
+            risk.append(accidentsContext.getPersonId2info().get(person).getSevereInjuryRiskByMode().get("car"));
+            risk.append(',');
+            risk.append(accidentsContext.getPersonId2info().get(person).getSevereInjuryRiskByMode().get("walk"));
+            risk.append(',');
+            risk.append(accidentsContext.getPersonId2info().get(person).getSevereInjuryRiskByMode().get("bike"));
+            risk.append('\n');
+
+        }
+        writeToFile(outputRisk,risk.toString());
+    }
+
+    public void writeOutCasualtyRate () throws FileNotFoundException {
+        String outputRisk = scenario.getConfig().controller().getOutputDirectory() + "casualtyRates.csv"; // todo: perhaps, set up a better url link
+        StringBuilder risk = new StringBuilder();
+
+        //write header
+        risk.append("link,accidentType,casualty");
+        risk.append('\n');
+
+        for (Link link : this.scenario.getNetwork().getLinks().values()) {
+            for(AccidentSeverity accidentSeverity : AccidentSeverity.values()){
+                if(ACCIDENT_SEVERITY_MEL.contains(accidentSeverity)){
+                    continue;
+                }
+                for(AccidentType accidentType : AccidentType.values()){
+                    if (ACCIDENT_TYPE_MEL.contains(accidentType)){
+                        continue;
+                    }
+                    double totalCasualty = 0.;
+                    if(accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType) != null){
+                        for(int hour = 0; hour < 24; hour++) {
+                            totalCasualty += accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
+                        }
+                        risk.append(link.getId());
+                        risk.append(',');
+                        risk.append(accidentType.name());
+                        risk.append(',');
+                        risk.append(totalCasualty);
+                        risk.append('\n');
+                    }
+                }
+            }
+        }
+        writeToFile(outputRisk,risk.toString());
+    }
+
+    public void writeOutCrashFrequency () throws FileNotFoundException {
+        // todo:
+        String outputRisk = scenario.getConfig().controller().getOutputDirectory() + "crashRate.csv";
+        StringBuilder risk = new StringBuilder();
+
+        //write header
+        risk.append("link,severity,accidentType,crash");
+        risk.append('\n');
+
+        for (Link link : this.scenario.getNetwork().getLinks().values()) {
+            for(AccidentSeverity accidentSeverity : AccidentSeverity.values()){
+                for(AccidentType accidentType : AccidentType.values()){
+                    double totalCasualty = 0.;
+                    for(int hour = 0; hour<=24; hour++) {
+                        if(accidentSeverity.equals(AccidentSeverity.LIGHT)){
+                            totalCasualty += accidentsContext.getLinkId2info().get(link.getId()).getLightCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
+                        }else{
+                            totalCasualty += accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
+                        }
+                    }
+                    risk.append(link.getId());
+                    risk.append(',');
+                    risk.append(accidentSeverity.name());
+                    risk.append(',');
+                    risk.append(accidentType.name());
+                    risk.append(',');
+                    risk.append(totalCasualty);
+                    risk.append('\n');
+                }
+
+            }
+        }
+
+        writeToFile(outputRisk,risk.toString());
+    }
+
+    public void writeOutExposure () throws FileNotFoundException {
+        String outputRisk = scenario.getConfig().controller().getOutputDirectory() + "linkExposure.csv";
+        StringBuilder risk = new StringBuilder();
+
+        //write header
+        risk.append("link,accidentType,exposure");
+        risk.append('\n');
+
+        for (Link link : this.scenario.getNetwork().getLinks().values()) {
+            for(AccidentSeverity accidentSeverity : AccidentSeverity.values()){
+                if(ACCIDENT_SEVERITY_MEL.contains(accidentSeverity)){
+                    continue;
+                }
+                for(AccidentType accidentType : AccidentType.values()){
+                    if (ACCIDENT_TYPE_MEL.contains(accidentType)){
+                        continue;
+                    }
+                    double totalCasualty = 0.;
+                    for(int hour = 0; hour < 24; hour++) {
+                        totalCasualty += accidentsContext.getLinkId2info().get(link.getId()).getSevereFatalCasualityExposureByAccidentTypeByTime().get(accidentType).get(hour);
+                    }
+                    risk.append(link.getId());
+                    risk.append(',');
+                    risk.append(accidentType.name());
+                    risk.append(',');
+                    risk.append(totalCasualty);
+                    risk.append('\n');
+                }
+
+            }
+        }
+
+        writeToFile(outputRisk,risk.toString());
+    }
+
+    public static void writeToFile(String path, String building) throws FileNotFoundException {
+        PrintWriter bd = new PrintWriter(new FileOutputStream(path, false));
+        bd.write(building);
+        bd.close();
+    }
+
+    public AccidentsContext getAccidentsContext() {
+        return accidentsContext;
+    }
+
+    public Network aggregateNetworkByOsmID(Network network) {
+        // Create a new network for aggregated links
+        Network aggregatedNetwork = NetworkUtils.createNetwork();
+
+        // Group links by osmID
+        Map<String, List<Link>> linksByOsmID = network.getLinks().values().stream()
+                .collect(Collectors.groupingBy(link -> getStringAttribute(link.getAttributes(), "osmID", "unknown")));
+
+        // Process each osmID group
+        for (Map.Entry<String, List<Link>> entry : linksByOsmID.entrySet()) {
+            String osmID = entry.getKey();
+            List<Link> links = entry.getValue();
+
+            // Aggregate attributes
+            // Check if any link allows biking, but enforce 0 for motorways
+            /*
+            String highway = calculateMode(links.stream()
+                    .map(link -> getStringAttribute(link.getAttributes(), "highway", "unknown"))
+                    .collect(Collectors.toList()), "unknown");
+
+             */
+
+            int bikeAllowed = links.stream()
+                    .mapToInt(link -> link.getAllowedModes().contains("bike") ? 1 : 0)
+                    .max().orElse(0);
+
+            int carAllowed = links.stream()
+                    .mapToInt(link -> link.getAllowedModes().contains("car") ? 1 : 0)
+                    .max().orElse(0);
+
+            int walkAllowed = links.stream()
+                    .mapToInt(link -> link.getAllowedModes().contains("walk") ? 1 : 0)
+                    .max().orElse(0);
+
+            // 2way or not
+            boolean isTwoWay = hasReturnLinkPair(links);
+
+            double totalLength = links.stream().mapToDouble(Link::getLength).sum();
+            if (isTwoWay) {
+                totalLength /= 2.0;
+            }
+
+            double width = calculateMode(links.stream()
+                    .map(link -> getDoubleAttribute(link.getAttributes(), "width", 0.0))
+                    .collect(Collectors.toList()));
+
+            double totalLengthForWeighting = links.stream().mapToDouble(Link::getLength).sum(); // Use original sum for weighting
+
+            double bikeStress = links.stream()
+                    .mapToDouble(link -> LinkStress.getStress(link, "bike") * link.getLength())
+                    .sum() / (totalLengthForWeighting > 0 ? totalLengthForWeighting : 1.0);
+
+            double bikeStressJct = links.stream()
+                    .mapToDouble(link -> JctStress.getStress(link, "bike"))
+                    .max().orElse(0.0);
+
+            double walkStressJct = links.stream()
+                    .mapToDouble(link -> JctStress.getStress(link, "walk"))
+                    .max().orElse(0.0);
+
+            // Aggregate other attributes for output
+            String roadType = calculateMode(links.stream()
+                    .map(link -> getStringAttribute(link.getAttributes(), "type", "residential"))
+                    .collect(Collectors.toList()), "residential");
+
+            double speedLimitMPH = links.stream()
+                    .mapToDouble(link -> getDoubleAttribute(link.getAttributes(), "speedLimitMPH", 0.0))
+                    .average().orElse(0.0);
+
+            // Create a new link
+            Link representativeLink = links.get(0);
+            Node fromNode = representativeLink.getFromNode();
+            Node toNode = representativeLink.getToNode();
+
+            // Ensure nodes are added to the aggregated network
+            if (!aggregatedNetwork.getNodes().containsKey(fromNode.getId())) {
+                aggregatedNetwork.addNode(fromNode);
+            }
+            if (!aggregatedNetwork.getNodes().containsKey(toNode.getId())) {
+                aggregatedNetwork.addNode(toNode);
+            }
+
+            // Create a new link ID
+            Id<Link> newLinkId = Id.createLinkId("agg_" + osmID);
+            Link newLink = aggregatedNetwork.getFactory().createLink(newLinkId, fromNode, toNode);
+
+            // Set basic link properties
+            newLink.setLength(totalLength);
+            newLink.setFreespeed(speedLimitMPH);
+            newLink.setCapacity(representativeLink.getCapacity());
+            newLink.setNumberOfLanes(representativeLink.getNumberOfLanes());
+
+            // Set allowed modes based on aggregated values
+            Set<String> allowedModes = new HashSet<>();
+            if (bikeAllowed == 1) allowedModes.add("bike");
+            if (carAllowed == 1) allowedModes.add("car");
+            if (walkAllowed == 1) allowedModes.add("walk");
+            newLink.setAllowedModes(allowedModes.isEmpty() ? representativeLink.getAllowedModes() : allowedModes);
+
+            // Set attributes
+            Attributes attributes = newLink.getAttributes();
+            attributes.putAttribute("osmID", osmID);
+            attributes.putAttribute("type", roadType);
+            attributes.putAttribute("speedLimitMPH", speedLimitMPH);
+            attributes.putAttribute("bike_allowed", bikeAllowed);
+            attributes.putAttribute("car_allowed", carAllowed);
+            attributes.putAttribute("walk_allowed", walkAllowed);
+            attributes.putAttribute("width", width);
+            attributes.putAttribute("bikeStress", bikeStress);
+            attributes.putAttribute("bikeStressJct", bikeStressJct);
+            attributes.putAttribute("walkStressJct", walkStressJct);
+            attributes.putAttribute("two_way", isTwoWay);
+
+            // Add the new link to the aggregated network
+            aggregatedNetwork.addLink(newLink);
+        }
+
+        return aggregatedNetwork;
+    }
+
+    // Helper method to check for outbound/return link pair
+    private static boolean hasReturnLinkPair(List<Link> links) {
+        for (Link link : links) {
+            if (!link.getAllowedModes().contains("car")) continue; // Skip if no car mode
+            Node fromNode = link.getFromNode();
+            Node toNode = link.getToNode();
+            // Look for a return link (toNode -> fromNode) with car mode
+            boolean hasReturn = links.stream()
+                    .anyMatch(returnLink ->
+                            returnLink.getFromNode().equals(toNode) &&
+                                    returnLink.getToNode().equals(fromNode) &&
+                                    returnLink.getAllowedModes().contains("car"));
+            if (hasReturn) return true; // Found a valid pair
+        }
+        return false; // No valid pair found
+    }
+
+    // Calculate the mode (most frequent value) of a list of doubles
+    private static double calculateMode(List<Double> values) {
+        if (values.isEmpty()) return 0.0;
+        Map<Double, Long> frequencyMap = values.stream()
+                .collect(Collectors.groupingBy(d -> d, Collectors.counting()));
+        return frequencyMap.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(0.0);
+    }
+
+    // Calculate the mode (most frequent value) of a list of strings
+    private static String calculateMode(List<String> values, String defaultValue) {
+        if (values.isEmpty()) return defaultValue;
+        Map<String, Long> frequencyMap = values.stream()
+                .collect(Collectors.groupingBy(s -> s, Collectors.counting()));
+        return frequencyMap.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(defaultValue);
+    }
+
+    // Helper method to safely get a double attribute
+    public static double getDoubleAttribute(Attributes attributes, String key, double defaultValue) {
+        Object value = attributes.getAttribute(key);
+        if (value != null) {
+            try {
+                return Double.parseDouble(value.toString());
+            } catch (NumberFormatException e) {
+                System.err.println("Warning: Could not parse double for attribute " + key + ", using default: " + defaultValue);
+            }
+        }
+        return defaultValue;
+    }
+
+    // Helper method to safely get a boolean attribute
+    public static boolean getBooleanAttribute(Attributes attributes, String key, boolean defaultValue) {
+        Object value = attributes.getAttribute(key);
+        if (value != null) {
+            if (value instanceof Boolean) {
+                return (Boolean) value;
+            }
+            try {
+                return Boolean.parseBoolean(value.toString());
+            } catch (Exception e) {
+                System.err.println("Warning: Could not parse boolean for attribute " + key + ", using default: " + defaultValue);
+            }
+        }
+        return defaultValue;
+    }
+
+}
