@@ -34,6 +34,7 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     private final DataContainerWithSchools delegate;
     private final Properties properties;
     private Map<Id<Link>, LinkInfo> linkInfo = new HashMap<>();
+    private Map<Day, Map<Id<Link>, LinkInfo>> linkInfoByDay = new HashMap<>();
     private Set<Pollutant> pollutantSet = new HashSet<>();
     private EnumMap<Mode, EnumMap<MitoGender,Map<Integer,Double>>> avgSpeeds;
 
@@ -130,18 +131,18 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
     }
 
     @Override
-    public Map<Id<Link>, LinkInfo> getLinkInfoByDay(Day day) {
-        return Map.of();
-    }
-
-    @Override
     public void setLinkInfo(Map<Id<Link>, LinkInfo> linkInfo) {
         this.linkInfo = linkInfo;
     }
 
     @Override
-    public void setLinkInfoByDay(Map<Id<Link>, LinkInfo> linkInfo, Day day) {
+    public Map<Id<Link>, LinkInfo> getLinkInfoByDay(Day day){
+        return linkInfoByDay.get(day);
+    };
 
+    @Override
+    public void setLinkInfoByDay(Map<Id<Link>, LinkInfo> linkInfo, Day day) {
+        this.linkInfoByDay.put(day, new HashMap<>(linkInfo));
     }
 
     @Override
