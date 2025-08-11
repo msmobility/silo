@@ -257,6 +257,9 @@ public class PersonHealthMEL implements PersonWithSchool, PersonHealth {
 
     @Override
     public float getWeeklyExposureByPollutantNormalised(String pollutant) {
+        if (weeklyExposureByPollutantNormalised == null) {
+            return 0.0f;
+        }
         return weeklyExposureByPollutantNormalised.get(pollutant);
     }
 

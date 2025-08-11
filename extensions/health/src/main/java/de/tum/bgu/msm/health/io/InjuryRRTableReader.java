@@ -66,10 +66,10 @@ public class InjuryRRTableReader {
                 dataMap.get(mode).get(gender).put(age, new DataEntry(percentKilled, rr));
             }
         } catch (IOException e) {
-            logger.fatal("IO Exception caught reading prevalence data file: " + fileName);
-            logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
+            logger.fatal("IO Exception caught reading injury RR + fatalities data file: {}", fileName);
+            logger.fatal("recCount = {}, recString = <{}>", recCount, recString);
         }
-        logger.info("Finished reading " + recCount + " prevalence data.");
+        logger.info("Finished reading {} injury RR + fatalities data.", recCount);
 
         return dataMap;
     }

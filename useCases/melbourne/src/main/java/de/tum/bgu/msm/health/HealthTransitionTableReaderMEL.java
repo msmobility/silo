@@ -24,7 +24,7 @@ public class HealthTransitionTableReaderMEL {
         logger.info("Reading health disease prob table from csv file");
 
         EnumMap<Diseases, Map<String, Double>> healthDiseaseData = new EnumMap<>(Diseases.class);
-
+        Set<String> diseasesNotInLookup = new HashSet<>();
         String recString = "";
         int recCount = 0;
         try {
@@ -46,7 +46,14 @@ public class HealthTransitionTableReaderMEL {
                 int age = Integer.parseInt(lineElements[posAge]);
                 Gender gender = Gender.valueOf(Integer.parseInt(lineElements[posGender]));
                 String location = lineElements[posLocation];
-                Diseases diseases = Diseases.valueOf(lineElements[posCause]);
+                String disease = lineElements[posCause];
+                Diseases diseases;
+                try {
+                    diseases = Diseases.valueOf(disease);
+                } catch (IllegalArgumentException e) {
+                    diseasesNotInLookup.add(disease);
+                    continue; // Skip to next line if disease not in lookup
+                }
                 double prob = Double.parseDouble(lineElements[posProb]);
 
                 String compositeKey = dataContainer.createTransitionLookupIndex(age,gender,location);
@@ -55,10 +62,13 @@ public class HealthTransitionTableReaderMEL {
 
             }
         } catch (IOException e) {
-            logger.fatal("IO Exception caught reading health disease prob file: " + path);
-            logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
+            logger.fatal("IO Exception caught reading health disease prob file: {}", path);
+            logger.fatal("recCount = {}, recString = <{}>", recCount, recString);
         } catch (IllegalArgumentException e){
             logger.warn(e.getMessage());
+        }
+        if (!diseasesNotInLookup.isEmpty()) {
+            logger.warn("Diseases not present in lookup: {}", diseasesNotInLookup);
         }
         logger.info("Finished reading health disease prob table from csv file.");
         return healthDiseaseData;
