@@ -28,7 +28,22 @@ public class ExtractCoefficient {
         Map<String, Map<String, Double>> table = coefficientCache.get(purpose);
         if (table == null) {
             // Not cached: load and parse CSV
-            Path csvFilePath = Resources.instance.getModeChoiceCoefficients(purpose);
+            Path csvFilePath;
+            if (Resources.instance == null) {
+                String mc_coefficients_path = MelbourneImplementationConfig.getMitoBaseProperties().getProperty(
+                        "MC_COEFFICIENTS",
+                        "input/mito/modeChoice/mc_coefficients"
+                );
+                if (mc_coefficients_path == null || mc_coefficients_path.isEmpty()) {
+                    logger.error("Could not load MITO resources, nor 'MC_COEFFICIENTS' from project properties.");
+                }
+                csvFilePath = Path.of(String. format("%s_%s.csv",
+                        mc_coefficients_path,
+                        purpose.toString().toLowerCase()));
+            } else {
+                csvFilePath = Resources.instance.getModeChoiceCoefficients(purpose);
+            }
+
             if (csvFilePath == null) {
                 logger.error("CSV file path is null for the given purpose.");
                 return 0.0;
