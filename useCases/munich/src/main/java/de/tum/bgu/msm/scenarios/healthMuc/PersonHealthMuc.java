@@ -240,7 +240,6 @@ public class PersonHealthMuc implements PersonWithSchool, PersonHealth {
     @Override
     public void updateWeeklyAccidentRisks(Map<String, Double> newRisks) {
         newRisks.forEach((k, v) -> weeklyAccidentRisks.merge(k, v, (v1, v2) -> v1 + v2));
-        );
     }
 
     @Override
