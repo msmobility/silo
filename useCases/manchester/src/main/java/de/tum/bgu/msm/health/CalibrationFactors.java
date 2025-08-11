@@ -28,9 +28,21 @@ public class CalibrationFactors {
                             modeFactors.put(mode, 0.741854637);
                             break;
                     }
+                } else if(scenario.equals("both")){
+                    switch (mode) {
+                        case "Bike":
+                            modeFactors.put(mode, 1.);
+                            break;
+                        case "Car":
+                            modeFactors.put(mode, 1.);
+                            break;
+                        case "Walk":
+                            modeFactors.put(mode, 1.);
+                            break;
+                    }
                 } else {
                     // Set other scenarios to 0
-                    modeFactors.put(mode, 0.0);
+                    modeFactors.put(mode, 1.0);
                 }
             }
             calibrationFactors.put(scenario, modeFactors);

@@ -26,7 +26,7 @@ public class PersonHealthMuc implements PersonWithSchool, PersonHealth {
 
     //for health model
     private Map<Mode, Float> weeklyMarginalMetHours = new HashMap<>();
-    private Map<String, Float> weeklyAccidentRisks = new HashMap<>();
+    private Map<String, Double> weeklyAccidentRisks = new HashMap<>();
     private Map<String, Float> weeklyExposureByPollutant = new HashMap<>();
     private Map<String, Float> relativeRisks;
     private float allCauseRR;
@@ -234,12 +234,12 @@ public class PersonHealthMuc implements PersonWithSchool, PersonHealth {
     }
 
     public double getWeeklyAccidentRisk(String type) {
-        return weeklyAccidentRisks.getOrDefault(type, 0.f);
+        return weeklyAccidentRisks.getOrDefault(type, 0.);
     }
 
+    @Override
     public void updateWeeklyAccidentRisks(Map<String, Double> newRisks) {
-        newRisks.forEach((k, v) ->
-                weeklyAccidentRisks.merge(k, v.floatValue(), (v1, v2) -> v1 + v2 - v1 * v2)
+        newRisks.forEach((k, v) -> weeklyAccidentRisks.merge(k, v, (v1, v2) -> v1 + v2));
         );
     }
 
