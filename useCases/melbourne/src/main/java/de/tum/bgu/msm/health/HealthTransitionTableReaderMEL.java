@@ -62,10 +62,13 @@ public class HealthTransitionTableReaderMEL {
 
             }
         } catch (IOException e) {
-            logger.fatal("IO Exception caught reading health disease prob file: " + path);
-            logger.fatal("recCount = " + recCount + ", recString = <" + recString + ">");
+            logger.fatal("IO Exception caught reading health disease prob file: {}", path);
+            logger.fatal("recCount = {}, recString = <{}>", recCount, recString);
         } catch (IllegalArgumentException e){
             logger.warn(e.getMessage());
+        }
+        if (!diseasesNotInLookup.isEmpty()) {
+            logger.warn("Diseases not present in lookup: {}", diseasesNotInLookup);
         }
         logger.info("Finished reading health disease prob table from csv file.");
         return healthDiseaseData;
