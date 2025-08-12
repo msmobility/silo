@@ -24,7 +24,7 @@ public class HourlyVolumeEventAnalysisMEL {
     Generalised for Melbourne use case.
     */
     private static final String MATSIM_NETWORK = "input/mito/trafficAssignment/network.xml";
-    private static final String SCENARIO_NAME = "reference";
+    private static final String SCENARIO_NAME = "base";
     private static final String YEAR = "2018";
     private static final int SCALE_FACTOR_ACTIVE = 1;
     private static final int SCALE_FACTOR_CAR = 10;
@@ -68,8 +68,8 @@ public class HourlyVolumeEventAnalysisMEL {
         String[] volumeTypes;
         int scaleFactor;
         String header;
-        ModeCategory(String[] volumeTypes, int scaleFactor, String header, String day) {
-            this.subfolder = toCamelCaseSubfolder(volumeTypes);
+        ModeCategory(String subfolder, String[] volumeTypes, int scaleFactor, String header, String day) {
+            this.subfolder = subfolder;
             this.outputSuffix = String.format("%s_%s.csv", this.subfolder, day);
             this.volumeTypes = volumeTypes;
             this.scaleFactor = scaleFactor;
@@ -84,8 +84,8 @@ public class HourlyVolumeEventAnalysisMEL {
 
         for (String day : days) {
             ModeCategory[] modes = new ModeCategory[]{
-                new ModeCategory(new String[]{"bike", "ped"}, SCALE_FACTOR_ACTIVE, "linkId,edgeId,osmId,hour,bike,ped", day),
-                new ModeCategory(new String[]{"car", "truck"}, SCALE_FACTOR_CAR, "linkId,edgeId,osmId,hour,car,truck", day)
+                new ModeCategory("bikePed", new String[]{"bike", "ped"}, SCALE_FACTOR_ACTIVE, "linkId,edgeId,osmId,hour,bike,ped", day),
+                new ModeCategory("car", new String[]{"car", "truck"}, SCALE_FACTOR_CAR, "linkId,edgeId,osmId,hour,car,truck", day)
             };
             for (ModeCategory mode : modes) {
                 String eventPath = String.format("%s/%s/%s/%s.output_events.xml.gz", SCENARIO_PATH, day, mode.subfolder, YEAR);
@@ -102,19 +102,4 @@ public class HourlyVolumeEventAnalysisMEL {
             }
         }
     }
-
-    private static String toCamelCaseSubfolder(String[] types) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < types.length; i++) {
-            String type = types[i];
-            if (i == 0) {
-                sb.append(type.toLowerCase());
-            } else {
-                sb.append(Character.toUpperCase(type.charAt(0)))
-                        .append(type.substring(1).toLowerCase());
-            }
-        }
-        return sb.toString();
-    }
-
 }
