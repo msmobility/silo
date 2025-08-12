@@ -11,6 +11,7 @@ import org.matsim.core.network.io.MatsimNetworkReader;
 import org.matsim.vehicles.MatsimVehicleReader;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.Vehicles;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.FileNotFoundException;
@@ -20,7 +21,6 @@ public class HourlyVolumeEventAnalysisMEL {
 
     private static final String MATSIM_NETWORK = "input/mito/trafficAssignment/network.xml";
     private static final String scenarioName = "reference";
-    private static final String day = "sunday";
     private static final String year = "2018";
     private static final int SCALE_FACTOR_ACTIVE = 1;
     private static final int SCALE_FACTOR_CAR = 10;
@@ -33,7 +33,7 @@ public class HourlyVolumeEventAnalysisMEL {
                 String linkId = link.getId().toString();
                 String edgeId = link.getAttributes().getAttribute("edgeID").toString();
                 String osmId = link.getAttributes().getAttribute("osmID") == null ? "NA" : link.getAttributes().getAttribute("osmID").toString();
-                for (int hour = 0; hour <= 24; hour++) {
+                for (int hour = 0; hour < 24; hour++) {
                     StringBuilder line = new StringBuilder();
                     line.append(linkId).append(",").append(edgeId).append(",").append(osmId).append(",").append(hour);
                     for (String type : volumeTypes) {
@@ -63,8 +63,7 @@ public class HourlyVolumeEventAnalysisMEL {
         String[] volumeTypes;
         int scaleFactor;
         String header;
-
-        ModeCategory(String[] volumeTypes, int scaleFactor, String header) {
+        ModeCategory(String[] volumeTypes, int scaleFactor, String header, String day) {
             this.subfolder = toCamelCaseSubfolder(volumeTypes);
             this.outputSuffix = String.format("%s_%s.csv", this.subfolder, day);
             this.volumeTypes = volumeTypes;
@@ -73,28 +72,30 @@ public class HourlyVolumeEventAnalysisMEL {
         }
     }
 
-    private static final ModeCategory[] MODES = new ModeCategory[]{
-            new ModeCategory(new String[]{"bike", "ped"}, SCALE_FACTOR_ACTIVE, "linkId,edgeId,osmId,hour,bike,ped"),
-            new ModeCategory(new String[]{"car", "truck"}, SCALE_FACTOR_CAR, "linkId,edgeId,osmId,hour,car,truck")
-    };
-
     public static void main(String[] args) {
+        String[] days = {"thursday", "saturday", "sunday"};
         Network network = NetworkUtils.createNetwork();
         new MatsimNetworkReader(network).readFile(MATSIM_NETWORK);
 
-        for (ModeCategory mode : MODES) {
-            String scenarioPath = String.format("scenOutput/%s/matsim/%s/%s", scenarioName, year, day);
-            String eventPath = String.format("%s/%s/%s.output_events.xml.gz", scenarioPath, mode.subfolder, year);
-            String vehiclesPath = String.format("%s/%s/%s.output_vehicles.xml.gz", scenarioPath, mode.subfolder, year);
-            String outputPath = String.format("%s/hourlyVolume_%s", scenarioPath, mode.outputSuffix);
+        for (String day : days) {
+            String scenarioPath = String.format("scenOutput/%s/matsim/%s", scenarioName, year);
+            ModeCategory[] modes = new ModeCategory[]{
+                new ModeCategory(new String[]{"bike", "ped"}, SCALE_FACTOR_ACTIVE, "linkId,edgeId,osmId,hour,bike,ped", day),
+                new ModeCategory(new String[]{"car", "truck"}, SCALE_FACTOR_CAR, "linkId,edgeId,osmId,hour,car,truck", day)
+            };
+            for (ModeCategory mode : modes) {
+                String eventPath = String.format("%s/%s/%s/%s.output_events.xml.gz", scenarioPath, day, mode.subfolder, year);
+                String vehiclesPath = String.format("%s/%s/%s/%s.output_vehicles.xml.gz", scenarioPath, day, mode.subfolder, year);
+                String outputPath = String.format("%s/hourlyVolume_%s", scenarioPath, mode.outputSuffix);
 
-            Vehicles vehicles = VehicleUtils.createVehiclesContainer();
-            new MatsimVehicleReader(vehicles).readFile(vehiclesPath);
-            EventsManager eventsManager = new EventsManagerImpl();
-            HourlyVolumeEventHandler handler = new HourlyVolumeEventHandler(vehicles);
-            eventsManager.addHandler(handler);
-            EventsUtils.readEvents(eventsManager, eventPath);
-            writeHourlyVolumes(network, handler, outputPath, mode.header, mode.scaleFactor, mode.volumeTypes);
+                Vehicles vehicles = VehicleUtils.createVehiclesContainer();
+                new MatsimVehicleReader(vehicles).readFile(vehiclesPath);
+                EventsManager eventsManager = new EventsManagerImpl();
+                HourlyVolumeEventHandler handler = new HourlyVolumeEventHandler(vehicles);
+                eventsManager.addHandler(handler);
+                EventsUtils.readEvents(eventsManager, eventPath);
+                writeHourlyVolumes(network, handler, outputPath, mode.header, mode.scaleFactor, mode.volumeTypes);
+            }
         }
     }
 
