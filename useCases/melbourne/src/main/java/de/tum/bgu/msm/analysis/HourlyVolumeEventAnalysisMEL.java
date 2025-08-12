@@ -18,12 +18,17 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 
 public class HourlyVolumeEventAnalysisMEL {
-
+    /*
+    Based on code by Qin Zhang (@Qinnnnn) from MITO:
+    https://github.com/jibeproject/mito/blob/main/analysis/src/main/java/de/tum/bgu/msm/HourlyVolumeEventAnalysis.java
+    Generalised for Melbourne use case.
+    */
     private static final String MATSIM_NETWORK = "input/mito/trafficAssignment/network.xml";
-    private static final String scenarioName = "reference";
-    private static final String year = "2018";
+    private static final String SCENARIO_NAME = "reference";
+    private static final String YEAR = "2018";
     private static final int SCALE_FACTOR_ACTIVE = 1;
     private static final int SCALE_FACTOR_CAR = 10;
+    private static final String SCENARIO_PATH = String.format("scenOutput/%s/matsim/%s", SCENARIO_NAME, YEAR);
     private static final Logger logger = LogManager.getLogger(HourlyVolumeEventAnalysisMEL.class);
 
     private static void writeHourlyVolumes(Network network, HourlyVolumeEventHandler handler, String outputPath, String header, int scaleFactor, String[] volumeTypes) {
@@ -78,15 +83,14 @@ public class HourlyVolumeEventAnalysisMEL {
         new MatsimNetworkReader(network).readFile(MATSIM_NETWORK);
 
         for (String day : days) {
-            String scenarioPath = String.format("scenOutput/%s/matsim/%s", scenarioName, year);
             ModeCategory[] modes = new ModeCategory[]{
                 new ModeCategory(new String[]{"bike", "ped"}, SCALE_FACTOR_ACTIVE, "linkId,edgeId,osmId,hour,bike,ped", day),
                 new ModeCategory(new String[]{"car", "truck"}, SCALE_FACTOR_CAR, "linkId,edgeId,osmId,hour,car,truck", day)
             };
             for (ModeCategory mode : modes) {
-                String eventPath = String.format("%s/%s/%s/%s.output_events.xml.gz", scenarioPath, day, mode.subfolder, year);
-                String vehiclesPath = String.format("%s/%s/%s/%s.output_vehicles.xml.gz", scenarioPath, day, mode.subfolder, year);
-                String outputPath = String.format("%s/hourlyVolume_%s", scenarioPath, mode.outputSuffix);
+                String eventPath = String.format("%s/%s/%s/%s.output_events.xml.gz", SCENARIO_PATH, day, mode.subfolder, YEAR);
+                String vehiclesPath = String.format("%s/%s/%s/%s.output_vehicles.xml.gz", SCENARIO_PATH, day, mode.subfolder, YEAR);
+                String outputPath = String.format("%s/hourlyVolume_%s", SCENARIO_PATH, mode.outputSuffix);
 
                 Vehicles vehicles = VehicleUtils.createVehiclesContainer();
                 new MatsimVehicleReader(vehicles).readFile(vehiclesPath);
