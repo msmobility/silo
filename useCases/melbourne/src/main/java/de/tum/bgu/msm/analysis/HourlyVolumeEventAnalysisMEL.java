@@ -41,6 +41,7 @@ public class HourlyVolumeEventAnalysisMEL {
                 for (int hour = 0; hour < 24; hour++) {
                     StringBuilder line = new StringBuilder();
                     line.append(linkId).append(",").append(edgeId).append(",").append(osmId).append(",").append(hour);
+                    int totalVolume = 0;
                     for (String type : volumeTypes) {
                         int volume = 0;
                         if (type.equals("bike") && handler.getBikeVolumes().get(link.getId()) != null) {
@@ -52,9 +53,12 @@ public class HourlyVolumeEventAnalysisMEL {
                         } else if (type.equals("truck") && handler.getTruckVolumes().get(link.getId()) != null) {
                             volume = handler.getTruckVolumes().get(link.getId()).getOrDefault(hour, 0) * scaleFactor;
                         }
+                        totalVolume += volume;
                         line.append(",").append(volume);
                     }
-                    pw.println(line);
+                    if (totalVolume > 0) {
+                        pw.println(line);
+                    }
                 }
             }
         } catch (FileNotFoundException e) {
