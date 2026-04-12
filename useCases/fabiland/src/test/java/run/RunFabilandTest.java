@@ -14,7 +14,7 @@ import org.matsim.utils.eventsfilecomparison.ComparisonResult;
 
 import static org.matsim.utils.eventsfilecomparison.ComparisonResult.FILES_ARE_EQUAL;
 
-@ExtendWith(MatsimTestUtils.class)
+//@ExtendWith(MatsimTestUtils.class)
 public class RunFabilandTest{
 	private static final Logger log = LogManager.getLogger( RunFabilandTest.class );
 
