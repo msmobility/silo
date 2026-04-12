@@ -117,6 +117,8 @@ public class RunFabilandTest{
 		} catch ( Exception ee ) {
 			log.fatal("there was an exception: \n" + ee ) ;
 
+			ee.printStackTrace();
+
 			// if one catches an exception, then one needs to explicitly fail the test:
 			Assert.fail();
 		}

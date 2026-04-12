@@ -181,7 +181,8 @@
 
 	<properties>
 		<geotools.version>31.3</geotools.version>
-		<matsimVersion>2025.0-PR3643</matsimVersion>
+<!--		<matsimVersion>2025.0-PR3643</matsimVersion>-->
+		<matsimVersion>2025.0</matsimVersion>
 		<jackson.version>2.9.5</jackson.version>
 		<junit.version>5.10.3</junit.version>
 	</properties>
