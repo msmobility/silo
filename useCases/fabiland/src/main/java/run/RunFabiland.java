@@ -36,11 +36,11 @@ public class RunFabiland {
         logger.info("Started SILO Fabiland sandbox model");
 
         // The following is obviously just a dirty quickfix until access/egress is default in MATSim
-//        if (properties.transportModel.includeAccessEgress) {
+        if (properties.transportModel.includeAccessEgress) {
 ////            config.plansCalcRoute().setInsertingAccessEgressWalk(true); // in matsim-12
-//            config.routing().setAccessEgressType(RoutingConfigGroup.AccessEgressType.accessEgressModeToLink); // in matsim-13-w37
-//        }
-		config.routing().setAccessEgressType( RoutingConfigGroup.AccessEgressType.none );
+            config.routing().setAccessEgressType(RoutingConfigGroup.AccessEgressType.accessEgressModeToLink); // in matsim-13-w37
+        }
+//		config.routing().setAccessEgressType( RoutingConfigGroup.AccessEgressType.none );
 		// yyyyyy Silo uses a re-implementation of a lot of matsim infrastructure, and that is outside injection.  The more advanced access/egress types are not implemented there.
 		// kai, apr'26
 

@@ -198,7 +198,11 @@ public final class MatsimData {
         LeastCostPathCalculator routeAlgo = leastCostPathCalculatorFactory.createPathCalculator(carNetwork, travelDisutility, travelTime);
 //        if (config.plansCalcRoute().isInsertingAccessEgressWalk()) { // in matsim-12
         if ( !config.routing().getAccessEgressType().equals(RoutingConfigGroup.AccessEgressType.none) ) { // in matsim-13-w37
-            carRoutingModule = DefaultRoutingModules.createAccessEgressNetworkRouter(TransportMode.car, routeAlgo, scenario, carNetwork, accessEgressToNetworkRouter, TimeInterpretation.create(scenario.getConfig()),null); // TODO take access egress type correctly
+
+			MultimodalLinkChooser linkChooser = RouterUtils.getMultimodalLinkChooserDefault();
+			carRoutingModule = DefaultRoutingModules.createAccessEgressNetworkRouter(TransportMode.car, routeAlgo, scenario, carNetwork, accessEgressToNetworkRouter, TimeInterpretation.create(scenario.getConfig() ),linkChooser );
+			// TODO take access egress type correctly
+			// should use injection!!
         } else {
             carRoutingModule = DefaultRoutingModules.createPureNetworkRouter(
                     TransportMode.car, PopulationUtils.getFactory(), carNetwork, routeAlgo);
