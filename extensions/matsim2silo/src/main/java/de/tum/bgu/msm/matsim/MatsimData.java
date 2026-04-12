@@ -11,10 +11,10 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.groups.RoutingConfigGroup;
+import org.matsim.core.controler.Injector;
+import org.matsim.core.controler.PrepareForSim;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.TransportModeNetworkFilter;
-import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.router.*;
 import org.matsim.core.router.costcalculators.FreespeedTravelTimeAndDisutility;
 import org.matsim.core.router.util.LeastCostPathCalculator;
@@ -22,7 +22,6 @@ import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.core.utils.timing.TimeInterpretation;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.vehicles.Vehicles;
 
@@ -31,7 +30,8 @@ import java.util.Set;
 
 public final class MatsimData {
 
-    private LeastCostPathCalculatorFactory leastCostPathCalculatorFactory;
+	private Scenario scenario;
+	private LeastCostPathCalculatorFactory leastCostPathCalculatorFactory;
     private LeastCostPathCalculatorFactory multiNodeFactory = new FastMultiNodeDijkstraFactory(true);
 
     private SwissRailRaptorData raptorData;
@@ -61,6 +61,15 @@ public final class MatsimData {
     private ZoneConnectorManager zoneConnectorManager;
     private final static int NUMBER_OF_CALC_POINTS = 1;
 
+	public MatsimData( Properties properties, ZoneConnectorManager.ZoneConnectorMethod method, DataContainer dataContainer, Scenario scenario ) {
+		this( scenario.getConfig(), properties, method, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule() );
+		this.scenario = scenario;
+	}
+
+	/**
+	 * @deprecated -- use {@link MatsimData#MatsimData(Properties, ZoneConnectorManager.ZoneConnectorMethod, DataContainer, Scenario)}
+	 */
+	@Deprecated
     public MatsimData(Config config, Properties properties,
                       ZoneConnectorManagerImpl.ZoneConnectorMethod method,
                       DataContainer dataContainer, Network network, TransitSchedule schedule) {
@@ -89,9 +98,16 @@ public final class MatsimData {
         filterNetwork(network);
     }
 
+	/**
+	 * @deprecated -- use {@link MatsimData#MatsimData(Properties, ZoneConnectorManager.ZoneConnectorMethod, DataContainer, Scenario)}
+	 */
+	@Deprecated
     public MatsimData(Config config, Properties properties,
                       ZoneConnectorManagerImpl.ZoneConnectorMethod method,
                       DataContainer dataContainer, Network network) {
+
+		// yyyyyy MatsimData needs the scenario, everything else is stupid.  kai
+
         int threads = properties.main.numberOfThreads;
         final Collection<Zone> zones = dataContainer.getGeoData().getZones().values();
         ZoneConnectorManager zoneConnectorManager;
@@ -116,6 +132,10 @@ public final class MatsimData {
         filterNetwork(network);
     }
 
+	/**
+	 * @deprecated -- use {@link MatsimData#MatsimData(Properties, ZoneConnectorManager.ZoneConnectorMethod, DataContainer, Scenario)}
+	 */
+	@Deprecated
     public MatsimData(Config config, int threads,Network network,
                       TransitSchedule schedule, ZoneConnectorManager zoneConnectorManager) {
         ConfigUtils.setVspDefaults(config); // Needs to be done before config becomes locked for those changes
@@ -192,35 +212,44 @@ public final class MatsimData {
 
     TripRouter createTripRouter() {
         Scenario scenario = ScenarioUtils.loadScenario(config);
-        RoutingModule accessEgressToNetworkRouter = DefaultRoutingModules.createTeleportationRouter(TransportMode.walk, scenario, config.routing().getModeRoutingParams().get(TransportMode.walk));
 
-        RoutingModule carRoutingModule;
-        LeastCostPathCalculator routeAlgo = leastCostPathCalculatorFactory.createPathCalculator(carNetwork, travelDisutility, travelTime);
-//        if (config.plansCalcRoute().isInsertingAccessEgressWalk()) { // in matsim-12
-        if ( !config.routing().getAccessEgressType().equals(RoutingConfigGroup.AccessEgressType.none) ) { // in matsim-13-w37
+		com.google.inject.Injector injector = Injector.createMinimalMatsimInjector( config, scenario );
 
-			MultimodalLinkChooser linkChooser = RouterUtils.getMultimodalLinkChooserDefault();
-			carRoutingModule = DefaultRoutingModules.createAccessEgressNetworkRouter(TransportMode.car, routeAlgo, scenario, carNetwork, accessEgressToNetworkRouter, TimeInterpretation.create(scenario.getConfig() ),linkChooser );
-			// TODO take access egress type correctly
-			// should use injection!!
-        } else {
-            carRoutingModule = DefaultRoutingModules.createPureNetworkRouter(
-                    TransportMode.car, PopulationUtils.getFactory(), carNetwork, routeAlgo);
-        }
+		injector.getInstance( PrepareForSim.class ).run();
+		// yyyyyy despite this line, it does not find the vehicle.  I think that the person to which the tripRouter is applied is not the same as the one that is in ths scenario. kai
 
-        final RoutingModule ptRoutingModule;
-        if (schedule != null && config.transit().isUseTransit()) {
-            final SwissRailRaptor swissRailRaptor = createSwissRailRaptor(RaptorStaticConfig.RaptorOptimization.OneToOneRouting);
-            ptRoutingModule = new SwissRailRaptorRoutingModule(swissRailRaptor, schedule, ptNetwork, accessEgressToNetworkRouter);
-        } else {
-            ptRoutingModule = DefaultRoutingModules.createPseudoTransitRouter(TransportMode.pt, PopulationUtils.getFactory(), carNetwork,
-                    leastCostPathCalculatorFactory.createPathCalculator(carNetwork, travelDisutility, travelTime), config.routing().getOrCreateModeRoutingParams(TransportMode.pt));
-        }
+		return injector.getInstance( TripRouter.class );
 
-        TripRouter.Builder bd = new TripRouter.Builder(config);
-        bd.setRoutingModule(TransportMode.car, carRoutingModule);
-        bd.setRoutingModule(TransportMode.pt, ptRoutingModule);
-        return bd.build();
+
+//        RoutingModule accessEgressToNetworkRouter = DefaultRoutingModules.createTeleportationRouter(TransportMode.walk, scenario, config.routing().getModeRoutingParams().get(TransportMode.walk));
+//
+//        RoutingModule carRoutingModule;
+//        LeastCostPathCalculator routeAlgo = leastCostPathCalculatorFactory.createPathCalculator(carNetwork, travelDisutility, travelTime);
+////        if (config.plansCalcRoute().isInsertingAccessEgressWalk()) { // in matsim-12
+//        if ( !config.routing().getAccessEgressType().equals(RoutingConfigGroup.AccessEgressType.none) ) { // in matsim-13-w37
+//
+//			MultimodalLinkChooser linkChooser = RouterUtils.getMultimodalLinkChooserDefault();
+//			carRoutingModule = DefaultRoutingModules.createAccessEgressNetworkRouter(TransportMode.car, routeAlgo, scenario, carNetwork, accessEgressToNetworkRouter, TimeInterpretation.create(scenario.getConfig() ),linkChooser );
+//			// TODO take access egress type correctly
+//			// should use injection!!
+//        } else {
+//            carRoutingModule = DefaultRoutingModules.createPureNetworkRouter(
+//                    TransportMode.car, PopulationUtils.getFactory(), carNetwork, routeAlgo);
+//        }
+//
+//        final RoutingModule ptRoutingModule;
+//        if (schedule != null && config.transit().isUseTransit()) {
+//            final SwissRailRaptor swissRailRaptor = createSwissRailRaptor(RaptorStaticConfig.RaptorOptimization.OneToOneRouting);
+//            ptRoutingModule = new SwissRailRaptorRoutingModule(swissRailRaptor, schedule, ptNetwork, accessEgressToNetworkRouter);
+//        } else {
+//            ptRoutingModule = DefaultRoutingModules.createPseudoTransitRouter(TransportMode.pt, PopulationUtils.getFactory(), carNetwork,
+//                    leastCostPathCalculatorFactory.createPathCalculator(carNetwork, travelDisutility, travelTime), config.routing().getOrCreateModeRoutingParams(TransportMode.pt));
+//        }
+//
+//        TripRouter.Builder bd = new TripRouter.Builder(config);
+//        bd.setRoutingModule(TransportMode.car, carRoutingModule);
+//        bd.setRoutingModule(TransportMode.pt, ptRoutingModule);
+//        return bd.build();
     }
 
     SwissRailRaptor createSwissRailRaptor(RaptorStaticConfig.RaptorOptimization optimitzaion) {
@@ -273,4 +302,7 @@ public final class MatsimData {
     public void updateMatsimPopulation(Population matsimPopulation) {
         this.matsimPopulation = matsimPopulation;
     }
+	public Scenario getScenario(){
+		return scenario;
+	}
 }

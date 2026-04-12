@@ -14,6 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
@@ -32,6 +33,9 @@ import org.matsim.facilities.ActivityFacilitiesFactory;
 import org.matsim.facilities.ActivityFacilitiesFactoryImpl;
 import org.matsim.facilities.ActivityFacility;
 import org.matsim.facilities.Facility;
+import org.matsim.vehicles.Vehicle;
+import org.matsim.vehicles.VehicleType;
+import org.matsim.vehicles.VehicleUtils;
 
 import java.util.*;
 
@@ -227,7 +231,24 @@ public final class MatsimTravelTimesAndCosts implements TravelTimes {
         org.matsim.api.core.v01.population.Person matsimPerson = null;
         if (siloPerson != null) {
             matsimPerson = matsimData.getMatsimPopulation().getPersons().get(Id.createPersonId(siloPerson.getId()));
-        }
+
+			// the following is trying to give the missing vehicle type to the person.  It is nearly (I think) working but now I am getting too tired.
+
+			Scenario assembledScenario = matsimData.getScenario();
+
+			// create a dummy vehicle type
+			VehicleType dummyVehicleType = assembledScenario.getVehicles().getVehicleTypes().get( Id.create( "defaultVehicleType", VehicleType.class ) );
+			if ( dummyVehicleType==null ) {
+				dummyVehicleType = assembledScenario.getVehicles().getFactory().createVehicleType(Id.create("defaultVehicleType", VehicleType.class ) );
+				assembledScenario.getVehicles().addVehicleType(dummyVehicleType);
+			}
+
+			Id<Vehicle> vehicleId = Id.createVehicleId(matsimPerson.getId() );
+			assembledScenario.getVehicles().addVehicle(assembledScenario.getVehicles().getFactory().createVehicle(vehicleId, dummyVehicleType));
+			VehicleUtils.insertVehicleIdsIntoAttributes(matsimPerson, Collections.singletonMap( TransportMode.car, vehicleId ) );
+
+
+		}
         return tripRouter.calcRoute(mode, fromFacility, toFacility, timeOfDay_s, matsimPerson, null);
     }
 
