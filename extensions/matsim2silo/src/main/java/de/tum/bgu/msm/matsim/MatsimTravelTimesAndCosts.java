@@ -232,22 +232,28 @@ public final class MatsimTravelTimesAndCosts implements TravelTimes {
         if (siloPerson != null) {
             matsimPerson = matsimData.getMatsimPopulation().getPersons().get(Id.createPersonId(siloPerson.getId()));
 
+			// yyyyyy the following should not be necessary since it is already done upstream, but the containers are not systematically centrally registered.  From here ...
+
 			// the following is trying to give the missing vehicle type to the person.  It is nearly (I think) working but now I am getting too tired.
 
 			Scenario assembledScenario = matsimData.getScenario();
 
 			// create a dummy vehicle type
-//			VehicleType dummyVehicleType = assembledScenario.getVehicles().getVehicleTypes().get( Id.create( "defaultVehicleType", VehicleType.class ) );
-//			if ( dummyVehicleType==null ) {
-//				dummyVehicleType = assembledScenario.getVehicles().getFactory().createVehicleType(Id.create("defaultVehicleType", VehicleType.class ) );
-//				assembledScenario.getVehicles().addVehicleType(dummyVehicleType);
-//			}
+			final Id<VehicleType> defaultVehicleType = Id.create( "defaultVehicleType", VehicleType.class );
+			VehicleType dummyVehicleType = assembledScenario.getVehicles().getVehicleTypes().get( defaultVehicleType );
+			if ( dummyVehicleType==null ) {
+				dummyVehicleType = assembledScenario.getVehicles().getFactory().createVehicleType( defaultVehicleType );
+				assembledScenario.getVehicles().addVehicleType(dummyVehicleType);
+			}
 
 			Id<Vehicle> vehicleId = Id.createVehicleId(matsimPerson.getId() );
-//			assembledScenario.getVehicles().addVehicle(assembledScenario.getVehicles().getFactory().createVehicle(vehicleId, dummyVehicleType));
+			Vehicle vehicle = assembledScenario.getVehicles().getVehicles().get( vehicleId );
+			if ( vehicle == null ){
+				assembledScenario.getVehicles().addVehicle( assembledScenario.getVehicles().getFactory().createVehicle( vehicleId, dummyVehicleType ) );
+			}
 			VehicleUtils.insertVehicleIdsIntoAttributes(matsimPerson, Collections.singletonMap( TransportMode.car, vehicleId ) );
 
-
+			// .... to here. yyyyyy
 		}
         return tripRouter.calcRoute(mode, fromFacility, toFacility, timeOfDay_s, matsimPerson, null);
     }

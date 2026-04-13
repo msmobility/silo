@@ -43,6 +43,9 @@ public class RunFabilandTest{
 			log.info("############################################");
 			log.info("############################################");
 
+			// yyyyyy in the following, base/matsim/2 seems to be complete, but base/matsim/0 and base/matsim/1 not.
+			// yy I don't even know what these are ... are these iterations, or "years" of transport model runs?
+
 			{
 				Population expected = PopulationUtils.createPopulation( ConfigUtils.createConfig() ) ;
 				PopulationUtils.readPopulation( expected,  inputDirectory + "0.output_plans.xml.gz" );
