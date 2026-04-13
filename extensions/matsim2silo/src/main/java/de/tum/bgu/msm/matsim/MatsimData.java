@@ -32,7 +32,7 @@ public final class MatsimData {
 
 	private Scenario scenario;
 	private LeastCostPathCalculatorFactory leastCostPathCalculatorFactory;
-    private LeastCostPathCalculatorFactory multiNodeFactory = new FastMultiNodeDijkstraFactory(true);
+    private final LeastCostPathCalculatorFactory multiNodeFactory = new FastMultiNodeDijkstraFactory(true);
 
     private SwissRailRaptorData raptorData;
     private SwissRailRaptorData raptorDataOneToAll;
@@ -43,7 +43,7 @@ public final class MatsimData {
         return config;
     }
 
-    private Config config;
+    private final Config config;
 
     private Network carNetwork;
     private Network ptNetwork;
@@ -58,12 +58,14 @@ public final class MatsimData {
     private TravelTime travelTime;
     private Population matsimPopulation;
 
-    private ZoneConnectorManager zoneConnectorManager;
+    private final ZoneConnectorManager zoneConnectorManager;
     private final static int NUMBER_OF_CALC_POINTS = 1;
 
 	public MatsimData( Properties properties, ZoneConnectorManager.ZoneConnectorMethod method, DataContainer dataContainer, Scenario scenario ) {
 		this( scenario.getConfig(), properties, method, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule() );
 		this.scenario = scenario;
+		// yyyyyy This now has (in some execution paths) the full matsim scenario.  However, the scenario elements from this class here (such as network, transitSchedule, etc.) are
+		// provided separately, and are in most cases not consistent with the contents of the matsim scenario.
 	}
 
 	/**
@@ -211,12 +213,13 @@ public final class MatsimData {
     }
 
     TripRouter createTripRouter() {
-        Scenario scenario = ScenarioUtils.loadScenario(config);
+//        Scenario scenario = ScenarioUtils.loadScenario(config);
 
 		com.google.inject.Injector injector = Injector.createMinimalMatsimInjector( config, scenario );
 
 		injector.getInstance( PrepareForSim.class ).run();
 		// yyyyyy despite this line, it does not find the vehicle.  I think that the person to which the tripRouter is applied is not the same as the one that is in ths scenario. kai
+		// yyyy also, I think that the matsim-silo implementation uses a different (older) convention to set the vehicle IDs.
 
 		return injector.getInstance( TripRouter.class );
 
@@ -301,7 +304,10 @@ public final class MatsimData {
 
     public void updateMatsimPopulation(Population matsimPopulation) {
         this.matsimPopulation = matsimPopulation;
+		// yyyyyy This is bad since it replaces the population outside the scenario.
+		// yy Also, "update" is a bit misleading as a name; it should just be "set...Population" since it is just a setter.
     }
+
 	public Scenario getScenario(){
 		return scenario;
 	}

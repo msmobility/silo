@@ -237,14 +237,14 @@ public final class MatsimTravelTimesAndCosts implements TravelTimes {
 			Scenario assembledScenario = matsimData.getScenario();
 
 			// create a dummy vehicle type
-			VehicleType dummyVehicleType = assembledScenario.getVehicles().getVehicleTypes().get( Id.create( "defaultVehicleType", VehicleType.class ) );
-			if ( dummyVehicleType==null ) {
-				dummyVehicleType = assembledScenario.getVehicles().getFactory().createVehicleType(Id.create("defaultVehicleType", VehicleType.class ) );
-				assembledScenario.getVehicles().addVehicleType(dummyVehicleType);
-			}
+//			VehicleType dummyVehicleType = assembledScenario.getVehicles().getVehicleTypes().get( Id.create( "defaultVehicleType", VehicleType.class ) );
+//			if ( dummyVehicleType==null ) {
+//				dummyVehicleType = assembledScenario.getVehicles().getFactory().createVehicleType(Id.create("defaultVehicleType", VehicleType.class ) );
+//				assembledScenario.getVehicles().addVehicleType(dummyVehicleType);
+//			}
 
 			Id<Vehicle> vehicleId = Id.createVehicleId(matsimPerson.getId() );
-			assembledScenario.getVehicles().addVehicle(assembledScenario.getVehicles().getFactory().createVehicle(vehicleId, dummyVehicleType));
+//			assembledScenario.getVehicles().addVehicle(assembledScenario.getVehicles().getFactory().createVehicle(vehicleId, dummyVehicleType));
 			VehicleUtils.insertVehicleIdsIntoAttributes(matsimPerson, Collections.singletonMap( TransportMode.car, vehicleId ) );
 
 
