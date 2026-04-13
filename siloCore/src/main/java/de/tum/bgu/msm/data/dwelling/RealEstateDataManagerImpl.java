@@ -310,8 +310,14 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
      */
     @Override
     public void addDwellingToVacancyList(Dwelling dd) {
+        int region;
+        try {
+            region = geoData.getZones().get(dd.getZoneId()).getRegion().getId();
+        } catch (Exception e) {
+            logger.error("Error while trying to add dwelling " + dd.getId() + " to vacancy list. Zone ID: " + dd.getZoneId());
+            throw e; // rethrow the exception to avoid silent failures
+        }
 
-        int region = geoData.getZones().get(dd.getZoneId()).getRegion().getId();
         vacDwellingsByRegion.putIfAbsent(region, new ArrayList<>());
         vacDwellingsByRegion.get(region).add(dd);
         if (dd.getId() == SiloUtil.trackDd) {

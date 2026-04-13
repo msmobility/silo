@@ -66,7 +66,7 @@ import static de.tum.bgu.msm.matsim.ZoneConnectorManagerImpl.*;
 
 public class ModelBuilderBerlinBrandenburg {
 
-    public static ModelContainer getModelContainerForMuc(DataContainerWithSchools dataContainer, Properties properties, Config config) {
+    public static ModelContainer getModelContainer(DataContainerWithSchools dataContainer, Properties properties, Config config) {
 
         PersonFactory ppFactory = dataContainer.getHouseholdDataManager().getPersonFactory();
         HouseholdFactory hhFactory = dataContainer.getHouseholdDataManager().getHouseholdFactory();
@@ -152,14 +152,23 @@ public class ModelBuilderBerlinBrandenburg {
                 transportModel = null;
         }
 
+//        final ModelContainer modelContainer = new ModelContainer(
+//                birthModel, birthdayModel,
+//                deathModel, marriageModel,
+//                divorceModel, driversLicenseModel,
+//                educationModel, employmentModel,
+//                leaveParentsModel, jobMarketUpdateModel,
+//                construction, demolition, pricing, renovation,
+//                constructionOverwrite, inOutMigration, movesModel, transportModel);
+
         final ModelContainer modelContainer = new ModelContainer(
-                birthModel, birthdayModel,
-                deathModel, marriageModel,
-                divorceModel, driversLicenseModel,
-                educationModel, employmentModel,
-                leaveParentsModel, jobMarketUpdateModel,
-                construction, demolition, pricing, renovation,
-                constructionOverwrite, inOutMigration, movesModel, transportModel);
+                null, birthdayModel,
+                null, null,
+                null, null,
+                null, null,
+                null, null,
+                null, null, null, null,
+                null, null, movesModel, transportModel);
 
         modelContainer.registerModelUpdateListener(new UpdateCarOwnershipModelBerlinBrandenburg(dataContainer, properties, SiloUtil.provideNewRandom()));
 

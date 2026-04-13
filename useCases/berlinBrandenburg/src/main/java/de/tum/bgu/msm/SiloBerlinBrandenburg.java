@@ -33,7 +33,7 @@ public class SiloBerlinBrandenburg {
         logger.info("Started SILO land use model for the Berlin-Brandenburg Metropolitan Area");
         DataContainerWithSchools dataContainer = DataBuilder.getModelDataForBerlinBrandenburg(properties, config);
         DataBuilder.read(properties, dataContainer);
-        ModelContainer modelContainer = ModelBuilderBerlinBrandenburg.getModelContainerForMuc(dataContainer, properties, config);
+        ModelContainer modelContainer = ModelBuilderBerlinBrandenburg.getModelContainer(dataContainer, properties, config);
 
         SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
         model.addResultMonitor(new MultiFileResultsMonitorBerlinBrandenburg(dataContainer, properties));

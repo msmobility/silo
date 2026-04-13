@@ -17,13 +17,13 @@ public class GeoDataReaderBerlinBrandenburg implements GeoDataReader {
 
     private static Logger logger = LogManager.getLogger(GeoDataReaderBerlinBrandenburg.class);
 
-    private GeoData geoDataMuc;
+    private GeoData geoData;
 
     private final String SHAPE_IDENTIFIER = "id";
-    private final String ZONE_ID_COLUMN = "Zone";
+    private final String ZONE_ID_COLUMN = "id";
 
-    public GeoDataReaderBerlinBrandenburg(GeoData geoDataMuc) {
-        this.geoDataMuc = geoDataMuc;
+    public GeoDataReaderBerlinBrandenburg(GeoData geoData) {
+        this.geoData = geoData;
     }
 
     @Override
@@ -39,18 +39,18 @@ public class GeoDataReaderBerlinBrandenburg implements GeoDataReader {
         int[] regionColumn = zonalData.getColumnAsInt("Region");
 
         for (int i = 0; i < zoneIds.length; i++) {
-            AreaTypes.SGType type = AreaTypes.SGType.valueOf(areaTypes[i]);
+            AreaTypes.SGType type = AreaTypes.SGType.CORE_CITY;
             Region region;
             int regionId = regionColumn[i];
-            if (geoDataMuc.getRegions().containsKey(regionId)) {
-                region = geoDataMuc.getRegions().get(regionId);
+            if (geoData.getRegions().containsKey(regionId)) {
+                region = geoData.getRegions().get(regionId);
             } else {
                 region = new RegionImpl(regionId);
-                geoDataMuc.addRegion(region);
+                geoData.addRegion(region);
             }
             ZoneBerlinBrandenburg zone = new ZoneBerlinBrandenburg(zoneIds[i], zoneAreas[i], type, ptDistances[i], region);
             region.addZone(zone);
-            geoDataMuc.addZone(zone);
+            geoData.addZone(zone);
         }
     }
 
@@ -63,7 +63,7 @@ public class GeoDataReaderBerlinBrandenburg implements GeoDataReader {
         int counter = 0;
         for (SimpleFeature feature : ShapeFileReader.getAllFeatures(path)) {
             int zoneId = Integer.parseInt(feature.getAttribute(SHAPE_IDENTIFIER).toString());
-            ZoneBerlinBrandenburg zone = (ZoneBerlinBrandenburg) geoDataMuc.getZones().get(zoneId);
+            ZoneBerlinBrandenburg zone = (ZoneBerlinBrandenburg) geoData.getZones().get(zoneId);
             if (zone != null) {
                 zone.setZoneFeature(feature);
                 final Object ags = feature.getAttribute("AGS");
