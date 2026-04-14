@@ -40,7 +40,7 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
     private final DataContainer dataContainer;
     private final Properties properties;
     private final HandlingOfRandomness handlingOfRandomObject;
-    private CommuteModeChoice commuteModeChoice;
+    private final CommuteModeChoice commuteModeChoice;
     private final Random random;
     // yyyy I found this using the regular silo random number sequence.  In consequence, it was using different random numbers every time it was
     // called, in consequence picking different agents from silo.  This is not what we want.  --  It also picked different agents every time it ran.

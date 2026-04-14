@@ -45,6 +45,8 @@ public class RunFabilandTest{
 
 			// yyyyyy in the following, base/matsim/2 seems to be complete, but base/matsim/0 and base/matsim/1 not.
 			// yy I don't even know what these are ... are these iterations, or "years" of transport model runs?
+			// --> should be the latter
+			// --> "2" was from older
 
 			{
 				Population expected = PopulationUtils.createPopulation( ConfigUtils.createConfig() ) ;

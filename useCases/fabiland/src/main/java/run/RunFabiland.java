@@ -14,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.RoutingConfigGroup;
+import org.matsim.core.controler.OutputDirectoryHierarchy;
 
 import java.util.Arrays;
 
@@ -43,6 +44,10 @@ public class RunFabiland {
 //		config.routing().setAccessEgressType( RoutingConfigGroup.AccessEgressType.none );
 		// yyyyyy Silo uses a re-implementation of a lot of matsim infrastructure, and that is outside injection.  The more advanced access/egress types are not implemented there.
 		// kai, apr'26
+
+		config.controller().setOverwriteFileSetting( OutputDirectoryHierarchy.OverwriteFileSetting.overwriteExistingFiles );
+		// Somehow, some version matsim is starting again for the accessibility computation, and that wipes the directory after the main run.
+		// --> did not help
 
         DataContainer dataContainer = DataBuilderFabiland.buildDataContainer(properties, config);
         DataBuilderFabiland.readInput(properties, dataContainer);

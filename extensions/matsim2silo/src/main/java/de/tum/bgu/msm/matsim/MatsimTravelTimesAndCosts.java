@@ -36,6 +36,7 @@ import org.matsim.facilities.Facility;
 import org.matsim.vehicles.Vehicle;
 import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleUtils;
+import org.matsim.vehicles.VehiclesFactory;
 
 import java.util.*;
 
@@ -232,29 +233,34 @@ public final class MatsimTravelTimesAndCosts implements TravelTimes {
         if (siloPerson != null) {
             matsimPerson = matsimData.getMatsimPopulation().getPersons().get(Id.createPersonId(siloPerson.getId()));
 
-			// yyyyyy the following should not be necessary since it is already done upstream, but the containers are not systematically centrally registered.  From here ...
-
-			// the following is trying to give the missing vehicle type to the person.  It is nearly (I think) working but now I am getting too tired.
-
-			Scenario assembledScenario = matsimData.getScenario();
-
-			// create a dummy vehicle type
-			final Id<VehicleType> defaultVehicleType = Id.create( "defaultVehicleType", VehicleType.class );
-			VehicleType dummyVehicleType = assembledScenario.getVehicles().getVehicleTypes().get( defaultVehicleType );
-			if ( dummyVehicleType==null ) {
-				dummyVehicleType = assembledScenario.getVehicles().getFactory().createVehicleType( defaultVehicleType );
-				assembledScenario.getVehicles().addVehicleType(dummyVehicleType);
-			}
-
-			Id<Vehicle> vehicleId = Id.createVehicleId(matsimPerson.getId() );
-			Vehicle vehicle = assembledScenario.getVehicles().getVehicles().get( vehicleId );
-			if ( vehicle == null ){
-				assembledScenario.getVehicles().addVehicle( assembledScenario.getVehicles().getFactory().createVehicle( vehicleId, dummyVehicleType ) );
-			}
-			VehicleUtils.insertVehicleIdsIntoAttributes(matsimPerson, Collections.singletonMap( TransportMode.car, vehicleId ) );
-
-			// .... to here. yyyyyy
+//			// yyyyyy the following should not be necessary since it is already done upstream, but the containers are not systematically centrally registered.  From here ...
+//
+//			// the following is trying to give the missing vehicle type to the person.  It is nearly (I think) working but now I am getting too tired.
+//			// --> does not work, since one of the calling method is multi-threaded, and at some point two trips of the same person want to insert the same vehicle.
+//
+//			Scenario assembledScenario = matsimData.getScenario();
+//
+//			// create a dummy vehicle type
+//			final Id<VehicleType> defaultVehicleType = Id.create( "defaultVehicleType", VehicleType.class );
+//			VehicleType dummyVehicleType = assembledScenario.getVehicles().getVehicleTypes().get( defaultVehicleType );
+//			final VehiclesFactory vf = assembledScenario.getVehicles().getFactory();
+//			if ( dummyVehicleType==null ) {
+//				dummyVehicleType = vf.createVehicleType( defaultVehicleType );
+//				assembledScenario.getVehicles().addVehicleType(dummyVehicleType);
+//			}
+//
+//			Id<Vehicle> vehicleId = Id.createVehicleId(matsimPerson.getId() );
+//			Vehicle vehicle = assembledScenario.getVehicles().getVehicles().get( vehicleId );
+//			if ( vehicle == null ){
+//				assembledScenario.getVehicles().addVehicle( vf.createVehicle( vehicleId, dummyVehicleType ) );
+//			}
+//			VehicleUtils.insertVehicleIdsIntoAttributes(matsimPerson, Collections.singletonMap( TransportMode.car, vehicleId ) );
+//
+//			// .... to here. yyyyyy
 		}
+
+		// --> The problem is that the vehicle is not in the scenario instance that the tripRouter uses. !!!!
+
         return tripRouter.calcRoute(mode, fromFacility, toFacility, timeOfDay_s, matsimPerson, null);
     }
 
