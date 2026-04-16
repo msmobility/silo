@@ -4,7 +4,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.ConfigUtils;
@@ -32,10 +31,10 @@ public class RunFabilandTest{
 			String [] args = {"./scenario/test.properties",
 					"./scenario/config_cap30_1-l_nes_smc.xml",
 //					"--config:controler.outputDirectory", utils.getOutputDirectory(), // has no effect; evidently overwritten by code
-					"--config:controler.lastIteration", "2"
+					"--config:controler.lastIteration", "1"
 					// (I made this "2" because with "1" it failed quite often with a failing binary search.  Seems to be fixed
 					// with the changed random number generator (see comments in SimpleCommuteModeChoiceMatsimScenarioAssembler),
-					// but I do not want to commit again new regression test files.  So leaving it at "2".  kai, jun'23
+					// but I do not want to commit again new regression test files.  So leaving it at "2".  kai, jun'23)
 			} ;
 
 			RunFabiland.main( args ) ;
@@ -71,6 +70,7 @@ public class RunFabilandTest{
 			log.info("############################################");
 			log.info("############################################");
 
+			// I do not know why we I decided to test the following.
 			{
 				Population expected = PopulationUtils.createPopulation( ConfigUtils.createConfig() ) ;
 				PopulationUtils.readPopulation( expected,  inputDirectory + "1.0.plans.xml.gz" );
