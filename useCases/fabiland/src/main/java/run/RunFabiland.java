@@ -49,20 +49,24 @@ public class RunFabiland {
 		// Somehow, some version matsim is starting again for the accessibility computation, and that wipes the directory after the main run.
 		// --> did not help
 
+        logger.warn("Constructing data container ...");
         DataContainer dataContainer = DataBuilderFabiland.buildDataContainer(properties, config);
         DataBuilderFabiland.readInput(properties, dataContainer);
+        logger.warn("... done with constructing data container.");
 
+        logger.warn("Constructing model container ...");
         ModelContainer modelContainer = ModelBuilderFabiland.getModelContainer(dataContainer, properties, config);
+        logger.warn("... done with constructing model container.");
 
-        ResultsMonitor resultsMonitor = new DefaultResultsMonitor(dataContainer, properties);
-        MultiFileResultsMonitor multiFileResultsMonitor = new MultiFileResultsMonitor(dataContainer, properties);
-        HouseholdSatisfactionMonitor householdSatisfactionMonitor = new HouseholdSatisfactionMonitor(dataContainer, properties, modelContainer);
+        logger.warn("Constructing silo model ...");
+		SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
+        model.addResultMonitor( new DefaultResultsMonitor(dataContainer, properties) );
+        model.addResultMonitor( new MultiFileResultsMonitor(dataContainer, properties) );
+        model.addResultMonitor( new HouseholdSatisfactionMonitor(dataContainer, properties, modelContainer) );
+        logger.warn("... done with constructing silo model.");
 
-        SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
-        model.addResultMonitor(resultsMonitor);
-        model.addResultMonitor(multiFileResultsMonitor);
-        model.addResultMonitor(householdSatisfactionMonitor);
+        logger.warn("Running silo model ...");
         model.runModel();
-        logger.info("Finished SILO.");
+        logger.warn("Finished SILO.");
     }
 }

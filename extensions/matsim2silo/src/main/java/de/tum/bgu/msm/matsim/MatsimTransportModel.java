@@ -94,6 +94,8 @@ public final class MatsimTransportModel implements TransportModel {
 
     @Override
     public void setup() {
+        logger.warn("### Just entered MatsimTransportModel#setup().  This read from events if available, otherwise run the transport model.");
+
         internalTravelTimes.initialize(dataContainer.getGeoData(), matsimData);
 
         if (properties.transportModel.matsimInitialEventsFile == null) {
@@ -102,6 +104,7 @@ public final class MatsimTransportModel implements TransportModel {
             String eventsFile = properties.main.baseDirectory + properties.transportModel.matsimInitialEventsFile;
             replayFromEvents(eventsFile);
         }
+        logger.warn("### About to leave MatsimTransportModel#setup()." );
     }
 
     @Override
@@ -184,8 +187,9 @@ public final class MatsimTransportModel implements TransportModel {
 
         controler.run();
         logger.warn("Running MATSim transport model for year " + year + " finished.");
-
+        logger.warn("###################################################");
         // Get travel Times from MATSim
+        logger.warn("###################################################");
         logger.warn("Using MATSim to compute travel times from zone to zone.");
         TravelTime travelTime = controler.getLinkTravelTimes();
         TravelDisutility travelDisutility = controler.getTravelDisutilityFactory().createTravelDisutility(travelTime);

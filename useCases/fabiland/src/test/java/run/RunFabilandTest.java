@@ -32,20 +32,12 @@ public class RunFabilandTest{
 					"./scenario/config_cap30_1-l_nes_smc.xml",
 //					"--config:controler.outputDirectory", utils.getOutputDirectory(), // has no effect; evidently overwritten by code
 					"--config:controler.lastIteration", "1"
-					// (I made this "2" because with "1" it failed quite often with a failing binary search.  Seems to be fixed
-					// with the changed random number generator (see comments in SimpleCommuteModeChoiceMatsimScenarioAssembler),
-					// but I do not want to commit again new regression test files.  So leaving it at "2".  kai, jun'23)
 			} ;
 
 			RunFabiland.main( args ) ;
 
 			log.info("############################################");
 			log.info("############################################");
-
-			// yyyyyy in the following, base/matsim/2 seems to be complete, but base/matsim/0 and base/matsim/1 not.
-			// yy I don't even know what these are ... are these iterations, or "years" of transport model runs?
-			// --> should be the latter
-			// --> "2" was from older
 
 			{
 				Population expected = PopulationUtils.createPopulation( ConfigUtils.createConfig() ) ;
@@ -57,8 +49,8 @@ public class RunFabilandTest{
 				PopulationComparison.Result result2 = PopulationComparison.compare( expected, actual );
 				Assertions.assertEquals( PopulationComparison.Result.equal, result2 );
 
-				boolean result = PopulationUtils.comparePopulations( expected, actual );
-				Assertions.assertTrue( result );
+//				boolean result = PopulationUtils.comparePopulations( expected, actual );
+//				Assertions.assertTrue( result );
 			}
 			{
 				String expected = inputDirectory + "/0.output_events.xml.gz" ;
@@ -70,7 +62,7 @@ public class RunFabilandTest{
 			log.info("############################################");
 			log.info("############################################");
 
-			// I do not know why we I decided to test the following.
+			// I do not know why I decided to regression-test the following.
 			{
 				Population expected = PopulationUtils.createPopulation( ConfigUtils.createConfig() ) ;
 				PopulationUtils.readPopulation( expected,  inputDirectory + "1.0.plans.xml.gz" );

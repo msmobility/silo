@@ -32,7 +32,7 @@ public final class Simulator {
     private final List<MicroEvent> events = new ArrayList<>();
     private final TimeTracker timeTracker;
 
-    private Set<ResultsMonitor> resultsMonitors = new HashSet<>() ;
+    private final Set<ResultsMonitor> resultsMonitors = new HashSet<>() ;
 
     public Simulator(TimeTracker timeTracker) {
         this.timeTracker = timeTracker;
