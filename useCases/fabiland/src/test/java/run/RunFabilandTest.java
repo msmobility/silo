@@ -40,18 +40,13 @@ public class RunFabilandTest{
 			log.info("############################################");
 
 			{
-				Population expected = PopulationUtils.createPopulation( ConfigUtils.createConfig() ) ;
-				PopulationUtils.readPopulation( expected,  inputDirectory + "0.output_plans.xml.gz" );
-
-				Population actual = PopulationUtils.createPopulation( ConfigUtils.createConfig() ) ;
-				PopulationUtils.readPopulation( actual, "scenario/scenOutput/base/matsim/0/0.output_plans.xml.gz" );
-
-				PopulationComparison.Result result2 = PopulationComparison.compare( expected, actual );
-				Assertions.assertEquals( PopulationComparison.Result.equal, result2 );
-
-//				boolean result = PopulationUtils.comparePopulations( expected, actual );
-//				Assertions.assertTrue( result );
+				final String expected = inputDirectory + "0.output_plans.xml.gz";
+				final String actual = "scenario/scenOutput/base/matsim/0/0.output_plans.xml.gz";
+				PopulationComparison.Result result = PopulationUtils.comparePopulations( expected, actual );
+				Assertions.assertEquals( PopulationComparison.Result.equal, result );
 			}
+			log.info("############################################");
+			log.info("############################################");
 			{
 				String expected = inputDirectory + "/0.output_events.xml.gz" ;
 				String actual = "scenario/scenOutput/base/matsim/0/0.output_events.xml.gz" ;
@@ -64,15 +59,13 @@ public class RunFabilandTest{
 
 			// I do not know why I decided to regression-test the following.
 			{
-				Population expected = PopulationUtils.createPopulation( ConfigUtils.createConfig() ) ;
-				PopulationUtils.readPopulation( expected,  inputDirectory + "1.0.plans.xml.gz" );
-
-				Population actual = PopulationUtils.createPopulation( ConfigUtils.createConfig() ) ;
-				PopulationUtils.readPopulation( actual, "scenario/scenOutput/base/matsim/1/ITERS/it.0/1.0.plans.xml.gz" );
-
-				boolean result = PopulationUtils.comparePopulations( expected, actual );
-				Assertions.assertTrue( result );
+				final String expected = inputDirectory + "1.0.plans.xml.gz";
+				final String actual = "scenario/scenOutput/base/matsim/1/ITERS/it.0/1.0.plans.xml.gz";
+				PopulationComparison.Result result = PopulationUtils.comparePopulations( expected, actual );
+				Assertions.assertEquals( PopulationComparison.Result.equal, result );
 			}
+			log.info("############################################");
+			log.info("############################################");
 			{
 				String expected = inputDirectory + "/1.0.events.xml.gz" ;
 				String actual = "scenario/scenOutput/base/matsim/1/ITERS/it.0/1.0.events.xml.gz" ;
@@ -84,15 +77,11 @@ public class RunFabilandTest{
 			log.info("############################################");
 
 			{
-				Population expected = PopulationUtils.createPopulation( ConfigUtils.createConfig() ) ;
-				PopulationUtils.readPopulation( expected,  inputDirectory + "1.output_plans.xml.gz" );
-
-				Population actual = PopulationUtils.createPopulation( ConfigUtils.createConfig() ) ;
-				PopulationUtils.readPopulation( actual, "scenario/scenOutput/base/matsim/1/1.output_plans.xml.gz" );
-
-				boolean result = PopulationUtils.comparePopulations( expected, actual );
-				Assertions.assertTrue( result );
-			}
+				final String expected = inputDirectory + "1.output_plans.xml.gz";
+				final String actual = "scenario/scenOutput/base/matsim/1/1.output_plans.xml.gz";
+				PopulationComparison.Result result = PopulationUtils.comparePopulations( expected, actual );
+				Assertions.assertEquals( PopulationComparison.Result.equal, result );
+`			}
 			{
 				String expected = inputDirectory + "/1.output_events.xml.gz" ;
 				String actual = "scenario/scenOutput/base/matsim/1/1.output_events.xml.gz" ;
