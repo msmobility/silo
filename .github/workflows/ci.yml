@@ -40,6 +40,11 @@ jobs:
           java-version: '21'
           cache: 'maven'
 
+      - name: Install HDF5 native dependencies (for hdf-java)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libhdf5-dev
+
       # - name: Build with Maven
       #   run: mvn test --fail-at-end --batch-mode -Dmatsim.preferLocalDtds=true
 # the orriginal command
