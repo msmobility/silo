@@ -83,7 +83,7 @@ public class RunFabilandTest{
 				Assertions.assertEquals( PopulationComparison.Result.equal, result );
 			}
 			{
-				String expected = inputDirectory + "/1.output_events.xml.gz" ;o
+				String expected = inputDirectory + "/1.output_events.xml.gz" ;
 				String actual = "scenario/scenOutput/base/matsim/1/1.output_events.xml.gz" ;
 				ComparisonResult result = EventsUtils.compareEventsFiles( expected, actual );
 				Assertions.assertEquals( FILES_ARE_EQUAL, result );
