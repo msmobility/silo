@@ -43,11 +43,14 @@ import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.vehicles.Vehicle;
 import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleUtils;
+import org.matsim.vehicles.VehiclesFactory;
 
 import java.io.File;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 import static de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule.*;
 
@@ -91,6 +94,8 @@ public final class MatsimTransportModel implements TransportModel {
 
     @Override
     public void setup() {
+        logger.warn("### Just entered MatsimTransportModel#setup().  This read from events if available, otherwise run the transport model.");
+
         internalTravelTimes.initialize(dataContainer.getGeoData(), matsimData);
 
         if (properties.transportModel.matsimInitialEventsFile == null) {
@@ -99,6 +104,7 @@ public final class MatsimTransportModel implements TransportModel {
             String eventsFile = properties.main.baseDirectory + properties.transportModel.matsimInitialEventsFile;
             replayFromEvents(eventsFile);
         }
+        logger.warn("### About to leave MatsimTransportModel#setup()." );
     }
 
     @Override
@@ -118,7 +124,10 @@ public final class MatsimTransportModel implements TransportModel {
 
     private void runTransportModel(int year) {
         logger.warn("Running MATSim transport model for year " + year + ".");
-        Scenario assembledScenario = ScenarioUtils.createScenario(initialMatsimConfig);
+
+        Scenario assembledScenario = matsimData.getScenario();
+		PopulationFactory pf = assembledScenario.getPopulation().getFactory();
+
         TravelTimes travelTimes = dataContainer.getTravelTimes();
 
         if (year == properties.main.baseYear && properties.transportModel.transportModelIdentifier == TransportModelIdentifier.MATSIM){
@@ -127,29 +136,49 @@ public final class MatsimTransportModel implements TransportModel {
             TravelDisutility myTravelDisutility = SiloMatsimUtils.getAnEmptyNetworkTravelDisutility();
             updateTravelTimes(myTravelTime, myTravelDisutility);
         }
+		{
+			Set<Id<org.matsim.api.core.v01.population.Person>> toRemove = new HashSet<>( assembledScenario.getPopulation().getPersons().keySet() );
+			for( Id<org.matsim.api.core.v01.population.Person> personId : toRemove ){
+				assembledScenario.getPopulation().removePerson( personId );
+			}
+		}
+		{
+			Set<Id<Vehicle>> toRemove = new HashSet<>( assembledScenario.getVehicles().getVehicles().keySet() );
+			for( Id<Vehicle> personId : toRemove ){
+				assembledScenario.getVehicles().removeVehicle( personId );
+			}
+		}
 
         for (Household household: dataContainer.getHouseholdDataManager().getHouseholds()) {
             for (Person pp : household.getPersons().values()) {
-                PopulationFactory pf = assembledScenario.getPopulation().getFactory();
-
                 final int noHHAUtos = (int) household.getVehicles().stream().filter( vv -> vv.getType().equals( de.tum.bgu.msm.data.vehicle.VehicleType.CAR ) ).count();
                 assembledScenario.getPopulation().addPerson( SiloMatsimUtils.createMatsimAlterEgo(pf, pp, noHHAUtos ) );
             }
         }
 
-        matsimData.updateMatsimPopulation(assembledScenario.getPopulation());
+//        matsimData.updateMatsimPopulation(assembledScenario.getPopulation());
+//		matsimData.updateVehicles( assembledScenario.getVehicles() );
 
         // create a dummy vehicle type
-        VehicleType dummyVehType = assembledScenario.getVehicles().getFactory().createVehicleType(Id.create("defaultVehicleType", VehicleType.class));
-        assembledScenario.getVehicles().addVehicleType(dummyVehType);
+		final VehiclesFactory vf = assembledScenario.getVehicles().getFactory();
+
+		final Id<VehicleType> defaultVehicleTypeId = Id.create( "defaultVehicleType", VehicleType.class );
+		VehicleType dummyVehType = assembledScenario.getVehicles().getVehicleTypes().get( defaultVehicleTypeId );
+		if ( dummyVehType==null ){
+			dummyVehType = vf.createVehicleType( defaultVehicleTypeId );
+			assembledScenario.getVehicles().addVehicleType( dummyVehType );
+		}
 
         for (org.matsim.api.core.v01.population.Person person : assembledScenario.getPopulation().getPersons().values()) {
             Id<Vehicle> vehicleId = Id.createVehicleId(person.getId());
-            assembledScenario.getVehicles().addVehicle(assembledScenario.getVehicles().getFactory().createVehicle(vehicleId, dummyVehType));
+            assembledScenario.getVehicles().addVehicle( vf.createVehicle(vehicleId, dummyVehType ) );
             VehicleUtils.insertVehicleIdsIntoAttributes(person, Collections.singletonMap( TransportMode.car, vehicleId) );
         }
 
+		// === I cannot say how the above and the below "assembledScenario" are connected.  Or not.  !!!!!!!
+
         // TODO remove config argument as it is duplicate (cf. above)
+		// yyyyyy the following replaces "assembledScenario"!!!
         assembledScenario = scenarioAssembler.assembleScenario(initialMatsimConfig, year, travelTimes);
 
         finalizeConfig(assembledScenario.getConfig(), year, Integer.toString(year));
@@ -158,8 +187,9 @@ public final class MatsimTransportModel implements TransportModel {
 
         controler.run();
         logger.warn("Running MATSim transport model for year " + year + " finished.");
-
+        logger.warn("###################################################");
         // Get travel Times from MATSim
+        logger.warn("###################################################");
         logger.warn("Using MATSim to compute travel times from zone to zone.");
         TravelTime travelTime = controler.getLinkTravelTimes();
         TravelDisutility travelDisutility = controler.getTravelDisutilityFactory().createTravelDisutility(travelTime);
@@ -173,7 +203,10 @@ public final class MatsimTransportModel implements TransportModel {
         config.controller().setOutputDirectory(outputDirectory);
         config.controller().setWritePlansInterval(Math.max(config.controller().getLastIteration(), 1));
         config.controller().setWriteEventsInterval(Math.max(config.controller().getLastIteration(), 1));
-        config.controller().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
+
+//        config.controller().setOverwriteFileSetting(OutputDirectoryHierarchy.OverwriteFileSetting.deleteDirectoryIfExists);
+		// --> otherwise, it overwrites the result from the matsim main run during the accessibility computation
+
         config.routing().setRoutingRandomness(0.);
     }
 

@@ -52,11 +52,13 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import models.FabilandConstructionLocationStrategy;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
+import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ScenarioUtils;
 
 import java.util.Random;
 
 import static de.tum.bgu.msm.matsim.SimpleCommuteModeChoiceMatsimScenarioAssembler.*;
+import static de.tum.bgu.msm.matsim.ZoneConnectorManagerImpl.*;
 
 public class ModelBuilderFabiland {
 
@@ -126,12 +128,15 @@ public class ModelBuilderFabiland {
         MatsimData matsimData = null;
         if (config != null) {
             final Scenario scenario = ScenarioUtils.loadScenario(config);
-            matsimData = new MatsimData(config, properties, ZoneConnectorManagerImpl.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
+//			matsimData = new MatsimData(config, properties, ZoneConnectorManagerImpl.ZoneConnectorMethod.WEIGHTED_BY_POPULATION, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
+			matsimData = new MatsimData(properties, ZoneConnectorMethod.WEIGHTED_BY_POPULATION, dataContainer, (MutableScenario) scenario );
+			// yyyyyy the scenario is now generated in the MatsimData class, and in consequence the above constructor could/should be removed again
         }
         switch (properties.transportModel.transportModelIdentifier) {
             case MATSIM:
 //                SimpleCommuteModeChoice commuteModeChoice = new SimpleCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom());
                 SimpleMatsimCommuteModeChoice commuteModeChoice = new SimpleMatsimCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom());
+				// (yyyy is also instantiated above.  why not re-use?)
                 scenarioAssembler = new SimpleCommuteModeChoiceMatsimScenarioAssembler(dataContainer, properties, commuteModeChoice, HandlingOfRandomness.localInstanceFromMatsimWithAlwaysSameSeed);
                 transportModel = new MatsimTransportModel(dataContainer, config, properties, scenarioAssembler, matsimData);
                 break;
@@ -153,7 +158,7 @@ public class ModelBuilderFabiland {
 
     private static class FabilandCarOwnership implements CreateCarOwnershipModel {
 
-        private Random random;
+        private final Random random;
 
         FabilandCarOwnership() {
             this.random = SiloUtil.provideNewRandom();

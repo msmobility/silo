@@ -76,7 +76,9 @@ public final class SiloModel {
 		long startTime = System.currentTimeMillis();
 		try{
 			setupModel();
+			logger.warn("... done with setupModel, now entering runYearByYear ... ");
 			runYearByYear();
+			logger.warn("... done with runYearByYear, now entering endSimulation ... ");
 			endSimulation();
 		} catch (Exception e){
 			logger.error("Error running SILO.");
@@ -124,7 +126,10 @@ public final class SiloModel {
 
         final HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
         for (int year = properties.main.startYear; year < properties.main.endYear; year++) {
-
+			logger.warn("###################################################");
+			logger.warn("###################################################");
+			logger.warn("###################################################");
+			logger.warn("###################################################");
             logger.info("Simulating changes from year " + year + " to year " + (year + 1));
             long time = System.currentTimeMillis();
             SiloUtil.trackingFile("Simulating changes from year " + year + " to year " + (year + 1));

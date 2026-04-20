@@ -14,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.RoutingConfigGroup;
+import org.matsim.core.controler.OutputDirectoryHierarchy;
 
 import java.util.Arrays;
 
@@ -37,24 +38,35 @@ public class RunFabiland {
 
         // The following is obviously just a dirty quickfix until access/egress is default in MATSim
         if (properties.transportModel.includeAccessEgress) {
-//            config.plansCalcRoute().setInsertingAccessEgressWalk(true); // in matsim-12
+////            config.plansCalcRoute().setInsertingAccessEgressWalk(true); // in matsim-12
             config.routing().setAccessEgressType(RoutingConfigGroup.AccessEgressType.accessEgressModeToLink); // in matsim-13-w37
         }
+//		config.routing().setAccessEgressType( RoutingConfigGroup.AccessEgressType.none );
+		// yyyyyy Silo uses a re-implementation of a lot of matsim infrastructure, and that is outside injection.  The more advanced access/egress types are not implemented there.
+		// kai, apr'26
 
+		config.controller().setOverwriteFileSetting( OutputDirectoryHierarchy.OverwriteFileSetting.overwriteExistingFiles );
+		// Somehow, some version matsim is starting again for the accessibility computation, and that wipes the directory after the main run.
+		// --> did not help
+
+        logger.warn("Constructing data container ...");
         DataContainer dataContainer = DataBuilderFabiland.buildDataContainer(properties, config);
         DataBuilderFabiland.readInput(properties, dataContainer);
+        logger.warn("... done with constructing data container.");
 
+        logger.warn("Constructing model container ...");
         ModelContainer modelContainer = ModelBuilderFabiland.getModelContainer(dataContainer, properties, config);
+        logger.warn("... done with constructing model container.");
 
-        ResultsMonitor resultsMonitor = new DefaultResultsMonitor(dataContainer, properties);
-        MultiFileResultsMonitor multiFileResultsMonitor = new MultiFileResultsMonitor(dataContainer, properties);
-        HouseholdSatisfactionMonitor householdSatisfactionMonitor = new HouseholdSatisfactionMonitor(dataContainer, properties, modelContainer);
+        logger.warn("Constructing silo model ...");
+		SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
+        model.addResultMonitor( new DefaultResultsMonitor(dataContainer, properties) );
+        model.addResultMonitor( new MultiFileResultsMonitor(dataContainer, properties) );
+        model.addResultMonitor( new HouseholdSatisfactionMonitor(dataContainer, properties, modelContainer) );
+        logger.warn("... done with constructing silo model.");
 
-        SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
-        model.addResultMonitor(resultsMonitor);
-        model.addResultMonitor(multiFileResultsMonitor);
-        model.addResultMonitor(householdSatisfactionMonitor);
+        logger.warn("Running silo model ...");
         model.runModel();
-        logger.info("Finished SILO.");
+        logger.warn("Finished SILO.");
     }
 }

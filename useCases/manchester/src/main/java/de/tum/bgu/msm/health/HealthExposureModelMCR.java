@@ -1063,7 +1063,11 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
         Network modeSpecificNetwork = NetworkUtils.createNetwork();
 
         new TransportModeNetworkFilter(fullNetwork).filter(modeSpecificNetwork, transportModes);
-        NetworkUtils.runNetworkCleaner(modeSpecificNetwork);
+
+        //        NetworkUtils.runNetworkCleaner(modeSpecificNetwork);
+        NetworkUtils.cleanNetwork( modeSpecificNetwork, transportModes );
+        // ("runNetworkCleaner" no available in ms version that was specified in pom.xml.  Replaced it with cleanNetwork.  I cannot say if this method does the same as the non-existing runNetworkCleaner method, and/or if it does the same as the filter method earlier. kai, apr'26)
+
         return modeSpecificNetwork;
     }
 
