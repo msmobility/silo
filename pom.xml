@@ -154,7 +154,9 @@
 
 					<!--execute each test in separate JVM (slow, but otherwise it does not-->
 					<!--work, and no problem as long as there are only integration tests):-->
-					<forkMode>always</forkMode>
+<!--					<forkMode>always</forkMode>-->
+					<forkCount>1</forkCount>
+					<reuseForks>false</reuseForks>
 
 					<!-- avoid out of memory errors: -->
 					<argLine>-Xmx2000m -Djava.awt.headless=true
@@ -162,6 +164,14 @@
 				</configuration>
 			</plugin>
 		</plugins>
+		<extensions>
+<!--			(chatgpt recommendation for automatic hdf5 native library loading)-->
+			<extension>
+				<groupId>kr.motd.maven</groupId>
+				<artifactId>os-maven-plugin</artifactId>
+				<version>1.7.1</version>
+			</extension>
+		</extensions>
 	</build>
 
 	<dependencies>
@@ -176,6 +186,13 @@
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
 			<version>2.24.0</version> <!-- Replace with the correct version -->
+		</dependency>
+
+		<dependency>
+			<!--			(chatgpt recommendation for automatic hdf5 native library loading)-->
+			<groupId>org.bytedeco</groupId>
+			<artifactId>hdf5-platform</artifactId>
+			<version>1.14.3-1.5.10</version>
 		</dependency>
 	</dependencies>
 

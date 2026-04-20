@@ -44,13 +44,6 @@ jobs:
       #   run: mvn test --fail-at-end --batch-mode -Dmatsim.preferLocalDtds=true
 # the orriginal command
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          java-version: 21
-          distribution: 'temurin'
-          cache: 'maven'
-
       - name: Build module (with dependencies)
         run: mvn install --batch-mode --also-make --projects ${{matrix.module}} -DskipTests -Dsource.skip
 
