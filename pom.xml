@@ -164,14 +164,6 @@
 				</configuration>
 			</plugin>
 		</plugins>
-		<extensions>
-<!--			(chatgpt recommendation for automatic hdf5 native library loading)-->
-			<extension>
-				<groupId>kr.motd.maven</groupId>
-				<artifactId>os-maven-plugin</artifactId>
-				<version>1.7.1</version>
-			</extension>
-		</extensions>
 	</build>
 
 	<dependencies>
@@ -188,12 +180,6 @@
 			<version>2.24.0</version> <!-- Replace with the correct version -->
 		</dependency>
 
-		<dependency>
-			<!--			(chatgpt recommendation for automatic hdf5 native library loading)-->
-			<groupId>org.bytedeco</groupId>
-			<artifactId>hdf5-platform</artifactId>
-			<version>1.14.3-1.5.10</version>
-		</dependency>
 	</dependencies>
 
 	<properties>
