@@ -15,12 +15,20 @@ jobs:
       fail-fast: false
       matrix:
         module:
-          - useCases/fabiland # also contained in silo/useCases, but I want the fabiland result faster
+          - useCases/fabiland 
+          - useCases/austin
+          - useCases/bangkok
+          - useCases/berlinBrandenburg
+          - useCases/capeTown
+          - useCases/kagawa
+          - useCases/manchester
+          - useCases/maryland
+          - useCases/munich
+          - useCases/perth
           - siloCore
           - analysis
           - extensions
           - synthetic-population
-          - useCases
 
     steps:
       - uses: actions/checkout@v4
