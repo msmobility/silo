@@ -14,12 +14,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        - silo/useCases/fabiland # also contained in silo/useCases, but I want that result faster
-        - silo/siloCore
-        - silo/analysis
-        - silo/extensions
-        - silo/synthetic-population
-        - silo/useCases
+        module:
+          - silo/useCases/fabiland # also contained in silo/useCases, but I want that result faster
+          - silo/siloCore
+          - silo/analysis
+          - silo/extensions
+          - silo/synthetic-population
+          - silo/useCases
 
     steps:
       - uses: actions/checkout@v4
