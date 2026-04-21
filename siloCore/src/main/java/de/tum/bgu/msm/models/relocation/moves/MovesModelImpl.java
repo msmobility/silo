@@ -51,7 +51,8 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
     private final MovesStrategy movesStrategy;
     private final HousingStrategy housingStrategy;
 
-    private final boolean threaded;
+    private final boolean threaded = false;
+    // switching this off since we are searching for randomness in regression tests
 
     private final Map<HouseholdType, Double> averageHousingSatisfaction = new ConcurrentHashMap<>();
     private final Map<Integer, Double> satisfactionByHousehold = new ConcurrentHashMap<>();
@@ -72,7 +73,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 //        }
         this.movesStrategy = movesStrategy;
         this.housingStrategy = housingStrategy;
-        this.threaded = properties.transportModel.travelTimeImplIdentifier == TransportModelPropertiesModule.TravelTimeImplIdentifier.MATSIM;
+//        this.threaded = properties.transportModel.travelTimeImplIdentifier == TransportModelPropertiesModule.TravelTimeImplIdentifier.MATSIM;
     }
 
     @Override
