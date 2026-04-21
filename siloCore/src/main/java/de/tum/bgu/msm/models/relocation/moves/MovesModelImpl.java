@@ -43,7 +43,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
 //    public static BufferedWriter fileWriter;
 
-    public static boolean track = false;
+    public boolean track = false;
 
     protected final static Logger logger = LogManager.getLogger(MovesModelImpl.class);
     private static final int MAX_NUMBER_DWELLINGS = 20;
