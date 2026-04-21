@@ -62,7 +62,7 @@
 //        });
 //
 //
-//        final Map<Zone, Node> zoneCalculationNodesMap = new HashMap<>();
+//        final Map<Zone, Node> zoneCalculationNodesMap = new LinkedHashMap<>();
 //        for (Zone zone : zones) {
 //            Coordinate coordinate = zone.getRandomCoordinate();
 //            Coord originCoord = new Coord(coordinate.x, coordinate.y);

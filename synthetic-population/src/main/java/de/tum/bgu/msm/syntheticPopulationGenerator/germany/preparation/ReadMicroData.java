@@ -14,6 +14,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class ReadMicroData {
@@ -22,10 +23,10 @@ public class ReadMicroData {
 
     private final DataSetSynPop dataSetSynPop;
     private final MicroDataManager microDataManager;
-    private Map<String, Map<String, Integer>> exceptionsMicroData = new HashMap<>();
-    private HashMap<String, String[]> attributesMicroData = new HashMap<>();
-    private Map<String, Map<String, Integer>> attributesPersonMicroData = new HashMap<>();
-    private Map<String, Map<String, Integer>> attributesHouseholdMicroData = new HashMap<>();
+    private Map<String, Map<String, Integer>> exceptionsMicroData = new LinkedHashMap<>();
+    private HashMap<String, String[]> attributesMicroData = new LinkedHashMap<>();
+    private Map<String, Map<String, Integer>> attributesPersonMicroData = new LinkedHashMap<>();
+    private Map<String, Map<String, Integer>> attributesHouseholdMicroData = new LinkedHashMap<>();
 
     private Table<Integer, String, Integer> personTable = HashBasedTable.create();
     private Table<Integer, String, Integer> householdTable = HashBasedTable.create();

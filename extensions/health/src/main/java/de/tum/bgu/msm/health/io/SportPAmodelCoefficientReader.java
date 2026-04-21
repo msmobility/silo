@@ -16,9 +16,9 @@ public class SportPAmodelCoefficientReader {
     public Map<String,Map<String,Double>> readData(String fileName) {
         logger.info("Reading sport PA model coefficient from csv file");
 
-        Map<String,Map<String,Double>> coef = new HashMap<>();
-        coef.put("zero", new HashMap<>());
-        coef.put("linear", new HashMap<>());
+        Map<String,Map<String,Double>> coef = new LinkedHashMap<>();
+        coef.put("zero", new LinkedHashMap<>());
+        coef.put("linear", new LinkedHashMap<>());
 
 
         String recString = "";

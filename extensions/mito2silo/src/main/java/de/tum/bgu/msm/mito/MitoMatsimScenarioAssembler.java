@@ -32,6 +32,7 @@ import org.matsim.core.scenario.ScenarioUtils;
 import uk.cam.mrc.phm.MitoModelMCR;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -93,9 +94,9 @@ public class MitoMatsimScenarioAssembler implements MatsimScenarioAssembler {
         mito.run();
 
         logger.info("  Receiving demand from MITO");
-        Map<Day, Scenario> scenarios = new HashMap<>();
+        Map<Day, Scenario> scenarios = new LinkedHashMap<>();
 
-        Map<Day, Population> populationByDay = new HashMap();
+        Map<Day, Population> populationByDay = new LinkedHashMap();
 
         for(Person person: dataSet.getPopulation().getPersons().values()){
             Day day = Day.valueOf((String)person.getAttributes().getAttribute("day"));

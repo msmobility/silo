@@ -9,6 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class MicroDataManager {
@@ -22,7 +23,7 @@ public class MicroDataManager {
 
     public HashMap<String, String[]> attributesMicroData(){
 
-        HashMap<String, String[]> attributesMicroData = new HashMap<>();
+        HashMap<String, String[]> attributesMicroData = new LinkedHashMap<>();
         String[] attributesPerson = {"age", "gender", "occupation", "income", "nationality", "school"};
         String[] attributesHousehold = {"workers", "hhSize"};
         attributesMicroData.put("person", attributesPerson);
@@ -33,34 +34,34 @@ public class MicroDataManager {
 
     public Map<String, Map<String, Integer>> attributesPersonMicroData(){
 
-        Map<String, Map<String, Integer>> attributesIPU = new HashMap<>();
+        Map<String, Map<String, Integer>> attributesIPU = new LinkedHashMap<>();
         //IPU attributes
-            Map<String, Integer> age = new HashMap<>();
+            Map<String, Integer> age = new LinkedHashMap<>();
                 age.put("initial", 50);
                 age.put("end", 52);
                 attributesIPU.put("age", age);
-            Map<String, Integer> gender = new HashMap<>();
+            Map<String, Integer> gender = new LinkedHashMap<>();
                 gender.put("initial", 54);
                 gender.put("end", 55);
                 attributesIPU.put("gender", gender);
-            Map<String, Integer> occupation = new HashMap<>();
+            Map<String, Integer> occupation = new LinkedHashMap<>();
                 occupation.put("initial", 32);
                 occupation.put("end", 33);
                 attributesIPU.put("occupation", occupation);
         //Additional attributes
-            Map<String, Integer> income = new HashMap<>();
+            Map<String, Integer> income = new LinkedHashMap<>();
                 income.put("initial", 471);
                 income.put("end", 473);
                 attributesIPU.put("income", income);
-            Map<String, Integer> sector = new HashMap<>();
+            Map<String, Integer> sector = new LinkedHashMap<>();
                 sector.put("initial", 479);
                 sector.put("end", 482);
                 attributesIPU.put("sector", sector);
-            Map<String, Integer> sectorComplete = new HashMap<>();
+            Map<String, Integer> sectorComplete = new LinkedHashMap<>();
                 sectorComplete.put("initial", 479);
                 sectorComplete.put("end", 482);
                 attributesIPU.put("sectorComplete", sectorComplete);
-            Map<String, Integer> school = new HashMap<>();
+            Map<String, Integer> school = new LinkedHashMap<>();
                 school.put("initial", 307);
                 school.put("end", 309);
                 attributesIPU.put("school", school);
@@ -70,14 +71,14 @@ public class MicroDataManager {
 
     public Map<String, Map<String, Integer>> attributesHouseholdMicroData(){
 
-        Map<String, Map<String, Integer>> attributesIPU = new HashMap<>();
+        Map<String, Map<String, Integer>> attributesIPU = new LinkedHashMap<>();
         //IPU attributes
-            Map<String, Integer> hhSize = new HashMap<>();
+            Map<String, Integer> hhSize = new LinkedHashMap<>();
                 hhSize.put("initial", 26);
                 hhSize.put("end", 28);
                 attributesIPU.put("hhSize", hhSize);
         //Additional attributes
-            Map<String, Integer> workers = new HashMap<>();
+            Map<String, Integer> workers = new LinkedHashMap<>();
                 workers.put("initial", 572);
                 workers.put("end", 574);
                 attributesIPU.put("workers", workers);
@@ -87,13 +88,13 @@ public class MicroDataManager {
 
     public Map<String, Map<String, Integer>> exceptionsMicroData(String stateString){
 
-        Map<String, Map<String, Integer>> exceptionsMicroData = new HashMap<>();
-        Map<String, Integer> LivingInQuarter = new HashMap<>();
+        Map<String, Map<String, Integer>> exceptionsMicroData = new LinkedHashMap<>();
+        Map<String, Integer> LivingInQuarter = new LinkedHashMap<>();
         LivingInQuarter.put("initial", 34);
         LivingInQuarter.put("end", 35);
         LivingInQuarter.put("exceptionIf", 2);
         exceptionsMicroData.put("quarter", LivingInQuarter);
-        Map<String, Integer> noIncome = new HashMap<>();
+        Map<String, Integer> noIncome = new LinkedHashMap<>();
         noIncome.put("initial", 658);
         noIncome.put("end", 660);
         noIncome.put("exceptionIf", 99);
@@ -107,7 +108,7 @@ public class MicroDataManager {
         for (int i = 1; i < 16; i++ ) {
             if (i!=state) {
                 String nameState = "State" + i;
-                Map<String, Integer> key = new HashMap<>();
+                Map<String, Integer> key = new LinkedHashMap<>();
                 key.put("initial", 0);
                 key.put("end", 2);
                 key.put("exceptionIf", i);

@@ -15,7 +15,7 @@ public class PropertiesUtil {
 
     private final static String FORMAT = "%-60s%s";
     private final static String FORMAT_DEFAULT = "%-80s%s";
-    private final static Map<Integer, String> propertiesInUse = new HashMap<>();
+    private final static Map<Integer, String> propertiesInUse = new LinkedHashMap<>();
     private final static Logger logger = LogManager.getLogger(PropertiesUtil.class);
 
     public static int getIntProperty(ResourceBundle bundle, String key, int defaultValue) {

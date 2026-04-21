@@ -160,8 +160,8 @@ public class SyntheticPopUs implements SyntheticPopI {
 
     private void identifyCensusBlockGroups() {
 
-        censusBlockGroupsByCensusTracts = new HashMap<>();
-        geometryByCensusBlockGroup = new HashMap<>();
+        censusBlockGroupsByCensusTracts = new LinkedHashMap<>();
+        geometryByCensusBlockGroup = new LinkedHashMap<>();
 
         String filePath =Properties.get().main.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_BLOCK_GROUPS_PATH);
         for (SimpleFeature feature : ShapeFileReader.getAllFeatures(filePath)) {
@@ -180,7 +180,7 @@ public class SyntheticPopUs implements SyntheticPopI {
     private void identifyUniquePUMAzones() {
         // walk through list of zones and collect unique PUMA zone IDs within the study area
 
-        tazByPuma = new HashMap<>();
+        tazByPuma = new LinkedHashMap<>();
         Set<Integer> alHomePuma = new HashSet<>();
         Set<Integer> alWorkPuma = new HashSet<>();
         for (Zone zone : geoData.getZones().values()) {
@@ -223,7 +223,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         // jobInventory by [industry][taz]
         final int highestZoneId = geoData.getZones().keySet().stream().max(Comparator.naturalOrder()).get();
         float[][] jobInventory = new float[JobType.getNumberOfJobTypes()][highestZoneId + 1];
-        tazByWorkZonePuma = new HashMap<>();  // this HashMap has same content as "HashMap tazByPuma", though is kept separately in case external workzones will be defined
+        tazByWorkZonePuma = new LinkedHashMap<>();  // this HashMap has same content as "HashMap tazByPuma", though is kept separately in case external workzones will be defined
 
         // read employment data
         // For reasons that are not explained in the documentation, some of the PUMA work zones were aggregated to the
@@ -266,7 +266,7 @@ public class SyntheticPopUs implements SyntheticPopI {
     private void identifyVacantJobsByZone() {
         // populate HashMap with Jobs by zone
         logger.info("  Identifying vacant jobs by zone");
-        vacantJobsByZone = new HashMap<>();
+        vacantJobsByZone = new LinkedHashMap<>();
         Collection<Job> jobs = jobData.getJobs();
         for (Job jj : jobs) {
             if (jj.getWorkerId() == -1) {
@@ -283,10 +283,10 @@ public class SyntheticPopUs implements SyntheticPopI {
     private void processPums() {
         // read PUMS data
         logger.info("  Reading PUMS data");
-        jobErrorCounter = new HashMap<>();
+        jobErrorCounter = new LinkedHashMap<>();
 
-            Map<Integer, Integer> relationsHipsByPerson = new HashMap<>();
-            Map<String, List<Household>> households = new HashMap<>();
+            Map<Integer, Integer> relationsHipsByPerson = new LinkedHashMap<>();
+            Map<String, List<Household>> households = new LinkedHashMap<>();
 
             logger.info("  Creating synthetic population");
             String hhFilePath =Properties.get().main.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_PUMS_HH_FILE_NAME);
@@ -841,7 +841,7 @@ public class SyntheticPopUs implements SyntheticPopI {
             return null;  // person does work in puma zone outside of study area
         }
 
-        Map<Zone, Double> zoneProbabilities = new HashMap<>();
+        Map<Zone, Double> zoneProbabilities = new LinkedHashMap<>();
         Zone homeZone = geoData.getZones().get(homeTaz);
         for (Zone zone : geoData.getZones().values()) {
             if (vacantJobsByZone.containsKey(zone.getZoneId())) {

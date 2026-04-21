@@ -5,6 +5,7 @@ import org.matsim.api.core.v01.Coord;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -44,12 +45,12 @@ public class Trip implements Id {
     private double matsimTravelDistance = 0.;
 
     private double marginalMetHours = 0.;
-    private Map<String, Float> travelRiskMap = new HashMap<>();
-    private Map<String, Float> travelExposureMap = new HashMap<>();
+    private Map<String, Float> travelRiskMap = new LinkedHashMap<>();
+    private Map<String, Float> travelExposureMap = new LinkedHashMap<>();
     private double travelNoiseExposure = 0.;
     private double travelNdviExposure = 0.;
 
-    private Map<String, Float> activityExposureMap = new HashMap<>();
+    private Map<String, Float> activityExposureMap = new LinkedHashMap<>();
     private double activityNoiseExposure = 0.;
     private double activityNdviExposure = 0.;
 

@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -33,7 +34,7 @@ public class SwitchToAutonomousVehicleModelMuc extends AbstractModel implements 
     /**
      * this variable stores a summary for print out purposes
      */
-    private Map<String, Integer> summary = new HashMap<>();
+    private Map<String, Integer> summary = new LinkedHashMap<>();
 
     public SwitchToAutonomousVehicleModelMuc(DataContainer dataContainer, Properties properties, InputStream inputStream, Random rnd) {
         super(dataContainer, properties, rnd);

@@ -13,6 +13,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class TripReaderHealth {
@@ -22,7 +23,7 @@ public class TripReaderHealth {
 
     public Map<Integer, Trip> readData(String path) {
         logger.info("Reading mito trip micro data from csv file");
-        Map<Integer, Trip> mitoTrips = new HashMap<>();
+        Map<Integer, Trip> mitoTrips = new LinkedHashMap<>();
 
         String recString = "";
         int recCount = 0;

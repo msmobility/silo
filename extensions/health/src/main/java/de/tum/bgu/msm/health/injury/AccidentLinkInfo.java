@@ -25,6 +25,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -35,19 +36,19 @@ public class AccidentLinkInfo {
 	
 	private final Id<Link> linkId;
 	
-	private final Map<Integer, TimeBinInfo> timeSpecificInfo = new HashMap<>();
+	private final Map<Integer, TimeBinInfo> timeSpecificInfo = new LinkedHashMap<>();
 
-//	private  Map<AccidentType, Map<Integer, Double>> lightCrashRateByAccidentTypeByTime = new HashMap<>();
+//	private  Map<AccidentType, Map<Integer, Double>> lightCrashRateByAccidentTypeByTime = new LinkedHashMap<>();
 //
-//	private  Map<AccidentType, Map<Integer, Double>> severeFatalCrashRateByAccidentTypeByTime = new HashMap<>();
+//	private  Map<AccidentType, Map<Integer, Double>> severeFatalCrashRateByAccidentTypeByTime = new LinkedHashMap<>();
 //
-//	private  Map<AccidentType, Map<Integer, Double>> lightCasualityRateByAccidentTypeByTime = new HashMap<>();
+//	private  Map<AccidentType, Map<Integer, Double>> lightCasualityRateByAccidentTypeByTime = new LinkedHashMap<>();
 //
-//	private  Map<AccidentType, Map<Integer, Double>> severeFatalCasualityRateByAccidentTypeByTime = new HashMap<>();
+//	private  Map<AccidentType, Map<Integer, Double>> severeFatalCasualityRateByAccidentTypeByTime = new LinkedHashMap<>();
 
-	private  Map<AccidentType, OpenIntFloatHashMap> lightCasualityExposureByAccidentTypeByTime = new HashMap<>();
+	private  Map<AccidentType, OpenIntFloatHashMap> lightCasualityExposureByAccidentTypeByTime = new LinkedHashMap<>();
 
-	private  Map<AccidentType, OpenIntFloatHashMap> severeFatalCasualityExposureByAccidentTypeByTime = new HashMap<>();
+	private  Map<AccidentType, OpenIntFloatHashMap> severeFatalCasualityExposureByAccidentTypeByTime = new LinkedHashMap<>();
 
 	public AccidentLinkInfo(Id<Link> linkId) {
 		this.linkId = linkId;

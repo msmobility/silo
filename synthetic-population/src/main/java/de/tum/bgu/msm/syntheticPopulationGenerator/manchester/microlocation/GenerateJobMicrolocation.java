@@ -25,9 +25,9 @@ public class GenerateJobMicrolocation {
     
     private final DataContainer dataContainer;
     private final DataSetSynPop dataSetSynPop;
-    private final Map<Integer, Coordinate> jobCoord = new HashMap<>();
-    private final Map<Integer, Map<Integer, Double>> zone2JobId2WeightMap = new HashMap<>();
-    private final Map<Integer, Double> zoneLocationJobFactor = new HashMap<>();
+    private final Map<Integer, Coordinate> jobCoord = new LinkedHashMap<>();
+    private final Map<Integer, Map<Integer, Double>> zone2JobId2WeightMap = new LinkedHashMap<>();
+    private final Map<Integer, Double> zoneLocationJobFactor = new LinkedHashMap<>();
 
     public GenerateJobMicrolocation(DataContainer dataContainer, DataSetSynPop dataSetSynPop){
         this.dataSetSynPop = dataSetSynPop;
@@ -73,7 +73,7 @@ public class GenerateJobMicrolocation {
     private void calculateLocationJobFactor() {
 
         //total jobs in zone
-        Map<Integer, Integer> zoneJobCounts = new HashMap<>();
+        Map<Integer, Integer> zoneJobCounts = new LinkedHashMap<>();
         for(Job jj : dataContainer.getJobDataManager().getJobs()){
             zoneJobCounts.merge(jj.getZoneId(), 1, Integer::sum);
         }
@@ -153,7 +153,7 @@ public class GenerateJobMicrolocation {
 
                 jobCoord.put(id,coordinate);
                 //put all buildings with the same zoneID into one building list
-                zone2JobId2WeightMap.computeIfAbsent(zone, k -> new HashMap<>()).put(id, weight);
+                zone2JobId2WeightMap.computeIfAbsent(zone, k -> new LinkedHashMap<>()).put(id, weight);
 
             }
             if(noCoordCounter > 0) {

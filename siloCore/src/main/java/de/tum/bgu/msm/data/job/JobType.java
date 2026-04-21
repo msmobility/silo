@@ -2,6 +2,7 @@ package de.tum.bgu.msm.data.job;
 
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 /**
  * Job types that are distinguished in the model
@@ -18,7 +19,7 @@ public class JobType {
 
     public JobType(String[] jobTypesArg) {
         jobTypes = jobTypesArg;
-        ordinal = new HashMap<>();
+        ordinal = new LinkedHashMap<>();
         for (int i = 0; i < jobTypes.length; i++) {
             ordinal.put(jobTypes[i], i);
         }

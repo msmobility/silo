@@ -59,7 +59,7 @@ public class CoreCityJobMarketUpdate extends AbstractModel implements JobMarketU
             jobsByZone[jobTypeId][jj.getZoneId()]++;
         }
 
-        Map<String, List<Integer>> jobsAvailableForRemoval = new HashMap<>();
+        Map<String, List<Integer>> jobsAvailableForRemoval = new LinkedHashMap<>();
         for (Job jj : jobDataManager.getJobs()) {
             String token = jj.getType() + "." + jj.getZoneId() + "." + (jj.getWorkerId() == -1);
             if (jobsAvailableForRemoval.containsKey(token)) {

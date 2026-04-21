@@ -16,10 +16,7 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class GenerateHouseholdsPersonsDwellingsTrampa {
 
@@ -145,7 +142,7 @@ public class GenerateHouseholdsPersonsDwellingsTrampa {
 
         logger.info("   Municipality " + municipality + ". Starting to generate households and persons");
         totalHouseholds = (int) PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, "hhTotal");
-        probMicroData = new HashMap<>();
+        probMicroData = new LinkedHashMap<>();
         probabilityId = new double[dataSetSynPop.getWeights().getRowCount()];
         ids = new int[probabilityId.length];
         for (int id : dataSetSynPop.getWeights().getColumnAsInt("ID")){

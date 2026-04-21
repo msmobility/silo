@@ -12,6 +12,7 @@ import org.geotools.api.feature.simple.SimpleFeature;
 import org.matsim.core.utils.gis.ShapeFileReader;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class Microlocation extends ModuleSynPop {
@@ -28,7 +29,7 @@ public class Microlocation extends ModuleSynPop {
         logger.info("   Started microlocation model.");
 
         String zoneShapeFile = Properties.get().geo.zoneShapeFile;
-        Map<Integer, SimpleFeature> zoneFeatureMap = new HashMap<>();
+        Map<Integer, SimpleFeature> zoneFeatureMap = new LinkedHashMap<>();
         for (SimpleFeature feature: ShapeFileReader.getAllFeatures(zoneShapeFile)) {
             int zoneId = Integer.parseInt(feature.getAttribute("id").toString());
             zoneFeatureMap.put(zoneId,feature);

@@ -25,9 +25,9 @@ public class PersonHealthMuc implements PersonWithSchool, PersonHealth {
     private float weeklyHomeMinutes = 0.f;
 
     //for health model
-    private Map<Mode, Float> weeklyMarginalMetHours = new HashMap<>();
-    private Map<String, Float> weeklyAccidentRisks = new HashMap<>();
-    private Map<String, Float> weeklyExposureByPollutant = new HashMap<>();
+    private Map<Mode, Float> weeklyMarginalMetHours = new LinkedHashMap<>();
+    private Map<String, Float> weeklyAccidentRisks = new LinkedHashMap<>();
+    private Map<String, Float> weeklyExposureByPollutant = new LinkedHashMap<>();
     private Map<String, Float> relativeRisks;
     private float allCauseRR;
 

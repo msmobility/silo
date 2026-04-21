@@ -51,7 +51,7 @@ public class ipuTestOpt {
         for (int i = 0; i < attributesCounty.length; i++){attributesCounty[i] = attributesCounty1[i+1];}
         municipalities = new ArrayList<>();
         counties = new ArrayList<>();
-        municipalitiesByCounty = new HashMap<>();
+        municipalitiesByCounty = new LinkedHashMap<>();
         for (int row = 1; row <= selectedMunicipalities.getRowCount(); row++){
             if (selectedMunicipalities.getValueAt(row,"Select") == 1f){
                 int city = (int) selectedMunicipalities.getValueAt(row,"ID_city");
@@ -99,13 +99,13 @@ public class ipuTestOpt {
         //int position = 0;
 
         //weights, values, control totals
-        Map<Integer, double[]> weightsByMun = Collections.synchronizedMap(new HashMap<>());
-        Map<Integer, double[]> minWeightsByMun =Collections.synchronizedMap(new HashMap<>());
-        Map<String, int[]> valuesByHousehold = Collections.synchronizedMap(new HashMap<>());
-        Map<String, Integer> totalCounty = Collections.synchronizedMap(new HashMap<>());
-        Map<Integer, HashMap<String, Integer>> totalMunicipality = Collections.synchronizedMap(new HashMap<>());
-        Map<Integer, HashMap<String, Double>> errorByMun = Collections.synchronizedMap(new HashMap<>());
-        Map<String, Double> errorByRegion = Collections.synchronizedMap(new HashMap<>());
+        Map<Integer, double[]> weightsByMun = Collections.synchronizedMap(new LinkedHashMap<>());
+        Map<Integer, double[]> minWeightsByMun =Collections.synchronizedMap(new LinkedHashMap<>());
+        Map<String, int[]> valuesByHousehold = Collections.synchronizedMap(new LinkedHashMap<>());
+        Map<String, Integer> totalCounty = Collections.synchronizedMap(new LinkedHashMap<>());
+        Map<Integer, HashMap<String, Integer>> totalMunicipality = Collections.synchronizedMap(new LinkedHashMap<>());
+        Map<Integer, HashMap<String, Double>> errorByMun = Collections.synchronizedMap(new LinkedHashMap<>());
+        Map<String, Double> errorByRegion = Collections.synchronizedMap(new LinkedHashMap<>());
         double weightedSum0 = 0f;
 
         int finish = 0;
@@ -156,10 +156,10 @@ public class ipuTestOpt {
                         inner1.put(attribute, 0.);
                         errorByMun.put(municipality, inner1);
                     } else {
-                        HashMap<String, Integer> inner = new HashMap<>();
+                        HashMap<String, Integer> inner = new LinkedHashMap<>();
                         inner.put(attribute, (int) controlTotalsMun.getIndexedValueAt(municipality, attribute));
                         totalMunicipality.put(municipality, inner);
-                        HashMap<String, Double> inner1 = new HashMap<>();
+                        HashMap<String, Double> inner1 = new LinkedHashMap<>();
                         inner1.put(attribute, 0.);
                         errorByMun.put(municipality, inner1);
                     }
@@ -233,7 +233,7 @@ public class ipuTestOpt {
                         }
                         HashMap<String, Double> inner = errorByMun.get(municipality);
                         if (inner == null) {
-                            inner = new HashMap<String, Double>();
+                            inner = new LinkedHashMap<String, Double>();
                             errorByMun.put(municipality, inner);
                         }
                         inner.put(attribute, error);

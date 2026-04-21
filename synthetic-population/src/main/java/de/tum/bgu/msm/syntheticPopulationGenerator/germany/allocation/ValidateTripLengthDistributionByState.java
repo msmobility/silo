@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.security.Timestamp;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class ValidateTripLengthDistributionByState {
@@ -54,7 +55,7 @@ public class ValidateTripLengthDistributionByState {
 
 
     private Map<String, Frequency> obtainWorkerFlows(){
-        Map<String, Frequency> frequencies = new HashMap<>();
+        Map<String, Frequency> frequencies = new LinkedHashMap<>();
         for (String jobType : JobType.getJobTypes()) {
             Frequency commuteDistance = new Frequency();
             frequencies.putIfAbsent(jobType, commuteDistance);
@@ -107,7 +108,7 @@ public class ValidateTripLengthDistributionByState {
     private void summarizeFlows(Map<String,Frequency> travelTimes, String fileName){
         //to obtain the trip length distribution
         int[] timeThresholds1 = new int[200];
-        Map<String, double[]> cumFrequency = new HashMap<>();
+        Map<String, double[]> cumFrequency = new LinkedHashMap<>();
         for (String keyFrequencies : travelTimes.keySet()) {
             double[] frequencyTT1 = new double[200];
             for (int row = 0; row < timeThresholds1.length; row++) {

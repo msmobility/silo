@@ -18,6 +18,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -91,13 +92,13 @@ public class MstmMonitor implements ResultsMonitor {
         // TOT: Total employment in zone
         for (Zone zone : geoData.getZones().values()) {
             int zoneId = zone.getZoneId();
-            int totalEmployment = jobsByTypeByZone.getOrDefault(zoneId, new HashMap<>()).values().stream().mapToInt(list -> list == null ? 0: list.size()).sum();
+            int totalEmployment = jobsByTypeByZone.getOrDefault(zoneId, new LinkedHashMap<>() ).values().stream().mapToInt( list -> list == null ? 0: list.size() ).sum();
 
             pw.println(zone.getZoneId() + "," + zone.getArea_sqmi() + "," + hhByZone.getOrDefault(zoneId, EMPTY_LIST).size() + ","
                     + enrollment.getIndexedValueAt(zoneId, "ENR") + ","
-                    + jobsByTypeByZone.getOrDefault(zoneId, new HashMap<>()).getOrDefault("RET",EMPTY_LIST).size() + "," +
-                    jobsByTypeByZone.getOrDefault(zoneId, new HashMap<>()).getOrDefault("OFF", EMPTY_LIST).size() + ","
-                    + jobsByTypeByZone.getOrDefault(zoneId, new HashMap<>()).getOrDefault("OTH", EMPTY_LIST).size() + ","
+                    + jobsByTypeByZone.getOrDefault(zoneId, new LinkedHashMap<>()).getOrDefault("RET",EMPTY_LIST).size() + "," +
+                    jobsByTypeByZone.getOrDefault(zoneId, new LinkedHashMap<>()).getOrDefault("OFF", EMPTY_LIST).size() + ","
+                    + jobsByTypeByZone.getOrDefault(zoneId, new LinkedHashMap<>()).getOrDefault("OTH", EMPTY_LIST).size() + ","
                     + totalEmployment);
         }
         pw.close();
@@ -135,8 +136,8 @@ public class MstmMonitor implements ResultsMonitor {
             for (int wrk = 0; wrk <= 3; wrk++) {
                 for (int inc = 1; inc <= 5; inc++) {
                     int size = householdsByIncomeByWorkersByZone
-                            .getOrDefault(zone.getZoneId(), new HashMap<>())
-                            .getOrDefault(wrk, new HashMap<>())
+                            .getOrDefault(zone.getZoneId(), new LinkedHashMap<>())
+                            .getOrDefault(wrk, new LinkedHashMap<>())
                             .getOrDefault(inc, EMPTY_LIST)
                             .size();
                     pwWrk.print("," + size);
@@ -183,8 +184,8 @@ public class MstmMonitor implements ResultsMonitor {
             for (int size = 1; size <= 5; size++) {
                 for (int inc = 1; inc <= 5; inc++) {
                     int count = householdsByIncomeBySizeByZone
-                            .getOrDefault(zone.getZoneId(), new HashMap<>())
-                            .getOrDefault(size, new HashMap<>())
+                            .getOrDefault(zone.getZoneId(), new LinkedHashMap<>())
+                            .getOrDefault(size, new LinkedHashMap<>())
                             .getOrDefault(inc, EMPTY_LIST)
                             .size();
                     pwSize.print("," + count);

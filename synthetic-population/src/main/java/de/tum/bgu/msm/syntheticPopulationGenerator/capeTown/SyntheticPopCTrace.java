@@ -235,14 +235,14 @@ public class SyntheticPopCTrace implements SyntheticPopI {
 
         String fileName = "input/syntheticPopulation/variablesCTDictionary.csv";
 
-        attributeCodeValues = new HashMap<>();
-        attributesControlTotal = new HashMap<>();
-        attributesMicroPerson = new HashMap<>();
-        attributesMicroHousehold = new HashMap<>();
-        attributeCodeToControlTotal = new HashMap<>();
-        attributeCodeToMicroPerson = new HashMap<>();
-        attributeCodeToMicroHousehold = new HashMap<>();
-        HashMap<Integer, String> attributeOrder = new HashMap<>();
+        attributeCodeValues = new LinkedHashMap<>();
+        attributesControlTotal = new LinkedHashMap<>();
+        attributesMicroPerson = new LinkedHashMap<>();
+        attributesMicroHousehold = new LinkedHashMap<>();
+        attributeCodeToControlTotal = new LinkedHashMap<>();
+        attributeCodeToMicroPerson = new LinkedHashMap<>();
+        attributeCodeToMicroHousehold = new LinkedHashMap<>();
+        HashMap<Integer, String> attributeOrder = new LinkedHashMap<>();
         ageBracketsPerson = new int[]{6,14,18,21,25,30,35,40,45,50,55,60,65,70,75,80,120};
 
         String recString = "";
@@ -352,7 +352,7 @@ public class SyntheticPopCTrace implements SyntheticPopI {
         TableDataSet selectedMunicipalities = SiloUtil.readCSVfile(rb.getString(PROPERTIES_SELECTED_MUNICIPALITIES_LIST)); //TableDataSet with all municipalities
         municipalities = new ArrayList<>();
         counties = new ArrayList<>();
-        municipalitiesByCounty = new HashMap<>();
+        municipalitiesByCounty = new LinkedHashMap<>();
         for (int row = 1; row <= selectedMunicipalities.getRowCount(); row++){
             if (selectedMunicipalities.getValueAt(row,"Select") == 1f){
                 int city = (int) selectedMunicipalities.getValueAt(row,"ID_city");
@@ -379,7 +379,7 @@ public class SyntheticPopCTrace implements SyntheticPopI {
         //TAZ attributes
         cellsMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_RASTER_CELLS));
         cellsMatrix.buildIndex(cellsMatrix.getColumnPosition("ID_cell"));
-        cityTAZ = new HashMap<>();
+        cityTAZ = new LinkedHashMap<>();
         for (int i = 1; i <= cellsMatrix.getRowCount(); i++){
             int city = (int) cellsMatrix.getValueAt(i,"ID_city");
             int taz = (int) cellsMatrix.getValueAt(i,"ID_cell");
@@ -413,7 +413,7 @@ public class SyntheticPopCTrace implements SyntheticPopI {
         //Read trip length frequency distribution
         logger.info("   Starting to read trip length frequency distribution");
         TableDataSet tripLength = SiloUtil.readCSVfile2(rb.getString(PROPERTIES_TRIP_LENGTH_DISTRIBUTION));
-        tripLengthFrequencyDistribution = new HashMap<>();
+        tripLengthFrequencyDistribution = new LinkedHashMap<>();
         for (int i = 1; i <= tripLength.getRowCount(); i++){
             int distance = (int) tripLength.getValueAt(i, "km");
             float value = tripLength.getValueAt(i, "HBW");
@@ -550,8 +550,8 @@ public class SyntheticPopCTrace implements SyntheticPopI {
     private void readPersons() {
 
         String fileName = "input/syntheticPopulation/newPersons.csv";
-        personsInHouseholds = new HashMap<>();
-        HashMap<Integer, HashMap<String, Integer>> noDatas = new HashMap<>();
+        personsInHouseholds = new LinkedHashMap<>();
+        HashMap<Integer, HashMap<String, Integer>> noDatas = new LinkedHashMap<>();
 
         String recString = "";
         int recCount = 0;
@@ -563,7 +563,7 @@ public class SyntheticPopCTrace implements SyntheticPopI {
             String[] header = recString.split(",");
             int posHhId   = SiloUtil.findPositionInArray("new$X.x", header);
             int posId   = SiloUtil.findPositionInArray("X.y",header);
-            HashMap<String, Integer> positionAttribute = new HashMap<>();
+            HashMap<String, Integer> positionAttribute = new LinkedHashMap<>();
             for (int i = 0; i < microPersonAttributes.length; i++){
                 positionAttribute.put(microPersonAttributes[i], SiloUtil.findPositionInArray(microPersonAttributes[i], header));
             }
@@ -575,7 +575,7 @@ public class SyntheticPopCTrace implements SyntheticPopI {
                 int idHh = Integer.parseInt(lineElements[posHhId]);
                 Integer id = Integer.parseInt(lineElements[posId]);
                 recCount++;
-                HashMap<String, Integer> attributeMap = new HashMap<>();
+                HashMap<String, Integer> attributeMap = new LinkedHashMap<>();
                 attributeMap.put("hhId", idHh);
                 boolean allData = true;
                 for (int i = 0; i < microPersonAttributes.length; i++){
@@ -637,7 +637,7 @@ public class SyntheticPopCTrace implements SyntheticPopI {
 
         String fileName = "input/syntheticPopulation/newHouseholds.csv";
 
-        households = new HashMap<>();
+        households = new LinkedHashMap<>();
         String recString = "";
         int recCount = 0;
         try {
@@ -647,7 +647,7 @@ public class SyntheticPopCTrace implements SyntheticPopI {
             // read header
             String[] header = recString.split(",");
             int posId = SiloUtil.findPositionInArray("X.x", header);
-            HashMap<String, Integer> positionAttribute = new HashMap<>();
+            HashMap<String, Integer> positionAttribute = new LinkedHashMap<>();
             for (Map.Entry<String, String> pairCode : attributeCodeToMicroHousehold.entrySet()){
                 String attributeMicro = pairCode.getValue();
                 positionAttribute.put(attributeMicro, SiloUtil.findPositionInArray(attributeMicro, header));
@@ -658,7 +658,7 @@ public class SyntheticPopCTrace implements SyntheticPopI {
                 recCount++;
                 String[] lineElements = recString.split(",");
                 int idhH = Integer.parseInt(lineElements[posId]);
-                HashMap<String, Integer> attributeMap = new HashMap<>();
+                HashMap<String, Integer> attributeMap = new LinkedHashMap<>();
                 for (Map.Entry<String, String> pairCode : attributeCodeToMicroHousehold.entrySet()){
                     String attribute = pairCode.getKey();
                     String attributeMicro =  pairCode.getValue();
@@ -852,10 +852,10 @@ public class SyntheticPopCTrace implements SyntheticPopI {
             } else {
 
                 //Create the maps to store the classified members of the households
-                HashMap<Integer, Integer> childrenInHousehold = new HashMap<>();
-                HashMap<String, HashMap<Integer, Integer>> noClass = new HashMap<>();
-                HashMap<String, HashMap<Integer, Integer>> singles = new HashMap<>();
-                HashMap<String, HashMap<Integer, Integer>> married = new HashMap<>();
+                HashMap<Integer, Integer> childrenInHousehold = new LinkedHashMap<>();
+                HashMap<String, HashMap<Integer, Integer>> noClass = new LinkedHashMap<>();
+                HashMap<String, HashMap<Integer, Integer>> singles = new LinkedHashMap<>();
+                HashMap<String, HashMap<Integer, Integer>> married = new LinkedHashMap<>();
 
                 //direct classification of the members of the household
                 for (int j = 0; j < hhSize; j++) {
@@ -1137,10 +1137,10 @@ public class SyntheticPopCTrace implements SyntheticPopI {
             } else {
 
                 //Create the maps to store the classified members of the households
-                HashMap<Integer, Integer> childrenInHousehold = new HashMap<>();
-                HashMap<String, HashMap<Integer, Integer>> noClass = new HashMap<>();
-                HashMap<String, HashMap<Integer, Integer>> singles = new HashMap<>();
-                HashMap<String, HashMap<Integer, Integer>> married = new HashMap<>();
+                HashMap<Integer, Integer> childrenInHousehold = new LinkedHashMap<>();
+                HashMap<String, HashMap<Integer, Integer>> noClass = new LinkedHashMap<>();
+                HashMap<String, HashMap<Integer, Integer>> singles = new LinkedHashMap<>();
+                HashMap<String, HashMap<Integer, Integer>> married = new LinkedHashMap<>();
 
                 //direct classification of the members of the household
                 int row = 0;
@@ -1457,13 +1457,13 @@ public class SyntheticPopCTrace implements SyntheticPopI {
             municipalities = municipalitiesByCounty.get(county);
 
             //weights, values, control totals
-            Map<Integer, double[]> weightsByMun = Collections.synchronizedMap(new HashMap<>());
-            Map<Integer, double[]> minWeightsByMun = Collections.synchronizedMap(new HashMap<>());
-            Map<String, int[]> valuesByHousehold = Collections.synchronizedMap(new HashMap<>());
-            Map<String, Integer> totalCounty = Collections.synchronizedMap(new HashMap<>());
-            Map<Integer, Map<String, Integer>> totalMunicipality = Collections.synchronizedMap(new HashMap<>());
-            Map<Integer, Map<String, Double>> errorByMun = Collections.synchronizedMap(new HashMap<>());
-            Map<String, Double> errorByRegion = Collections.synchronizedMap(new HashMap<>());
+            Map<Integer, double[]> weightsByMun = Collections.synchronizedMap(new LinkedHashMap<>());
+            Map<Integer, double[]> minWeightsByMun = Collections.synchronizedMap(new LinkedHashMap<>());
+            Map<String, int[]> valuesByHousehold = Collections.synchronizedMap(new LinkedHashMap<>());
+            Map<String, Integer> totalCounty = Collections.synchronizedMap(new LinkedHashMap<>());
+            Map<Integer, Map<String, Integer>> totalMunicipality = Collections.synchronizedMap(new LinkedHashMap<>());
+            Map<Integer, Map<String, Double>> errorByMun = Collections.synchronizedMap(new LinkedHashMap<>());
+            Map<String, Double> errorByRegion = Collections.synchronizedMap(new LinkedHashMap<>());
             double weightedSum0 = 0f;
 
             //parameters of the IPU
@@ -1512,10 +1512,10 @@ public class SyntheticPopCTrace implements SyntheticPopI {
                         inner1.put(attribute, 0.);
                         errorByMun.put(municipality, inner1);
                     } else {
-                        HashMap<String, Integer> inner = new HashMap<>();
+                        HashMap<String, Integer> inner = new LinkedHashMap<>();
                         inner.put(attribute, (int) marginalsMunicipality.getIndexedValueAt(municipality, attribute));
                         totalMunicipality.put(municipality, inner);
-                        HashMap<String, Double> inner1 = new HashMap<>();
+                        HashMap<String, Double> inner1 = new LinkedHashMap<>();
                         inner1.put(attribute, 0.);
                         errorByMun.put(municipality, inner1);
                     }
@@ -1580,7 +1580,7 @@ public class SyntheticPopCTrace implements SyntheticPopI {
                 Iterator<Integer> iterator1 = municipalities.iterator();
                 while (iterator1.hasNext()){
                     Integer municipality = iterator1.next();
-                    Map<String, Double> errorsByMunicipality = Collections.synchronizedMap(new HashMap<>());
+                    Map<String, Double> errorsByMunicipality = Collections.synchronizedMap(new LinkedHashMap<>());
                     executor1.addTaskToQueue(() ->{
                         for (String attribute : attributesMunicipality){
                             double weightedSumMunicipality = SiloUtil.sumProduct(weightsByMun.get(municipality), valuesByHousehold.get(attribute));
@@ -1785,8 +1785,8 @@ public class SyntheticPopCTrace implements SyntheticPopI {
         Collections.shuffle(workerArrayList);
 
 
-        HashMap<Integer, Float> personDistance = new HashMap<>();
-        HashMap<Integer, Integer> personHome = new HashMap<>();
+        HashMap<Integer, Float> personDistance = new LinkedHashMap<>();
+        HashMap<Integer, Integer> personHome = new LinkedHashMap<>();
 
         //Start the selection of the jobs in random order to avoid geographical bias
         logger.info("   Started assigning workplaces");
@@ -1884,7 +1884,7 @@ public class SyntheticPopCTrace implements SyntheticPopI {
         int previousPersons = 0;
 
         generateCountersForValidation();
-        occupiedDwellingsByZone = new HashMap<>();
+        occupiedDwellingsByZone = new LinkedHashMap<>();
 
         RealEstateDataManager realEstate = dataContainer.getRealEstateDataManager();
         HouseholdDataManager householdDataManager = dataContainer.getHouseholdDataManager();
@@ -1988,7 +1988,7 @@ public class SyntheticPopCTrace implements SyntheticPopI {
                 if (occupiedDwellingsByZone.containsKey(taz)) {
                     occupiedDwellingsByZone.get(taz).put(dwell.getId(), dwell);
                 } else {
-                    Map<Integer, Dwelling> dd = new HashMap<>();
+                    Map<Integer, Dwelling> dd = new LinkedHashMap<>();
                     dd.put(dwell.getId(), dwell);
                     occupiedDwellingsByZone.put(taz,dd);
                 }
@@ -2208,13 +2208,13 @@ public class SyntheticPopCTrace implements SyntheticPopI {
         logger.info("  Identifying vacant jobs by zone");
         Collection<Job> jobs = dataContainer.getJobDataManager().getJobs();
 
-        idVacantJobsByZoneType = new HashMap<>();
-        numberVacantJobsByType = new HashMap<>();
-        idZonesVacantJobsByType = new HashMap<>();
-        numberZonesByType = new HashMap<>();
-        numberVacantJobsByZoneByType = new HashMap<>();
+        idVacantJobsByZoneType = new LinkedHashMap<>();
+        numberVacantJobsByType = new LinkedHashMap<>();
+        idZonesVacantJobsByType = new LinkedHashMap<>();
+        numberZonesByType = new LinkedHashMap<>();
+        numberVacantJobsByZoneByType = new LinkedHashMap<>();
         jobStringTypes = ResourceUtil.getArray(rb, PROPERTIES_JOB_TYPES);
-        jobIntTypes = new HashMap<>();
+        jobIntTypes = new LinkedHashMap<>();
         for (int i = 0; i < jobStringTypes.length; i++) {
             jobIntTypes.put(jobStringTypes[i], i);
         }
@@ -2573,7 +2573,7 @@ public class SyntheticPopCTrace implements SyntheticPopI {
         }
         HashMap<Integer, Integer> inner = outer.get(key);
         if (inner == null){
-            inner = new HashMap<Integer, Integer>();
+            inner = new LinkedHashMap<Integer, Integer>();
             outer.put(key, inner);
         }
         inner.put(row, age);
@@ -2729,7 +2729,7 @@ public class SyntheticPopCTrace implements SyntheticPopI {
             innerMap.put(valueString, valueCode);
             map.put(label, innerMap);
         } else {
-            HashMap<String, Integer> innerMap = new HashMap<>();
+            HashMap<String, Integer> innerMap = new LinkedHashMap<>();
             innerMap.put(valueString, valueCode);
             map.put(label, innerMap);
         }
@@ -2743,7 +2743,7 @@ public class SyntheticPopCTrace implements SyntheticPopI {
             innerMap.put(valueString, valueCode);
             map.put(label, innerMap);
         } else {
-            Map<String, Double> innerMap = new HashMap<>();
+            Map<String, Double> innerMap = new LinkedHashMap<>();
             innerMap.put(valueString, valueCode);
             map.put(label, innerMap);
         }
@@ -2757,7 +2757,7 @@ public class SyntheticPopCTrace implements SyntheticPopI {
             innerMap.put(valueInt, valueCode);
             map.put(label, innerMap);
         } else {
-            HashMap<Integer, Integer> innerMap = new HashMap<>();
+            HashMap<Integer, Integer> innerMap = new LinkedHashMap<>();
             innerMap.put(valueInt, valueCode);
             map.put(label, innerMap);
         }
@@ -2770,7 +2770,7 @@ public class SyntheticPopCTrace implements SyntheticPopI {
             inner.put(id, attributeMap);
             personsInHouseholds.put(hhId, inner);
         } else {
-            HashMap<Integer, HashMap<String, Integer>> inner = new HashMap<>();
+            HashMap<Integer, HashMap<String, Integer>> inner = new LinkedHashMap<>();
             inner.put(id, attributeMap);
             personsInHouseholds.put(hhId, inner);
         }

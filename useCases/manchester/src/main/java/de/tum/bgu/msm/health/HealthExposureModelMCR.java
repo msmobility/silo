@@ -70,7 +70,7 @@ public class HealthExposureModelMCR extends AbstractModel implements ModelUpdate
     private int latestMatsimYear = -1;
     private int latestMITOYear = -1;
     private static final Logger logger = LogManager.getLogger(HealthExposureModelMCR.class);
-    private Map<Integer, Trip> mitoTrips = new HashMap<>();
+    private Map<Integer, Trip> mitoTrips = new LinkedHashMap<>();
     private final Config initialMatsimConfig;
     private MutableScenario scenario;
     private List<Day> simulatedDays;

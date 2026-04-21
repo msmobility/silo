@@ -19,8 +19,8 @@ public class DeferredAcceptanceMatching {
                                                                  Collection<Integer> set2,
                                                                  DoubleMatrix2D preferences) {
 
-        Map<Integer, Integer> matches = new HashMap<>();
-        Map<Integer, List<Tuple<Integer, Double>>> offers = new HashMap<>();
+        Map<Integer, Integer> matches = new LinkedHashMap<>();
+        Map<Integer, List<Tuple<Integer, Double>>> offers = new LinkedHashMap<>();
         for (int id: set) {
             double[] max = preferences.viewRow(id).getMaxLocation();
             if (offers.containsKey((int) max[1])) {

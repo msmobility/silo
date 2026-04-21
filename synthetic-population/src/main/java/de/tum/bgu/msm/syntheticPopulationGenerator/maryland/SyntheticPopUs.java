@@ -158,7 +158,7 @@ public class SyntheticPopUs implements SyntheticPopI {
     private void identifyUniquePUMAzones() {
         // walk through list of zones and collect unique PUMA zone IDs within the study area
 
-        tazByPuma = new HashMap<>();
+        tazByPuma = new LinkedHashMap<>();
         ArrayList<Integer> alHomePuma = new ArrayList<>();
         ArrayList<Integer> alWorkPuma = new ArrayList<>();
         for (Zone zone: geoData.getZones().values()) {
@@ -189,7 +189,7 @@ public class SyntheticPopUs implements SyntheticPopI {
 
         logger.info("  Reading control total data for households and dwellings");
 //        TableDataSet pop = SiloUtil.readCSVfile(Properties.get().main.baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_HOUSEHOLD_CONTROL_TOTAL));
-        householdTarget = new HashMap<>();
+        householdTarget = new LinkedHashMap<>();
 //        for (int row = 1; row <= pop.getRowCount(); row++) {
 //            String fips = String.valueOf(pop.getValueAt(row, "Fips"));
 //            // note: doesn't make much sense to store these data in a HashMap. It's legacy code.
@@ -211,7 +211,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         // jobInventory by [industry][taz]
         final int highestZoneId = geoData.getZones().keySet().stream().max(Comparator.naturalOrder()).get();
         float[][] jobInventory = new float[JobType.getNumberOfJobTypes()][highestZoneId + 1];
-        tazByWorkZonePuma = new HashMap<>();  // this HashMap has same content as "HashMap tazByPuma", though is kept separately in case external workzones will be defined
+        tazByWorkZonePuma = new LinkedHashMap<>();  // this HashMap has same content as "HashMap tazByPuma", though is kept separately in case external workzones will be defined
 
         // read employment data
         // For reasons that are not explained in the documentation, some of the PUMA work zones were aggregated to the
@@ -255,7 +255,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         // populate HashMap with Jobs by zone
 
         logger.info("  Identifying vacant jobs by zone");
-        vacantJobsByZone = new HashMap<>();
+        vacantJobsByZone = new LinkedHashMap<>();
         Collection<Job> jobs = jobData.getJobs();
         for (Job jj: jobs) {
             if (jj.getWorkerId() == -1) {
@@ -290,11 +290,11 @@ public class SyntheticPopUs implements SyntheticPopI {
 
         String[] states = {"md","dc","de","nj","pa","va","wv"};
 
-        jobErrorCounter = new HashMap<>();
+        jobErrorCounter = new LinkedHashMap<>();
 
         for (String state : states) {
-            Map<Integer, Integer> relationsHipsByPerson = new HashMap<>();
-            Map<Long, List<Household>> households = new HashMap<>();
+            Map<Integer, Integer> relationsHipsByPerson = new LinkedHashMap<>();
+            Map<Long, List<Household>> households = new LinkedHashMap<>();
 
             String pumsHhFileName = baseDirectory + ResourceUtil.getProperty(rb, PROPERTIES_PUMS_FILES) +
                     "ss16h" + state + ".csv";
@@ -778,7 +778,7 @@ public class SyntheticPopUs implements SyntheticPopI {
             return -2;  // person does work in puma zone outside of study area
         }
 
-        Map<Zone, Double> zoneProbabilities = new HashMap<>();
+        Map<Zone, Double> zoneProbabilities = new LinkedHashMap<>();
         for (Zone zone: geoData.getZones().values()) {
             if (vacantJobsByZone.containsKey(zone.getZoneId())) {
                 int numberOfJobsInThisZone = vacantJobsByZone.get(zone.getZoneId()).length;
@@ -943,7 +943,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         // select number of cars for every household
         dataContainer.getJobDataManager().setup();
         MaryLandUpdateCarOwnershipModel ao = new MaryLandUpdateCarOwnershipModel(dataContainer, accessibility, Properties.get(), SiloUtil.provideNewRandom());   // calculate auto-ownership probabilities
-        Map<Integer, int[]> households = new HashMap<>();
+        Map<Integer, int[]> households = new LinkedHashMap<>();
         for (Household hh: householdData.getHouseholds()) {
             households.put(hh.getId(), null);
         }
@@ -956,7 +956,7 @@ public class SyntheticPopUs implements SyntheticPopI {
         logger.info("  Adding empty dwellings to match vacancy rate");
 
         List<DwellingType> dwellingTypes = realEstateData.getDwellingTypes().getTypes();
-        HashMap<String, ArrayList<Integer>> ddPointer = new HashMap<>();
+        HashMap<String, ArrayList<Integer>> ddPointer = new LinkedHashMap<>();
         // summarize vacancy
         final int highestZoneId = geoData.getZones().keySet().stream().max(Comparator.naturalOrder()).get();
         int[][][] ddCount = new int [highestZoneId + 1][DefaultDwellingTypes.DefaultDwellingTypeImpl.values().length][2];

@@ -5,11 +5,12 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class VehicleUtil {
 
-    static Map<Integer, Double> probabilities = new HashMap<>();
+    static Map<Integer, Double> probabilities = new LinkedHashMap<>();
 
     public static void initializeVehicleUtils(){
         final NormalDistribution normalDistribution = new NormalDistribution(4.29, 8.15);

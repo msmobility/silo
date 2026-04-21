@@ -29,7 +29,7 @@ public class GenerateVacantDwellings {
     private int highestDwellingIdInUse;
     private final DataContainer dataContainer;
     private RealEstateDataManager realEstateData;
-    private Map<Integer, List<Dwelling>> occupiedDwellings = new HashMap<>();
+    private Map<Integer, List<Dwelling>> occupiedDwellings = new LinkedHashMap<>();
 
 
     public GenerateVacantDwellings(DataContainer dataContainer, DataSetSynPop dataSetSynPop){
@@ -103,11 +103,11 @@ public class GenerateVacantDwellings {
 
     private void initializeVacantDwellingData(int municipality){
 
-        probVacantFloor = new HashMap<>();
+        probVacantFloor = new LinkedHashMap<>();
         for (int floor : PropertiesSynPop.get().main.sizeBracketsDwelling) {
             probVacantFloor.put(floor, PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, "vacantDwellings" + floor));
         }
-        probVacantBuildingSize = new HashMap<>();
+        probVacantBuildingSize = new LinkedHashMap<>();
         for (int year : PropertiesSynPop.get().main.yearBracketsDwelling){
             int sizeYear = year;
             String label = "vacantSmallDwellings" + year;
@@ -144,13 +144,13 @@ public class GenerateVacantDwellings {
                 }
                 ddQuality.put(key, qualities);
             } else {
-                Map<Integer, Float> qualities = new HashMap<>();
+                Map<Integer, Float> qualities = new LinkedHashMap<>();
                 qualities.put(quality, 1f);
                 ddQuality.put(key, qualities);
             }
         } else {
-            ddQuality = new HashMap<>();
-            Map<Integer, Float> qualities = new HashMap<>();
+            ddQuality = new LinkedHashMap<>();
+            Map<Integer, Float> qualities = new LinkedHashMap<>();
             qualities.put(quality, 1f);
             ddQuality.put(key, qualities);
         }
@@ -223,7 +223,7 @@ public class GenerateVacantDwellings {
     private int selectQualityVacant(int municipality, int year){
         int result = 0;
         if (ddQuality.get(year * 10000000 + municipality) == null) {
-            HashMap<Integer, Float> qualities = new HashMap<>();
+            HashMap<Integer, Float> qualities = new LinkedHashMap<>();
             for (int quality = 1; quality <= PropertiesSynPop.get().main.numberofQualityLevels; quality++){
                 qualities.put(quality, 1f);
             }

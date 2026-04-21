@@ -55,8 +55,8 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
     private final Map<HouseholdType, Double> averageHousingSatisfaction = new ConcurrentHashMap<>();
     private final Map<Integer, Double> satisfactionByHousehold = new ConcurrentHashMap<>();
-    private final Map<Integer, Integer> householdsByZone = new HashMap<>();
-    private final Map<Integer, Double > sumOfSatisfactionsByZone = new HashMap<>();
+    private final Map<Integer, Integer> householdsByZone = new LinkedHashMap<>();
+    private final Map<Integer, Double > sumOfSatisfactionsByZone = new LinkedHashMap<>();
     private YearByYearCsvModelTracker relocationTracker;
 
 

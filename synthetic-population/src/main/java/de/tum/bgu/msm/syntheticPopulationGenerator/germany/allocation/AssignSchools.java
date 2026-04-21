@@ -102,7 +102,7 @@ public class AssignSchools {
 
         int schooltaz = -2;
         if (numberOfVacantPlacesByType.get(3) > 0) {
-            Map<Integer, Float> probability = new HashMap<>();
+            Map<Integer, Float> probability = new LinkedHashMap<>();
             Iterator<Integer> iterator = schoolCapacityMap.get(3).keySet().iterator();
 
             double alpha1 = 0.3000;   //0.2700, 0.3000
@@ -171,8 +171,8 @@ public class AssignSchools {
 
     private void initializeSchoolCapacity(){
 
-        schoolCapacityMap = new HashMap<>();
-        numberOfVacantPlacesByType = new HashMap<>();
+        schoolCapacityMap = new LinkedHashMap<>();
+        numberOfVacantPlacesByType = new LinkedHashMap<>();
         Table<Integer, Integer, Integer> schoolCapacity = dataSetSynPop.getSchoolCapacity();
         Iterator<Integer> iteratorRow = schoolCapacity.rowKeySet().iterator();
         while (iteratorRow.hasNext()){
@@ -182,7 +182,7 @@ public class AssignSchools {
                 int schoolType = iteratorCol.next();
                 int places = schoolCapacity.get(zone, schoolType);
                 if (places > 0) {
-                    Map<Integer, Integer> prevPlaces = new HashMap<>();
+                    Map<Integer, Integer> prevPlaces = new LinkedHashMap<>();
                     if (schoolCapacityMap.get(schoolType)!= null) {
                         prevPlaces = schoolCapacityMap.get(schoolType);
                     }

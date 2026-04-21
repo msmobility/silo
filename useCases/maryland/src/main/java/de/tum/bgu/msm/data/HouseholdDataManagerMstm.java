@@ -19,7 +19,7 @@ import static de.tum.bgu.msm.data.household.HouseholdUtil.getAnnualHhIncome;
 
 public class HouseholdDataManagerMstm implements HouseholdDataManager {
 
-    private final Map<Integer, Float> medianIncomeByMsa = new HashMap<>();
+    private final Map<Integer, Float> medianIncomeByMsa = new LinkedHashMap<>();
     private final HouseholdDataManagerImpl delegate;
     private final GeoData geoData;
     private final DwellingData dwellingData;
@@ -37,7 +37,7 @@ public class HouseholdDataManagerMstm implements HouseholdDataManager {
 
     private void calculateMedianHouseholdIncomeByMSA() {
 
-        Map<Integer, List<Integer>> incomesByMsa = new HashMap<>();
+        Map<Integer, List<Integer>> incomesByMsa = new LinkedHashMap<>();
         for (Household hh : delegate.getHouseholds()) {
             int zone = -1;
             Dwelling dwelling = dwellingData.getDwelling(hh.getDwellingId());

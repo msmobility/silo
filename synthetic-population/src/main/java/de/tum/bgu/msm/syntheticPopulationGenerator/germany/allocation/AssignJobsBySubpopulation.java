@@ -101,7 +101,7 @@ public class AssignJobsBySubpopulation {
     }
 
     private Map<Integer, Double> calculateDistanceProbabilityByJobType(String jobType, int origin, double alpha_ld, double beta_ld) {
-        Map<Integer, Double> probabilityByTypeAndZone = new HashMap<>();
+        Map<Integer, Double> probabilityByTypeAndZone = new LinkedHashMap<>();
         TableDataSet jobsByTaz = PropertiesSynPop.get().main.jobsByTaz;
         for (int destination : dataSetSynPop.getVacantJobsByTypeAndZone().get(jobType).keySet()) {
             float distance = dataSetSynPop.getDistanceTazToTaz().getValueAt(origin, destination);

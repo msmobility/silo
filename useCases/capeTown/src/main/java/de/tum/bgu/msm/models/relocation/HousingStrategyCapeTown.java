@@ -26,10 +26,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static de.tum.bgu.msm.data.dwelling.RealEstateUtils.RENT_CATEGORIES;
 
@@ -70,8 +67,8 @@ public class HousingStrategyCapeTown implements HousingStrategy {
     private final RegionUtilityStrategy regionUtilityStrategy;
     private final RegionProbabilityStrategy regionProbabilityStrategy;
 
-    private Map<Integer, Map<RaceCapeTown, Double>> personShareByRaceByRegion = new HashMap<>();
-    private Map<Integer, Map<RaceCapeTown, Double>> personShareByRaceByZone = new HashMap<>();
+    private Map<Integer, Map<RaceCapeTown, Double>> personShareByRaceByRegion = new LinkedHashMap<>();
+    private Map<Integer, Map<RaceCapeTown, Double>> personShareByRaceByZone = new LinkedHashMap<>();
 
     private IndexedDoubleMatrix1D ppByRegion;
     private IndexedDoubleMatrix1D ppByZone;
@@ -218,7 +215,7 @@ public class HousingStrategyCapeTown implements HousingStrategy {
         for (IncomeCategory incomeCategory : IncomeCategory.values()) {
             EnumMap<RaceCapeTown, Map<Integer, Double>> utilityByRegionByRace = new EnumMap<>(RaceCapeTown.class);
             for (RaceCapeTown race : RaceCapeTown.values()) {
-                Map<Integer, Double> utilityByRegion = new HashMap<>();
+                Map<Integer, Double> utilityByRegion = new LinkedHashMap<>();
                 for (Region region : geoData.getRegions().values()) {
                     if (!rentsByRegion.containsKey(region.getId())) {
                         continue;

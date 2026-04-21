@@ -83,6 +83,8 @@ public class RunFabilandTest{
 				PopulationComparison.Result result = PopulationUtils.comparePopulations( expected, actual );
 //				Assertions.assertEquals( PopulationComparison.Result.equal, result );
 			}
+			log.info("############################################");
+			log.info("############################################");
 			{
 				String expected = inputDirectory + "/1.output_events.xml.gz" ;
 				String actual = "scenario/scenOutput/base/matsim/1/1.output_events.xml.gz" ;

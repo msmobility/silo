@@ -17,6 +17,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class AssignSchoolsBySubpopulation {
@@ -116,7 +117,7 @@ public class AssignSchoolsBySubpopulation {
     }
 
     private Map<Integer, Double> calculateDistanceProbabilityBySchoolType(int schoolType, int origin, double alpha_ld, double beta_ld) {
-        Map<Integer, Double> probabilityByTypeAndZone = new HashMap<>();
+        Map<Integer, Double> probabilityByTypeAndZone = new LinkedHashMap<>();
         TableDataSet jobsByTaz = PropertiesSynPop.get().main.jobsByTaz;
         if (schoolType == 3) {
             float minDistance = 10000;

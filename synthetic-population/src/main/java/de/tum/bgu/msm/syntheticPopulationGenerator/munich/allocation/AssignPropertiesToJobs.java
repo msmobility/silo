@@ -96,10 +96,10 @@ public class AssignPropertiesToJobs {
     private void readCoefficients() {
         /*coefficients = PropertiesSynPop.get().main.fullTimeProbabilityTable;
         coefficients.buildStringIndex(1);*/
-        coefficientsFullTime = new HashMap<>();
-        coefficientsDuration = new HashMap<>();
-        coefficientsStartTimeWeekend = new HashMap<>();
-        coefficientsStartTimeWorkday = new HashMap<>();
+        coefficientsFullTime = new LinkedHashMap<>();
+        coefficientsDuration = new LinkedHashMap<>();
+        coefficientsStartTimeWeekend = new LinkedHashMap<>();
+        coefficientsStartTimeWorkday = new LinkedHashMap<>();
 
         for (String jobType : PropertiesSynPop.get().main.jobStringType) {
             Map<String, Double> coefficientsByJobType =

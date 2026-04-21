@@ -155,9 +155,9 @@ public class SyntheticPopGermanyMito implements SyntheticPopI {
 
     private void writeMultipleFilesForHouseholdsAndPersons(DataContainerWithSchools dataContainer){
 
-        Map<Integer, PrintWriter> householdWriter = new HashMap<>();
-        Map<Integer, PrintWriter> personWriter = new HashMap<>();
-        Map<Integer, PrintWriter> dwellingWriter = new HashMap<>();
+        Map<Integer, PrintWriter> householdWriter = new LinkedHashMap<>();
+        Map<Integer, PrintWriter> personWriter = new LinkedHashMap<>();
+        Map<Integer, PrintWriter> dwellingWriter = new LinkedHashMap<>();
 
         String outputFolder = properties.main.baseDirectory  + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
                 + "/subPopulations/" + PropertiesSynPop.get().main.state + "/";

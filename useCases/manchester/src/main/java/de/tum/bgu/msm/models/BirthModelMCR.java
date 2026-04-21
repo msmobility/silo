@@ -128,7 +128,7 @@ public class BirthModelMCR extends AbstractModel implements BirthModel {
         ((PersonHealthMCR)child).updateWeeklyMarginalMetHours(Mode.bicycle, 0.f);
         ((PersonHealthMCR)child).setWeeklyMarginalMetHoursSport(0.f);
 
-        Map<String, Float> exposureMap = new HashMap<>();
+        Map<String, Float> exposureMap = new LinkedHashMap<>();
         exposureMap.put("pm2.5", 0.f);
         exposureMap.put("no2", 0.f);
 

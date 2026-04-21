@@ -30,7 +30,7 @@ public class RealEstateDataManagerMstm implements RealEstateDataManager {
     }
 
     private void calculateMedianRentByMSA() {
-        Map<Integer, ArrayList<Integer>> rentHashMap = new HashMap<>();
+        Map<Integer, ArrayList<Integer>> rentHashMap = new LinkedHashMap<>();
         for (Dwelling dd : delegate.getDwellings()) {
             int dwellingMSA = ((MstmZone) geoData.getZones().get(dd.getZoneId())).getMsa();
             if (rentHashMap.containsKey(dwellingMSA)) {

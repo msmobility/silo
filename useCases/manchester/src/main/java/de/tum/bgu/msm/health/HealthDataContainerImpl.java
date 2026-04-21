@@ -33,13 +33,13 @@ public class HealthDataContainerImpl implements DataContainerWithSchools, DataCo
 
     private final DataContainerWithSchools delegate;
     private final Properties properties;
-    private Map<Id<Link>, LinkInfo> linkInfo = new HashMap<>();
-    private Map<String, ActivityLocation> activityLocationInfo = new HashMap<>();
+    private Map<Id<Link>, LinkInfo> linkInfo = new LinkedHashMap<>();
+    private Map<String, ActivityLocation> activityLocationInfo = new LinkedHashMap<>();
     private Set<Pollutant> pollutantSet = new HashSet<>();
     private EnumMap<Mode, EnumMap<MitoGender,Map<Integer,Double>>> avgSpeeds;
     private EnumMap<Diseases, Map<String, Double>> healthTransitionData;
     private EnumMap<HealthExposures, EnumMap<Diseases, TableDataSet>> doseResponseData;
-    private Map<Integer, Map<Integer, List<String>>> healthDiseaseTrackerRemovedPerson = new HashMap<>();
+    private Map<Integer, Map<Integer, List<String>>> healthDiseaseTrackerRemovedPerson = new LinkedHashMap<>();
 
     public HealthDataContainerImpl(DataContainerWithSchools delegate,
                                    Properties properties) {

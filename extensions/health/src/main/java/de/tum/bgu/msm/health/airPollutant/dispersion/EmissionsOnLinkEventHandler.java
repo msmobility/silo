@@ -11,6 +11,7 @@ import org.matsim.contrib.emissions.events.WarmEmissionEvent;
 import org.matsim.contrib.emissions.events.WarmEmissionEventHandler;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -41,7 +42,7 @@ class EmissionsOnLinkEventHandler implements WarmEmissionEventHandler, ColdEmiss
 
     @Override
     public void handleEvent(WarmEmissionEvent event) {
-        Map<Pollutant,Double> map = new HashMap<>() ;
+        Map<Pollutant,Double> map = new LinkedHashMap<>() ;
         for( Map.Entry<Pollutant, Double> entry : event.getWarmEmissions().entrySet() ){
             map.put( entry.getKey(), entry.getValue() ) ;
         }
@@ -59,10 +60,10 @@ class EmissionsOnLinkEventHandler implements WarmEmissionEventHandler, ColdEmiss
         TimeBinMap.TimeBin<Map<Id<Link>, EmissionsByPollutant>> currentBin = timeBins.getTimeBin(time);
 
         if (!currentBin.hasValue()){
-            currentBin.setValue( new HashMap<>() );
+            currentBin.setValue( new LinkedHashMap<>() );
         }
         if (!currentBin.getValue().containsKey(linkId)){
-            currentBin.getValue().put( linkId, new EmissionsByPollutant( new HashMap<>( emissions ) ) );
+            currentBin.getValue().put( linkId, new EmissionsByPollutant( new LinkedHashMap<>( emissions ) ) );
         } else{
             currentBin.getValue().get( linkId ).addEmissions( emissions );
         }

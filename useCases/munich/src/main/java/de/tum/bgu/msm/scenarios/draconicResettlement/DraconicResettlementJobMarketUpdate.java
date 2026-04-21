@@ -66,7 +66,7 @@ public class DraconicResettlementJobMarketUpdate extends AbstractModel implement
         logger.info("  Updating job market based on exogenous forecast for " + year + " (multi-threaded step)");
 
 
-        Map<String, List<Integer>> jobsAvailableForRemoval = new HashMap<>();
+        Map<String, List<Integer>> jobsAvailableForRemoval = new LinkedHashMap<>();
         for (Job jj : jobDataManager.getJobs()) {
             String token = jj.getType() + "." + jj.getZoneId() + "." + (jj.getWorkerId() == -1);
             if (jobsAvailableForRemoval.containsKey(token)) {

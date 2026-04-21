@@ -58,7 +58,7 @@ public class Allocation extends ModuleSynPop{
     }
 
     public void generateHouseholdsPersonsDwellings(){
-        educationalLevel = new HashMap<>();
+        educationalLevel = new LinkedHashMap<>();
         new GenerateHouseholdsPersonsDwellings(dataContainer, dataSetSynPop, educationalLevel).run();
     }
 
@@ -77,7 +77,7 @@ public class Allocation extends ModuleSynPop{
     public void generateAutos() {new CarOwnership(dataContainer).run();}
 
     public void readPopulation(){
-        educationalLevel = new HashMap<>();
+        educationalLevel = new LinkedHashMap<>();
         new ReadPopulation(dataContainer, educationalLevel).run();
     }
 

@@ -11,6 +11,8 @@ import javax.script.ScriptException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -47,7 +49,7 @@ public class ipuTest {
         System.arraycopy(attributesCounty1, 1, attributesCounty, 0, attributesCounty.length);
         ArrayList<Integer> municipalities = new ArrayList<>();
         ArrayList<Integer> counties = new ArrayList<>();
-        municipalitiesByCounty = new HashMap<>();
+        municipalitiesByCounty = new LinkedHashMap<>();
         for (int row = 1; row <= selectedMunicipalities.getRowCount(); row++){
             if (selectedMunicipalities.getValueAt(row,"Select") == 1f){
                 int city = (int) selectedMunicipalities.getValueAt(row,"ID_city");

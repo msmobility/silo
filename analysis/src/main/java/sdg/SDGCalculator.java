@@ -31,13 +31,13 @@ public class SDGCalculator {
     private Collection<Dwelling> dwellings = new ArrayList<>();
     private Collection<Person> persons = new ArrayList<>();
     private RealEstateDataManager realEstateDataManager;
-    private Map<Integer, List<Household>> hhByZone = new HashMap<>();
-    private Map<Integer, List<Person>> ppByZone = new HashMap<>();
-    private Map<Integer, List<Dwelling>> ddByZone = new HashMap<>();
-    private Map<Integer, AnalyzedPerson> matsimPerson = new HashMap<>();
-    private Map<Integer, List<Trip>> commutingTripsByZone = new HashMap<>();
-    private Map<Integer, List<Trip>> schoolTripsByZone = new HashMap<>();
-    private Map<Integer, Map<Mode, List<Trip>>> ttByModeByZone = new HashMap<>();
+    private Map<Integer, List<Household>> hhByZone = new LinkedHashMap<>();
+    private Map<Integer, List<Person>> ppByZone = new LinkedHashMap<>();
+    private Map<Integer, List<Dwelling>> ddByZone = new LinkedHashMap<>();
+    private Map<Integer, AnalyzedPerson> matsimPerson = new LinkedHashMap<>();
+    private Map<Integer, List<Trip>> commutingTripsByZone = new LinkedHashMap<>();
+    private Map<Integer, List<Trip>> schoolTripsByZone = new LinkedHashMap<>();
+    private Map<Integer, Map<Mode, List<Trip>>> ttByModeByZone = new LinkedHashMap<>();
 
     public void setMatsimPerson(Map<Integer, AnalyzedPerson> matsimPerson) {
         this.matsimPerson = matsimPerson;

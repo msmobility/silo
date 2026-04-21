@@ -2,6 +2,7 @@ package de.tum.bgu.msm.matsim.accessibility;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import de.tum.bgu.msm.data.accessibility.Accessibility;
@@ -26,10 +27,10 @@ public class MatsimAccessibility implements Accessibility, FacilityDataExchangeI
 
 	private final GeoData geoData;
 
-	private Map<Tuple<ActivityFacility, Double>, Map<String,Double>> accessibilitiesMap = new HashMap<>();
+	private Map<Tuple<ActivityFacility, Double>, Map<String,Double>> accessibilitiesMap = new LinkedHashMap<>();
 
-	private Map<Id<ActivityFacility>, Double> autoAccessibilities = new HashMap<>();
-	private Map<Id<ActivityFacility>, Double> transitAccessibilities = new HashMap<>();
+	private Map<Id<ActivityFacility>, Double> autoAccessibilities = new LinkedHashMap<>();
+	private Map<Id<ActivityFacility>, Double> transitAccessibilities = new LinkedHashMap<>();
 	private IndexedDoubleMatrix1D regionalAccessibilities;
 	
 	public MatsimAccessibility(GeoData geoData) {
@@ -42,7 +43,7 @@ public class MatsimAccessibility implements Accessibility, FacilityDataExchangeI
 		if (timeOfDay == 8 * 60. * 60.) { // TODO Find better way for this check
 			Tuple<ActivityFacility, Double> key = new Tuple<>(measurePoint, timeOfDay);
 			if (!accessibilitiesMap.containsKey(key)) {
-				Map<String,Double> accessibilitiesByMode = new HashMap<>();
+				Map<String,Double> accessibilitiesByMode = new LinkedHashMap<>();
 				accessibilitiesMap.put(key, accessibilitiesByMode);
 			}
 			accessibilitiesMap.get(key).put(mode, accessibility);

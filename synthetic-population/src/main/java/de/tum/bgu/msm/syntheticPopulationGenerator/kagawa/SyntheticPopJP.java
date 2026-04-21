@@ -130,7 +130,7 @@ public class SyntheticPopJP implements SyntheticPopI {
     protected TableDataSet odCountyFlow;
     private DataContainer dataContainer;
 
-    private HashMap<Person, Integer> jobTypeByWorker= new HashMap<>();
+    private HashMap<Person, Integer> jobTypeByWorker= new LinkedHashMap<>();
 
     static Logger logger = LogManager.getLogger(String.valueOf(SyntheticPopJP.class));
     private Properties properties;
@@ -202,7 +202,7 @@ public class SyntheticPopJP implements SyntheticPopI {
         ArrayList<Integer> municipalities = new ArrayList<>();
         ArrayList<Integer> counties = new ArrayList<>();
         HashMap<Integer, ArrayList> municipalitiesByCounty;
-        municipalitiesByCounty = new HashMap<>();
+        municipalitiesByCounty = new LinkedHashMap<>();
         for (int row = 1; row <= selectedMunicipalities.getRowCount(); row++){
             if (selectedMunicipalities.getValueAt(row,"Select") == 1f){
                 int city = (int) selectedMunicipalities.getValueAt(row,"V1");
@@ -237,7 +237,7 @@ public class SyntheticPopJP implements SyntheticPopI {
         //TAZ attributes
         cellsMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_RASTER_CELLS));
         cellsMatrix.buildIndex(cellsMatrix.getColumnPosition("ID_cell"));
-        cityTAZ = new HashMap<>();
+        cityTAZ = new LinkedHashMap<>();
         for (int i = 1; i <= cellsMatrix.getRowCount(); i++){
             int city = (int) cellsMatrix.getValueAt(i,"ID_city");
             int taz = (int) cellsMatrix.getValueAt(i,"ID_cell");
@@ -280,14 +280,14 @@ public class SyntheticPopJP implements SyntheticPopI {
         regionsforFrequencyMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_ATRIBUTES_ZONAL_DATA));
         regionsforFrequencyMatrix.buildIndex(regionsforFrequencyMatrix.getColumnPosition("V1"));
 
-        householdsForFrequencyMatrix = new HashMap<>();
+        householdsForFrequencyMatrix = new LinkedHashMap<>();
         for (int i = 1; i <= microDataDwelling.getRowCount();i++){
             int v2Zone = (int) microDataDwelling.getValueAt(i,"PtResCode");
             int ddID = (int) microDataDwelling.getValueAt(i,"id");
             if (householdsForFrequencyMatrix.containsKey(v2Zone)) {
                 householdsForFrequencyMatrix.get(v2Zone).put(ddID, 1);
             } else {
-                HashMap<Integer, Integer> map = new HashMap<>();
+                HashMap<Integer, Integer> map = new LinkedHashMap<>();
                 map.put(ddID, 1);
                 householdsForFrequencyMatrix.put(v2Zone, map);
             }
@@ -318,14 +318,14 @@ public class SyntheticPopJP implements SyntheticPopI {
         regionsforFrequencyMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_ATRIBUTES_ZONAL_DATA));
         regionsforFrequencyMatrix.buildIndex(regionsforFrequencyMatrix.getColumnPosition("V1"));
 
-        householdsForFrequencyMatrix = new HashMap<>();
+        householdsForFrequencyMatrix = new LinkedHashMap<>();
         for (int i = 1; i <= microDataDwelling.getRowCount();i++){
             int v2Zone = (int) microDataDwelling.getValueAt(i,"PtResCode");
             int ddID = (int) microDataDwelling.getValueAt(i,"id");
             if (householdsForFrequencyMatrix.containsKey(v2Zone)) {
                 householdsForFrequencyMatrix.get(v2Zone).put(ddID, 1);
             } else {
-                HashMap<Integer, Integer> map = new HashMap<>();
+                HashMap<Integer, Integer> map = new LinkedHashMap<>();
                 map.put(ddID, 1);
                 householdsForFrequencyMatrix.put(v2Zone, map);
             }
@@ -1037,7 +1037,7 @@ public class SyntheticPopJP implements SyntheticPopI {
 
 
         //Create a map to store the household IDs by municipality
-        HashMap<Integer, HashMap<Integer, Integer>> householdByMunicipality = new HashMap<>();
+        HashMap<Integer, HashMap<Integer, Integer>> householdByMunicipality = new LinkedHashMap<>();
 
         generateCountersForValidation();
 
@@ -1047,14 +1047,14 @@ public class SyntheticPopJP implements SyntheticPopI {
 
         regionsforFrequencyMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_ATRIBUTES_ZONAL_DATA));
         regionsforFrequencyMatrix.buildIndex(regionsforFrequencyMatrix.getColumnPosition("V1"));
-        householdsForFrequencyMatrix = new HashMap<>();
+        householdsForFrequencyMatrix = new LinkedHashMap<>();
         for (int i = 1; i <= microDataDwelling.getRowCount();i++){
             int v2Zone = (int) microDataDwelling.getValueAt(i,"PtResCode");
             int ddID = (int) microDataDwelling.getValueAt(i,"id");
             if (householdsForFrequencyMatrix.containsKey(v2Zone)) {
                 householdsForFrequencyMatrix.get(v2Zone).put(ddID, 1);
             } else {
-                HashMap<Integer, Integer> map = new HashMap<>();
+                HashMap<Integer, Integer> map = new LinkedHashMap<>();
                 map.put(ddID, 1);
                 householdsForFrequencyMatrix.put(v2Zone, map);
             }
@@ -1104,7 +1104,7 @@ public class SyntheticPopJP implements SyntheticPopI {
 
                 HashMap<Integer, Integer> hhs = householdsForFrequencyMatrix.get(v2zone);
                 int[] hhFromV2 = hhs.keySet().stream().mapToInt(Integer::intValue).toArray();
-                HashMap<Integer, Integer> generatedHouseholds = new HashMap<>();
+                HashMap<Integer, Integer> generatedHouseholds = new LinkedHashMap<>();
 
 
                 //obtain the raster cells of the municipality and their weight within the municipality
@@ -1118,7 +1118,7 @@ public class SyntheticPopJP implements SyntheticPopI {
 
 
                 double hhRemaining = 0;
-                HashMap<Integer, Double> prob = new HashMap<>();
+                HashMap<Integer, Double> prob = new LinkedHashMap<>();
                 for (int row = 0; row < hhFromV2.length; row++){
                     double value = weightsTable.getIndexedValueAt(hhFromV2[row], Integer.toString(municipalityID));
                     hhRemaining = hhRemaining + value;
@@ -1592,12 +1592,12 @@ public class SyntheticPopJP implements SyntheticPopI {
         logger.info("  Identifying vacant jobs by zone");
         Collection<Job> jobs = dataContainer.getJobDataManager().getJobs();
 
-        idVacantJobsByZoneType = new HashMap<>();
-        numberVacantJobsByType = new HashMap<>();
-        idZonesVacantJobsByType = new HashMap<>();
-        numberZonesByType = new HashMap<>();
-        numberVacantJobsByZoneByType = new HashMap<>();
-        jobIntTypes = new HashMap<>();
+        idVacantJobsByZoneType = new LinkedHashMap<>();
+        numberVacantJobsByType = new LinkedHashMap<>();
+        idZonesVacantJobsByType = new LinkedHashMap<>();
+        numberZonesByType = new LinkedHashMap<>();
+        numberVacantJobsByZoneByType = new LinkedHashMap<>();
+        jobIntTypes = new LinkedHashMap<>();
         for (int i = 0; i < jobStringTypes.length; i++) {
             jobIntTypes.put(jobStringTypes[i], i);
         }
@@ -1665,10 +1665,10 @@ public class SyntheticPopJP implements SyntheticPopI {
     private void identifyVacantSchoolsByZoneByType(){
         logger.info("   Create vacant schools");
 
-        numberVacantSchoolsByZoneByType = new HashMap<>();
-        numberZonesWithVacantSchoolsByType = new HashMap<>();
-        idZonesVacantSchoolsByType = new HashMap<>();
-        schoolCapacityByType = new HashMap<>();
+        numberVacantSchoolsByZoneByType = new LinkedHashMap<>();
+        numberZonesWithVacantSchoolsByType = new LinkedHashMap<>();
+        idZonesVacantSchoolsByType = new LinkedHashMap<>();
+        schoolCapacityByType = new LinkedHashMap<>();
         schoolTypes = ResourceUtil.getIntegerArray(rb, PROPERTIES_SCHOOL_TYPES_DE);
         int[] cellsID = cellsMatrix.getColumnAsInt("ID_cell");
 

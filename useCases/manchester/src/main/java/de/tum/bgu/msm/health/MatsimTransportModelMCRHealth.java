@@ -246,7 +246,7 @@ public final class MatsimTransportModelMCRHealth implements TransportModel {
                 Id<Vehicle> vehicleId = Id.createVehicleId(person.getId().toString());
                 VehicleType vehicleType = matsimScenario.getVehicles().getVehicleTypes().get(Id.create(mode + gender + age, VehicleType.class));
                 Vehicle veh = fac.createVehicle(vehicleId,vehicleType);
-                Map<String,Id<Vehicle>> modeToVehicle = new HashMap<>();
+                Map<String,Id<Vehicle>> modeToVehicle = new LinkedHashMap<>();
                 modeToVehicle.put(mode,vehicleId);
                 VehicleUtils.insertVehicleIdsIntoPersonAttributes(person,modeToVehicle);
                 matsimScenario.getVehicles().addVehicle(veh);

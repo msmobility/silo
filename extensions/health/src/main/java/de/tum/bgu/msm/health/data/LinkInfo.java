@@ -7,15 +7,16 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.contrib.emissions.Pollutant;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class LinkInfo {
 
     private final Id<Link> linkId;
 
-    private  Map<AccidentType, OpenIntFloatHashMap> severeFatalCasualityExposureByAccidentTypeByTime = new HashMap<>();
+    private  Map<AccidentType, OpenIntFloatHashMap> severeFatalCasualityExposureByAccidentTypeByTime = new LinkedHashMap<>();
 
-    private Map<Pollutant, OpenIntFloatHashMap> exposure2Pollutant2TimeBin = new HashMap<>();
+    private Map<Pollutant, OpenIntFloatHashMap> exposure2Pollutant2TimeBin = new LinkedHashMap<>();
 
     private OpenIntFloatHashMap noiseLevel2TimeBin = new OpenIntFloatHashMap();
 

@@ -33,10 +33,7 @@ import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.events.handler.EventHandler;
 import org.matsim.vehicles.Vehicle;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
 * @author ikaddoura
@@ -44,11 +41,11 @@ import java.util.Map;
 
 public class AnalysisEventHandler implements EventHandler, LinkLeaveEventHandler, PersonEntersVehicleEventHandler, PersonDepartureEventHandler {
 
-	private final Map<Id<Link>, Map<Integer, Integer>> linkId2time2leavingAgents = new HashMap<>();
-	private final Map<Id<Link>, Map<Integer, List<Id<Person>>>> linkId2time2personIds = new HashMap<>();
-	private final Map<Id<Vehicle>, Id<Person>> vehicleId2personId = new HashMap<>();
-	private final Map<Id<Link>, Map<String, Map<Integer, Integer>>> linkId2mode2time2leavingAgents = new HashMap<>();
-	private final Map<Id<Person>, String> personId2legMode = new HashMap<>();
+	private final Map<Id<Link>, Map<Integer, Integer>> linkId2time2leavingAgents = new LinkedHashMap<>();
+	private final Map<Id<Link>, Map<Integer, List<Id<Person>>>> linkId2time2personIds = new LinkedHashMap<>();
+	private final Map<Id<Vehicle>, Id<Person>> vehicleId2personId = new LinkedHashMap<>();
+	private final Map<Id<Link>, Map<String, Map<Integer, Integer>>> linkId2mode2time2leavingAgents = new LinkedHashMap<>();
+	private final Map<Id<Person>, String> personId2legMode = new LinkedHashMap<>();
 
 
 	@Inject AnalysisEventHandler(){}
@@ -89,13 +86,13 @@ public class AnalysisEventHandler implements EventHandler, LinkLeaveEventHandler
 						linkId2mode2time2leavingAgents.get(linkId).get(legMode).put(timeBinNr, 1);
 					}
 				} else {
-					Map<Integer,Integer> time2leavingAgents = new HashMap<>();
+					Map<Integer,Integer> time2leavingAgents = new LinkedHashMap<>();
 					time2leavingAgents.put(timeBinNr,1);
 					linkId2mode2time2leavingAgents.get(linkId).put(legMode, time2leavingAgents);
 				}
 			} else {
-				Map<String, Map<Integer,Integer>> mode2time2leavingAgents = new HashMap<>();
-				Map<Integer,Integer> time2leavingAgents = new HashMap<>();
+				Map<String, Map<Integer,Integer>> mode2time2leavingAgents = new LinkedHashMap<>();
+				Map<Integer,Integer> time2leavingAgents = new LinkedHashMap<>();
 				time2leavingAgents.put(timeBinNr,1);
 				mode2time2leavingAgents.put(legMode,time2leavingAgents);
 				linkId2mode2time2leavingAgents.put(linkId, mode2time2leavingAgents);
@@ -110,7 +107,7 @@ public class AnalysisEventHandler implements EventHandler, LinkLeaveEventHandler
 			if(personInfo.getLinkId2time2mode().get(linkId)!=null){
 				personInfo.getLinkId2time2mode().get(linkId).put(hour, legMode);
 			}else{
-				Map<Integer, String> time2Mode = new HashMap<>();
+				Map<Integer, String> time2Mode = new LinkedHashMap<>();
 				time2Mode.put(hour, legMode);
 				personInfo.getLinkId2time2mode().put(linkId, time2Mode);
 			}

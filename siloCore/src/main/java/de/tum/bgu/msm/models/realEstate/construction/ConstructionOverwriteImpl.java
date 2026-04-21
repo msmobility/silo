@@ -80,7 +80,7 @@ public class ConstructionOverwriteImpl extends AbstractModel implements Construc
 
         String fileName = properties.main.baseDirectory + properties.realEstate.constructionOverwriteDwellingFile;
         TableDataSet overwrite = SiloUtil.readCSVfile(fileName);
-        plannedDwellings = new HashMap<>();
+        plannedDwellings = new LinkedHashMap<>();
 
         for (int row = 1; row <= overwrite.getRowCount(); row++) {
             int year = (int) overwrite.getValueAt(row, "year");

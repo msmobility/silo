@@ -22,6 +22,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class GenerateSchoolMicrolocations {
@@ -44,13 +45,13 @@ public class GenerateSchoolMicrolocations {
 
     private void createSchools() {
 
-        Map<Integer, Map<Integer,Map<Integer,Integer>>> zoneSchoolTypeSchoolLocationCapacity = new HashMap<>();
-        Map<Integer, Map<Integer, Integer>> zoneSchoolTypeSchoolLocationVacancy = new HashMap<>();
+        Map<Integer, Map<Integer,Map<Integer,Integer>>> zoneSchoolTypeSchoolLocationCapacity = new LinkedHashMap<>();
+        Map<Integer, Map<Integer, Integer>> zoneSchoolTypeSchoolLocationVacancy = new LinkedHashMap<>();
         for (int type = 1 ; type <= 3; type++){
-            Map<Integer,Map<Integer,Integer>> schoolLocationListForThisSchoolType = new HashMap<>();
-            Map<Integer, Integer> schoolLocationListForThisSchoolTypeVacancy = new HashMap<>();
+            Map<Integer,Map<Integer,Integer>> schoolLocationListForThisSchoolType = new LinkedHashMap<>();
+            Map<Integer, Integer> schoolLocationListForThisSchoolTypeVacancy = new LinkedHashMap<>();
             for (int zone : dataSetSynPop.getTazs()){
-                Map<Integer,Integer> schoolCapacity = new HashMap<>();
+                Map<Integer,Integer> schoolCapacity = new LinkedHashMap<>();
                 schoolLocationListForThisSchoolType.put(zone,schoolCapacity);
                 schoolLocationListForThisSchoolTypeVacancy.put(zone,0);
             }

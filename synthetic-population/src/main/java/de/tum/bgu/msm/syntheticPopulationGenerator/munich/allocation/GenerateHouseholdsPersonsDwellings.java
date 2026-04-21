@@ -15,6 +15,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class GenerateHouseholdsPersonsDwellings {
@@ -174,7 +175,7 @@ public class GenerateHouseholdsPersonsDwellings {
         ddTypeProbOfSFAorSFD = PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality,"ddProbSFAorSFD");
         ddTypeProbOfMF234orMF5plus = PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality,"ddProbMF234orMF5plus");
         probTAZ = dataSetSynPop.getProbabilityZone().get(municipality);
-        probMicroData = new HashMap<>();
+        probMicroData = new LinkedHashMap<>();
         probabilityId = new double[dataSetSynPop.getWeights().getRowCount()];
         ids = new int[probabilityId.length];
         sumProbabilities = 0;
