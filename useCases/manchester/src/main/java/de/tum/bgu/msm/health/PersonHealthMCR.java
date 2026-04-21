@@ -26,10 +26,10 @@ public class PersonHealthMCR implements PersonWithSchool, PersonHealth {
     private float[] weeklyTravelActivityHourOccupied = new float[24*7];
 
     //for exposure model
-    private Map<Mode, Float> weeklyMarginalMetHours = new HashMap<>();
+    private Map<Mode, Float> weeklyMarginalMetHours = new LinkedHashMap<>();
     private float weeklyMarginalMetHoursSport = 0.f;
-    private Map<String, Float> weeklyAccidentRisks = new HashMap<>();
-    private Map<String, float[]> weeklyExposureByPollutantByHour = new HashMap<>();
+    private Map<String, Float> weeklyAccidentRisks = new LinkedHashMap<>();
+    private Map<String, float[]> weeklyExposureByPollutantByHour = new LinkedHashMap<>();
     private Map<String, Float> weeklyExposureByPollutantNormalised;
 
     private float[] weeklyNoiseExposureByHour = new float[24*7];
@@ -42,9 +42,9 @@ public class PersonHealthMCR implements PersonWithSchool, PersonHealth {
 
     //for disease model
     private EnumMap<HealthExposures, EnumMap<Diseases, Float>> relativeRisksByDisease = new EnumMap<>(HealthExposures.class);
-    private Map<Integer, List<String>> healthDiseaseTracker = new HashMap<>();
+    private Map<Integer, List<String>> healthDiseaseTracker = new LinkedHashMap<>();
     private List<Diseases> currentDisease = new ArrayList<>();
-    private Map<Diseases, Float> currentDiseaseProb = new HashMap<>();
+    private Map<Diseases, Float> currentDiseaseProb = new LinkedHashMap<>();
 
 
     public PersonHealthMCR(int id, int age,

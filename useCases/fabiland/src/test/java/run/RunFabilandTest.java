@@ -63,7 +63,7 @@ public class RunFabilandTest{
 				final String expected = inputDirectory + "1.0.plans.xml.gz";
 				final String actual = "scenario/scenOutput/base/matsim/1/ITERS/it.0/1.0.plans.xml.gz";
 				PopulationComparison.Result result = PopulationUtils.comparePopulations( expected, actual );
-//				Assertions.assertEquals( PopulationComparison.Result.equal, result );
+				Assertions.assertEquals( PopulationComparison.Result.equal, result );
 			}
 			log.info("############################################");
 			log.info("############################################");
@@ -71,7 +71,7 @@ public class RunFabilandTest{
 				String expected = inputDirectory + "/1.0.events.xml.gz" ;
 				String actual = "scenario/scenOutput/base/matsim/1/ITERS/it.0/1.0.events.xml.gz" ;
 				ComparisonResult result = EventsUtils.compareEventsFiles( expected, actual );
-//				Assertions.assertEquals( FILES_ARE_EQUAL, result );
+				Assertions.assertEquals( FILES_ARE_EQUAL, result );
 			}
 
 			log.info("############################################");
@@ -81,13 +81,15 @@ public class RunFabilandTest{
 				final String expected = inputDirectory + "1.output_plans.xml.gz";
 				final String actual = "scenario/scenOutput/base/matsim/1/1.output_plans.xml.gz";
 				PopulationComparison.Result result = PopulationUtils.comparePopulations( expected, actual );
-//				Assertions.assertEquals( PopulationComparison.Result.equal, result );
+				Assertions.assertEquals( PopulationComparison.Result.equal, result );
 			}
+			log.info("############################################");
+			log.info("############################################");
 			{
 				String expected = inputDirectory + "/1.output_events.xml.gz" ;
 				String actual = "scenario/scenOutput/base/matsim/1/1.output_events.xml.gz" ;
 				ComparisonResult result = EventsUtils.compareEventsFiles( expected, actual );
-//				Assertions.assertEquals( FILES_ARE_EQUAL, result );
+				Assertions.assertEquals( FILES_ARE_EQUAL, result );
 			}
 
 			log.info("############################################");

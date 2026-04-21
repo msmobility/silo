@@ -360,9 +360,9 @@ public class ReadSubPopulations {
 
     private void writeMultipleFilesForHouseholdsAndPersons(DataContainerWithSchools dataContainer){
 
-        Map<Integer, PrintWriter> householdWriter = new HashMap<>();
-        Map<Integer, PrintWriter> personWriter = new HashMap<>();
-        Map<Integer, PrintWriter> dwellingWriter = new HashMap<>();
+        Map<Integer, PrintWriter> householdWriter = new LinkedHashMap<>();
+        Map<Integer, PrintWriter> personWriter = new LinkedHashMap<>();
+        Map<Integer, PrintWriter> dwellingWriter = new LinkedHashMap<>();
 
         String outputFolder = Properties.get().main.baseDirectory  + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
                 + "/subPopulations/" + PropertiesSynPop.get().main.state + "/";
@@ -493,20 +493,20 @@ public class ReadSubPopulations {
     }
 
     private void startCounters(){
-        countsPreviousState = new HashMap<>();
-        countsPreviousState = new HashMap<>();
-        countsPreviousState.putIfAbsent("all", new HashMap<>());
+        countsPreviousState = new LinkedHashMap<>();
+        countsPreviousState = new LinkedHashMap<>();
+        countsPreviousState.putIfAbsent("all", new LinkedHashMap<>());
         countsPreviousState.get("all").putIfAbsent("hh", 0);
         countsPreviousState.get("all").put("pp", 0);
         countsPreviousState.get("all").put("dd", 0);
-        countsState = new HashMap<>();
-        countsState = new HashMap<>();
+        countsState = new LinkedHashMap<>();
+        countsState = new LinkedHashMap<>();
         for (String state : PropertiesSynPop.get().main.states) {
-            countsPreviousState.put(state, new HashMap<>());
+            countsPreviousState.put(state, new LinkedHashMap<>());
             countsPreviousState.get(state).putIfAbsent("hh", 0);
             countsPreviousState.get(state).put("pp", 0);
             countsPreviousState.get(state).put("dd", 0);
-            countsState.put(state, new HashMap<>());
+            countsState.put(state, new LinkedHashMap<>());
             countsState.get(state).putIfAbsent("hh", 0);
             countsState.get(state).put("pp", 0);
             countsState.get(state).put("dd", 0);

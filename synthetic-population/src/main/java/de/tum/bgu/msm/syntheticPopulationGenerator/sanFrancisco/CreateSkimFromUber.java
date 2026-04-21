@@ -13,10 +13,7 @@ import org.matsim.core.utils.gis.ShapeFileReader;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class CreateSkimFromUber {
@@ -30,7 +27,7 @@ public class CreateSkimFromUber {
 
         final Collection<SimpleFeature> features = ShapeFileReader.getAllFeatures("Z:\\projects\\2019\\TraMPA" +
                 "\\San Francisco\\Data\\TAZ\\censusTractsNineCountiesTaz\\censusTracts_projected_7131_uberId.shp");
-        final Map<Integer, Integer> movementId2zoneId = new HashMap<>();
+        final Map<Integer, Integer> movementId2zoneId = new LinkedHashMap<>();
         features.forEach(simpleFeature -> {
             final int tractce = Integer.parseInt(String.valueOf(simpleFeature.getAttribute("TRACTCE")));
             final int uberId = Integer.parseInt(String.valueOf(simpleFeature.getAttribute("MOVEMENT_I")));

@@ -14,6 +14,7 @@ import org.locationtech.jts.shape.random.RandomPointsBuilder;
 import org.matsim.core.utils.geometry.geotools.MGC;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Random;
 
@@ -28,7 +29,7 @@ public class ZoneImpl implements Zone {
 
     private Development development;
 
-    private final Map<String, Object> attributes = new HashMap<>();
+    private final Map<String, Object> attributes = new LinkedHashMap<>();
 
     public ZoneImpl(int id, float area_sqmi, Region region) {
         this.id = id;

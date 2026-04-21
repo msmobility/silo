@@ -52,7 +52,7 @@ public class EVResultMonitor implements ResultsMonitor {
         int nAutos = 0;
         int nEVs = 0;
 
-        Map<Integer, ZonalAttributes> dataByZone = new HashMap<>();
+        Map<Integer, ZonalAttributes> dataByZone = new LinkedHashMap<>();
 
         for (Household hh : dataContainer.getHouseholdDataManager().getHouseholds()) {
 

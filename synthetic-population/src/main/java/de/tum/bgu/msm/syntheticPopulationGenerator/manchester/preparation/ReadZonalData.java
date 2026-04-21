@@ -21,6 +21,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class ReadZonalData {
@@ -54,17 +55,17 @@ public class ReadZonalData {
         //List of municipalities and counties that are used for IPU and allocation
         ArrayList<Integer> municipalities = new ArrayList<>();
         ArrayList<Integer> counties = new ArrayList<>();
-        municipalitiesByCounty = new HashMap<>();
+        municipalitiesByCounty = new LinkedHashMap<>();
         ArrayList<Integer> municipalitiesWithZero = new ArrayList<>();
 
-        HashMap<Integer, HashMap<String, Float>> attributesLSOA = new HashMap<>();
+        HashMap<Integer, HashMap<String, Float>> attributesLSOA = new LinkedHashMap<>();
 
         for (int row = 1; row <= PropertiesSynPop.get().main.selectedMunicipalities.getRowCount(); row++) {
             int city = (int) PropertiesSynPop.get().main.selectedMunicipalities.getValueAt(row, "lsoaID");
             float totalJobs = PropertiesSynPop.get().main.selectedMunicipalities.getValueAt(row, "tot");
             float percentageVacantDwellings = PropertiesSynPop.get().main.selectedMunicipalities.getValueAt(row, "percentageVacantDwellings");
 
-            HashMap<String, Float> attributes = new HashMap<>();
+            HashMap<String, Float> attributes = new LinkedHashMap<>();
             attributes.put("tot", totalJobs);
             attributes.put("percentageVacantDwellings", percentageVacantDwellings);
 
@@ -111,17 +112,17 @@ public class ReadZonalData {
 
     private void readZones(){
         //TAZ attributes
-        HashMap<Integer, int[]> cityTAZ = new HashMap<>();
-        Map<Integer, Map<Integer, Float>> probabilityZone = new HashMap<>();
-        Map<Integer, Map<ManchesterDwellingTypes.DwellingTypeManchester, Map<Integer, Float>>> probabilityZoneByDdType = new HashMap<>();
+        HashMap<Integer, int[]> cityTAZ = new LinkedHashMap<>();
+        Map<Integer, Map<Integer, Float>> probabilityZone = new LinkedHashMap<>();
+        Map<Integer, Map<ManchesterDwellingTypes.DwellingTypeManchester, Map<Integer, Float>>> probabilityZoneByDdType = new LinkedHashMap<>();
         Table<Integer, Integer, Integer> schoolCapacity = HashBasedTable.create();
-        Map<Integer, Map<DwellingType, Integer>> dwellingPriceByTypeAndZone = new HashMap<>();
+        Map<Integer, Map<DwellingType, Integer>> dwellingPriceByTypeAndZone = new LinkedHashMap<>();
 
         ArrayList<Integer> tazs = new ArrayList<>();
         ArrayList<Float> areas = new ArrayList<>();
         TableDataSet zoneAttributes = PropertiesSynPop.get().main.cellsMatrix;
-        HashMap<Integer, HashMap<String, Float>> attributesZone = new HashMap<>();
-        HashMap<Integer, Integer> tazCity = new HashMap<>();
+        HashMap<Integer, HashMap<String, Float>> attributesZone = new LinkedHashMap<>();
+        HashMap<Integer, Integer> tazCity = new LinkedHashMap<>();
         for (int i = 1; i <= zoneAttributes.getRowCount(); i++){
             int city = (int) zoneAttributes.getValueAt(i,"lsoaID");
             int taz = (int) zoneAttributes.getValueAt(i,"oaID");
@@ -155,15 +156,15 @@ public class ReadZonalData {
             } else {
                 int[] previousTaz = {taz};
                 cityTAZ.put(city,previousTaz);
-                Map<Integer, Float> probabilities = new HashMap<>();
+                Map<Integer, Float> probabilities = new LinkedHashMap<>();
                 probabilities.put(taz, population);
                 probabilityZone.put(city, probabilities);
             }
 
             if(!probabilityZoneByDdType.containsKey(city)){
-                probabilityZoneByDdType.put(city, new HashMap<>() );
+                probabilityZoneByDdType.put(city, new LinkedHashMap<>() );
                 for(ManchesterDwellingTypes.DwellingTypeManchester ddType : ManchesterDwellingTypes.DwellingTypeManchester.values()){
-                    probabilityZoneByDdType.get(city).put(ddType, new HashMap<>());
+                    probabilityZoneByDdType.get(city).put(ddType, new LinkedHashMap<>());
                 }
             }
 
@@ -176,7 +177,7 @@ public class ReadZonalData {
             schoolCapacity.put(taz,2,capacitySecondarySchool);
             schoolCapacity.put(taz,3,capacityHigherEducation);
 
-            HashMap<String, Float> Attributes = new HashMap<>();
+            HashMap<String, Float> Attributes = new LinkedHashMap<>();
             Attributes.put("households", households);
             Attributes.put("tot",commuteInflow);
             Attributes.put("popCentroid_x",popCentroid_x);
@@ -218,7 +219,7 @@ public class ReadZonalData {
         //Read the commuteFlow
         logger.info("   Starting to read CSV matrix for car ownership");
         TableDataSet carOwnership = SiloUtil.readCSVfile(((ManchesterPropertiesSynPop)PropertiesSynPop.get().main).carOwnershipFile);
-        Map<Integer, Map<Integer, Map<Integer,Float>>> probability = new HashMap<>();
+        Map<Integer, Map<Integer, Map<Integer,Float>>> probability = new LinkedHashMap<>();
 
 
 
@@ -228,8 +229,8 @@ public class ReadZonalData {
             int car = (int) carOwnership.getValueAt(row, "carCode");
             float value = carOwnership.getValueAt(row, "Observation");
 
-            probability.computeIfAbsent(lsoaID, k -> new HashMap<>())
-                    .computeIfAbsent(hhsize, k -> new HashMap<>())
+            probability.computeIfAbsent(lsoaID, k -> new LinkedHashMap<>())
+                    .computeIfAbsent(hhsize, k -> new LinkedHashMap<>())
                     .put(car, value);
         }
 

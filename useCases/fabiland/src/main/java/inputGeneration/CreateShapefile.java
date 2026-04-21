@@ -20,7 +20,7 @@ public class CreateShapefile {
 
         GeometryFactory geometryFactory = new GeometryFactory();
 
-        Map<Integer, Polygon> polygons = new HashMap<>();
+        Map<Integer, Polygon> polygons = new LinkedHashMap<>();
 
         int sideLengthHorizonal = 5000;
         int sideLengthVertical = 5000;

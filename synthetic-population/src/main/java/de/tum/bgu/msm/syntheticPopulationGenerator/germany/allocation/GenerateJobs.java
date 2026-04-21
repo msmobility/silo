@@ -12,6 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Random;
 
@@ -79,7 +80,7 @@ public class GenerateJobs {
 
 
     private void initializeTAZprobability(int municipality, String jobType){
-        jobsByTaz = new HashMap<>();
+        jobsByTaz = new LinkedHashMap<>();
         jobsByTaz.clear();
         for (int taz : dataSetSynPop.getTazByMunicipality().get(municipality)){
             jobsByTaz.put(taz, PropertiesSynPop.get().main.cellsMatrix.getIndexedValueAt(taz, jobType));

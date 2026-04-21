@@ -8,6 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -201,7 +202,7 @@ public class HouseholdUtil {
     }
 
     public static Map<Integer, Integer> getPopulationByZoneAsMap(DataContainer dataContainer) {
-        Map<Integer, Integer> zonePopulationMap = new HashMap<>();
+        Map<Integer, Integer> zonePopulationMap = new LinkedHashMap<>();
         for (int zone : dataContainer.getGeoData().getZones().keySet()) {
             zonePopulationMap.put(zone, 0);
         }

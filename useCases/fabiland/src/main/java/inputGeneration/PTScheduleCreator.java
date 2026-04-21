@@ -379,7 +379,7 @@ public class PTScheduleCreator {
     }
 
 //    static void setLinkSpeedsToMax(Scenario scenario) {
-//        Map<Id<Link>, Double> linkMaxSpeed = new HashMap<>();
+//        Map<Id<Link>, Double> linkMaxSpeed = new LinkedHashMap<>();
 //
 //        for (Link link : scenario.getNetwork().getLinks().values()) {
 //            linkMaxSpeed.put(link.getId(), 0.);

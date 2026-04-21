@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -43,7 +44,7 @@ public class JobFactoryMuc implements JobFactory {
                     if (startTimeDistributionByJobType.containsKey(header[column])) {
                         startTimeDistributionByJobType.get(header[column]).put(time, Double.parseDouble(row[column]));
                     } else {
-                        Map<Integer, Double> startTimeDistribution = new HashMap<>();
+                        Map<Integer, Double> startTimeDistribution = new LinkedHashMap<>();
                         startTimeDistribution.put(time, Double.parseDouble(row[column]));
                         startTimeDistributionByJobType.put(header[column], startTimeDistribution);
                     }
@@ -66,7 +67,7 @@ public class JobFactoryMuc implements JobFactory {
                     if (workingTimeDistributionByJobType.containsKey(header[column])) {
                         workingTimeDistributionByJobType.get(header[column]).put(time, Double.parseDouble(row[column]));
                     } else {
-                        Map<Integer, Double> workingTimeDistribution = new HashMap<>();
+                        Map<Integer, Double> workingTimeDistribution = new LinkedHashMap<>();
                         workingTimeDistribution.put(time, Double.parseDouble(row[column]));
                         workingTimeDistributionByJobType.put(header[column], workingTimeDistribution);
                     }

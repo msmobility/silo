@@ -54,12 +54,12 @@ public class Read2011JobsForMicrolocation {
 
         Map<String, Map<Integer, Map<Integer, Coordinate>>> microlocationsJobsByTypeAndZone = new LinkedHashMap<>();
         for (String jobType : JobType.getJobTypes()) {
-            microlocationsJobsByTypeAndZone.putIfAbsent(jobType, new HashMap<>());
+            microlocationsJobsByTypeAndZone.putIfAbsent(jobType, new LinkedHashMap<>());
             for (int taz : PropertiesSynPop.get().main.jobsByTaz.getColumnAsInt("taz")) {
-                Map<Integer, Coordinate> centroidCoordinates = new HashMap<>();
+                Map<Integer, Coordinate> centroidCoordinates = new LinkedHashMap<>();
                 int coordX = dataSetSynPop.getZoneCoordinates().get(taz,"coordX");
                 int coordY = dataSetSynPop.getZoneCoordinates().get(taz,"coordY");
-                microlocationsJobsByTypeAndZone.get(jobType).putIfAbsent(taz, new HashMap<>());
+                microlocationsJobsByTypeAndZone.get(jobType).putIfAbsent(taz, new LinkedHashMap<>());
                 microlocationsJobsByTypeAndZone.get(jobType).get(taz).put(0, new Coordinate(coordX, coordY));
             }
         }

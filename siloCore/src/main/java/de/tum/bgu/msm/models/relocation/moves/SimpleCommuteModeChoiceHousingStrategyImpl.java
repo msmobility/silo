@@ -23,10 +23,7 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static de.tum.bgu.msm.data.dwelling.RealEstateUtils.RENT_CATEGORIES;
 
@@ -219,7 +216,7 @@ public class SimpleCommuteModeChoiceHousingStrategyImpl implements HousingStrate
         logger.info("Calculating regional utilities");
         final Map<Integer, Double> rentsByRegion = dataContainer.getRealEstateDataManager().calculateRegionalPrices();
         for (IncomeCategory incomeCategory : IncomeCategory.values()) {
-            Map<Integer, Double> utilityByRegion = new HashMap<>();
+            Map<Integer, Double> utilityByRegion = new LinkedHashMap<>();
             for (Region region : geoData.getRegions().values()) {
                 final int averageRegionalRent = rentsByRegion.get(region.getId()).intValue();
                 final float regAcc = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region));

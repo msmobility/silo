@@ -81,7 +81,7 @@ public class JobDataManagerWithCommuteModeChoice implements UpdateListener, JobD
         this.travelTimes = travelTimes;
         this.commutingTimeProbability = commutingTimeProbability;
         this.commuteModeChoice = commuteModeChoice;
-        this.zonalJobDensity = new HashMap<>();
+        this.zonalJobDensity = new LinkedHashMap<>();
     }
 
     @Override
@@ -170,11 +170,11 @@ public class JobDataManagerWithCommuteModeChoice implements UpdateListener, JobD
 
     private void calculateEmploymentForecastWithRate() {
         int year = properties.main.startYear;
-        Map<Integer, Map<String, Float>> jobCountBaseyear = new HashMap<>();
+        Map<Integer, Map<String, Float>> jobCountBaseyear = new LinkedHashMap<>();
         jobsByYearByZoneByIndustry.put(year, jobCountBaseyear);
         //initialize maps with count = 0
         for (Zone zone : geoData.getZones().values()) {
-            Map<String, Float> jobsInThisZone = new HashMap<>();
+            Map<String, Float> jobsInThisZone = new LinkedHashMap<>();
             jobCountBaseyear.put(zone.getZoneId(), jobsInThisZone);
             for (String jobType : JobType.getJobTypes()) {
                 jobsInThisZone.put(jobType, 0.f);
@@ -190,10 +190,10 @@ public class JobDataManagerWithCommuteModeChoice implements UpdateListener, JobD
         //forecast the following years
         year++;
         while (year <= properties.main.endYear) {
-            Map<Integer, Map<String, Float>> jobCountThisyear = new HashMap<>();
+            Map<Integer, Map<String, Float>> jobCountThisyear = new LinkedHashMap<>();
             jobsByYearByZoneByIndustry.put(year, jobCountThisyear);
             for (int zone : geoData.getZones().keySet()) {
-                Map<String, Float> jobCountThisZone = new HashMap<>();
+                Map<String, Float> jobCountThisZone = new LinkedHashMap<>();
                 for (String jobType : JobType.getJobTypes()) {
                     jobCountThisZone.put(jobType, (float) (jobCountBaseyear.get(zone).get(jobType) *
                             Math.pow(1 + properties.jobData.growthRateInPercentByJobType.get(jobType) / 100, year - properties.main.startYear)));
@@ -257,7 +257,7 @@ public class JobDataManagerWithCommuteModeChoice implements UpdateListener, JobD
         for (int i = 0; i < yearsGiven.length - 1; i++) {
             nextFixedYear = Integer.parseInt(yearsGiven[i + 1]);
             while (interpolatedYear <= nextFixedYear) {
-                Map<Integer, Map<String, Float>> jobsThisyear = new HashMap<>();
+                Map<Integer, Map<String, Float>> jobsThisyear = new LinkedHashMap<>();
                 jobsByYearByZoneByIndustry.put(2000 + interpolatedYear, jobsThisyear);
                 final String forecastFileName = dir + properties.jobData.employmentForeCastFile + (2000 + interpolatedYear) + ".csv";
                 final PrintWriter pw = SiloUtil.openFileForSequentialWriting(forecastFileName, false);
@@ -267,7 +267,7 @@ public class JobDataManagerWithCommuteModeChoice implements UpdateListener, JobD
                 }
                 builder.append("\n");
                 for (int zone : geoData.getZones().keySet()) {
-                    Map<String, Float> jobsThisZone = new HashMap<>();
+                    Map<String, Float> jobsThisZone = new LinkedHashMap<>();
                     jobsThisyear.put(zone, jobsThisZone);
                     builder.append(zone);
                     for (int jobTp = 0; jobTp < JobType.getNumberOfJobTypes(); jobTp++) {

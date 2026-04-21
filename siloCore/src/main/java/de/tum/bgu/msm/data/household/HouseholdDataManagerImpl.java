@@ -31,10 +31,7 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Greg Erhardt
@@ -59,7 +56,7 @@ public class HouseholdDataManagerImpl implements HouseholdDataManager {
 
     private float[][][] avgIncomeByGenderByAgeByOccupation;
 
-    private Map<Integer, Household> householdMementos = new HashMap<>();
+    private Map<Integer, Household> householdMementos = new LinkedHashMap<>();
 
     public HouseholdDataManagerImpl(HouseholdData householdData, DwellingData dwellingData,
                                     PersonFactory ppFactory, HouseholdFactory hhFactory,

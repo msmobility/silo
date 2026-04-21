@@ -14,10 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -56,9 +53,9 @@ public class WriteSubpopulationsByState {
 
     private void writeMultipleFilesForHouseholdsAndPersons(DataContainerWithSchools dataContainer){
 
-        Map<Integer, PrintWriter> householdWriter = new HashMap<>();
-        Map<Integer, PrintWriter> personWriter = new HashMap<>();
-        Map<Integer, PrintWriter> dwellingWriter = new HashMap<>();
+        Map<Integer, PrintWriter> householdWriter = new LinkedHashMap<>();
+        Map<Integer, PrintWriter> personWriter = new LinkedHashMap<>();
+        Map<Integer, PrintWriter> dwellingWriter = new LinkedHashMap<>();
 
         ArrayList<Household> householdArrayList = new ArrayList<>();
         for (Household hh : dataContainer.getHouseholdDataManager().getHouseholds()){

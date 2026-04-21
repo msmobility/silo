@@ -53,8 +53,8 @@ SyntheticPopPerth implements SyntheticPopI
     private TableDataSet genderPerArea = null;
     private TableDataSet dwellUnoccPerArea = null;
     private ArrayList<Dwelling> dwellingList = new ArrayList();
-    private HashMap<Integer, ZoneSA1[]> zoneMap = new HashMap<>();
-    private HashMap<Integer, ArrayList<Dwelling>> dwellingsPerZoneMap = new HashMap<>();
+    private HashMap<Integer, ZoneSA1[]> zoneMap = new LinkedHashMap<>();
+    private HashMap<Integer, ArrayList<Dwelling>> dwellingsPerZoneMap = new LinkedHashMap<>();
     private JobCollection jobCollection = new JobCollection();
     long unassignedWorker = 0;
     long unemployedCount = 0;
@@ -225,7 +225,7 @@ SyntheticPopPerth implements SyntheticPopI
         // for each row in the dwellings file
         for (int rowDd = 1; rowDd <= pumsDwellings.getRowCount(); rowDd++)
         {
-            HashMap<Integer, Family> familyMap = new HashMap<Integer, Family>();
+            HashMap<Integer, Family> familyMap = new LinkedHashMap<Integer, Family>();
 
             // get ABS dwelling id from the DWELLING file
             String dwellingId = pumsDwellings.getStringValueAt(rowDd, "ABSHID Dwelling Record Identifier");
@@ -429,7 +429,7 @@ SyntheticPopPerth implements SyntheticPopI
         and sums their relative price. This will be used to later
         calculate average for each zone and determine the quality.
      */
-    HashMap<Integer, DwellingQuality> qualityMap = new HashMap<Integer, DwellingQuality>();
+    HashMap<Integer, DwellingQuality> qualityMap = new LinkedHashMap<Integer, DwellingQuality>();
     private void addToQuality(int zone, int ddType, int price, int rooms)
     {
         DwellingQuality quality = qualityMap.get(zone);
@@ -1092,7 +1092,7 @@ SyntheticPopPerth implements SyntheticPopI
     private class JobCollection
     {
         ArrayList<JobSlot> jobSlots = new ArrayList<>();
-        HashMap<Integer, ArrayList<JobSlot>> jobTypesMap = new HashMap<>();
+        HashMap<Integer, ArrayList<JobSlot>> jobTypesMap = new LinkedHashMap<>();
 
         public JobCollection() { }
 
@@ -1233,7 +1233,7 @@ SyntheticPopPerth implements SyntheticPopI
 
         public int Zone = -1;
 
-        HashMap<Integer, DwellingQuality> TypeQuality = new HashMap<>();
+        HashMap<Integer, DwellingQuality> TypeQuality = new LinkedHashMap<>();
 
         public DwellingQuality() { }
 
@@ -1299,7 +1299,7 @@ SyntheticPopPerth implements SyntheticPopI
         // final int highestZoneId = 100;
         final int highestZoneId = 4953;
         float[][] jobInventory = new float[JobType.getNumberOfJobTypes()][highestZoneId + 1];
-        tazByWorkZonePuma = new HashMap<>();  // this HashMap has same content as "HashMap tazByPuma", though is kept separately in case external workzones will be defined
+        tazByWorkZonePuma = new LinkedHashMap<>();  // this HashMap has same content as "HashMap tazByPuma", though is kept separately in case external workzones will be defined
 
         // read employment data
         // For reasons that are not explained in the documentation, some of the PUMA work zones were aggregated to the
@@ -1353,7 +1353,7 @@ SyntheticPopPerth implements SyntheticPopI
         // populate HashMap with Jobs by zone
 
         logger.info("  Identifying vacant jobs by zone");
-        vacantJobsByZone = new HashMap<>();
+        vacantJobsByZone = new LinkedHashMap<>();
         Collection<Job> jobs = jobData.getJobs();
         for (Job jj: jobs) {
             if (jj.getWorkerId() == -1) {
@@ -1603,7 +1603,7 @@ SyntheticPopPerth implements SyntheticPopI
 
         logger.info("  Adding empty dwellings to match vacancy rate");
 
-        HashMap<String, ArrayList<Integer>> ddPointer = new HashMap<>();
+        HashMap<String, ArrayList<Integer>> ddPointer = new LinkedHashMap<>();
         // summarize vacancy
         final int highestZoneId = geoData.getZones().keySet().stream().max(Comparator.naturalOrder()).get();
         int[][][] ddCount = new int [highestZoneId + 1][DwellingType.values().length][2];

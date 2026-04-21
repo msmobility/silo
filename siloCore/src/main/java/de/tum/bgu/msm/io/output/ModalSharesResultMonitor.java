@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -72,13 +73,13 @@ public class ModalSharesResultMonitor implements ResultsMonitor {
 
         logger.info("Printing out modal shares by zone");
 
-        Map<Integer, Integer> tripsByCar = new HashMap<>();
-        Map<Integer, Integer> tripsByPt = new HashMap<>();
-        Map<Integer, Integer>tripsByOther = new HashMap<>();
-        Map<Integer, Double> timeByCar = new HashMap<>();
-        Map<Integer, Double> timeByPt = new HashMap<>();
-        Map<Integer, Double> timeByOther = new HashMap<>();
-        Map<Integer, Integer> doNotTravel = new HashMap<>();
+        Map<Integer, Integer> tripsByCar = new LinkedHashMap<>();
+        Map<Integer, Integer> tripsByPt = new LinkedHashMap<>();
+        Map<Integer, Integer>tripsByOther = new LinkedHashMap<>();
+        Map<Integer, Double> timeByCar = new LinkedHashMap<>();
+        Map<Integer, Double> timeByPt = new LinkedHashMap<>();
+        Map<Integer, Double> timeByOther = new LinkedHashMap<>();
+        Map<Integer, Integer> doNotTravel = new LinkedHashMap<>();
 
         AtomicInteger car = new AtomicInteger();
         AtomicInteger pt = new AtomicInteger();

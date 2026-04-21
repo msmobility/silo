@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 public class Allocation extends ModuleSynPop{
 
@@ -54,7 +55,7 @@ public class Allocation extends ModuleSynPop{
                 addBoroughsAsCities(county);
             }
         }
-        educationalLevel = new HashMap<>();
+        educationalLevel = new LinkedHashMap<>();
         new GenerateHouseholdsPersonsDwellings(dataContainer, dataSetSynPop, educationalLevel).run();
         if (PropertiesSynPop.get().main.boroughIPU){
             for (int county : dataSetSynPop.getBoroughsByCounty().keySet()){
@@ -76,7 +77,7 @@ public class Allocation extends ModuleSynPop{
     }
 
     public void readPopulation(){
-        educationalLevel = new HashMap<>();
+        educationalLevel = new LinkedHashMap<>();
         new ReadPopulation(dataContainer, educationalLevel).run();
     }
 

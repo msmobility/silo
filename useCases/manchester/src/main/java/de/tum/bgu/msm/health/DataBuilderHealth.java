@@ -31,6 +31,7 @@ import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class DataBuilderHealth {
@@ -126,7 +127,7 @@ public class DataBuilderHealth {
         new PoiReader(dataContainer).readData(properties.main.baseDirectory + properties.geo.poiFileName);
 
         Network network = NetworkUtils.readNetwork(config.network().getInputFile());
-        Map<Id<Link>, LinkInfo> linkInfoMap = new HashMap<>();
+        Map<Id<Link>, LinkInfo> linkInfoMap = new LinkedHashMap<>();
         for(Link link : network.getLinks().values()){
             linkInfoMap.put(link.getId(), new LinkInfo(link.getId()));
         }

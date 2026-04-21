@@ -25,6 +25,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.population.Person;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -37,9 +38,9 @@ public final class AccidentsContext {
 	@Inject AccidentsContext(){}
 	// injected constructor is package-private so that nobody can instantiate this class directly
 	
-	private Map<Id<Link>, AccidentLinkInfo> linkId2info = new HashMap<>();
+	private Map<Id<Link>, AccidentLinkInfo> linkId2info = new LinkedHashMap<>();
 
-	private Map<Id<Person>, AccidentAgentInfo> personId2info = new HashMap<>();
+	private Map<Id<Person>, AccidentAgentInfo> personId2info = new LinkedHashMap<>();
 
 	public Map<Id<Link>, AccidentLinkInfo> getLinkId2info() {
 		return linkId2info;

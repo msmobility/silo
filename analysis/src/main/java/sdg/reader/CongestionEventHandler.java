@@ -13,6 +13,7 @@ import org.matsim.vehicles.Vehicle;
 import sdg.data.AnalyzedPerson;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class CongestionEventHandler implements LinkEnterEventHandler, LinkLeaveEventHandler, VehicleLeavesTrafficEventHandler {
@@ -23,7 +24,7 @@ public class CongestionEventHandler implements LinkEnterEventHandler, LinkLeaveE
         return persons;
     }
 
-    private Map<Integer, AnalyzedPerson> persons = new HashMap<>();
+    private Map<Integer, AnalyzedPerson> persons = new LinkedHashMap<>();
 
     public CongestionEventHandler(Network network) {
         this.network = network;

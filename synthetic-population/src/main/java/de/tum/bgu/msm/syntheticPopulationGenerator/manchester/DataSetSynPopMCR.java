@@ -15,6 +15,7 @@ import org.locationtech.jts.geom.Coordinate;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -44,7 +45,7 @@ public class DataSetSynPopMCR extends DataSetSynPop {
     private int[] countyIDs;
     private int[] tazIDs;
     private Map<Integer, Map<Integer, Float>> probabilityZone;
-    private Map<Integer, Map<ManchesterDwellingTypes.DwellingTypeManchester, Map<Integer, Float>>> probabilityZoneByDdType = new HashMap<>();
+    private Map<Integer, Map<ManchesterDwellingTypes.DwellingTypeManchester, Map<Integer, Float>>> probabilityZoneByDdType = new LinkedHashMap<>();
 
     private Map<Integer, Map<DwellingType, Integer>> dwellingPriceByTypeAndZone;
     private Table<Integer, Integer, Integer> schoolCapacity = HashBasedTable.create();

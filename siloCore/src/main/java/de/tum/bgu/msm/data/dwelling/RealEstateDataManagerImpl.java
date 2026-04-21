@@ -45,11 +45,11 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
     /**
      * Stores current shares of dwellings by quality levels. Updated once per year.
      */
-    private final Map<Integer, Double> updatedQualityShares = new HashMap<>();
+    private final Map<Integer, Double> updatedQualityShares = new LinkedHashMap<>();
     /**
      * Stores initial shares of dwellings by quality levels in the base year.
      */
-    private final Map<Integer, Double> initialQualityShares = new HashMap<>();
+    private final Map<Integer, Double> initialQualityShares = new LinkedHashMap<>();
 
     private int highestDwellingIdInUse;
     private static final Map<IncomeCategory, Map<Integer, Float>> ddPriceByIncomeCategory = new EnumMap<>(IncomeCategory.class);
@@ -263,7 +263,7 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
         countOfHouseholdsByIncomeAndRentCategory.get(highestIncCat).add(RENT_CATEGORIES);  // make sure that most expensive category can be afforded by richest households
         for (IncomeCategory incomeCategory : IncomeCategory.values()) {
             float sum = countOfHouseholdsByIncomeAndRentCategory.get(incomeCategory).size();
-            Map<Integer, Float> shareOfRentsForThisIncCat = new HashMap<>();
+            Map<Integer, Float> shareOfRentsForThisIncCat = new LinkedHashMap<>();
             for (int rentCategory = 0; rentCategory <= RENT_CATEGORIES; rentCategory++) {
                 int thisRentAndIncomeCat = countOfHouseholdsByIncomeAndRentCategory.get(incomeCategory).count(rentCategory);
                 if (sum != 0) {
@@ -456,7 +456,7 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
         TableDataSet developmentTable = SiloUtil.readCSVfile(baseDirectory + Properties.get().geo.landUseAndDevelopmentFile);
 
         int[] zoneIdData = developmentTable.getColumnAsInt("Zone");
-        Map<DwellingType, int[]> constraintData = new HashMap<>();
+        Map<DwellingType, int[]> constraintData = new LinkedHashMap<>();
         for (DwellingType dwellingType : dwellingTypes.getTypes()) {
             constraintData.put(dwellingType, developmentTable.getColumnAsInt(dwellingType.toString()));
         }
@@ -466,7 +466,7 @@ public class RealEstateDataManagerImpl implements RealEstateDataManager {
         for (int i = 0; i < zoneIdData.length; i++) {
             if(geoData.getZones().containsKey(zoneIdData[i])) {
 
-                Map<DwellingType, Boolean> constraints = new HashMap<>();
+                Map<DwellingType, Boolean> constraints = new LinkedHashMap<>();
                 for (DwellingType dwellingType : dwellingTypes.getTypes()) {
                     constraints.put(dwellingType, constraintData.get(dwellingType)[i] == 1);
                 }

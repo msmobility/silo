@@ -9,7 +9,7 @@ public class RegionImpl implements Region {
 
     private final Set<Zone> zones = new LinkedHashSet<>();
     private final int id;
-    private final Map<String, Object> attributes = new HashMap<>();
+    private final Map<String, Object> attributes = new LinkedHashMap<>();
 
     public RegionImpl(int id) {
         this.id = id;

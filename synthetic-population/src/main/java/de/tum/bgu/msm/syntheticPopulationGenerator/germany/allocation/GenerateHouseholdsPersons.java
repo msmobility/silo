@@ -163,7 +163,7 @@ public class GenerateHouseholdsPersons {
             totalHouseholds = (int) PropertiesSynPop.get().main.marginalsBorough.getIndexedValueAt(municipality, "borough_hhTotal");
         }
         probTAZ = dataSetSynPop.getProbabilityZone().get(municipality);
-        probMicroData = new HashMap<>();
+        probMicroData = new LinkedHashMap<>();
         probabilityId = new double[dataSetSynPop.getWeights().getRowCount()];
         ids = new int[probabilityId.length];
         sumProbabilities = 0;

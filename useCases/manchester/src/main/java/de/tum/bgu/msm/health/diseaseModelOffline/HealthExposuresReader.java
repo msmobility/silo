@@ -13,6 +13,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class HealthExposuresReader {
@@ -22,7 +23,7 @@ public class HealthExposuresReader {
     public Map<Integer, PersonHealth> readData(HealthDataContainerImpl dataContainer, String path) {
         logger.info("Reading person micro data with health exposures");
         PersonFactoryMCRHealth ppFactory = new PersonFactoryMCRHealth();
-        Map<Integer, PersonHealth> persons = new HashMap<>();
+        Map<Integer, PersonHealth> persons = new LinkedHashMap<>();
 
         String recString = "";
         int recCount = 0;
@@ -51,7 +52,7 @@ public class HealthExposuresReader {
                 pp.updateWeeklyMarginalMetHours(Mode.bicycle, Float.parseFloat(lineElements[posMmetCycle]));
                 pp.setWeeklyMarginalMetHoursSport(Float.parseFloat(lineElements[posMmetSport]));
 
-                Map<String, Float> exposureMap = new HashMap<>();
+                Map<String, Float> exposureMap = new LinkedHashMap<>();
                 exposureMap.put("pm2.5", Float.parseFloat(lineElements[posPM2_5]));
                 exposureMap.put("no2", Float.parseFloat(lineElements[posNO2]));
                 pp.setWeeklyExposureByPollutantNormalised(exposureMap);

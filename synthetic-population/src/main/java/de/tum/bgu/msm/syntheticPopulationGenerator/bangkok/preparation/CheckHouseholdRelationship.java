@@ -8,6 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class CheckHouseholdRelationship {
@@ -576,11 +577,11 @@ public class CheckHouseholdRelationship {
         SiloUtil.addIntegerColumnToTableDataSet(microDataPerson, "rearrangedRole");
         SiloUtil.addIntegerColumnToTableDataSet(microDataHousehold,"nonClassifiedMales");
         SiloUtil.addIntegerColumnToTableDataSet(microDataHousehold, "nonClassifiedFemales");
-        childrenInHousehold = new HashMap<>();
-        noClass = new HashMap<>();
-        singles = new HashMap<>();
-        married = new HashMap<>();
-        headCouple = new HashMap<>();
+        childrenInHousehold = new LinkedHashMap<>();
+        noClass = new LinkedHashMap<>();
+        singles = new LinkedHashMap<>();
+        married = new LinkedHashMap<>();
+        headCouple = new LinkedHashMap<>();
     }
 
 
@@ -600,7 +601,7 @@ public class CheckHouseholdRelationship {
         }
         HashMap<Integer, Integer> inner = outer.get(key);
         if (inner == null){
-            inner = new HashMap<Integer, Integer>();
+            inner = new LinkedHashMap<Integer, Integer>();
             outer.put(key, inner);
         }
         inner.put(row, age);

@@ -31,6 +31,7 @@ import org.matsim.api.core.v01.TransportMode;
 
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static de.tum.bgu.msm.data.dwelling.RealEstateUtils.RENT_CATEGORIES;
@@ -255,7 +256,7 @@ public class LongCommutePenaltytHousingStrategyTak implements HousingStrategy {
         final Map<Integer, Double> rentsByRegion = dataContainer.getRealEstateDataManager().calculateRegionalPrices();
         thisYearRentByRegion = rentsByRegion;
         for (IncomeCategory incomeCategory : IncomeCategory.values()) {
-            Map<Integer, Double> utilityByRegion = new HashMap<>();
+            Map<Integer, Double> utilityByRegion = new LinkedHashMap<>();
             for (Region region : geoData.getRegions().values()) {
                 final int averageRegionalRent = rentsByRegion.get(region.getId()).intValue();
                 final float regAcc = (float) convertAccessToUtility(accessibility.getRegionalAccessibility(region));

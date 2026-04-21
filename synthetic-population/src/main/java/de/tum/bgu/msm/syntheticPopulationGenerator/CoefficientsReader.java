@@ -6,12 +6,13 @@ import de.tum.bgu.msm.util.MitoUtil;
 
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class CoefficientsReader extends AbstractCsvReader {
 
 
-    private final Map<String, Double> coefficients = new HashMap<>();
+    private final Map<String, Double> coefficients = new LinkedHashMap<>();
     private final String id;
 
     private int variableIndex;

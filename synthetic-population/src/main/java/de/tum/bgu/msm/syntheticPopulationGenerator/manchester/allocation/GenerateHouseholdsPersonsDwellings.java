@@ -287,7 +287,7 @@ public class GenerateHouseholdsPersonsDwellings {
 
         totalHouseholds = (int) PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, "hh");
 
-        probMicroData = new HashMap<>();
+        probMicroData = new LinkedHashMap<>();
         probabilityId = new double[dataSetSynPop.getWeights().getRowCount()];
         ids = new int[probabilityId.length];
         sumProbabilities = 0;
@@ -467,9 +467,9 @@ public class GenerateHouseholdsPersonsDwellings {
 
 
     private void summaryByCity(int municipality) {
-        Map<Integer, Household> householdMap = new HashMap<>();
-        Map<Integer, Dwelling> dwellingMap = new HashMap<>();
-        Map<Integer, Person> personMap = new HashMap<>();
+        Map<Integer, Household> householdMap = new LinkedHashMap<>();
+        Map<Integer, Dwelling> dwellingMap = new LinkedHashMap<>();
+        Map<Integer, Person> personMap = new LinkedHashMap<>();
         int ppNumber = 0;
         for (int hhNumber = 0; hhNumber < totalHouseholds; hhNumber++){
             Household hh = householdData.getHouseholdFromId(hhNumber + firstHouseholdMunicipality);

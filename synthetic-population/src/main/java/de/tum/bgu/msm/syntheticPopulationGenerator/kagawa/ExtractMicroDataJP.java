@@ -10,6 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -170,7 +171,7 @@ public class ExtractMicroDataJP {
     private void setAttributesToCopyFromMicroData() {
         //method to set the attributesControlTotal to read
 
-        attributesMicroData = new HashMap<>();
+        attributesMicroData = new LinkedHashMap<>();
         for (int i = 1; i <= variables.getRowCount(); i++){
             String key = variables.getStringValueAt(i,"Type");
             String value = variables.getStringValueAt(i,"VariableNameMicroData");
@@ -396,7 +397,7 @@ public class ExtractMicroDataJP {
         frequencyMatrix = new TableDataSet();
         frequencyMatrix.appendColumn(microHouseholds.getColumnAsInt("id"),"id");
 
-        attributesDictionary = new HashMap<>();
+        attributesDictionary = new LinkedHashMap<>();
 
         for (int i = 0; i < attributesControlTotal.length; i++){
             int finish = 0;
@@ -793,10 +794,10 @@ public class ExtractMicroDataJP {
         SiloUtil.addIntegerColumnToTableDataSet(microDataPerson, "rearrangedRole");
         SiloUtil.addIntegerColumnToTableDataSet(microDataHousehold,"nonClassifiedMales");
         SiloUtil.addIntegerColumnToTableDataSet(microDataHousehold, "nonClassifiedFemales"*//*);*/
-        childrenInHousehold = new HashMap<>();
-        noClass = new HashMap<>();
-        singles = new HashMap<>();
-        married = new HashMap<>();
+        childrenInHousehold = new LinkedHashMap<>();
+        noClass = new LinkedHashMap<>();
+        singles = new LinkedHashMap<>();
+        married = new LinkedHashMap<>();
     }
 
 
@@ -815,7 +816,7 @@ public class ExtractMicroDataJP {
         }
         HashMap<Integer, Integer> inner = outer.get(key);
         if (inner == null){
-            inner = new HashMap<Integer, Integer>();
+            inner = new LinkedHashMap<Integer, Integer>();
             outer.put(key, inner);
         }
         inner.put(row, age);

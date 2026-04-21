@@ -19,10 +19,7 @@ import de.tum.bgu.msm.models.modeChoice.CommuteModeChoiceMapping;
 import de.tum.bgu.msm.properties.Properties;
 import org.matsim.api.core.v01.TransportMode;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-import java.util.TreeMap;
+import java.util.*;
 
 public class ParkingSimpleMoceChoice implements CommuteModeChoice {
     private final Properties properties;
@@ -64,7 +61,7 @@ public class ParkingSimpleMoceChoice implements CommuteModeChoice {
 
         CommuteModeChoiceMapping commuteModeChoiceMapping = new CommuteModeChoiceMapping(HouseholdUtil.getNumberOfWorkers(household));
 
-        Map<Integer, Map<String, Double>> commuteModesByPerson = new HashMap<>();
+        Map<Integer, Map<String, Double>> commuteModesByPerson = new LinkedHashMap<>();
         TreeMap<Double, Person> personByProbability = new TreeMap<>();
 
         for (Person pp : household.getPersons().values()) {
@@ -97,7 +94,7 @@ public class ParkingSimpleMoceChoice implements CommuteModeChoice {
                     ptUtility = Math.exp(ptUtility);
                     carUtility = Math.exp(carUtility);
 
-                    Map<String, Double> utilityByMode = new HashMap<>();
+                    Map<String, Double> utilityByMode = new LinkedHashMap<>();
                     utilityByMode.put(TransportMode.car, Math.pow(commutingTimeProbabilityCar, B_EXP_HOUSING_UTILITY));
                     utilityByMode.put(TransportMode.pt, Math.pow(commutingTimeProbabilityPt, B_EXP_HOUSING_UTILITY));
                     commuteModesByPerson.put(pp.getId(), utilityByMode);
@@ -142,7 +139,7 @@ public class ParkingSimpleMoceChoice implements CommuteModeChoice {
 
         CommuteModeChoiceMapping commuteModeChoiceMapping = new CommuteModeChoiceMapping(HouseholdUtil.getNumberOfWorkers(household));
 
-        Map<Integer, Map<String, Double>> commuteModesByPerson = new HashMap<>();
+        Map<Integer, Map<String, Double>> commuteModesByPerson = new LinkedHashMap<>();
         TreeMap<Double, Person> personByProbability = new TreeMap<>();
 
 
@@ -169,7 +166,7 @@ public class ParkingSimpleMoceChoice implements CommuteModeChoice {
                     LocationParkingData locationParkingData = (LocationParkingData) region.getAttributes().get("PARKING");
                     double penaltyDueToParking = 0.1 + 0.3 * locationParkingData.getParkingQuality();
                     carUtility = carUtility * penaltyDueToParking;
-                    Map<String, Double> utilityByMode = new HashMap<>();
+                    Map<String, Double> utilityByMode = new LinkedHashMap<>();
                     utilityByMode.put(TransportMode.car, Math.pow(commutingTimeProbabilityCar, B_EXP_HOUSING_UTILITY));
                     utilityByMode.put(TransportMode.pt, Math.pow(commutingTimeProbabilityPt, B_EXP_HOUSING_UTILITY));
                     commuteModesByPerson.put(pp.getId(), utilityByMode);

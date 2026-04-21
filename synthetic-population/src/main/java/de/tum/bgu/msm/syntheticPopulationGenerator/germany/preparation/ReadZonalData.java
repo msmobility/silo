@@ -46,7 +46,7 @@ public class ReadZonalData {
         //List of municipalities and counties that are used for IPU and allocation
         ArrayList<Integer> municipalities = new ArrayList<>();
         ArrayList<Integer> counties = new ArrayList<>();
-        municipalitiesByCounty = new HashMap<>();
+        municipalitiesByCounty = new LinkedHashMap<>();
         ArrayList<Integer> municipalitiesWithZero = new ArrayList<>();
         for (int row = 1; row <= PropertiesSynPop.get().main.selectedMunicipalities.getRowCount(); row++) {
             if (PropertiesSynPop.get().main.selectedMunicipalities.getValueAt(row, "Select") == 1f) {
@@ -77,7 +77,7 @@ public class ReadZonalData {
         dataSetSynPop.setMunicipalitiesWithZeroPopulation(municipalitiesWithZero);
 
         if (PropertiesSynPop.get().main.boroughIPU) {
-            HashMap<Integer, ArrayList> boroughsByCounty = new HashMap<>();
+            HashMap<Integer, ArrayList> boroughsByCounty = new LinkedHashMap<>();
             ArrayList<Integer> boroughs = new ArrayList<>();
             ArrayList<Integer> countieswithBoroughs = new ArrayList<>();
             for (int row = 1; row <= PropertiesSynPop.get().main.selectedBoroughs.getRowCount(); row++) {
@@ -106,11 +106,11 @@ public class ReadZonalData {
     private void readZones(){
         //TAZ attributes
         logger.info("   Started to read TAZ 100 by 100 m");
-        HashMap<Integer, int[]> cityTAZ = new HashMap<>();
-        Map<Integer, Map<Integer, Float>> probabilityZone = new HashMap<>();
+        HashMap<Integer, int[]> cityTAZ = new LinkedHashMap<>();
+        Map<Integer, Map<Integer, Float>> probabilityZone = new LinkedHashMap<>();
         Table<Integer, Integer, Integer> schoolCapacity = HashBasedTable.create();
         Table<Integer, String, Integer> zoneCoordinates = HashBasedTable.create();
-        Map<Integer, Integer> universityByZone = new HashMap<>();
+        Map<Integer, Integer> universityByZone = new LinkedHashMap<>();
         ArrayList<Integer> tazs = new ArrayList<>();
         TableDataSet zoneAttributes;
         if (!PropertiesSynPop.get().main.boroughIPU){
@@ -139,7 +139,7 @@ public class ReadZonalData {
             } else {
                 int[] previousTaz = {taz};
                 cityTAZ.put(city,previousTaz);
-                Map<Integer, Float> probabilities = new HashMap<>();
+                Map<Integer, Float> probabilities = new LinkedHashMap<>();
                 probabilities.put(taz, probability);
                 probabilityZone.put(city, probabilities);
             }

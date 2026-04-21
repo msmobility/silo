@@ -5,6 +5,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.matsim.contrib.emissions.Pollutant;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class ActivityLocation {
@@ -13,7 +14,7 @@ public class ActivityLocation {
 
     private final Coordinate coordinate;
 
-    private Map<Pollutant, OpenIntFloatHashMap> exposure2Pollutant2TimeBin = new HashMap<>();
+    private Map<Pollutant, OpenIntFloatHashMap> exposure2Pollutant2TimeBin = new LinkedHashMap<>();
 
     private OpenIntFloatHashMap noiseLevel2TimeBin = new OpenIntFloatHashMap();
 

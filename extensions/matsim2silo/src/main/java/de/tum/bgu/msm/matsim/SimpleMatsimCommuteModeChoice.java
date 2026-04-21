@@ -19,10 +19,7 @@ import de.tum.bgu.msm.models.modeChoice.CommuteModeChoiceMapping;
 import de.tum.bgu.msm.properties.Properties;
 import org.matsim.api.core.v01.TransportMode;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Copy of SimpleCommuteModeChoice, but with person in argument of travel time request
@@ -33,7 +30,7 @@ public class SimpleMatsimCommuteModeChoice implements CommuteModeChoice {
     private final CommutingTimeProbability commutingTimeProbability;
     private final JobDataManager jobDataManager;
     private final GeoData geoData;
-    private Random random;
+    private final Random random;
 
     public SimpleMatsimCommuteModeChoice(DataContainer dataContainer,
                                          Properties properties, Random random) {
@@ -50,7 +47,7 @@ public class SimpleMatsimCommuteModeChoice implements CommuteModeChoice {
 
         CommuteModeChoiceMapping commuteModeChoiceMapping = new CommuteModeChoiceMapping(HouseholdUtil.getNumberOfWorkers(household));
 
-        Map<Integer, Map<String, Double>> commuteModesByPerson = new HashMap<>();
+        Map<Integer, Map<String, Double>> commuteModesByPerson = new LinkedHashMap<>();
         TreeMap<Double, Person> personByProbability = new TreeMap<>();
 
         for (Person pp : household.getPersons().values()) {
@@ -69,7 +66,7 @@ public class SimpleMatsimCommuteModeChoice implements CommuteModeChoice {
                     // TODO clean up the following line
                     int carMinutes = (int) ((MatsimTravelTimesAndCosts) travelTimes).getTravelTime(from, job, job.getStartTimeInSeconds().orElse((int) properties.transportModel.peakHour_s), TransportMode.car, pp);
                     double carUtility = commutingTimeProbability.getCommutingTimeProbability(carMinutes, TransportMode.car);
-                    Map<String, Double> utilityByMode = new HashMap<>();
+                    Map<String, Double> utilityByMode = new LinkedHashMap<>();
                     utilityByMode.put(TransportMode.car, carUtility);
                     utilityByMode.put(TransportMode.pt, ptUtility);
                     commuteModesByPerson.put(pp.getId(), utilityByMode);
@@ -114,7 +111,7 @@ public class SimpleMatsimCommuteModeChoice implements CommuteModeChoice {
 
         CommuteModeChoiceMapping commuteModeChoiceMapping = new CommuteModeChoiceMapping(HouseholdUtil.getNumberOfWorkers(household));
 
-        Map<Integer, Map<String, Double>> commuteModesByPerson = new HashMap<>();
+        Map<Integer, Map<String, Double>> commuteModesByPerson = new LinkedHashMap<>();
         TreeMap<Double, Person> personByProbability = new TreeMap<>();
 
 
@@ -134,7 +131,7 @@ public class SimpleMatsimCommuteModeChoice implements CommuteModeChoice {
                 } else {
                     int carMinutes = (int) travelTimes.getTravelTimeFromRegion(region, jobZone, job.getStartTimeInSeconds().orElse((int) properties.transportModel.peakHour_s), TransportMode.car);
                     double carUtility = commutingTimeProbability.getCommutingTimeProbability(carMinutes, TransportMode.car);
-                    Map<String, Double> utilityByMode = new HashMap<>();
+                    Map<String, Double> utilityByMode = new LinkedHashMap<>();
                     utilityByMode.put(TransportMode.car, carUtility);
                     utilityByMode.put(TransportMode.pt, ptUtility);
                     commuteModesByPerson.put(pp.getId(), utilityByMode);

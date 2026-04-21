@@ -11,10 +11,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Updates prices of dwellings based on current demand
@@ -49,9 +46,9 @@ public final class PricingModelImpl extends AbstractModel implements PricingMode
     @Override
     public void prepareYear(int year) {
 
-        changeRateDistribution = new HashMap<>();
+        changeRateDistribution = new LinkedHashMap<>();
         for (DwellingType type : dataContainer.getRealEstateDataManager().getDwellingTypes().getTypes()) {
-            changeRateDistribution.put(type, new HashMap<>());
+            changeRateDistribution.put(type, new LinkedHashMap<>());
         }
     }
 
@@ -78,7 +75,7 @@ public final class PricingModelImpl extends AbstractModel implements PricingMode
         // get vacancy rate
         double[][] vacRate = dataContainer.getRealEstateDataManager().getVacancyRateByTypeAndRegion();
         List<DwellingType> dwellingTypes = dataContainer.getRealEstateDataManager().getDwellingTypes().getTypes();
-//        HashMap<String, Integer> priceChange = new HashMap<>();
+//        HashMap<String, Integer> priceChange = new LinkedHashMap<>();
 
         double[] globalVacRate = dataContainer.getRealEstateDataManager().getAverageVacancyByDwellingType();
         int[] cnt = new int[dwellingTypes.size()];

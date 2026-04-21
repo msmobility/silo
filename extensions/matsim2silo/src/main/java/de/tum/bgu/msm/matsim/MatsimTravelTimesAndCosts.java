@@ -49,7 +49,7 @@ public final class MatsimTravelTimesAndCosts implements TravelTimes {
 
     private MatsimData matsimData;
 
-    private final Map<String, IndexedDoubleMatrix2D> skimsByMode = new HashMap<>();
+    private final Map<String, IndexedDoubleMatrix2D> skimsByMode = new LinkedHashMap<>();
     private Map<Integer, Zone> zones;
 
     private TripRouter tripRouter;

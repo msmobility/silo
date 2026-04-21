@@ -29,10 +29,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -248,9 +245,9 @@ public class SyntheticPopGermanyMitoByState implements SyntheticPopI {
 
     private void writeMultipleFilesForHouseholdsAndPersons(DataContainerWithSchools dataContainer){
 
-        Map<Integer, PrintWriter> householdWriter = new HashMap<>();
-        Map<Integer, PrintWriter> personWriter = new HashMap<>();
-        Map<Integer, PrintWriter> dwellingWriter = new HashMap<>();
+        Map<Integer, PrintWriter> householdWriter = new LinkedHashMap<>();
+        Map<Integer, PrintWriter> personWriter = new LinkedHashMap<>();
+        Map<Integer, PrintWriter> dwellingWriter = new LinkedHashMap<>();
 
         String outputFolder = properties.main.baseDirectory  + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
                 + "/subPopulations/" + PropertiesSynPop.get().main.state + "/";
@@ -383,9 +380,9 @@ public class SyntheticPopGermanyMitoByState implements SyntheticPopI {
 
     private void writesubsample(DataContainerWithSchools dataContainer, int samplingRate){
 
-        Map<Integer, PrintWriter> householdWriter = new HashMap<>();
-        Map<Integer, PrintWriter> personWriter = new HashMap<>();
-        Map<Integer, PrintWriter> dwellingWriter = new HashMap<>();
+        Map<Integer, PrintWriter> householdWriter = new LinkedHashMap<>();
+        Map<Integer, PrintWriter> personWriter = new LinkedHashMap<>();
+        Map<Integer, PrintWriter> dwellingWriter = new LinkedHashMap<>();
 
         String outputFolder = properties.main.baseDirectory  + PropertiesSynPop.get().main.pathSyntheticPopulationFiles
                 + "/subPopulations00/" ;

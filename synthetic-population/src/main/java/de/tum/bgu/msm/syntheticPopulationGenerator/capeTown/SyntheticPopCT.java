@@ -204,14 +204,14 @@ import org.apache.logging.log4j.Logger;
 //
 //        String fileName = "input/syntheticPopulation/variablesCTDictionary.csv";
 //
-//        attributeCodeValues = new HashMap<>();
-//        attributesControlTotal = new HashMap<>();
-//        attributesMicroPerson = new HashMap<>();
-//        attributesMicroHousehold = new HashMap<>();
-//        attributeCodeToControlTotal = new HashMap<>();
-//        attributeCodeToMicroPerson = new HashMap<>();
-//        attributeCodeToMicroHousehold = new HashMap<>();
-//        HashMap<Integer, String> attributeOrder = new HashMap<>();
+//        attributeCodeValues = new LinkedHashMap<>();
+//        attributesControlTotal = new LinkedHashMap<>();
+//        attributesMicroPerson = new LinkedHashMap<>();
+//        attributesMicroHousehold = new LinkedHashMap<>();
+//        attributeCodeToControlTotal = new LinkedHashMap<>();
+//        attributeCodeToMicroPerson = new LinkedHashMap<>();
+//        attributeCodeToMicroHousehold = new LinkedHashMap<>();
+//        HashMap<Integer, String> attributeOrder = new LinkedHashMap<>();
 //
 //        String recString = "";
 //        int recCount = 0;
@@ -320,7 +320,7 @@ import org.apache.logging.log4j.Logger;
 //        TableDataSet selectedMunicipalities = SiloUtil.readCSVfile(rb.getString(PROPERTIES_SELECTED_MUNICIPALITIES_LIST)); //TableDataSet with all municipalities
 //        municipalities = new ArrayList<>();
 //        counties = new ArrayList<>();
-//        municipalitiesByCounty = new HashMap<>();
+//        municipalitiesByCounty = new LinkedHashMap<>();
 //        for (int row = 1; row <= selectedMunicipalities.getRowCount(); row++){
 //            if (selectedMunicipalities.getValueAt(row,"Select") == 1f){
 //                int city = (int) selectedMunicipalities.getValueAt(row,"ID_city");
@@ -347,7 +347,7 @@ import org.apache.logging.log4j.Logger;
 //        //TAZ attributes
 //        cellsMatrix = SiloUtil.readCSVfile(rb.getString(PROPERTIES_RASTER_CELLS));
 //        cellsMatrix.buildIndex(cellsMatrix.getColumnPosition("ID_cell"));
-//        cityTAZ = new HashMap<>();
+//        cityTAZ = new LinkedHashMap<>();
 //        for (int i = 1; i <= cellsMatrix.getRowCount(); i++){
 //            int city = (int) cellsMatrix.getValueAt(i,"ID_city");
 //            int taz = (int) cellsMatrix.getValueAt(i,"ID_cell");
@@ -511,8 +511,8 @@ import org.apache.logging.log4j.Logger;
 //    private void readPersons() {
 //
 //        String fileName = "input/syntheticPopulation/newPersons.csv";
-//        personsInHouseholds = new HashMap<>();
-//        HashMap<Integer, HashMap<String, Integer>> noDatas = new HashMap<>();
+//        personsInHouseholds = new LinkedHashMap<>();
+//        HashMap<Integer, HashMap<String, Integer>> noDatas = new LinkedHashMap<>();
 //
 //        String recString = "";
 //        int recCount = 0;
@@ -524,7 +524,7 @@ import org.apache.logging.log4j.Logger;
 //            String[] header = recString.split(",");
 //            int posHhId   = SiloUtil.findPositionInArray("new$X.x", header);
 //            int posId   = SiloUtil.findPositionInArray("X.y",header);
-//            HashMap<String, Integer> positionAttribute = new HashMap<>();
+//            HashMap<String, Integer> positionAttribute = new LinkedHashMap<>();
 //            for (int i = 0; i < microPersonAttributes.length; i++){
 //                positionAttribute.put(microPersonAttributes[i], SiloUtil.findPositionInArray(microPersonAttributes[i], header));
 //            }
@@ -536,7 +536,7 @@ import org.apache.logging.log4j.Logger;
 //                int idHh = Integer.parseInt(lineElements[posHhId]);
 //                Integer id = Integer.parseInt(lineElements[posId]);
 //                recCount++;
-//                HashMap<String, Integer> attributeMap = new HashMap<>();
+//                HashMap<String, Integer> attributeMap = new LinkedHashMap<>();
 //                attributeMap.put("hhId", idHh);
 //                boolean allData = true;
 //                for (int i = 0; i < microPersonAttributes.length; i++){
@@ -598,7 +598,7 @@ import org.apache.logging.log4j.Logger;
 //
 //        String fileName = "input/syntheticPopulation/newHouseholds.csv";
 //
-//        households = new HashMap<>();
+//        households = new LinkedHashMap<>();
 //        String recString = "";
 //        int recCount = 0;
 //        try {
@@ -608,7 +608,7 @@ import org.apache.logging.log4j.Logger;
 //            // read header
 //            String[] header = recString.split(",");
 //            int posId = SiloUtil.findPositionInArray("X.x", header);
-//            HashMap<String, Integer> positionAttribute = new HashMap<>();
+//            HashMap<String, Integer> positionAttribute = new LinkedHashMap<>();
 //            for (Map.Entry<String, String> pairCode : attributeCodeToMicroHousehold.entrySet()){
 //                String attributeMicro = pairCode.getValue();
 //                positionAttribute.put(attributeMicro, SiloUtil.findPositionInArray(attributeMicro, header));
@@ -619,7 +619,7 @@ import org.apache.logging.log4j.Logger;
 //                recCount++;
 //                String[] lineElements = recString.split(",");
 //                int idhH = Integer.parseInt(lineElements[posId]);
-//                HashMap<String, Integer> attributeMap = new HashMap<>();
+//                HashMap<String, Integer> attributeMap = new LinkedHashMap<>();
 //                for (Map.Entry<String, String> pairCode : attributeCodeToMicroHousehold.entrySet()){
 //                    String attribute = pairCode.getKey();
 //                    String attributeMicro =  pairCode.getValue();
@@ -805,10 +805,10 @@ import org.apache.logging.log4j.Logger;
 //            } else {
 //
 //                //Create the maps to store the classified members of the households
-//                HashMap<Integer, Integer> childrenInHousehold = new HashMap<>();
-//                HashMap<String, HashMap<Integer, Integer>> noClass = new HashMap<>();
-//                HashMap<String, HashMap<Integer, Integer>> singles = new HashMap<>();
-//                HashMap<String, HashMap<Integer, Integer>> married = new HashMap<>();
+//                HashMap<Integer, Integer> childrenInHousehold = new LinkedHashMap<>();
+//                HashMap<String, HashMap<Integer, Integer>> noClass = new LinkedHashMap<>();
+//                HashMap<String, HashMap<Integer, Integer>> singles = new LinkedHashMap<>();
+//                HashMap<String, HashMap<Integer, Integer>> married = new LinkedHashMap<>();
 //
 //                //direct classification of the members of the household
 //                for (int j = 0; j < hhSize; j++) {
@@ -1054,13 +1054,13 @@ import org.apache.logging.log4j.Logger;
 //            municipalities = municipalitiesByCounty.get(county);
 //
 //            //weights, values, control totals
-//            Map<Integer, double[]> weightsByMun = Collections.synchronizedMap(new HashMap<>());
-//            Map<Integer, double[]> minWeightsByMun = Collections.synchronizedMap(new HashMap<>());
-//            Map<String, int[]> valuesByHousehold = Collections.synchronizedMap(new HashMap<>());
-//            Map<String, Integer> totalCounty = Collections.synchronizedMap(new HashMap<>());
-//            Map<Integer, Map<String, Integer>> totalMunicipality = Collections.synchronizedMap(new HashMap<>());
-//            Map<Integer, Map<String, Double>> errorByMun = Collections.synchronizedMap(new HashMap<>());
-//            Map<String, Double> errorByRegion = Collections.synchronizedMap(new HashMap<>());
+//            Map<Integer, double[]> weightsByMun = Collections.synchronizedMap(new LinkedHashMap<>());
+//            Map<Integer, double[]> minWeightsByMun = Collections.synchronizedMap(new LinkedHashMap<>());
+//            Map<String, int[]> valuesByHousehold = Collections.synchronizedMap(new LinkedHashMap<>());
+//            Map<String, Integer> totalCounty = Collections.synchronizedMap(new LinkedHashMap<>());
+//            Map<Integer, Map<String, Integer>> totalMunicipality = Collections.synchronizedMap(new LinkedHashMap<>());
+//            Map<Integer, Map<String, Double>> errorByMun = Collections.synchronizedMap(new LinkedHashMap<>());
+//            Map<String, Double> errorByRegion = Collections.synchronizedMap(new LinkedHashMap<>());
 //            double weightedSum0 = 0f;
 //
 //            //parameters of the IPU
@@ -1109,10 +1109,10 @@ import org.apache.logging.log4j.Logger;
 //                        inner1.put(attribute, 0.);
 //                        errorByMun.put(municipality, inner1);
 //                    } else {
-//                        HashMap<String, Integer> inner = new HashMap<>();
+//                        HashMap<String, Integer> inner = new LinkedHashMap<>();
 //                        inner.put(attribute, (int) marginalsMunicipality.getIndexedValueAt(municipality, attribute));
 //                        totalMunicipality.put(municipality, inner);
-//                        HashMap<String, Double> inner1 = new HashMap<>();
+//                        HashMap<String, Double> inner1 = new LinkedHashMap<>();
 //                        inner1.put(attribute, 0.);
 //                        errorByMun.put(municipality, inner1);
 //                    }
@@ -1177,7 +1177,7 @@ import org.apache.logging.log4j.Logger;
 //                Iterator<Integer> iterator1 = municipalities.iterator();
 //                while (iterator1.hasNext()){
 //                    Integer municipality = iterator1.next();
-//                    Map<String, Double> errorsByMunicipality = Collections.synchronizedMap(new HashMap<>());
+//                    Map<String, Double> errorsByMunicipality = Collections.synchronizedMap(new LinkedHashMap<>());
 //                    executor1.addTaskToQueue(() ->{
 //                        for (String attribute : attributesMunicipality){
 //                            double weightedSumMunicipality = SiloUtil.sumProduct(weightsByMun.get(municipality), valuesByHousehold.get(attribute));
@@ -1833,11 +1833,11 @@ import org.apache.logging.log4j.Logger;
 //
 //        //Driver license probability
 //        TableDataSet probabilityDriverLicense = SiloUtil.readCSVfile("input/syntheticPopulation/driverLicenseProb.csv");
-//        educationalLevelByPerson = new HashMap<>();
+//        educationalLevelByPerson = new LinkedHashMap<>();
 //        generateCountersForValidation();
 //
 //        //Create hashmaps to store quality of occupied dwellings
-//        HashMap<Integer, int[]> ddQuality = new HashMap<>();
+//        HashMap<Integer, int[]> ddQuality = new LinkedHashMap<>();
 //        numberofQualityLevels = ResourceUtil.getIntegerProperty(rb, PROPERTIES_NUMBER_OF_DWELLING_QUALITY_LEVELS);
 //        for (int municipality = 0; municipality < cityID.length; municipality++){
 //            for (int year : yearBracketsDwelling){
@@ -2363,13 +2363,13 @@ import org.apache.logging.log4j.Logger;
 //        logger.info("  Identifying vacant jobs by zone");
 //        Collection<Job> jobs = dataContainer.getJobData().getJobs();
 //
-//        idVacantJobsByZoneType = new HashMap<>();
-//        numberVacantJobsByType = new HashMap<>();
-//        idZonesVacantJobsByType = new HashMap<>();
-//        numberZonesByType = new HashMap<>();
-//        numberVacantJobsByZoneByType = new HashMap<>();
+//        idVacantJobsByZoneType = new LinkedHashMap<>();
+//        numberVacantJobsByType = new LinkedHashMap<>();
+//        idZonesVacantJobsByType = new LinkedHashMap<>();
+//        numberZonesByType = new LinkedHashMap<>();
+//        numberVacantJobsByZoneByType = new LinkedHashMap<>();
 //        jobStringTypes = ResourceUtil.getArray(rb, PROPERTIES_JOB_TYPES);
-//        jobIntTypes = new HashMap<>();
+//        jobIntTypes = new LinkedHashMap<>();
 //        for (int i = 0; i < jobStringTypes.length; i++) {
 //            jobIntTypes.put(jobStringTypes[i], i);
 //        }
@@ -2437,10 +2437,10 @@ import org.apache.logging.log4j.Logger;
 //    private void identifyVacantSchoolsByZoneByType(){
 //        logger.info("   Create vacant schools");
 //
-//        numberVacantSchoolsByZoneByType = new HashMap<>();
-//        numberZonesWithVacantSchoolsByType = new HashMap<>();
-//        idZonesVacantSchoolsByType = new HashMap<>();
-//        schoolCapacityByType = new HashMap<>();
+//        numberVacantSchoolsByZoneByType = new LinkedHashMap<>();
+//        numberZonesWithVacantSchoolsByType = new LinkedHashMap<>();
+//        idZonesVacantSchoolsByType = new LinkedHashMap<>();
+//        schoolCapacityByType = new LinkedHashMap<>();
 //        schoolTypes = ResourceUtil.getIntegerArray(rb, PROPERTIES_SCHOOL_TYPES_DE);
 //        int[] cellsID = cellsMatrix.getColumnAsInt("ID_cell");
 //
@@ -2964,7 +2964,7 @@ import org.apache.logging.log4j.Logger;
 //        }
 //        HashMap<Integer, Integer> inner = outer.get(key);
 //        if (inner == null){
-//            inner = new HashMap<Integer, Integer>();
+//            inner = new LinkedHashMap<Integer, Integer>();
 //            outer.put(key, inner);
 //        }
 //        inner.put(row, age);
@@ -3089,7 +3089,7 @@ import org.apache.logging.log4j.Logger;
 //            innerMap.put(valueString, valueCode);
 //            map.put(label, innerMap);
 //        } else {
-//            HashMap<String, Integer> innerMap = new HashMap<>();
+//            HashMap<String, Integer> innerMap = new LinkedHashMap<>();
 //            innerMap.put(valueString, valueCode);
 //            map.put(label, innerMap);
 //        }
@@ -3103,7 +3103,7 @@ import org.apache.logging.log4j.Logger;
 //            innerMap.put(valueString, valueCode);
 //            map.put(label, innerMap);
 //        } else {
-//            Map<String, Double> innerMap = new HashMap<>();
+//            Map<String, Double> innerMap = new LinkedHashMap<>();
 //            innerMap.put(valueString, valueCode);
 //            map.put(label, innerMap);
 //        }
@@ -3117,7 +3117,7 @@ import org.apache.logging.log4j.Logger;
 //            innerMap.put(valueInt, valueCode);
 //            map.put(label, innerMap);
 //        } else {
-//            HashMap<Integer, Integer> innerMap = new HashMap<>();
+//            HashMap<Integer, Integer> innerMap = new LinkedHashMap<>();
 //            innerMap.put(valueInt, valueCode);
 //            map.put(label, innerMap);
 //        }
@@ -3130,7 +3130,7 @@ import org.apache.logging.log4j.Logger;
 //            inner.put(id, attributeMap);
 //            personsInHouseholds.put(hhId, inner);
 //        } else {
-//            HashMap<Integer, HashMap<String, Integer>> inner = new HashMap<>();
+//            HashMap<Integer, HashMap<String, Integer>> inner = new LinkedHashMap<>();
 //            inner.put(id, attributeMap);
 //            personsInHouseholds.put(hhId, inner);
 //        }

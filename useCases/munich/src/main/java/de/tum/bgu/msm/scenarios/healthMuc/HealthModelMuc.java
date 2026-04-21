@@ -76,7 +76,7 @@ public class HealthModelMuc extends AbstractModel implements ModelUpdateListener
                 scenario = ScenarioUtils.createMutableScenario(initialMatsimConfig);
                 String networkFile = properties.main.baseDirectory + "/" + scenario.getConfig().network().getInputFile();
                 new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
-                Map<Id<Link>, LinkInfo> linkInfoMap = new HashMap<>();
+                Map<Id<Link>, LinkInfo> linkInfoMap = new LinkedHashMap<>();
                 for(Link link : scenario.getNetwork().getLinks().values()){
                     linkInfoMap.put(link.getId(), new LinkInfo(link.getId()));
                 }
@@ -114,7 +114,7 @@ public class HealthModelMuc extends AbstractModel implements ModelUpdateListener
                 scenario = ScenarioUtils.createMutableScenario(initialMatsimConfig);
                 String networkFile = properties.main.baseDirectory + "/" + scenario.getConfig().network().getInputFile();
                 new MatsimNetworkReader(scenario.getNetwork()).readFile(networkFile);
-                Map<Id<Link>, LinkInfo> linkInfoMap = new HashMap<>();
+                Map<Id<Link>, LinkInfo> linkInfoMap = new LinkedHashMap<>();
                 for(Link link : scenario.getNetwork().getLinks().values()){
                     linkInfoMap.put(link.getId(), new LinkInfo(link.getId()));
                 }
@@ -352,12 +352,12 @@ public class HealthModelMuc extends AbstractModel implements ModelUpdateListener
             pathExposureNo2 += linkExposureNo2;
         }
 
-        Map<String, Float> accidentRiskMap = new HashMap<>();
+        Map<String, Float> accidentRiskMap = new LinkedHashMap<>();
         //accidentRiskMap.put("lightInjury", pathLightInjuryRisk);
         accidentRiskMap.put("severeInjury", (float) pathSevereInjuryRisk);
         accidentRiskMap.put("fatality", (float) pathFatalityRisk);
 
-        Map<String, Float> exposureMap = new HashMap<>();
+        Map<String, Float> exposureMap = new LinkedHashMap<>();
         exposureMap.put("pm2.5", (float) pathExposurePm25);
         exposureMap.put("no2", (float) pathExposureNo2);
 
@@ -380,7 +380,7 @@ public class HealthModelMuc extends AbstractModel implements ModelUpdateListener
         }
 
         // todo: consider location-specific exposures & occupation-specific METs for work activities
-        Map<String, Float> exposureMap = new HashMap<>();
+        Map<String, Float> exposureMap = new LinkedHashMap<>();
         exposureMap.put("pm2.5", (float) PollutionExposure.getActivityExposurePm25(activityDuration));
         exposureMap.put("no2", (float) PollutionExposure.getActivityExposureNo2(activityDuration));
 
@@ -473,7 +473,7 @@ public class HealthModelMuc extends AbstractModel implements ModelUpdateListener
         for(Person person : dataContainer.getHouseholdDataManager().getPersons()) {
             double minutesAtHome = Math.max(0., 10080. - (((PersonHealth) person).getWeeklyTravelSeconds() / 60.) - (((PersonHealth) person).getWeeklyActivityMinutes()));
 
-            Map<String, Float> exposureMap = new HashMap<>();
+            Map<String, Float> exposureMap = new LinkedHashMap<>();
             exposureMap.put("pm2.5", (float) PollutionExposure.getHomeExposurePm25(minutesAtHome));
             exposureMap.put("no2", (float) PollutionExposure.getHomeExposureNo2(minutesAtHome));
 

@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class AccidentRateModelCoefficientReader {
@@ -15,8 +16,8 @@ public class AccidentRateModelCoefficientReader {
     private AccidentType accidentType;
     private AccidentSeverity accidentSeverity;
     private String path;
-    private final Map<String, Double> coefficients = new HashMap<>();
-    private final Map<Integer, Double>  timeOfDayDistribution = new HashMap<>();
+    private final Map<String, Double> coefficients = new LinkedHashMap<>();
+    private final Map<Integer, Double>  timeOfDayDistribution = new LinkedHashMap<>();
 
     public AccidentRateModelCoefficientReader(AccidentType accidentType, AccidentSeverity accidentSeverity, String path) {
         this.accidentType = accidentType;

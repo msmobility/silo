@@ -3,6 +3,7 @@ package de.tum.bgu.msm.properties.modules;
 import de.tum.bgu.msm.properties.PropertiesUtil;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -15,7 +16,7 @@ public final class JobDataProperties {
     public final JobForecastMethod jobForecastMethod;
     public final String jobControlTotalsFileName;
     public final String employmentForeCastFile;
-    public final Map<String,Double> growthRateInPercentByJobType = new HashMap<>();
+    public final Map<String,Double> growthRateInPercentByJobType = new LinkedHashMap<>();
     public final String jobStartTimeDistributionFile;
     public final String jobDurationDistributionFile;
 

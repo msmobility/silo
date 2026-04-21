@@ -12,6 +12,7 @@ import org.locationtech.jts.geom.Coordinate;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class GenerateDwellingMicrolocation {
@@ -20,13 +21,13 @@ public class GenerateDwellingMicrolocation {
     private static final double PENALTY = 0.5;
     private final DataContainer dataContainer;
     private final DataSetSynPop dataSetSynPop;
-    private HashMap<Integer, Float> buildingX = new HashMap<>();
-    private HashMap<Integer, Float> buildingY = new HashMap<>();
-    private HashMap<Integer, HashMap<Integer,Double>> zoneBuildingMap = new HashMap<>();
-    Map<Integer, Integer> buildingZone = new HashMap<Integer, Integer>();
-    Map<Integer, Double> buildingArea = new HashMap<>();
-    Map<Integer, Float> zoneDensity = new HashMap<>();
-    Map<Integer, Integer> dwellingsInTAZ = new HashMap<Integer, Integer>();
+    private HashMap<Integer, Float> buildingX = new LinkedHashMap<>();
+    private HashMap<Integer, Float> buildingY = new LinkedHashMap<>();
+    private HashMap<Integer, HashMap<Integer,Double>> zoneBuildingMap = new LinkedHashMap<>();
+    Map<Integer, Integer> buildingZone = new LinkedHashMap<Integer, Integer>();
+    Map<Integer, Double> buildingArea = new LinkedHashMap<>();
+    Map<Integer, Float> zoneDensity = new LinkedHashMap<>();
+    Map<Integer, Integer> dwellingsInTAZ = new LinkedHashMap<Integer, Integer>();
 
     public GenerateDwellingMicrolocation(DataContainer dataContainer, DataSetSynPop dataSetSynPop){
         this.dataSetSynPop = dataSetSynPop;
@@ -79,7 +80,7 @@ public class GenerateDwellingMicrolocation {
             buildingZone.put(id,zone);
             //put all buildings with the same zoneID into one building list
             if (zoneBuildingMap.get(zone) == null){
-                HashMap<Integer, Double> buildingAreaList = new HashMap<Integer, Double>();
+                HashMap<Integer, Double> buildingAreaList = new LinkedHashMap<Integer, Double>();
                 zoneBuildingMap.put(zone,buildingAreaList);
             }
             zoneBuildingMap.get(zone).put(id,area);

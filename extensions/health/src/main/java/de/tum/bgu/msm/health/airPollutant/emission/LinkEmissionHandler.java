@@ -13,6 +13,7 @@ import org.matsim.contrib.emissions.events.WarmEmissionEventHandler;
 import org.matsim.vehicles.Vehicle;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class LinkEmissionHandler implements WarmEmissionEventHandler, ColdEmissionEventHandler {
@@ -26,8 +27,8 @@ public class LinkEmissionHandler implements WarmEmissionEventHandler, ColdEmissi
 
     public LinkEmissionHandler(Network network) {
         this.network = network;
-        emmisionsByLink = new HashMap<>();
-        emmisionsByVehicle = new HashMap<>();
+        emmisionsByLink = new LinkedHashMap<>();
+        emmisionsByVehicle = new LinkedHashMap<>();
     }
 
     @Override

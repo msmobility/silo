@@ -7,10 +7,7 @@ import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.IntStream;
 
 public class IPUbyCountyAndCity {
@@ -130,7 +127,7 @@ public class IPUbyCountyAndCity {
         Iterator<Integer> iterator2 = dataSetSynPop.getMunicipalitiesByCounty().get(county).iterator();
         while (iterator2.hasNext()){
             Integer municipality = iterator2.next();
-            Map<String, Double> errorsByMunicipality = Collections.synchronizedMap(new HashMap<>());
+            Map<String, Double> errorsByMunicipality = Collections.synchronizedMap(new LinkedHashMap<>() );
             executor1.addTaskToQueue(() ->{
                 for (String attribute : PropertiesSynPop.get().main.attributesMunicipality){
                     double weightedSumMunicipality = SiloUtil.sumProduct(weightsByMun.get(municipality), valuesByHousehold.get(attribute));
@@ -244,13 +241,13 @@ public class IPUbyCountyAndCity {
         startTime = System.nanoTime();
 
         //weights, values, control totals
-        weightsByMun = Collections.synchronizedMap(new HashMap<>());
-        minWeightsByMun = Collections.synchronizedMap(new HashMap<>());
-        valuesByHousehold = Collections.synchronizedMap(new HashMap<>());
-        totalCounty = Collections.synchronizedMap(new HashMap<>());
-        totalMunicipality = Collections.synchronizedMap(new HashMap<>());
-        errorByMun = Collections.synchronizedMap(new HashMap<>());
-        errorByRegion = Collections.synchronizedMap(new HashMap<>());
+        weightsByMun = Collections.synchronizedMap(new LinkedHashMap<>());
+        minWeightsByMun = Collections.synchronizedMap(new LinkedHashMap<>());
+        valuesByHousehold = Collections.synchronizedMap(new LinkedHashMap<>());
+        totalCounty = Collections.synchronizedMap(new LinkedHashMap<>());
+        totalMunicipality = Collections.synchronizedMap(new LinkedHashMap<>());
+        errorByMun = Collections.synchronizedMap(new LinkedHashMap<>());
+        errorByRegion = Collections.synchronizedMap(new LinkedHashMap<>());
 
         finish = 0;
         iteration = 0;
@@ -294,10 +291,10 @@ public class IPUbyCountyAndCity {
                     inner1.put(attribute, 0.);
                     errorByMun.put(municipality, inner1);
                 } else {
-                    HashMap<String, Integer> inner = new HashMap<>();
+                    HashMap<String, Integer> inner = new LinkedHashMap<>();
                     inner.put(attribute, (int) PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, attribute));
                     totalMunicipality.put(municipality, inner);
-                    HashMap<String, Double> inner1 = new HashMap<>();
+                    HashMap<String, Double> inner1 = new LinkedHashMap<>();
                     inner1.put(attribute, 0.);
                     errorByMun.put(municipality, inner1);
                 }

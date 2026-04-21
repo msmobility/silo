@@ -67,7 +67,7 @@ public class JobMarketUpdateImpl extends AbstractModel implements JobMarketUpdat
         //TableDataSet forecast = SiloUtil.readCSVfile(forecastFileName);
 
 
-        Map<String, List<Integer>> jobsAvailableForRemoval = new HashMap<>();
+        Map<String, List<Integer>> jobsAvailableForRemoval = new LinkedHashMap<>();
         for (Job jj : jobDataManager.getJobs()) {
             String token = jj.getType() + "." + jj.getZoneId() + "." + (jj.getWorkerId() == -1);
             if (jobsAvailableForRemoval.containsKey(token)) {

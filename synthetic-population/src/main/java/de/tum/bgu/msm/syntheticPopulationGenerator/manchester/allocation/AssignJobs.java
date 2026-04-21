@@ -167,18 +167,18 @@ public class AssignJobs {
         Collection<Job> jobs = dataContainer.getJobDataManager().getJobs();
 
         jobStringTypes = PropertiesSynPop.get().main.jobStringType;
-        jobIntTypes = new HashMap<>();
+        jobIntTypes = new LinkedHashMap<>();
         for (int i = 0; i < PropertiesSynPop.get().main.jobStringType.length; i++) {
             jobIntTypes.put(PropertiesSynPop.get().main.jobStringType[i], i);
         }
         tazIds = dataSetSynPop.getTazs().stream().mapToInt(i -> i).toArray();
 
-        idVacantJobsByZoneType = new HashMap<>();
-        numberVacantJobsByType = new HashMap<>();
-        idZonesVacantJobsByType = new HashMap<>();
-        numberZonesByType = new HashMap<>();
-        numberVacantJobsByZoneByType = new HashMap<>();
-        jobIntTypes = new HashMap<>();
+        idVacantJobsByZoneType = new LinkedHashMap<>();
+        numberVacantJobsByType = new LinkedHashMap<>();
+        idZonesVacantJobsByType = new LinkedHashMap<>();
+        numberZonesByType = new LinkedHashMap<>();
+        numberVacantJobsByZoneByType = new LinkedHashMap<>();
+        jobIntTypes = new LinkedHashMap<>();
         for (int i = 0; i < PropertiesSynPop.get().main.jobStringType.length; i++) {
             jobIntTypes.put(PropertiesSynPop.get().main.jobStringType[i], i);
         }

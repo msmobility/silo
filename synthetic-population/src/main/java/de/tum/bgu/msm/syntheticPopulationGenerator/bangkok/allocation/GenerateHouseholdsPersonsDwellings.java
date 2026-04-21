@@ -183,9 +183,9 @@ public class GenerateHouseholdsPersonsDwellings {
         double averageIncomeByZoneCensus = PropertiesSynPop.get().main.cellsMatrix.getIndexedValueAt(municipality, "income");
         double averageIncomeZone = incomeByMunicipality / personCounterByMunicipality;
         double incomeMultiplier = averageIncomeByZoneCensus / averageIncomeZone;
-        Map<Integer, Household> householdMap = new HashMap<>();
-        Map<Integer, Dwelling> dwellingMap = new HashMap<>();
-        Map<Integer, Person> personMap = new HashMap<>();
+        Map<Integer, Household> householdMap = new LinkedHashMap<>();
+        Map<Integer, Dwelling> dwellingMap = new LinkedHashMap<>();
+        Map<Integer, Person> personMap = new LinkedHashMap<>();
         int ppHumber = 0;
         for (int hhNumber = 0; hhNumber < totalHouseholds; hhNumber++){
             Household hh = householdData.getHouseholdFromId(hhNumber + firstHouseholdMunicipality);
@@ -288,13 +288,13 @@ public class GenerateHouseholdsPersonsDwellings {
             return 0; //student
         } else {
 
-            Map<Integer, Double> expUtilities = new HashMap<>();
+            Map<Integer, Double> expUtilities = new LinkedHashMap<>();
             expUtilities.put(1, 1.0);
             for (int incomeCat = 2; incomeCat < 10; incomeCat++){
                 expUtilities.put(incomeCat, Math.exp(calculateUtilityForIncome(incomeCat, age, occupation, gender)));
             }
             double denominator = expUtilities.values().stream().mapToDouble(Double::doubleValue).sum();
-            Map<Integer, Double> probabilities = new HashMap<>();
+            Map<Integer, Double> probabilities = new LinkedHashMap<>();
             expUtilities.forEach((x,y)-> probabilities.put(x,y/denominator));
             int incomeCat = SiloUtil.select(probabilities);
             int income = (int) PropertiesSynPop.get().main.incomeCoefficients.getValueAt(incomeCat, "averageIncome");
@@ -438,7 +438,7 @@ public class GenerateHouseholdsPersonsDwellings {
         logger.info("   Municipality " + municipality + ". Starting to generate households and persons");
         totalHouseholds = (int) PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, "households");
 
-        probMicroData = new HashMap<>();
+        probMicroData = new LinkedHashMap<>();
         probabilityId = new double[dataSetSynPop.getWeights().getRowCount()];
         ids = new int[probabilityId.length];
         sumProbabilities = 0;

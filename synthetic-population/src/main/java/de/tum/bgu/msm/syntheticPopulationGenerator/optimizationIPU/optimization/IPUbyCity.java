@@ -182,11 +182,11 @@ public class IPUbyCity {
         startTime = System.nanoTime();
 
         //weights, values, control totals
-        weightsByMun = Collections.synchronizedMap(new HashMap<>());
-        minWeightsByMun = Collections.synchronizedMap(new HashMap<>());
-        valuesByHousehold = Collections.synchronizedMap(new HashMap<>());
-        totalMunicipality = Collections.synchronizedMap(new HashMap<>());
-        errorsByMunicipality = Collections.synchronizedMap(new HashMap<>());
+        weightsByMun = Collections.synchronizedMap(new LinkedHashMap<>());
+        minWeightsByMun = Collections.synchronizedMap(new LinkedHashMap<>());
+        valuesByHousehold = Collections.synchronizedMap(new LinkedHashMap<>());
+        totalMunicipality = Collections.synchronizedMap(new LinkedHashMap<>());
+        errorsByMunicipality = Collections.synchronizedMap(new LinkedHashMap<>());
 
         finish = 0;
         iteration = 0;
@@ -213,7 +213,7 @@ public class IPUbyCity {
                 errorsByMunicipality.put(attribute, 0.);
 
             } else {
-                HashMap<String, Integer> inner = new HashMap<>();
+                HashMap<String, Integer> inner = new LinkedHashMap<>();
                 inner.put(attribute, (int) PropertiesSynPop.get().main.marginalsMunicipality.getIndexedValueAt(municipality, attribute));
                 totalMunicipality.put(municipality, inner);
                 errorsByMunicipality.put(attribute, 0.);

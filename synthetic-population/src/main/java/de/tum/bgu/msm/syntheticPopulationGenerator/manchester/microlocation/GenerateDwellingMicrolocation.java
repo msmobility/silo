@@ -23,9 +23,9 @@ public class GenerateDwellingMicrolocation {
     private static final Logger logger = LogManager.getLogger(GenerateDwellingMicrolocation.class);
     private final DataContainer dataContainer;
     private final DataSetSynPop dataSetSynPop;
-    private final Map<Long, Coordinate> buildingCoord = new HashMap<>();
-    private final Map<Integer, Map<String, List<Long>>> zone2ddType2buildingIdMap = new HashMap<>();
-    Map<Long, Integer> buildingZone = new HashMap<>();
+    private final Map<Long, Coordinate> buildingCoord = new LinkedHashMap<>();
+    private final Map<Integer, Map<String, List<Long>>> zone2ddType2buildingIdMap = new LinkedHashMap<>();
+    Map<Long, Integer> buildingZone = new LinkedHashMap<>();
 
     public GenerateDwellingMicrolocation(DataContainer dataContainer, DataSetSynPop dataSetSynPop){
         this.dataContainer = dataContainer;
@@ -181,7 +181,7 @@ public class GenerateDwellingMicrolocation {
                 buildingZone.put(id,zone);
                 //put all buildings with the same zoneID into one building list
                 zone2ddType2buildingIdMap.computeIfAbsent(zone, k -> {
-                    Map<String, List<Long>> typeMap = new HashMap<>();
+                    Map<String, List<Long>> typeMap = new LinkedHashMap<>();
                     for (ManchesterDwellingTypes.DwellingTypeManchester type : ManchesterDwellingTypes.DwellingTypeManchester.values()) {
                         typeMap.put(type.toString(), new ArrayList<>());
                     }

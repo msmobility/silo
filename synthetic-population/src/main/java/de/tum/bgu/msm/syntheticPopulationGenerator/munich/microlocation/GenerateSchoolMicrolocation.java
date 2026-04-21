@@ -13,6 +13,7 @@ import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class GenerateSchoolMicrolocation {
@@ -21,7 +22,7 @@ public class GenerateSchoolMicrolocation {
 
     private final DataContainerWithSchools dataContainer;
     private final DataSetSynPop dataSetSynPop;
-    Map<Integer, Map<Integer,Map<Integer,Integer>>> zoneSchoolTypeSchoolLocationCapacity = new HashMap<>();
+    Map<Integer, Map<Integer,Map<Integer,Integer>>> zoneSchoolTypeSchoolLocationCapacity = new LinkedHashMap<>();
 
 
     public GenerateSchoolMicrolocation(DataContainerWithSchools dataContainer, DataSetSynPop dataSetSynPop){
@@ -79,9 +80,9 @@ public class GenerateSchoolMicrolocation {
     private void createSchools() {
 
         for (int zone : dataSetSynPop.getTazs()){
-            Map<Integer,Map<Integer,Integer>> schoolLocationListForThisSchoolType = new HashMap<>();
+            Map<Integer,Map<Integer,Integer>> schoolLocationListForThisSchoolType = new LinkedHashMap<>();
             for (int type = 1 ; type <= 3; type++){
-                Map<Integer,Integer> schoolCapacity = new HashMap<>();
+                Map<Integer,Integer> schoolCapacity = new LinkedHashMap<>();
                 schoolLocationListForThisSchoolType.put(type,schoolCapacity);
             }
             zoneSchoolTypeSchoolLocationCapacity.put(zone,schoolLocationListForThisSchoolType);

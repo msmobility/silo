@@ -36,7 +36,7 @@ public class AssignSchools {
     private Map<Integer, Map<Integer,Integer>> schoolCapacityMap;
     private Map<Integer, Integer> numberOfVacantPlacesByType;
 
-    Map<Integer,Map<Integer,Map<Integer,Integer>>> schoolByZoneByType = new HashMap<>();
+    Map<Integer,Map<Integer,Map<Integer,Integer>>> schoolByZoneByType = new LinkedHashMap<>();
 
 
     public AssignSchools(DataContainerWithSchools dataContainer, DataSetSynPop dataSetSynPop){
@@ -110,7 +110,7 @@ public class AssignSchools {
 
         int schooltaz = -2;
         if (numberOfVacantPlacesByType.get(3) > 0) {
-            Map<Integer, Float> probability = new HashMap<>();
+            Map<Integer, Float> probability = new LinkedHashMap<>();
             Iterator<Integer> iterator = schoolCapacityMap.get(3).keySet().iterator();
             while (iterator.hasNext()) {
                 Integer zone = iterator.next();
@@ -176,8 +176,8 @@ public class AssignSchools {
 
     private void initializeSchoolCapacity(){
 
-        schoolCapacityMap = new HashMap<>();
-        numberOfVacantPlacesByType = new HashMap<>();
+        schoolCapacityMap = new LinkedHashMap<>();
+        numberOfVacantPlacesByType = new LinkedHashMap<>();
         Table<Integer, Integer, Integer> schoolCapacity = dataSetSynPop.getSchoolCapacity();
         Iterator<Integer> iteratorRow = schoolCapacity.rowKeySet().iterator();
         while (iteratorRow.hasNext()){
@@ -187,7 +187,7 @@ public class AssignSchools {
                 int schoolType = iteratorCol.next();
                 int places = schoolCapacity.get(zone, schoolType);
                 if (places > 0) {
-                    Map<Integer, Integer> prevPlaces = new HashMap<>();
+                    Map<Integer, Integer> prevPlaces = new LinkedHashMap<>();
                     if (schoolCapacityMap.get(schoolType)!= null) {
                         prevPlaces = schoolCapacityMap.get(schoolType);
                     }
@@ -274,8 +274,8 @@ public class AssignSchools {
             Coordinate coordinate = new Coordinate(xCoordinate,yCoordinate);
             schoolData.addSchool(SchoolUtils.getFactory().createSchool(id, schoolType, schoolCapacity,0,coordinate, zone));
 
-            schoolByZoneByType.computeIfAbsent(zone, k -> new HashMap<>())
-                    .computeIfAbsent(schoolType, k -> new HashMap<>())
+            schoolByZoneByType.computeIfAbsent(zone, k -> new LinkedHashMap<>())
+                    .computeIfAbsent(schoolType, k -> new LinkedHashMap<>())
                     .put(id, schoolCapacity);
 
         }

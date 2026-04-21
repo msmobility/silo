@@ -14,6 +14,7 @@ import org.locationtech.jts.geom.Coordinate;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class GenerateJobMicrolocation {
@@ -22,12 +23,12 @@ public class GenerateJobMicrolocation {
     
     private final DataContainer dataContainer;
     private final DataSetSynPop dataSetSynPop;
-    private Map<Integer, Float> jobX = new HashMap<>();
-    private Map<Integer, Float> jobY = new HashMap<>();
-    Map<Integer, Integer> jobZone = new HashMap<Integer, Integer>();
-    Map<Integer, Map<String,Map<Integer,Float>>> zoneJobTypeJobLocationArea = new HashMap<>();
-    Map<Integer, Map<String,Float>> zoneJobTypeDensity = new HashMap<>();
-    Map<Integer, Map<String,Integer>> jobsByJobTypeInTAZ = new HashMap<>();
+    private Map<Integer, Float> jobX = new LinkedHashMap<>();
+    private Map<Integer, Float> jobY = new LinkedHashMap<>();
+    Map<Integer, Integer> jobZone = new LinkedHashMap<Integer, Integer>();
+    Map<Integer, Map<String,Map<Integer,Float>>> zoneJobTypeJobLocationArea = new LinkedHashMap<>();
+    Map<Integer, Map<String,Float>> zoneJobTypeDensity = new LinkedHashMap<>();
+    Map<Integer, Map<String,Integer>> jobsByJobTypeInTAZ = new LinkedHashMap<>();
     
     public GenerateJobMicrolocation(DataContainer dataContainer, DataSetSynPop dataSetSynPop){
         this.dataSetSynPop = dataSetSynPop;
@@ -69,9 +70,9 @@ public class GenerateJobMicrolocation {
     private void readJobFile() {
 
         for (int zone : dataSetSynPop.getTazs()){
-            Map<String,Map<Integer,Float>> jobLocationListForThisJobType = new HashMap<>();
+            Map<String,Map<Integer,Float>> jobLocationListForThisJobType = new LinkedHashMap<>();
             for (String jobType : PropertiesSynPop.get().main.jobStringType){
-                Map<Integer,Float> jobLocationAndArea = new HashMap<>();
+                Map<Integer,Float> jobLocationAndArea = new LinkedHashMap<>();
                 jobLocationListForThisJobType.put(jobType,jobLocationAndArea);
             }
             zoneJobTypeJobLocationArea.put(zone,jobLocationListForThisJobType);
@@ -121,8 +122,8 @@ public class GenerateJobMicrolocation {
 
     private void calculateDensity() {
         for (int zone : dataSetSynPop.getTazs()){
-            Map<String,Integer> jobsByJobType = new HashMap<>();
-            Map<String,Float> densityByJobType = new HashMap<>();
+            Map<String,Integer> jobsByJobType = new LinkedHashMap<>();
+            Map<String,Float> densityByJobType = new LinkedHashMap<>();
             jobsByJobTypeInTAZ.put(zone,jobsByJobType);
             zoneJobTypeDensity.put(zone,densityByJobType);
         }

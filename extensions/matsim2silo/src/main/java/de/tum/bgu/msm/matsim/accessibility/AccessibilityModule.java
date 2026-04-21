@@ -26,6 +26,7 @@ import org.matsim.core.utils.geometry.CoordUtils;
 import org.matsim.facilities.*;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -85,7 +86,7 @@ public class AccessibilityModule {
         acg.setMeasuringPointsFacilities(zoneRepresentativeCoords);
         //
         Map<Id<ActivityFacility>, Geometry> measurePointGeometryMap = new TreeMap<>();
-        Map<Integer, SimpleFeature> zoneFeatureMap = new HashMap<>();
+        Map<Integer, SimpleFeature> zoneFeatureMap = new LinkedHashMap<>();
         for (Zone zone : dataContainer.getGeoData().getZones().values()) {
             zoneFeatureMap.put(zone.getId(), zone.getZoneFeature());
         }

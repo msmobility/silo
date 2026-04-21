@@ -43,7 +43,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
 //    public static BufferedWriter fileWriter;
 
-    public static boolean track = false;
+    public boolean track = false;
 
     protected final static Logger logger = LogManager.getLogger(MovesModelImpl.class);
     private static final int MAX_NUMBER_DWELLINGS = 20;
@@ -51,12 +51,13 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
     private final MovesStrategy movesStrategy;
     private final HousingStrategy housingStrategy;
 
-    private final boolean threaded;
+    private final boolean threaded = false;
+    // switching this off since we are searching for randomness in regression tests
 
     private final Map<HouseholdType, Double> averageHousingSatisfaction = new ConcurrentHashMap<>();
     private final Map<Integer, Double> satisfactionByHousehold = new ConcurrentHashMap<>();
-    private final Map<Integer, Integer> householdsByZone = new HashMap<>();
-    private final Map<Integer, Double > sumOfSatisfactionsByZone = new HashMap<>();
+    private final Map<Integer, Integer> householdsByZone = new LinkedHashMap<>();
+    private final Map<Integer, Double > sumOfSatisfactionsByZone = new LinkedHashMap<>();
     private YearByYearCsvModelTracker relocationTracker;
 
 
@@ -72,7 +73,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 //        }
         this.movesStrategy = movesStrategy;
         this.housingStrategy = housingStrategy;
-        this.threaded = properties.transportModel.travelTimeImplIdentifier == TransportModelPropertiesModule.TravelTimeImplIdentifier.MATSIM;
+//        this.threaded = properties.transportModel.travelTimeImplIdentifier == TransportModelPropertiesModule.TravelTimeImplIdentifier.MATSIM;
     }
 
     @Override

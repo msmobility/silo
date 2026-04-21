@@ -4,6 +4,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.contrib.emissions.Pollutant;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class AnalyzedObject<T> {
@@ -13,8 +14,8 @@ public class AnalyzedObject<T> {
 
     public AnalyzedObject(Id<T> id) {
         this.id = id;
-        this.warmEmissions = new HashMap<>();
-        this.coldEmissions = new HashMap<>();
+        this.warmEmissions = new LinkedHashMap<>();
+        this.coldEmissions = new LinkedHashMap<>();
     }
 
     public Map<Pollutant, Double>  getWarmEmissions() {

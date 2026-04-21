@@ -3,13 +3,14 @@ package de.tum.bgu.msm.health.data;
 import de.tum.bgu.msm.data.Mode;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 // Dose-response functions for health exposures (simple for now but will become more complex)
 public class RelativeRisks {
 
     public static Map<String, Float> calculate(PersonHealth personHealth) {
-        Map<String, Float> relativeRisks = new HashMap<>();
+        Map<String, Float> relativeRisks = new LinkedHashMap<>();
 
         relativeRisks.put("walk", (float) walk(personHealth.getWeeklyMarginalMetHours(Mode.walk)));
         relativeRisks.put("cycle", (float) bike(personHealth.getWeeklyMarginalMetHours(Mode.bicycle)));

@@ -17,7 +17,7 @@ import java.util.*;
 
 public class SportPAModelMCR extends AbstractModel implements ModelUpdateListener {
     private static final Logger logger = LogManager.getLogger(SportPAModelMCR.class);
-    private Map<String,Map<String,Double>> coef = new HashMap<>();
+    private Map<String,Map<String,Double>> coef = new LinkedHashMap<>();
 
     public SportPAModelMCR(DataContainer dataContainer, Properties properties, Random random) {
         super(dataContainer, properties, random);

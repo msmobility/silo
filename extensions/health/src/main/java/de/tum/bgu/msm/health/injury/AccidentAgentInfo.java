@@ -4,12 +4,13 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.population.Person;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class AccidentAgentInfo {
 
     private final Id<Person> personId;
-    private final Map<Id<Link>, Map<Integer, String>> linkId2time2mode = new HashMap<>();
+    private final Map<Id<Link>, Map<Integer, String>> linkId2time2mode = new LinkedHashMap<>();
     private double lightInjuryRisk;
     private double severeInjuryRisk;
 

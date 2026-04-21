@@ -30,7 +30,7 @@ public class SwitchToElectricVehicleModelMuc extends AbstractModel implements Mo
     /**
      * this variable stores a summary for print out purposes
      */
-    private Map<String, Integer> summary = new HashMap<>();
+    private Map<String, Integer> summary = new LinkedHashMap<>();
 
     public SwitchToElectricVehicleModelMuc(DataContainer dataContainer, Properties properties, Random rnd) {
         super(dataContainer, properties, rnd);

@@ -47,7 +47,7 @@ public class HealthTransitionTableReader {
 
                 String compositeKey = dataContainer.createTransitionLookupIndex(age,gender,location);
 
-                healthDiseaseData.computeIfAbsent(diseases, k -> new HashMap<>()).put(compositeKey, prob);
+                healthDiseaseData.computeIfAbsent(diseases, k -> new LinkedHashMap<>()).put(compositeKey, prob);
 
             }
         } catch (IOException e) {
