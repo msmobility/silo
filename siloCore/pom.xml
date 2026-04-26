@@ -249,7 +249,7 @@
         <dependency>
             <groupId>xerces</groupId>
             <artifactId>xercesImpl</artifactId>
-            <version>2.12.0</version>
+            <version>2.12.2</version>
         </dependency>
         <dependency>
             <!--			(chatgpt recommendation for automatic hdf5 native library loading)-->
