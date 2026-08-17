@@ -22,7 +22,14 @@ public class SiloBerlinBrandenburg {
 
     private final static Logger logger = LogManager.getLogger(SiloBerlinBrandenburg.class);
 
+
     public static void main(String[] args) {
+
+        // config options
+        // siloBer.properties matsimBer.xml
+        // note: working directory: /Users/jakob/git/silo-data-berlinBrandenburg
+        // this should change...
+
 
         Properties properties = SiloUtil.siloInitialization(args[0]);
 
@@ -36,9 +43,9 @@ public class SiloBerlinBrandenburg {
         ModelContainer modelContainer = ModelBuilderBerlinBrandenburg.getModelContainer(dataContainer, properties, config);
 
         SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
-        model.addResultMonitor(new MultiFileResultsMonitorBerlinBrandenburg(dataContainer, properties));
-        model.addResultMonitor(new ModalSharesResultMonitor(dataContainer, properties));
-        model.addResultMonitor(new HouseholdSatisfactionMonitor(dataContainer, properties, modelContainer));
+//        model.addResultMonitor(new MultiFileResultsMonitorBerlinBrandenburg(dataContainer, properties));
+//        model.addResultMonitor(new ModalSharesResultMonitor(dataContainer, properties));
+//        model.addResultMonitor(new HouseholdSatisfactionMonitor(dataContainer, properties, modelContainer));
         model.runModel();
         logger.info("Finished SILO.");
     }

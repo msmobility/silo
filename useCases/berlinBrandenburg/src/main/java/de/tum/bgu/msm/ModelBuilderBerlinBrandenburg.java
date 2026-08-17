@@ -2,9 +2,11 @@ package de.tum.bgu.msm;
 
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
+import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
 import de.tum.bgu.msm.data.mito.MitoDataConverterBerlinBrandenburg;
 import de.tum.bgu.msm.data.person.PersonFactory;
+import de.tum.bgu.msm.events.impls.household.MoveEvent;
 import de.tum.bgu.msm.matsim.MatsimData;
 import de.tum.bgu.msm.matsim.MatsimScenarioAssembler;
 import de.tum.bgu.msm.matsim.MatsimTransportModel;
@@ -62,6 +64,9 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
 import org.matsim.core.scenario.ScenarioUtils;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import static de.tum.bgu.msm.matsim.ZoneConnectorManagerImpl.*;
 
 public class ModelBuilderBerlinBrandenburg {
@@ -78,18 +83,51 @@ public class ModelBuilderBerlinBrandenburg {
 
         DeathModel deathModel = new DeathModelImpl(dataContainer, properties, new DefaultDeathStrategy(), SiloUtil.provideNewRandom());
 
-        MovesModelImpl movesModel = new MovesModelImpl(
-                dataContainer, properties,
-                new DefaultMovesStrategy(),
-                new HousingStrategyBerlinBrandenburg(dataContainer,
-                        properties,
-                        dataContainer.getTravelTimes(),
-                        new DefaultDwellingProbabilityStrategy(),
-                        new DwellingUtilityStrategyImpl(),
-                        new RegionUtilityStrategyImpl(),
-                        new RegionProbabilityStrategyImpl(),
-                        new SimpleCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom())
-                ), SiloUtil.provideNewRandom());
+//        MovesModelImpl movesModel = new MovesModelImpl(
+//                dataContainer, properties,
+//                new DefaultMovesStrategy(),
+//                new HousingStrategyBerlinBrandenburg(dataContainer,
+//                        properties,
+//                        dataContainer.getTravelTimes(),
+//                        new DefaultDwellingProbabilityStrategy(),
+//                        new DwellingUtilityStrategyImpl(),
+//                        new RegionUtilityStrategyImpl(),
+//                        new RegionProbabilityStrategyImpl(),
+//                        new SimpleCommuteModeChoice(dataContainer, properties, SiloUtil.provideNewRandom())
+//                ), SiloUtil.provideNewRandom());
+
+
+        final MovesModel movesModel = new MovesModel(){
+            @Override public int searchForNewDwelling( Household household ){
+                return -1; // means no dwelling was found
+            }
+            @Override public void moveHousehold( Household hh, int idOldDD, int idNewDD ){
+                // do nothing
+            }
+            @Override public Collection<MoveEvent> getEventsForCurrentYear(int year ){
+                return Collections.emptyList();
+            }
+            @Override public boolean handleEvent( MoveEvent event ){
+                // this should not happen.  Maybe test?
+                // If this is needed, one cold use MovesModelImpl as a delegate and then go from there.
+                return false;
+            }
+            @Override public void setup(){
+                // do nothing
+            }
+            @Override public void prepareYear( int year ){
+                // do nothing
+            }
+            @Override public void endYear( int year ){
+                // do nothing
+            }
+            @Override public void endSimulation(){
+                // do nothing
+            }
+        };
+
+
+
 
         CreateCarOwnershipModel carOwnershipModel = new CreateCarOwnershipModelBerlinBrandenburg(dataContainer);
 
@@ -118,14 +156,14 @@ public class ModelBuilderBerlinBrandenburg {
 
         ConstructionOverwrite constructionOverwrite = new ConstructionOverwriteImpl(dataContainer, ddFactory, properties, SiloUtil.provideNewRandom());
 
-        InOutMigration inOutMigration = new InOutMigrationBerlinBrandenburg(dataContainer, employmentModel, movesModel,
-                carOwnershipModel, driversLicenseModel, properties);
+//        InOutMigration inOutMigration = new InOutMigrationBerlinBrandenburg(dataContainer, employmentModel, movesModel,
+//                carOwnershipModel, driversLicenseModel, properties);
 
-        DemolitionModel demolition = new DemolitionModelImpl(dataContainer, movesModel,
-                inOutMigration, properties, new DefaultDemolitionStrategy(), SiloUtil.provideNewRandom());
+//        DemolitionModel demolition = new DemolitionModelImpl(dataContainer, movesModel,
+//                inOutMigration, properties, new DefaultDemolitionStrategy(), SiloUtil.provideNewRandom());
 
-        MarriageModel marriageModel = new MarriageModelBerlinBrandenburg(dataContainer, movesModel, inOutMigration,
-                carOwnershipModel, hhFactory, properties, new DefaultMarriageStrategy(), SiloUtil.provideNewRandom());
+//        MarriageModel marriageModel = new MarriageModelBerlinBrandenburg(dataContainer, movesModel, inOutMigration,
+//                carOwnershipModel, hhFactory, properties, new DefaultMarriageStrategy(), SiloUtil.provideNewRandom());
 
 
         TransportModel transportModel;

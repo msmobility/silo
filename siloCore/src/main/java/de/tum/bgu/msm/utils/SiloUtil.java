@@ -7,6 +7,7 @@ import de.tum.bgu.msm.common.matrix.Matrix;
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
 import de.tum.bgu.msm.data.SummarizeData;
+import de.tum.bgu.msm.events.impls.realEstate.ConstructionEvent;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.properties.PropertiesUtil;
 import omx.OmxMatrix;
@@ -1149,7 +1150,11 @@ public class SiloUtil {
 
 
         SummarizeData.resultFileSpatial("Year " + year);
-        SummarizeData.summarizeSpatially(year, dataContainer);
+
+        if (modelContainer.getEventModels().get(ConstructionEvent.class) != null) {
+            SummarizeData.summarizeSpatially(year, dataContainer);
+        }
+
         if (Properties.get().main.createHousingEnvironmentImpactFile) {
             SummarizeData.summarizeHousing(year, dataContainer);
         }
