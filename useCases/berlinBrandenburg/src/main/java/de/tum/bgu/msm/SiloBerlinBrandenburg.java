@@ -11,6 +11,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.config.groups.ReplanningConfigGroup;
+import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule;
+
+import java.util.List;
 
 /**
  * Implements SILO for the Berlin-Brandenburg Metropolitan Area
@@ -30,13 +34,59 @@ public class SiloBerlinBrandenburg {
         // note: working directory: /Users/jakob/git/silo-data-berlinBrandenburg
         // this should change...
 
+        // READ SILO PROPERTIES
+        Properties properties = SiloUtil.siloInitialization("siloBer.properties");
 
-        Properties properties = SiloUtil.siloInitialization(args[0]);
+        // READ MATSIM CONFIG
+        Config config = ConfigUtils.loadConfig("/Users/jakob/git/matsim-berlin/input/v6.4/berlin-v6.4.config.xml");
+        run(properties, config);
+    }
 
-        Config config = null;
-        if (args.length > 1 && args[1] != null) {
-            config = ConfigUtils.loadConfig(args[1]);
+    public static void run(Properties properties, Config config) {
+
+//        if (args.length > 1 && args[1] != null) {
+//            config = ConfigUtils.loadConfig(args[1]);
+//        }e
+        config.plans().setInputFile("https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v6.4/input/berlin-v6.4-0.1pct.plans.xml.gz");
+
+        config.global().setCoordinateSystem("EPSG:25832");
+        config.controller().setLastIteration(2);
+
+        Activities.addScoringParams(config, true);
+
+        config.removeModule("simwrapper");
+
+        for (String subpopulation : List.of("person", "freight", "goodsTraffic", "commercialPersonTraffic", "commercialPersonTraffic_service")) {
+            config.replanning().addStrategySettings(
+                    new ReplanningConfigGroup.StrategySettings()
+                            .setStrategyName(DefaultPlanStrategiesModule.DefaultSelector.ChangeExpBeta)
+                            .setWeight(1.0)
+                            .setSubpopulation(subpopulation)
+            );
+
+            config.replanning().addStrategySettings(
+                    new ReplanningConfigGroup.StrategySettings()
+                            .setStrategyName(DefaultPlanStrategiesModule.DefaultStrategy.ReRoute)
+                            .setWeight(0.15)
+                            .setSubpopulation(subpopulation)
+            );
         }
+
+        config.replanning().addStrategySettings(
+                new ReplanningConfigGroup.StrategySettings()
+                        .setStrategyName(DefaultPlanStrategiesModule.DefaultStrategy.TimeAllocationMutator)
+                        .setWeight(0.15)
+                        .setSubpopulation("person")
+        );
+
+        config.replanning().addStrategySettings(
+                new ReplanningConfigGroup.StrategySettings()
+                        .setStrategyName(DefaultPlanStrategiesModule.DefaultStrategy.SubtourModeChoice)
+                        .setWeight(0.15)
+                        .setSubpopulation("person")
+        );
+
+
         logger.info("Started SILO land use model for the Berlin-Brandenburg Metropolitan Area");
         DataContainerWithSchools dataContainer = DataBuilder.getModelDataForBerlinBrandenburg(properties, config);
         DataBuilder.read(properties, dataContainer);
