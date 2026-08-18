@@ -28,56 +28,54 @@ public class GeoDataReaderBerlinBrandenburg implements GeoDataReader {
 
     @Override
     public void readZoneCsv(String path) {
+        TableDataSet zonalData = SiloUtil.readCSVfile(path);
+        int[] zoneIds = zonalData.getColumnAsInt(ZONE_ID_COLUMN);
+        float[] zoneAreas = zonalData.getColumnAsFloat("Area");
 
-//        TableDataSet zonalData = SiloUtil.readCSVfile(path);
-//        int[] zoneIds = zonalData.getColumnAsInt(ZONE_ID_COLUMN);
-//        float[] zoneAreas = zonalData.getColumnAsFloat("Area");
-//
-//        double[] ptDistances = zonalData.getColumnAsDouble("distanceToTransit");
-//
-//        int[] areaTypes = zonalData.getColumnAsInt("BBSR_Type");
-//
-//        int[] regionColumn = zonalData.getColumnAsInt("Region");
-//
-//        for (int i = 0; i < zoneIds.length; i++) {
-//            AreaTypes.SGType type = AreaTypes.SGType.CORE_CITY;
-//            Region region;
-//            int regionId = regionColumn[i];
-//            if (geoData.getRegions().containsKey(regionId)) {
-//                region = geoData.getRegions().get(regionId);
-//            } else {
-//                region = new RegionImpl(regionId);
-//                geoData.addRegion(region);
-//            }
-//            ZoneBerlinBrandenburg zone = new ZoneBerlinBrandenburg(zoneIds[i], zoneAreas[i], type, ptDistances[i], region);
-//            region.addZone(zone);
-//            geoData.addZone(zone);
-//        }
+        double[] ptDistances = zonalData.getColumnAsDouble("distanceToTransit");
+
+        int[] areaTypes = zonalData.getColumnAsInt("BBSR_Type");
+
+        int[] regionColumn = zonalData.getColumnAsInt("Region");
+
+        for (int i = 0; i < zoneIds.length; i++) {
+            AreaTypes.SGType type = AreaTypes.SGType.CORE_CITY;
+            Region region;
+            int regionId = regionColumn[i];
+            if (geoData.getRegions().containsKey(regionId)) {
+                region = geoData.getRegions().get(regionId);
+            } else {
+                region = new RegionImpl(regionId);
+                geoData.addRegion(region);
+            }
+            ZoneBerlinBrandenburg zone = new ZoneBerlinBrandenburg(zoneIds[i], zoneAreas[i], type, ptDistances[i], region);
+            region.addZone(zone);
+            geoData.addZone(zone);
+        }
     }
 
     @Override
     public void readZoneShapefile(String path) {
-        // Do nothing
-//        if (path == null) {
-//            logger.error("No shape file found!");
-//            throw new RuntimeException("No shape file found!");
-//        }
-//        int counter = 0;
-//        for (SimpleFeature feature : ShapeFileReader.getAllFeatures(path)) {
-//            int zoneId = Integer.parseInt(feature.getAttribute(SHAPE_IDENTIFIER).toString());
-//            ZoneBerlinBrandenburg zone = (ZoneBerlinBrandenburg) geoData.getZones().get(zoneId);
-//            if (zone != null) {
-//                zone.setZoneFeature(feature);
-//                final Object ags = feature.getAttribute("AGS");
-//                if(ags != null) {
-//                    zone.setAgs(Integer.parseInt(ags.toString()));
-//                }
-//            } else {
-//                counter++;
-//            }
-//        }
-//        if(counter > 0) {
-//            logger.warn("There were " + counter + " shapes that do not exist in silo zone system");
-//        }
+        if (path == null) {
+            logger.error("No shape file found!");
+            throw new RuntimeException("No shape file found!");
+        }
+        int counter = 0;
+        for (SimpleFeature feature : ShapeFileReader.getAllFeatures(path)) {
+            int zoneId = Integer.parseInt(feature.getAttribute(SHAPE_IDENTIFIER).toString());
+            ZoneBerlinBrandenburg zone = (ZoneBerlinBrandenburg) geoData.getZones().get(zoneId);
+            if (zone != null) {
+                zone.setZoneFeature(feature);
+                final Object ags = feature.getAttribute("AGS");
+                if(ags != null) {
+                    zone.setAgs(Integer.parseInt(ags.toString()));
+                }
+            } else {
+                counter++;
+            }
+        }
+        if(counter > 0) {
+            logger.warn("There were " + counter + " shapes that do not exist in silo zone system");
+        }
     }
 }
