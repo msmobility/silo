@@ -156,14 +156,14 @@ public class ModelBuilderBerlinBrandenburg {
 
         ConstructionOverwrite constructionOverwrite = new ConstructionOverwriteImpl(dataContainer, ddFactory, properties, SiloUtil.provideNewRandom());
 
-//        InOutMigration inOutMigration = new InOutMigrationBerlinBrandenburg(dataContainer, employmentModel, movesModel,
-//                carOwnershipModel, driversLicenseModel, properties);
+        InOutMigration inOutMigration = new InOutMigrationBerlinBrandenburg(dataContainer, employmentModel, movesModel,
+                carOwnershipModel, driversLicenseModel, properties);
 
-//        DemolitionModel demolition = new DemolitionModelImpl(dataContainer, movesModel,
-//                inOutMigration, properties, new DefaultDemolitionStrategy(), SiloUtil.provideNewRandom());
+        DemolitionModel demolition = new DemolitionModelImpl(dataContainer, movesModel,
+                inOutMigration, properties, new DefaultDemolitionStrategy(), SiloUtil.provideNewRandom());
 
-//        MarriageModel marriageModel = new MarriageModelBerlinBrandenburg(dataContainer, movesModel, inOutMigration,
-//                carOwnershipModel, hhFactory, properties, new DefaultMarriageStrategy(), SiloUtil.provideNewRandom());
+        MarriageModel marriageModel = new MarriageModelBerlinBrandenburg(dataContainer, movesModel, inOutMigration,
+                carOwnershipModel, hhFactory, properties, new DefaultMarriageStrategy(), SiloUtil.provideNewRandom());
 
 
         TransportModel transportModel;
@@ -200,9 +200,9 @@ public class ModelBuilderBerlinBrandenburg {
 //                constructionOverwrite, inOutMigration, movesModel, transportModel);
 
         final ModelContainer modelContainer = new ModelContainer(
-                null, birthdayModel,
-                null, null,
-                null, null,
+                birthModel, birthdayModel,
+                deathModel, marriageModel,
+                divorceModel, null,
                 null, null,
                 null, null,
                 null, null, null, null,

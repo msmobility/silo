@@ -44,11 +44,8 @@ public class SiloBerlinBrandenburg {
 
     public static void run(Properties properties, Config config) {
 
-//        if (args.length > 1 && args[1] != null) {
-//            config = ConfigUtils.loadConfig(args[1]);
-//        }e
+        // MATSim Configuration
         config.plans().setInputFile("https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v6.4/input/berlin-v6.4-0.1pct.plans.xml.gz");
-
         config.global().setCoordinateSystem("EPSG:25832");
         config.controller().setLastIteration(2);
 
@@ -56,6 +53,23 @@ public class SiloBerlinBrandenburg {
 
         config.removeModule("simwrapper");
 
+        addReplaningStrategies(config);
+
+
+
+        // SILO Infrastrcture
+        logger.info("Started SILO land use model for the Berlin-Brandenburg Metropolitan Area");
+        DataContainerWithSchools dataContainer = DataBuilder.getModelDataForBerlinBrandenburg(properties, config);
+        DataBuilder.read(properties, dataContainer);
+        ModelContainer modelContainer = ModelBuilderBerlinBrandenburg.getModelContainer(dataContainer, properties, config);
+
+        SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
+
+        model.runModel();
+        logger.info("Finished SILO.");
+    }
+
+    private static void addReplaningStrategies(Config config) {
         for (String subpopulation : List.of("person", "freight", "goodsTraffic", "commercialPersonTraffic", "commercialPersonTraffic_service")) {
             config.replanning().addStrategySettings(
                     new ReplanningConfigGroup.StrategySettings()
@@ -85,18 +99,7 @@ public class SiloBerlinBrandenburg {
                         .setWeight(0.15)
                         .setSubpopulation("person")
         );
-
-
-        logger.info("Started SILO land use model for the Berlin-Brandenburg Metropolitan Area");
-        DataContainerWithSchools dataContainer = DataBuilder.getModelDataForBerlinBrandenburg(properties, config);
-        DataBuilder.read(properties, dataContainer);
-        ModelContainer modelContainer = ModelBuilderBerlinBrandenburg.getModelContainer(dataContainer, properties, config);
-
-        SiloModel model = new SiloModel(properties, dataContainer, modelContainer);
-//        model.addResultMonitor(new MultiFileResultsMonitorBerlinBrandenburg(dataContainer, properties));
-//        model.addResultMonitor(new ModalSharesResultMonitor(dataContainer, properties));
-//        model.addResultMonitor(new HouseholdSatisfactionMonitor(dataContainer, properties, modelContainer));
-        model.runModel();
-        logger.info("Finished SILO.");
     }
+
+    public void setupModels(){}
 }
