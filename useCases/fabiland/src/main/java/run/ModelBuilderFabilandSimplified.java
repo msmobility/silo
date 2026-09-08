@@ -2,11 +2,10 @@ package run;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.container.ModelContainer;
-import de.tum.bgu.msm.data.Region;
-import de.tum.bgu.msm.data.dwelling.Dwelling;
 import de.tum.bgu.msm.data.dwelling.DwellingFactory;
 import de.tum.bgu.msm.data.household.Household;
 import de.tum.bgu.msm.data.household.HouseholdFactory;
+import de.tum.bgu.msm.data.person.Person;
 import de.tum.bgu.msm.data.person.PersonFactory;
 import de.tum.bgu.msm.events.impls.household.MoveEvent;
 import de.tum.bgu.msm.matsim.*;
@@ -38,24 +37,18 @@ import de.tum.bgu.msm.models.demography.marriage.MarriageModelImpl;
 import de.tum.bgu.msm.models.jobmography.JobMarketUpdate;
 import de.tum.bgu.msm.models.jobmography.JobMarketUpdateImpl;
 import de.tum.bgu.msm.models.realEstate.construction.*;
-import de.tum.bgu.msm.models.realEstate.demolition.DefaultDemolitionStrategy;
-import de.tum.bgu.msm.models.realEstate.demolition.DemolitionModel;
-import de.tum.bgu.msm.models.realEstate.demolition.DemolitionModelImpl;
 import de.tum.bgu.msm.models.realEstate.pricing.DefaultPricingStrategy;
 import de.tum.bgu.msm.models.realEstate.pricing.PricingModel;
 import de.tum.bgu.msm.models.realEstate.pricing.PricingModelImpl;
-import de.tum.bgu.msm.models.realEstate.renovation.DefaultRenovationStrategy;
-import de.tum.bgu.msm.models.realEstate.renovation.RenovationModel;
-import de.tum.bgu.msm.models.realEstate.renovation.RenovationModelImpl;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigration;
 import de.tum.bgu.msm.models.relocation.migration.InOutMigrationImpl;
 import de.tum.bgu.msm.models.relocation.moves.*;
 import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
-import models.FabilandConstructionLocationStrategy;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.core.config.Config;
+import org.matsim.core.scenario.MutableScenario;
 import org.matsim.core.scenario.ScenarioUtils;
 
 import java.util.Collection;
@@ -68,10 +61,24 @@ import static de.tum.bgu.msm.matsim.ZoneConnectorManagerImpl.*;
 public class ModelBuilderFabilandSimplified{
 
     public static ModelContainer getModelContainer(DataContainer dataContainer, Properties properties, Config config) {
+        // As a base assumption, let us say that people work at "facilities", which we can imagine as Berlin-type blocks.  These
+        // would have something like 20k or even more sqm.  We could now assume that everybody just stays where they are, but
+        // dwellings grow or shring as necessary.  E.g. if people get children, the dwelling grows to a plausible size; and if
+        // people die, the dwelling vanisches and leaves sqm for others.  We could even imagine children moving out but staying in
+        // the same facility.  Also "male" partners would not move in.
+
+        // My intuition is that the first order error is not so bad, e.g.:
+        // * For every "male" partner not moving in, there will be some other "male" partner staying in the facility with having its "female" partner elsewhere.
+        // * For each family not moving out when getting children there will be some other person dying and making space.
+        // * Etc.
+
+        // I think that for such an approach we can simplify even more than what I have done below.
 
         final PersonFactory ppFactory = dataContainer.getHouseholdDataManager().getPersonFactory();
         final HouseholdFactory hhFactory = dataContainer.getHouseholdDataManager().getHouseholdFactory();
         final DwellingFactory ddFactory = dataContainer.getRealEstateDataManager().getDwellingFactory();
+        // (in most if not all cases, the dataContainer is handed over anyways.  --> add separate constructor w/o those factories;
+        // set old constructor to deprecated (but do not make effort to remove).
 
         final BirthModel birthModel = new BirthModelImpl(dataContainer, ppFactory, properties, new DefaultBirthStrategy(), SiloUtil.provideNewRandom());
 
@@ -109,18 +116,23 @@ public class ModelBuilderFabilandSimplified{
         };
 
         final CreateCarOwnershipModel carOwnershipModel = new FabilandCarOwnership();
-        // yy (for VSP purposes, car ownership could also be done by matsim)
+        // yy (for VSP purposes, car ownership could  be done by matsim)
 
         final DivorceModel divorceModel = new DivorceModelImpl(
                 dataContainer, movesModel, carOwnershipModel, hhFactory,
                 properties, new DefaultDivorceStrategy(), SiloUtil.provideNewRandom());
 
         final DriversLicenseModel driversLicenseModel = new DriversLicenseModelImpl(dataContainer, properties, new DefaultDriversLicenseStrategy(), SiloUtil.provideNewRandom());
-        // yy for VSP purposes, this might not be needed
+        // yy (for VSP purposes, this might not be needed)
 
         final EducationModel educationModel = new EducationModelImpl(dataContainer, properties, SiloUtil.provideNewRandom());
 
-        final EmploymentModel employmentModel = new EmploymentModelImpl(dataContainer, properties, SiloUtil.provideNewRandom());
+        EmploymentModel employmentModel = new EmploymentModelImpl(dataContainer, properties, SiloUtil.provideNewRandom()) {
+            @Override
+            public boolean lookForJob(int perId) {
+                return false;   // stub this one
+            }
+        };
 
         final LeaveParentHhModel leaveParentsModel = new LeaveParentHhModelImpl(dataContainer, movesModel,
                 carOwnershipModel, hhFactory, properties, new DefaultLeaveParentalHouseholdStrategy(), SiloUtil.provideNewRandom());
@@ -133,9 +145,17 @@ public class ModelBuilderFabilandSimplified{
 
         final InOutMigration inOutMigration = new InOutMigrationImpl(dataContainer, employmentModel, movesModel,
                 carOwnershipModel, driversLicenseModel, properties, SiloUtil.provideNewRandom());
+        // (do we need this at VSP?)
+        // (if we need it, the car ownership model can be null.  Presumably, also the drivers licence model.)
 
         final MarriageModel marriageModel = new MarriageModelImpl(dataContainer, movesModel, inOutMigration,
-                carOwnershipModel, hhFactory, properties, new DefaultMarriageStrategy(), SiloUtil.provideNewRandom());
+                carOwnershipModel, hhFactory, properties, new DefaultMarriageStrategy(), SiloUtil.provideNewRandom()) {
+            @Override
+            protected boolean moveTogether(Person person1, Person person2, Household moveTo) {
+                return true;
+            };
+        };
+        // (do we need this at VSP?  We could also have women have children.)
 
         TransportModel transportModel;
         MatsimScenarioAssembler scenarioAssembler;
@@ -143,8 +163,13 @@ public class ModelBuilderFabilandSimplified{
         MatsimData matsimData = null;
         if (config != null) {
             final Scenario scenario = ScenarioUtils.loadScenario(config);
-            matsimData = new MatsimData(config, properties, ZoneConnectorMethod.WEIGHTED_BY_POPULATION, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
+            //  seems to be breaking
+//            matsimData = new MatsimData(config, properties, ZoneConnectorMethod.WEIGHTED_BY_POPULATION, dataContainer, scenario.getNetwork(), scenario.getTransitSchedule());
             // (only the constructor is deprecated)
+
+            // old version
+            matsimData = new MatsimData(properties, ZoneConnectorMethod.WEIGHTED_BY_POPULATION, dataContainer, (MutableScenario) scenario );
+
         }
         switch (properties.transportModel.transportModelIdentifier) {
             case MATSIM:
@@ -163,16 +188,16 @@ public class ModelBuilderFabilandSimplified{
         final ModelContainer modelContainer = new ModelContainer(
                 birthModel, birthdayModel,
                 deathModel, marriageModel,
-                divorceModel, driversLicenseModel,
-                educationModel, employmentModel,
-                leaveParentsModel, jobMarketUpdateModel,
-                null, null, pricing, null,
-                constructionOverwrite, inOutMigration, movesModel, transportModel);
+                divorceModel, null,
+                null, employmentModel,
+                null, null,
+                null, null, null, null,
+                null, inOutMigration, movesModel, transportModel);
 
         return modelContainer;
     }
 
-    private static class FabilandCarOwnership implements CreateCarOwnershipModel {
+    protected static class FabilandCarOwnership implements CreateCarOwnershipModel {
 
         private final Random random;
 
