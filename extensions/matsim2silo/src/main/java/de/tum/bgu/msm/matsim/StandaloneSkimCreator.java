@@ -23,6 +23,8 @@ import org.matsim.core.utils.gis.ShapeFileReader;
 import org.matsim.pt.transitSchedule.api.TransitSchedule;
 import org.matsim.pt.transitSchedule.api.TransitScheduleReader;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -78,7 +80,11 @@ public class StandaloneSkimCreator {
         FreespeedTravelTimeAndDisutility freespeed = new FreespeedTravelTimeAndDisutility(config.scoring());
         data.update(freespeed, freespeed);
 
-        final MatsimSkimCreator matsimSkimCreator = new MatsimSkimCreator(data);
+        final File outputFile = new File(outputPath).getAbsoluteFile();
+        final Path csvOutputDirectory = outputFile.getParentFile() == null
+                ? new File(".").toPath()
+                : outputFile.getParentFile().toPath();
+        final MatsimSkimCreator matsimSkimCreator = new MatsimSkimCreator(data, csvOutputDirectory);
         final SkimTravelTimes skimTravelTimes = new SkimTravelTimes();
 
         logger.info("Creating car skim...");

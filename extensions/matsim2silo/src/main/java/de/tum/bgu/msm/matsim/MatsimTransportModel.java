@@ -102,7 +102,7 @@ public final class MatsimTransportModel implements TransportModel {
             runTransportModel(properties.main.startYear);
         } else {
             String eventsFile = properties.main.baseDirectory + properties.transportModel.matsimInitialEventsFile;
-            replayFromEvents(eventsFile);
+            replayFromEvents(eventsFile, properties.main.startYear);
         }
         logger.warn("### About to leave MatsimTransportModel#setup()." );
     }
@@ -134,7 +134,7 @@ public final class MatsimTransportModel implements TransportModel {
             //if using the SimpleCommuteModeChoiceScenarioAssembler, we need some initial travel times (this will use an unlodaded network)
             TravelTime myTravelTime = SiloMatsimUtils.getAnEmptyNetworkTravelTime();
             TravelDisutility myTravelDisutility = SiloMatsimUtils.getAnEmptyNetworkTravelDisutility();
-            updateTravelTimes(myTravelTime, myTravelDisutility);
+            updateTravelTimes(myTravelTime, myTravelDisutility, year);
         }
 		{
 			Set<Id<org.matsim.api.core.v01.population.Person>> toRemove = new HashSet<>( assembledScenario.getPopulation().getPersons().keySet() );
@@ -193,7 +193,7 @@ public final class MatsimTransportModel implements TransportModel {
         logger.warn("Using MATSim to compute travel times from zone to zone.");
         TravelTime travelTime = controler.getLinkTravelTimes();
         TravelDisutility travelDisutility = controler.getTravelDisutilityFactory().createTravelDisutility(travelTime);
-        updateTravelTimes(travelTime, travelDisutility);
+        updateTravelTimes(travelTime, travelDisutility, year);
     }
 
     private void finalizeConfig(Config config, int runId, String dir) {
@@ -213,16 +213,16 @@ public final class MatsimTransportModel implements TransportModel {
     /**
      * @param eventsFile
      */
-    private void replayFromEvents(String eventsFile) {
+    private void replayFromEvents(String eventsFile, int year) {
         Scenario scenario = ScenarioUtils.loadScenario(initialMatsimConfig);
         TravelTime travelTime = TravelTimeUtils.createTravelTimesFromEvents(scenario.getNetwork(), scenario.getConfig(), eventsFile);
         TravelDisutility travelDisutility = ControlerDefaults.createDefaultTravelDisutilityFactory(scenario).createTravelDisutility(travelTime);
-        updateTravelTimes(travelTime, travelDisutility);
+        updateTravelTimes(travelTime, travelDisutility, year);
     }
 
-    private void updateTravelTimes(TravelTime travelTime, TravelDisutility disutility) {
+    private void updateTravelTimes(TravelTime travelTime, TravelDisutility disutility, int year) {
         matsimData.update(disutility, travelTime);
-        internalTravelTimes.update(matsimData);
+        internalTravelTimes.update(matsimData, year);
         final TravelTimes mainTravelTimes = dataContainer.getTravelTimes();
 
         if (mainTravelTimes != this.internalTravelTimes && mainTravelTimes instanceof SkimTravelTimes) {

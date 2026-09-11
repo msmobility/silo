@@ -225,7 +225,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         }
 
         // Step 2: select vacant dwelling in selected region
-        List<Dwelling> vacantDwellings
+            List<Dwelling> vacantDwellings
                 = new ArrayList<>(dataContainer.getRealEstateDataManager().getListOfVacantDwellingsInRegion(selectedRegion.getId()));
         if (vacantDwellings.isEmpty()) {
             return -1;
