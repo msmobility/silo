@@ -27,6 +27,7 @@ import org.locationtech.jts.geom.Coordinate;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -56,10 +57,20 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
     private final Map<HouseholdType, Double> averageHousingSatisfaction = new ConcurrentHashMap<>();
     private final Map<Integer, Double> satisfactionByHousehold = new ConcurrentHashMap<>();
-    private final Map<Integer, Integer> householdsByZone = new LinkedHashMap<>();
-    private final Map<Integer, Double > sumOfSatisfactionsByZone = new LinkedHashMap<>();
+    public final Map<Integer, Integer> householdsByZone = new LinkedHashMap<>();
+    public final Map<Integer, Double > sumOfSatisfactionsByZone = new LinkedHashMap<>();
     private YearByYearCsvModelTracker relocationTracker;
+    public final Map<Integer, zoneProp> avgPropByZone = new LinkedHashMap<>();
 
+    public class zoneProp {
+        int n;
+        public double avgProp;
+
+        public zoneProp(int n, double avgProp) {
+            this.n = n;
+            this.avgProp = avgProp;
+        }
+    }
 
     public MovesModelImpl(DataContainer dataContainer, Properties properties, MovesStrategy movesStrategy,
                           HousingStrategy housingStrategy, Random random) {
@@ -276,6 +287,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
     private boolean moveOrNot(Household household) {
         HouseholdType hhType = household.getHouseholdType();
         Dwelling dd = dataContainer.getRealEstateDataManager().getDwelling(household.getDwellingId());
+        int zone = dd.getZoneId();
         if (!housingStrategy.isHouseholdEligibleToLiveHere(household, dd)) {
             return true;
         }
@@ -283,6 +295,15 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         final double avgSatisfaction = averageHousingSatisfaction.getOrDefault(hhType, currentUtil);
 
         final double prop = movesStrategy.getMovingProbability(avgSatisfaction, currentUtil);
+
+        if (avgPropByZone.containsKey(dd.getZoneId())) {
+            zoneProp zS = avgPropByZone.get(dd.getZoneId());
+            zS.n++;
+            zS.avgProp = zS.avgProp + (prop - zS.avgProp) / zS.n;
+        } else {
+            avgPropByZone.put(dd.getZoneId(), new zoneProp(1, prop));
+        }
+
         return this.random.nextDouble() <= prop;
     }
 
@@ -468,7 +489,10 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         return householdsByZone;
     }
 
+
     public Map<Integer, Double> getSumOfSatisfactionsByZone() {
         return sumOfSatisfactionsByZone;
     }
 }
+
+

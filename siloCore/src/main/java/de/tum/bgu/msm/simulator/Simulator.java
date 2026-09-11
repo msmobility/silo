@@ -8,11 +8,14 @@ import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
+import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.utils.TimeTracker;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.PrintWriter;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -31,6 +34,11 @@ public final class Simulator {
 
     private final List<MicroEvent> events = new ArrayList<>();
     private final TimeTracker timeTracker;
+
+    private Map<Integer, Double> avgSatisfactionByZone = new LinkedHashMap<>();
+    String scenarioName = "base";
+    PrintWriter pwd = SiloUtil.openFileForSequentialWriting("/home/brendan/git/silo/useCases/fabiland/scenario/scenOutput/base/avgSatisfactionByZone_" + scenarioName + ".csv", false);
+
 
     private final Set<ResultsMonitor> resultsMonitors = new HashSet<>() ;
 
@@ -121,6 +129,23 @@ public final class Simulator {
         for(ModelUpdateListener modelUpdateListener : modelUpdateListeners) {
             modelUpdateListener.endYear(year);
         }
+
+        MovesModelImpl movesModel = ((MovesModelImpl)((LinkedHashMap.Entry) (((LinkedHashMap)models).entrySet().toArray()[13])).getValue());
+        for (int i = 1; i <= movesModel.sumOfSatisfactionsByZone.size(); i++)
+        {
+            avgSatisfactionByZone.put(i, movesModel.sumOfSatisfactionsByZone.get(i)/movesModel.getHouseholdsByZone().get(i));
+        }
+
+        if (year == 1 || year == 5 || year == 9) {
+            pwd.print("zone,avgSatisfaction,avgProp,year");
+            pwd.println();
+            for (Map.Entry<Integer, Double> entry : avgSatisfactionByZone.entrySet()) {
+                pwd.print(entry.getKey() + "," + entry.getValue() + "," +  movesModel.avgPropByZone.get(entry.getKey()).avgProp + "," + year);
+                pwd.println();
+            }
+        }
+
+
         for(EventModel model: models.values()) {
             model.endYear(year);
         }
@@ -143,6 +168,8 @@ public final class Simulator {
         for (ResultsMonitor resultsMonitor : resultsMonitors){
             resultsMonitor.endSimulation();
         }
+
+        pwd.close();
 
     }
 }

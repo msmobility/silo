@@ -53,14 +53,13 @@ public class RunFabilandAutofrei {
         matsimConfig.controller().setLastIteration(1);
 
 
-        matsimConfig.network().setInputFile("matsimInput/autofrei.xml");
+//        matsimConfig.network().setInputFile("matsimInput/autofrei.xml");
 
-        RoutingConfigGroup.TeleportedModeParams walkParams = matsimConfig.routing().getTeleportedModeParams().get(TransportMode.walk);
-        walkParams.setTeleportedModeSpeed(walkParams.getTeleportedModeSpeed() * 10);
-
-
-        RoutingConfigGroup.TeleportedModeParams nNwalkParams = matsimConfig.routing().getTeleportedModeParams().get(TransportMode.non_network_walk);
-        nNwalkParams.setTeleportedModeSpeed(nNwalkParams.getTeleportedModeSpeed() * 10);
+//        RoutingConfigGroup.TeleportedModeParams walkParams = matsimConfig.routing().getTeleportedModeParams().get(TransportMode.walk);
+//        walkParams.setTeleportedModeSpeed(walkParams.getTeleportedModeSpeed() * 10);
+//
+//        RoutingConfigGroup.TeleportedModeParams nNwalkParams = matsimConfig.routing().getTeleportedModeParams().get(TransportMode.non_network_walk);
+//        nNwalkParams.setTeleportedModeSpeed(nNwalkParams.getTeleportedModeSpeed() * 10);
         // Somehow, some version matsim is starting again for the accessibility computation, and that wipes the directory after the main run.
         // --> did not help
 
