@@ -10,14 +10,20 @@ import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.network.Link;
+import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.network.NetworkWriter;
+import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.RoutingConfigGroup;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
+import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.network.io.MatsimNetworkReader;
 
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.*;
 
 public class RunFabilandAutofrei {
 
@@ -27,6 +33,8 @@ static String scenario = "policy";
     private final static Logger logger = LogManager.getLogger(RunFabilandAutofrei.class);
 
     public static void main(String[] args) {
+
+
         // see regression test
 
         // args: SILO config, MATSim config
@@ -57,11 +65,30 @@ static String scenario = "policy";
         matsimConfig.controller().setOverwriteFileSetting( OutputDirectoryHierarchy.OverwriteFileSetting.overwriteExistingFiles );
         matsimConfig.controller().setLastIteration(1);
 
+        matsimConfig.network().setInputFile("matsimInput/nw_cap30_rings_x.xml");
+        matsimConfig.transit().setTransitScheduleFile("matsimInput/ts_rings_x.xml");
+        matsimConfig.transit().setVehiclesFile("matsimInput/tv_rings_x.xml");
+
 
         if (scenario.equals("base")) {
             // do nothing
         } else if (scenario.equals("policy")) {
-            matsimConfig.network().setInputFile("matsimInput/autofrei.xml");
+            Network network = NetworkUtils.createNetwork();
+            new MatsimNetworkReader(network).readFile("useCases/fabiland/scenario/" + matsimConfig.network().getInputFile());
+
+            // Carfree
+            Node node13 = network.getNodes().get(Id.createNodeId(13));
+            Set<Link> carfreeLinks = new HashSet<>(node13.getInLinks().values());
+            carfreeLinks.addAll(node13.getOutLinks().values());
+
+            for (Link carfreeLink : carfreeLinks) {
+                carfreeLink.setFreespeed(carfreeLink.getFreespeed() / 100);
+            }
+
+
+
+            new NetworkWriter(network).write("useCases/fabiland/scenario/matsimInput/_nw_jr_tmp.xml");
+            matsimConfig.network().setInputFile("matsimInput/_nw_jr_tmp.xml");
         } else {
             throw new RuntimeException();
         }

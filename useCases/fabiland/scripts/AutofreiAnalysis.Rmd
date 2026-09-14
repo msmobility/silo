@@ -12,7 +12,7 @@ library(tmap)
 
 # FABILAND
 
-
+## Setup
 networks for ggplots
 ```{r}
 net_total <-  list(annotate("segment", x = -10000, xend =10000,
@@ -67,57 +67,10 @@ policy_merged <- policy_pp |> left_join(policy_hh, by = c("hhid" = "id")) |> lef
 ```
 
 
-Plot Jobs
-```{r}
-base_merged |> ggplot() + geom_point(aes(jobX,jobY), alpha = 0.1) + theme_minimal(base_size = 14) + labs(title = "Base")
-policy_merged |> ggplot() + geom_point(aes(jobX,jobY), alpha = 0.1) + theme_minimal(base_size = 14) + labs(title = "Policy")
 
 
-zonal_counts_jobs <- base_merged |>
-  select(id, jobX, jobY) |> 
- 
-  mutate(scenario = "base") |> 
-  bind_rows(policy_merged |> select(id,jobX, jobY) |> mutate(scenario = "policy")) |>
-  filter(!is.na(jobX)) |>
-  mutate(coordX = round(jobX/5000) *5000, coordY = round(jobY/5000) *5000) |> 
-  group_by(coordX, coordY,scenario) |> count()
 
-
-zonal_counts_jobs |> 
-  filter(scenario == "base") |> 
-  ggplot() + 
-  geom_point(aes(coordX,coordY, size = n)) + 
-  theme_minimal(base_size = 14) +
-  labs(title = "Base Counts")
-  
-zonal_counts_jobs |> 
-  filter(scenario == "policy") |> 
-  ggplot() + 
-  geom_point(aes(coordX,coordY, size = n)) + 
-  theme_minimal(base_size = 14) +
-  labs(title = "Policy Counts")
-
-
-zonal_counts_jobs |>
-  pivot_wider(names_from = scenario, values_from = n) |>
-  mutate(diff = policy - base) |>
-  ggplot() +
-  net_total +
-  net_autofrei +
-  geom_point(aes(coordX, coordY, fill = diff), size = 10,shape = 21) +
-  scale_fill_gradient2(
-    low = "red",
-    mid = "white",
-    high = "blue",
-    midpoint = 0
-  ) +
-  theme_minimal(base_size = 14) +
-  labs(title = "Policy - Base", fill = "Job Diff") 
-
-```
-
-
-Plot Home Coords
+## Plot Home Coords
 ```{r}
 base_merged |> ggplot() + geom_point(aes(coordX,coordY), alpha = 0.1) + theme_minimal(base_size = 14) + labs(title = "Base")
   
@@ -284,14 +237,18 @@ policy_pt_skim |> filter(FROM  == from_node) |> left_join(fabiland_shp, by = c("
 ## Zonal System
 ## Analytics
 ```{r}
+base_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14e-base/"
+policy_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14e-policy/"
 
-base_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14d-base/"
-policy_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14d-policy/"
-
-year1 <- 0
 base_analytics <- read_csv(paste0(base_dir,"avgSatisfactionByZone.csv")) |> left_join(fabiland_shp, by = c("zone" = "Id")) |> st_as_sf() 
 
-policy_analytics <- read_csv(paste0(policy_dir,"avgSatisfactionByZone.csv")) |> left_join(fabiland_shp, by = c("zone" = "Id")) |> st_as_sf() 
+policy_analytics <- read_csv(paste0(policy_dir,"avgSatisfactionByZone.csv")) |> left_join(fabiland_shp, by = c("zone" = "Id")) |> st_as_sf()
+```
+
+
+```{r}
+year1 <- 0
+
 
 base_analytics |> filter(year == year1)  |> tm_shape() + tm_polygons(fill = "avgProp") + tm_title("Probability of Moving, Base, year 0")
 
@@ -341,12 +298,13 @@ base_analytics |> mutate(scenario = "base") |> bind_rows(policy_analytics |> mut
 base_analytics |> mutate(scenario = "base") |> bind_rows(policy_analytics |> mutate(scenario = "policy")) |> st_drop_geometry() |>  group_by(zone, scenario) |> summarise(avgSatisfaction1 = mean(avgSatisfaction1)) |>  ggplot() + geom_col(aes(zone,avgSatisfaction1, fill = scenario), position = "dodge")+ labs(title = "avgSatisfaction1 + average over years")+ geom_vline(xintercept = 13)
 
 base_analytics |> mutate(scenario = "base") |> bind_rows(policy_analytics |> mutate(scenario = "policy")) |> st_drop_geometry() |>  group_by(zone, scenario) |> summarise(avgProp = mean(avgProp)) |>  ggplot() + geom_col(aes(zone,avgProp, fill = scenario), position = "dodge")+ labs(title = "avgProp + average over years")+ geom_vline(xintercept = 13)
+```
 
 
+```{r}
 
-
-
-variables <- c("avgSatisfaction1","avgSatisfaction2","avgCurrentUtil","avgProp","defaultProp","ddQualityUtility","ddSizeUtility","ddAutoAccessibilityUtility","transitAccessibilityUtility","ddPriceUtility","workDistanceUtility") # Add your variable names here
+variables <- base_analytics |> st_drop_geometry() |> select(-c(zone,year)) |> colnames()
+# variables <- c("avgSatisfaction1","avgSatisfaction2","avgCurrentUtil","avgProp","defaultProp","ddQualityUtility","ddSizeUtility","ddAutoAccessibilityUtility","transitAccessibilityUtility","ddPriceUtility","workDistanceUtility") # Add your variable names here
 
 analytics <- base_analytics |>
   mutate(scenario = "base") |>
@@ -368,23 +326,60 @@ for (variable in variables) {
   print(p)
 }
 
-base_analytics |> mutate(scenario = "base") |> bind_rows(policy_analytics |> mutate(scenario = "policy")) |> st_drop_geometry() |>  group_by(zone, scenario) |> summarise(avgProp = mean(avgProp)) |>  ggplot() + geom_col(aes(zone,avgProp, fill = scenario), position = "dodge")+ labs(title = "avgProp + average over years")+ geom_vline(xintercept = 13)
-
-base_analytics |> mutate(scenario = "base") |> bind_rows(policy_analytics |> mutate(scenario = "policy")) |> st_drop_geometry() |>  group_by(zone, scenario) |> summarise(avgProp = mean(avgProp)) |>  ggplot() + geom_col(aes(zone,avgProp, fill = scenario), position = "dodge")+ labs(title = "avgProp + average over years")+ geom_vline(xintercept = 13)
-
-base_analytics |> mutate(scenario = "base") |> bind_rows(policy_analytics |> mutate(scenario = "policy")) |> st_drop_geometry() |>  group_by(zone, scenario) |> summarise(avgProp = mean(avgProp)) |>  ggplot() + geom_col(aes(zone,avgProp, fill = scenario), position = "dodge")+ labs(title = "avgProp + average over years")+ geom_vline(xintercept = 13)
-
-base_analytics |> mutate(scenario = "base") |> bind_rows(policy_analytics |> mutate(scenario = "policy")) |> st_drop_geometry() |>  group_by(zone, scenario) |> summarise(avgProp = mean(avgProp)) |>  ggplot() + geom_col(aes(zone,avgProp, fill = scenario), position = "dodge")+ labs(title = "avgProp + average over years")+ geom_vline(xintercept = 13)
-
-base_analytics |> mutate(scenario = "base") |> bind_rows(policy_analytics |> mutate(scenario = "policy")) |> st_drop_geometry() |>  group_by(zone, scenario) |> summarise(avgProp = mean(avgProp)) |>  ggplot() + geom_col(aes(zone,avgProp, fill = scenario), position = "dodge")+ labs(title = "avgProp + average over years")+ geom_vline(xintercept = 13)
-
 
 
 
 
 
 ```
+## Plot Jobs
+```{r}
+base_merged |> ggplot() + geom_point(aes(jobX,jobY), alpha = 0.1) + theme_minimal(base_size = 14) + labs(title = "Base")
+policy_merged |> ggplot() + geom_point(aes(jobX,jobY), alpha = 0.1) + theme_minimal(base_size = 14) + labs(title = "Policy")
 
+
+zonal_counts_jobs <- base_merged |>
+  select(id, jobX, jobY) |> 
+ 
+  mutate(scenario = "base") |> 
+  bind_rows(policy_merged |> select(id,jobX, jobY) |> mutate(scenario = "policy")) |>
+  filter(!is.na(jobX)) |>
+  mutate(coordX = round(jobX/5000) *5000, coordY = round(jobY/5000) *5000) |> 
+  group_by(coordX, coordY,scenario) |> count()
+
+
+zonal_counts_jobs |> 
+  filter(scenario == "base") |> 
+  ggplot() + 
+  geom_point(aes(coordX,coordY, size = n)) + 
+  theme_minimal(base_size = 14) +
+  labs(title = "Base Counts")
+  
+zonal_counts_jobs |> 
+  filter(scenario == "policy") |> 
+  ggplot() + 
+  geom_point(aes(coordX,coordY, size = n)) + 
+  theme_minimal(base_size = 14) +
+  labs(title = "Policy Counts")
+
+
+zonal_counts_jobs |>
+  pivot_wider(names_from = scenario, values_from = n) |>
+  mutate(diff = policy - base) |>
+  ggplot() +
+  net_total +
+  net_autofrei +
+  geom_point(aes(coordX, coordY, fill = diff), size = 10,shape = 21) +
+  scale_fill_gradient2(
+    low = "red",
+    mid = "white",
+    high = "blue",
+    midpoint = 0
+  ) +
+  theme_minimal(base_size = 14) +
+  labs(title = "Policy - Base", fill = "Job Diff") 
+
+```
 
 # (UNUSED) BERLIN
 ```{r}

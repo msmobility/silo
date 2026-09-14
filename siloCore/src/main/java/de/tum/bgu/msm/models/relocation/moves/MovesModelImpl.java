@@ -365,8 +365,8 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
         cntByZone.merge(dd.getZoneId(), 1, Integer::sum);
 
-        sumAvgSatisfactionByZone.merge(dd.getZoneId(), currentUtil, Double::sum);
-        sumCurrentUtilByZone.merge(dd.getZoneId(), avgSatisfaction, Double::sum);
+        sumAvgSatisfactionByZone.merge(dd.getZoneId(), avgSatisfaction, Double::sum);
+        sumCurrentUtilByZone.merge(dd.getZoneId(), currentUtil, Double::sum);
         sumPropByZone.merge(dd.getZoneId(), prop, Double::sum);
 
         return this.random.nextDouble() <= prop;
