@@ -25,6 +25,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 
+import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.ZoneId;
@@ -57,20 +58,15 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
     private final Map<HouseholdType, Double> averageHousingSatisfaction = new ConcurrentHashMap<>();
     private final Map<Integer, Double> satisfactionByHousehold = new ConcurrentHashMap<>();
-    public final Map<Integer, Integer> householdsByZone = new LinkedHashMap<>();
-    public final Map<Integer, Double > sumOfSatisfactionsByZone = new LinkedHashMap<>();
+    private final Map<Integer, Integer> householdsByZone = new LinkedHashMap<>();
+    private final Map<Integer, Double > sumOfSatisfactionsByZone = new LinkedHashMap<>();
     private YearByYearCsvModelTracker relocationTracker;
-    public final Map<Integer, zoneProp> avgPropByZone = new LinkedHashMap<>();
 
-    public class zoneProp {
-        int n;
-        public double avgProp;
+    PrintWriter pwd;
+    public final Map<Integer, Double> sumPropByZone = new LinkedHashMap<>();
+    public final Map<Integer, Integer> cntPropByZone = new LinkedHashMap<>();
 
-        public zoneProp(int n, double avgProp) {
-            this.n = n;
-            this.avgProp = avgProp;
-        }
-    }
+
 
     public MovesModelImpl(DataContainer dataContainer, Properties properties, MovesStrategy movesStrategy,
                           HousingStrategy housingStrategy, Random random) {
@@ -93,6 +89,9 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         String header = new StringJoiner(",").add("hh").add("oldDdd").add("newDd").add("oldX").add("oldY").add("newX").add("newY").add("oldZone").add("newZone").add("autos").add("licenses").add("workers").toString();
         Path basePath = Paths.get(properties.main.baseDirectory).resolve("scenOutput").resolve(properties.main.scenarioName).resolve("siloResults/relocation");
         relocationTracker = new YearByYearCsvModelTracker(basePath, "relocation", header);
+        pwd = SiloUtil.openFileForSequentialWriting( Paths.get(properties.main.baseDirectory).resolve("scenOutput").resolve(properties.main.scenarioName).resolve("avgSatisfactionByZone.csv").toString(), false);
+        pwd.println("zone,avgSatisfaction,avgProp,year");
+
     }
 
     @Override
@@ -122,16 +121,23 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
     @Override
     public void endYear(int year) {
         UtilityUtils.endYear();
+
+        for (int zoneNumber = 1; zoneNumber <= sumOfSatisfactionsByZone.size(); zoneNumber++) {
+            double avgSatisfaction = sumOfSatisfactionsByZone.get(zoneNumber)/householdsByZone.get(zoneNumber);
+            double avgProp = sumPropByZone.get(zoneNumber) / cntPropByZone.get(zoneNumber);
+            pwd.println(zoneNumber + "," + avgSatisfaction + "," +  avgProp + "," + year);
+        }
+
+        sumPropByZone.clear();
+        cntPropByZone.clear();
+
     }
 
     @Override
     public void endSimulation() {
         relocationTracker.end();
-//        try {
-//            fileWriter.close();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+
+        pwd.close();
     }
 
     /**
@@ -296,13 +302,9 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
 
         final double prop = movesStrategy.getMovingProbability(avgSatisfaction, currentUtil);
 
-        if (avgPropByZone.containsKey(dd.getZoneId())) {
-            zoneProp zS = avgPropByZone.get(dd.getZoneId());
-            zS.n++;
-            zS.avgProp = zS.avgProp + (prop - zS.avgProp) / zS.n;
-        } else {
-            avgPropByZone.put(dd.getZoneId(), new zoneProp(1, prop));
-        }
+        sumPropByZone.merge(dd.getZoneId(), prop, Double::sum);
+        cntPropByZone.merge(dd.getZoneId(), 1, Integer::sum);
+
 
         return this.random.nextDouble() <= prop;
     }

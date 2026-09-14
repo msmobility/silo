@@ -34,12 +34,6 @@ public final class Simulator {
 
     private final List<MicroEvent> events = new ArrayList<>();
     private final TimeTracker timeTracker;
-
-    private Map<Integer, Double> avgSatisfactionByZone = new LinkedHashMap<>();
-    String scenarioName = "base";
-    PrintWriter pwd = SiloUtil.openFileForSequentialWriting("/home/brendan/git/silo/useCases/fabiland/scenario/scenOutput/base/avgSatisfactionByZone_" + scenarioName + ".csv", false);
-
-
     private final Set<ResultsMonitor> resultsMonitors = new HashSet<>() ;
 
     public Simulator(TimeTracker timeTracker) {
@@ -129,23 +123,6 @@ public final class Simulator {
         for(ModelUpdateListener modelUpdateListener : modelUpdateListeners) {
             modelUpdateListener.endYear(year);
         }
-
-        MovesModelImpl movesModel = ((MovesModelImpl)((LinkedHashMap.Entry) (((LinkedHashMap)models).entrySet().toArray()[13])).getValue());
-        for (int i = 1; i <= movesModel.sumOfSatisfactionsByZone.size(); i++)
-        {
-            avgSatisfactionByZone.put(i, movesModel.sumOfSatisfactionsByZone.get(i)/movesModel.getHouseholdsByZone().get(i));
-        }
-
-        if (year == 1 || year == 5 || year == 9) {
-            pwd.print("zone,avgSatisfaction,avgProp,year");
-            pwd.println();
-            for (Map.Entry<Integer, Double> entry : avgSatisfactionByZone.entrySet()) {
-                pwd.print(entry.getKey() + "," + entry.getValue() + "," +  movesModel.avgPropByZone.get(entry.getKey()).avgProp + "," + year);
-                pwd.println();
-            }
-        }
-
-
         for(EventModel model: models.values()) {
             model.endYear(year);
         }
@@ -169,7 +146,7 @@ public final class Simulator {
             resultsMonitor.endSimulation();
         }
 
-        pwd.close();
+
 
     }
 }

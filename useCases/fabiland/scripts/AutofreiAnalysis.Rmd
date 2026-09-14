@@ -36,9 +36,9 @@ net_autofrei <-  list(annotate("segment", x = -5000, xend =5000,
 Read Data
 ```{r}
 
-base_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-11b-base/"
-policy_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-11b-policy/"
-year <- 5
+base_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-09e-base/"
+policy_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-09e-policy/"
+year <- 10
 base_pp <- read_csv(paste0(base_dir,"microData/pp_",year,".csv"))
 base_hh <- read_csv(paste0(base_dir,"microData/hh_",year,".csv"))
 base_dd <- read_csv(paste0(base_dir,"microData/dd_",year,".csv"))
@@ -261,7 +261,7 @@ policy_pt_skim <- read_csv(paste0(policy_dir, "matsim/skims/ptSkim_",year,".csv"
 
 fabiland_shp <- read_sf("/Users/jakob/git/silo/useCases/fabiland/scenario/input/zonesShapefile/fabiland.shp")
 
-from_node = 5
+from_node = 13
 
 base_car_skim |> filter(FROM  == from_node) |> left_join(fabiland_shp, by = c("TO" = "Id")) |> st_as_sf() |> tm_shape() + tm_polygons(fill = "VALUE") + tm_title("Base - Car")
 

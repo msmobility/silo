@@ -17,8 +17,12 @@ import org.matsim.core.config.groups.RoutingConfigGroup;
 import org.matsim.core.controler.OutputDirectoryHierarchy;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 public class RunFabilandAutofrei {
+
+//    static String scenario = "base";
+static String scenario = "policy";
 
     private final static Logger logger = LogManager.getLogger(RunFabilandAutofrei.class);
 
@@ -30,7 +34,8 @@ public class RunFabilandAutofrei {
         // or, to match regression test ...
         // "useCases/fabiland/scenario/test.properties useCases/fabiland/scenario/config_cap30_1-l_nes_smc.xml --config:controller.lastIteration 1 "
 
-        Properties siloConfig = SiloUtil.siloInitialization("useCases/fabiland/scenario/25r_ae.properties");
+//        Properties siloConfig = SiloUtil.siloInitialization("useCases/fabiland/scenario/25r_ae.properties");
+        Properties siloConfig = SiloUtil.siloInitialization("useCases/fabiland/scenario/9r_ae.properties");
 
 //        String[] matsimArgs = Arrays.copyOfRange( args, 1, args.length );
 
@@ -53,7 +58,13 @@ public class RunFabilandAutofrei {
         matsimConfig.controller().setLastIteration(1);
 
 
-//        matsimConfig.network().setInputFile("matsimInput/autofrei.xml");
+        if (scenario.equals("base")) {
+            // do nothing
+        } else if (scenario.equals("policy")) {
+            matsimConfig.network().setInputFile("matsimInput/autofrei.xml");
+        } else {
+            throw new RuntimeException();
+        }
 
 //        RoutingConfigGroup.TeleportedModeParams walkParams = matsimConfig.routing().getTeleportedModeParams().get(TransportMode.walk);
 //        walkParams.setTeleportedModeSpeed(walkParams.getTeleportedModeSpeed() * 10);
