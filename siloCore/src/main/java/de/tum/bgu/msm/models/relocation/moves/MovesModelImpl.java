@@ -15,7 +15,6 @@ import de.tum.bgu.msm.events.impls.household.MoveEvent;
 import de.tum.bgu.msm.io.output.YearByYearCsvModelTracker;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.properties.Properties;
-import de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule;
 import de.tum.bgu.msm.util.concurrent.ConcurrentExecutor;
 import de.tum.bgu.msm.utils.SampleException;
 import de.tum.bgu.msm.utils.Sampler;
@@ -28,12 +27,12 @@ import org.locationtech.jts.geom.Coordinate;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CyclicBarrier;
+import java.util.stream.Collectors;
 
 /**
  * @author Nico
@@ -63,8 +62,13 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
     private YearByYearCsvModelTracker relocationTracker;
 
     PrintWriter pwd;
+    boolean headerWritten = false;
+    public final Map<Integer, Double> sumAvgSatisfactionByZone = new LinkedHashMap<>();
+    public final Map<Integer, Double> sumCurrentUtilByZone = new LinkedHashMap<>();
     public final Map<Integer, Double> sumPropByZone = new LinkedHashMap<>();
-    public final Map<Integer, Integer> cntPropByZone = new LinkedHashMap<>();
+    public final Map<Integer, Integer> cntByZone = new LinkedHashMap<>();
+    public final Map<Integer, Integer> cntDefaultSatisfaction = new LinkedHashMap<>();
+
 
 
 
@@ -90,7 +94,7 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         Path basePath = Paths.get(properties.main.baseDirectory).resolve("scenOutput").resolve(properties.main.scenarioName).resolve("siloResults/relocation");
         relocationTracker = new YearByYearCsvModelTracker(basePath, "relocation", header);
         pwd = SiloUtil.openFileForSequentialWriting( Paths.get(properties.main.baseDirectory).resolve("scenOutput").resolve(properties.main.scenarioName).resolve("avgSatisfactionByZone.csv").toString(), false);
-        pwd.println("zone,avgSatisfaction,avgProp,year");
+//        pwd.println("zone,avgSatisfaction1,avgSatisfaction2,avgCurrentUtil,avgProp,defaultProp,year");
 
     }
 
@@ -122,14 +126,64 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
     public void endYear(int year) {
         UtilityUtils.endYear();
 
+        assert housingStrategy instanceof SimpleCommuteModeChoiceHousingStrategyImpl;
+
+        SimpleCommuteModeChoiceHousingStrategyImpl housingStrategy1 = (SimpleCommuteModeChoiceHousingStrategyImpl) housingStrategy;
+
+
+
         for (int zoneNumber = 1; zoneNumber <= sumOfSatisfactionsByZone.size(); zoneNumber++) {
-            double avgSatisfaction = sumOfSatisfactionsByZone.get(zoneNumber)/householdsByZone.get(zoneNumber);
-            double avgProp = sumPropByZone.get(zoneNumber) / cntPropByZone.get(zoneNumber);
-            pwd.println(zoneNumber + "," + avgSatisfaction + "," +  avgProp + "," + year);
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("zone", zoneNumber);
+            row.put("avgSatisfaction1", sumOfSatisfactionsByZone.get(zoneNumber)/householdsByZone.get(zoneNumber));
+            row.put("avgSatisfaction2", sumAvgSatisfactionByZone.get(zoneNumber) / cntByZone.get(zoneNumber));
+            row.put("avgCurrentUtil", sumCurrentUtilByZone.get(zoneNumber) / cntByZone.get(zoneNumber));
+            row.put("avgProp", sumPropByZone.get(zoneNumber) / cntByZone.get(zoneNumber));
+            row.put("defaultProp", ((double) cntDefaultSatisfaction.getOrDefault(zoneNumber,0)) / cntByZone.get(zoneNumber));
+            row.put("ddQualityUtility",  housingStrategy1.ddQualityUtilityMap.get(zoneNumber) / housingStrategy1.cntMap.get(zoneNumber));
+            row.put("ddSizeUtility", housingStrategy1.ddSizeUtilityMap.get(zoneNumber) / housingStrategy1.cntMap.get(zoneNumber));
+            row.put("ddAutoAccessibilityUtility", housingStrategy1.ddAutoAccessibilityUtilityMap.get(zoneNumber) / housingStrategy1.cntMap.get(zoneNumber));
+            row.put("transitAccessibilityUtility", housingStrategy1.transitAccessibilityUtilityMap.get(zoneNumber) / housingStrategy1.cntMap.get(zoneNumber));
+            row.put("ddPriceUtility", housingStrategy1.ddPriceUtilityMap.get(zoneNumber) / housingStrategy1.cntMap.get(zoneNumber));
+            row.put("workDistanceUtility", housingStrategy1.workDistanceUtilityMap.get(zoneNumber) / housingStrategy1.cntMap.get(zoneNumber));
+            row.put("commuteModeCarCnt", ((double) housingStrategy1.commuteModeCarCntMap.getOrDefault(zoneNumber,0)) / housingStrategy1.commuteModeAllCntMap.getOrDefault(zoneNumber,0));
+            row.put("commuteModePtCnt", ((double) housingStrategy1.commuteModePtCntMap.getOrDefault(zoneNumber, 0)) / housingStrategy1.commuteModeAllCntMap.getOrDefault(zoneNumber, 0));
+            row.put("commuteModeCarUtilSum",  housingStrategy1.commuteModeCarUtilSumMap.getOrDefault(zoneNumber,0.) / housingStrategy1.commuteModeCarCntMap.getOrDefault(zoneNumber,0));
+            row.put("commuteModePtUtilSum", housingStrategy1.commuteModePtUtilSumMap.getOrDefault(zoneNumber,0.) / housingStrategy1.commuteModePtCntMap.getOrDefault(zoneNumber,0));
+
+            row.put("year", year);
+
+
+            if (!headerWritten) {
+                pwd.println(String.join(",", row.keySet()));
+                headerWritten = true;
+            }
+
+            pwd.println(row.values().stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(",")));
         }
 
+
+        sumAvgSatisfactionByZone.clear();
+        sumCurrentUtilByZone.clear();
         sumPropByZone.clear();
-        cntPropByZone.clear();
+        cntByZone.clear();
+        cntDefaultSatisfaction.clear();
+
+        housingStrategy1.ddQualityUtilityMap.clear();
+        housingStrategy1.ddSizeUtilityMap.clear();
+        housingStrategy1.ddAutoAccessibilityUtilityMap.clear();
+        housingStrategy1.transitAccessibilityUtilityMap.clear();
+        housingStrategy1.ddPriceUtilityMap.clear();
+        housingStrategy1.workDistanceUtilityMap.clear();
+        housingStrategy1.cntMap.clear();
+
+        housingStrategy1.commuteModeAllCntMap.clear();
+        housingStrategy1.commuteModePtCntMap.clear();
+        housingStrategy1.commuteModeCarCntMap.clear();
+        housingStrategy1.commuteModeCarUtilSumMap.clear();
+        housingStrategy1.commuteModePtUtilSumMap.clear();
 
     }
 
@@ -298,13 +352,22 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
             return true;
         }
         final double currentUtil = satisfactionByHousehold.get(household.getId());
+
+        if (!averageHousingSatisfaction.containsKey(hhType)) {
+            cntDefaultSatisfaction.merge(dd.getZoneId(), 1, Integer::sum);
+        }
         final double avgSatisfaction = averageHousingSatisfaction.getOrDefault(hhType, currentUtil);
+
+
 
         final double prop = movesStrategy.getMovingProbability(avgSatisfaction, currentUtil);
 
-        sumPropByZone.merge(dd.getZoneId(), prop, Double::sum);
-        cntPropByZone.merge(dd.getZoneId(), 1, Integer::sum);
 
+        cntByZone.merge(dd.getZoneId(), 1, Integer::sum);
+
+        sumAvgSatisfactionByZone.merge(dd.getZoneId(), currentUtil, Double::sum);
+        sumCurrentUtilByZone.merge(dd.getZoneId(), avgSatisfaction, Double::sum);
+        sumPropByZone.merge(dd.getZoneId(), prop, Double::sum);
 
         return this.random.nextDouble() <= prop;
     }

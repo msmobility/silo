@@ -36,8 +36,13 @@ net_autofrei <-  list(annotate("segment", x = -5000, xend =5000,
 Read Data
 ```{r}
 
-base_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-09e-base/"
-policy_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-09e-policy/"
+
+base_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14b-base/"
+policy_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14b-policy/"
+
+# 
+# base_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-09e-base/"
+# policy_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-09e-policy/"
 year <- 10
 base_pp <- read_csv(paste0(base_dir,"microData/pp_",year,".csv"))
 base_hh <- read_csv(paste0(base_dir,"microData/hh_",year,".csv"))
@@ -272,6 +277,111 @@ base_pt_skim |> filter(FROM  == from_node) |> left_join(fabiland_shp, by = c("TO
 st_as_sf() |> tm_shape() + tm_polygons(fill = "VALUE") + tm_title("Base - PT")
 
 policy_pt_skim |> filter(FROM  == from_node) |> left_join(fabiland_shp, by = c("TO" = "Id")) |> st_as_sf() |> tm_shape() + tm_polygons(fill = "VALUE") + tm_title("Policy - PT")
+
+```
+
+
+## Zonal System
+## Analytics
+```{r}
+
+base_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14d-base/"
+policy_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14d-policy/"
+
+year1 <- 0
+base_analytics <- read_csv(paste0(base_dir,"avgSatisfactionByZone.csv")) |> left_join(fabiland_shp, by = c("zone" = "Id")) |> st_as_sf() 
+
+policy_analytics <- read_csv(paste0(policy_dir,"avgSatisfactionByZone.csv")) |> left_join(fabiland_shp, by = c("zone" = "Id")) |> st_as_sf() 
+
+base_analytics |> filter(year == year1)  |> tm_shape() + tm_polygons(fill = "avgProp") + tm_title("Probability of Moving, Base, year 0")
+
+policy_analytics |> filter(year == year1)  |> tm_shape() + tm_polygons(fill = "avgProp") + tm_title("Probability of Moving, Policy, year 0")
+
+# avgSatisfaction1
+ggplot(base_analytics) + geom_line( aes(year, avgSatisfaction1,colour = as.factor(zone))) + geom_line(data = base_analytics |> filter(zone == 13), mapping = aes(year, avgSatisfaction1), col = "red", lwd = 2) + lims(y = c(0.0,0.6))+ labs(title = "avgSatisfaction1 + Base")
+
+
+ggplot(policy_analytics) + geom_line( aes(year, avgSatisfaction1,colour = as.factor(zone))) + geom_line(data = policy_analytics |> filter(zone == 13), mapping = aes(year, avgSatisfaction1), col = "red", lwd = 2)+ lims(y = c(0.0,0.6)) +labs(title = "avgSatisfaction1 + Policy")
+
+
+# avgSatisfaction2
+
+ggplot(base_analytics) + geom_line( aes(year, avgSatisfaction2,colour = as.factor(zone))) + geom_line(data = base_analytics |> filter(zone == 13), mapping = aes(year, avgSatisfaction2), col = "red", lwd = 2) + lims(y = c(0.0,0.6)) + labs(title = "avgSatisfaction2 + Base")
+
+
+ggplot(policy_analytics) + geom_line( aes(year, avgSatisfaction2,colour = as.factor(zone))) + geom_line(data = policy_analytics |> filter(zone == 13), mapping = aes(year, avgSatisfaction2), col = "red", lwd = 2)+ lims(y = c(0.0,0.6))+labs(title = "avgSatisfaction2 + Policy")
+
+
+# avgCurrentUtil
+
+ggplot(base_analytics) + geom_line( aes(year, avgCurrentUtil,colour = as.factor(zone))) + geom_line(data = base_analytics |> filter(zone == 13), mapping = aes(year, avgCurrentUtil), col = "red", lwd = 2) + lims(y = c(0.0,0.6)) + labs(title = "avgCurrentUtil + Base")
+
+
+ggplot(policy_analytics) + geom_line( aes(year, avgCurrentUtil,colour = as.factor(zone))) + geom_line(data = policy_analytics |> filter(zone == 13), mapping = aes(year, avgCurrentUtil), col = "red", lwd = 2)+ lims(y = c(0.0,0.6))+ labs(title = "avgCurrentUtil + Policy")
+
+# PROP
+
+ggplot(base_analytics) + geom_line( aes(year, avgProp,colour = as.factor(zone))) + geom_line(data = base_analytics |> filter(zone == 13), mapping = aes(year, avgProp), col = "red", lwd = 2)+ lims(y = c(0.0,0.4))+ labs(title = "avgProp + Base")
+
+
+ggplot(policy_analytics) + geom_line( aes(year, avgProp,colour = as.factor(zone))) + geom_line(data = policy_analytics |> filter(zone == 13), mapping = aes(year, avgProp), col = "red", lwd = 2)+ lims(y = c(0.0,0.4))+ labs(title = "avgProp + Policy")
+
+
+base_analytics |> mutate(scenario = "base") |> bind_rows(policy_analytics |> mutate(scenario = "policy")) |> st_drop_geometry() |>  filter(zone ==13) |>  ggplot() + geom_col(aes(year,avgCurrentUtil, fill = scenario), position = "dodge") + labs(title = "avgCurrentUtil + zone13")
+
+base_analytics |> mutate(scenario = "base") |> bind_rows(policy_analytics |> mutate(scenario = "policy")) |> st_drop_geometry() |>  filter(zone ==13) |>  ggplot() + geom_col(aes(year,avgSatisfaction1, fill = scenario), position = "dodge")+ labs(title = "avgSatisfaction1 + zone13")
+
+base_analytics |> mutate(scenario = "base") |> bind_rows(policy_analytics |> mutate(scenario = "policy")) |> st_drop_geometry() |>  filter(zone ==13) |>  ggplot() + geom_col(aes(year,avgProp, fill = scenario), position = "dodge")+ labs(title = "avgProp + zone13")
+
+
+### 
+
+base_analytics |> mutate(scenario = "base") |> bind_rows(policy_analytics |> mutate(scenario = "policy")) |> st_drop_geometry() |>  group_by(zone, scenario) |> summarise(avgCurrentUtil = mean(avgCurrentUtil)) |>  ggplot() + geom_col(aes(zone,avgCurrentUtil, fill = scenario), position = "dodge")+ labs(title = "avgCurrentUtil + average over years")+ geom_vline(xintercept = 13)
+
+base_analytics |> mutate(scenario = "base") |> bind_rows(policy_analytics |> mutate(scenario = "policy")) |> st_drop_geometry() |>  group_by(zone, scenario) |> summarise(avgSatisfaction1 = mean(avgSatisfaction1)) |>  ggplot() + geom_col(aes(zone,avgSatisfaction1, fill = scenario), position = "dodge")+ labs(title = "avgSatisfaction1 + average over years")+ geom_vline(xintercept = 13)
+
+base_analytics |> mutate(scenario = "base") |> bind_rows(policy_analytics |> mutate(scenario = "policy")) |> st_drop_geometry() |>  group_by(zone, scenario) |> summarise(avgProp = mean(avgProp)) |>  ggplot() + geom_col(aes(zone,avgProp, fill = scenario), position = "dodge")+ labs(title = "avgProp + average over years")+ geom_vline(xintercept = 13)
+
+
+
+
+
+variables <- c("avgSatisfaction1","avgSatisfaction2","avgCurrentUtil","avgProp","defaultProp","ddQualityUtility","ddSizeUtility","ddAutoAccessibilityUtility","transitAccessibilityUtility","ddPriceUtility","workDistanceUtility") # Add your variable names here
+
+analytics <- base_analytics |>
+  mutate(scenario = "base") |>
+  bind_rows(policy_analytics |> mutate(scenario = "policy")) |>
+  st_drop_geometry()
+
+for (variable in variables) {
+  p <- analytics |>
+    group_by(zone, scenario) |>
+    summarise(value = mean(.data[[variable]]), .groups = "drop") |>
+    ggplot(aes(zone, value, fill = scenario)) +
+    geom_col(position = "dodge") +
+    labs(
+      title = paste(variable, "— average over years"),
+      y = variable
+    ) +
+    geom_vline(xintercept = 13)
+
+  print(p)
+}
+
+base_analytics |> mutate(scenario = "base") |> bind_rows(policy_analytics |> mutate(scenario = "policy")) |> st_drop_geometry() |>  group_by(zone, scenario) |> summarise(avgProp = mean(avgProp)) |>  ggplot() + geom_col(aes(zone,avgProp, fill = scenario), position = "dodge")+ labs(title = "avgProp + average over years")+ geom_vline(xintercept = 13)
+
+base_analytics |> mutate(scenario = "base") |> bind_rows(policy_analytics |> mutate(scenario = "policy")) |> st_drop_geometry() |>  group_by(zone, scenario) |> summarise(avgProp = mean(avgProp)) |>  ggplot() + geom_col(aes(zone,avgProp, fill = scenario), position = "dodge")+ labs(title = "avgProp + average over years")+ geom_vline(xintercept = 13)
+
+base_analytics |> mutate(scenario = "base") |> bind_rows(policy_analytics |> mutate(scenario = "policy")) |> st_drop_geometry() |>  group_by(zone, scenario) |> summarise(avgProp = mean(avgProp)) |>  ggplot() + geom_col(aes(zone,avgProp, fill = scenario), position = "dodge")+ labs(title = "avgProp + average over years")+ geom_vline(xintercept = 13)
+
+base_analytics |> mutate(scenario = "base") |> bind_rows(policy_analytics |> mutate(scenario = "policy")) |> st_drop_geometry() |>  group_by(zone, scenario) |> summarise(avgProp = mean(avgProp)) |>  ggplot() + geom_col(aes(zone,avgProp, fill = scenario), position = "dodge")+ labs(title = "avgProp + average over years")+ geom_vline(xintercept = 13)
+
+base_analytics |> mutate(scenario = "base") |> bind_rows(policy_analytics |> mutate(scenario = "policy")) |> st_drop_geometry() |>  group_by(zone, scenario) |> summarise(avgProp = mean(avgProp)) |>  ggplot() + geom_col(aes(zone,avgProp, fill = scenario), position = "dodge")+ labs(title = "avgProp + average over years")+ geom_vline(xintercept = 13)
+
+
+
+
+
 
 ```
 

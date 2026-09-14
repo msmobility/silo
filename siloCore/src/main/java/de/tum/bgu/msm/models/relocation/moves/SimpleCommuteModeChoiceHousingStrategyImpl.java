@@ -33,6 +33,21 @@ public class SimpleCommuteModeChoiceHousingStrategyImpl implements HousingStrate
     // used the hardcoded "Dwelling" type.  So we can as well specify it.  kai, jun'26
 
     private final static Logger logger = LogManager.getLogger(SimpleCommuteModeChoiceHousingStrategyImpl.class);
+    public Map<Integer, Double> ddQualityUtilityMap = new HashMap<>();
+    public Map<Integer, Double> workDistanceUtilityMap = new HashMap<>();
+    public Map<Integer, Double> ddPriceUtilityMap = new HashMap<>();
+    public Map<Integer, Double> transitAccessibilityUtilityMap = new HashMap<>();
+    public Map<Integer, Double> ddAutoAccessibilityUtilityMap = new HashMap<>();
+    public Map<Integer, Double> ddSizeUtilityMap = new HashMap<>();
+    public Map<Integer, Integer> cntMap = new HashMap<>();
+
+
+    public Map<Integer, Integer> commuteModeCarCntMap = new HashMap<>();
+    public Map<Integer, Double> commuteModeCarUtilSumMap = new HashMap<>();
+    public Map<Integer, Integer> commuteModePtCntMap = new HashMap<>();
+    public Map<Integer, Double> commuteModePtUtilSumMap = new HashMap<>();
+    public Map<Integer, Integer> commuteModeAllCntMap = new HashMap<>();
+
 
     private enum Normalizer {
         /**
@@ -145,10 +160,36 @@ public class SimpleCommuteModeChoiceHousingStrategyImpl implements HousingStrate
         for (Person pp : hh.getPersons().values()) {
             if (pp.getOccupation() == Occupation.EMPLOYED && pp.getJobId() != -2) {
 
-                workDistanceUtility *= commuteModeChoiceMapping.getMode(pp).utility;
+
+                CommuteModeChoiceMapping.CommuteMode mode = commuteModeChoiceMapping.getMode(pp);
+                workDistanceUtility *= mode.utility;
+
+
+                commuteModeAllCntMap.merge(dwelling.getZoneId(), 1, Integer::sum);
+                if (mode.mode.equals("car")) {
+                    commuteModeCarCntMap.merge(dwelling.getZoneId(), 1, Integer::sum);
+                    commuteModeCarUtilSumMap.merge(dwelling.getZoneId(), mode.utility, Double::sum);
+                } else if (mode.mode.equals("pt")) {
+                    commuteModePtCntMap.merge(dwelling.getZoneId(), 1, Integer::sum);
+                    commuteModePtUtilSumMap.merge(dwelling.getZoneId(), mode.utility, Double::sum);
+                } else {
+                    throw new RuntimeException();
+                }
 
             }
         }
+
+        cntMap.merge(dwelling.getZoneId(), 1, Integer::sum);
+        ddQualityUtilityMap.merge(dwelling.getZoneId(), ddQualityUtility, Double::sum);
+        ddSizeUtilityMap.merge(dwelling.getZoneId(), ddSizeUtility, Double::sum);
+        ddAutoAccessibilityUtilityMap.merge(dwelling.getZoneId(), ddAutoAccessibilityUtility, Double::sum);
+        transitAccessibilityUtilityMap.merge(dwelling.getZoneId(), transitAccessibilityUtility, Double::sum);
+        ddPriceUtilityMap.merge(dwelling.getZoneId(), ddPriceUtility, Double::sum);
+
+
+        workDistanceUtilityMap.merge(dwelling.getZoneId(), workDistanceUtility, Double::sum);
+
+
         return dwellingUtilityStrategy.calculateSelectDwellingUtility(ht, ddSizeUtility, ddPriceUtility,
                 ddQualityUtility, ddAutoAccessibilityUtility,
                 transitAccessibilityUtility, workDistanceUtility);

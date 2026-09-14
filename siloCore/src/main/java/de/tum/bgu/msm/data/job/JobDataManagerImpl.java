@@ -366,6 +366,8 @@ public class JobDataManagerImpl implements UpdateListener, JobDataManager {
                 }
             }
             if (regionSampler.getCumulatedProbability() == 0) {
+                // Discard zero-weight entries before adding regions with fallback weights.
+                regionSampler = new Sampler<>(regions.size(), Region.class, SiloUtil.getRandomObject());
                 // could not find job in reasonable distance. Person will have to commute far and is likely to relocate in the future
                 for (Region reg : regions) {
                     if (getNumberOfVacantJobsByRegion(reg.getId()) > 0) {
