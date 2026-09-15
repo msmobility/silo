@@ -44,7 +44,7 @@ public class RunFabilandAutofrei {
 
 
     //    static String scenario = "base";
-    static AutofreiScenario autofreiScenario = AutofreiScenario.LARGE;
+    static AutofreiScenario autofreiScenario = AutofreiScenario.BASE;
     static PtScenario ptScenario = PtScenario.RINGSX; // nes / ringsX
 
     private final static Logger logger = LogManager.getLogger(RunFabilandAutofrei.class);
@@ -54,7 +54,7 @@ public class RunFabilandAutofrei {
 
 
         // Create a temporary SILO config, wherein we overwrite the scenario name:
-        String prefix = "2026-09-15a__";
+        String prefix = "2026-09-15b__";
         String scenario = prefix + "autofrei-" + autofreiScenario + "__pt-" + ptScenario;
         Path baseSiloPropertiesFile = Path.of("useCases/fabiland/scenario/25r_ae.properties");
         Path tempSiloPropertiesFile = Files.createTempFile(baseSiloPropertiesFile.toAbsolutePath().getParent(), "tmp-", ".properties");
