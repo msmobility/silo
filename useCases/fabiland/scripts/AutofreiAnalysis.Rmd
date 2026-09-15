@@ -61,32 +61,34 @@ Define Directory for Scenario
 # Carfree: Small
 # PT: NES
 
-net_autofrei <- net_autofrei_small
-net_pt <- net_pt_nes
-
-base_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14g__autofrei-BASE__pt-NES/"
-policy_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14g__autofrei-SMALL__pt-NES/"
+# net_autofrei <- net_autofrei_small
+# net_pt <- net_pt_nes
+# 
+# root_dir <- "useCases/fabiland/scenario/scenOutput/2026-09-15a__"
+# 
+# base_dir <- paste0(root_dir,"autofrei-BASE__pt-NES/")
+# policy_dir <- paste0(root_dir,"autofrei-SMALL__pt-NES/")
 
 # 2:
 # Carfree: Large
 # PT: NES
-
-net_autofrei <- net_autofrei_large
-net_pt <- net_pt_nes
-
-base_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14g__autofrei-BASE__pt-NES/"
-policy_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14g__autofrei-LARGE__pt-NES/"
-
+# 
+# net_autofrei <- net_autofrei_large
+# net_pt <- net_pt_nes
+# 
+# base_dir <- paste0(root_dir,"autofrei-BASE__pt-NES/")
+# policy_dir <- paste0(root_dir,"autofrei-LARGE__pt-NES/")
+# 
 
 # 3:
 # Carfree: Small
 # PT: RINGSX
 
-net_autofrei <- net_autofrei_small
-net_pt <- net_pt_ringsx
-
-base_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14g__autofrei-BASE__pt-NES/"
-policy_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14g__autofrei-SMALL__pt-RINGSX/"
+# net_autofrei <- net_autofrei_small
+# net_pt <- net_pt_ringsx
+# 
+# base_dir <- paste0(root_dir,"autofrei-BASE__pt-RINGSX/")
+# policy_dir <- paste0(root_dir,"autofrei-SMALL__pt-RINGSX/")
 
 # 4:
 # Carfree: Large
@@ -95,16 +97,13 @@ policy_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-
 net_autofrei <- net_autofrei_large
 net_pt <- net_pt_ringsx
 
-base_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14g__autofrei-BASE__pt-NES/"
-policy_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14g__autofrei-LARGE__pt-RINGSX/"
+base_dir <- paste0(root_dir,"autofrei-BASE__pt-RINGSX/")
+policy_dir <- paste0(root_dir,"autofrei-LARGE__pt-RINGSX/")
 
-```
 
-Read Data
-```{r}
-# 
-# base_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-09e-base/"
-# policy_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-09e-policy/"
+
+
+###
 year <- 10
 base_pp <- read_csv(paste0(base_dir,"microData/pp_",year,".csv"))
 base_hh <- read_csv(paste0(base_dir,"microData/hh_",year,".csv"))
@@ -116,32 +115,21 @@ policy_pp <- read_csv(paste0(policy_dir,"microData/pp_",year,".csv"))
 policy_hh <- read_csv(paste0(policy_dir,"microData/hh_",year,".csv"))
 policy_dd <- read_csv(paste0(policy_dir,"microData/dd_",year,".csv"))
 policy_jj <- read_csv(paste0(policy_dir,"microData/jj_",year,".csv"))
-```
 
-Merge Dataset
-```{r}
+
+
 base_merged <- base_pp |> left_join(base_hh, by = c("hhid" = "id")) |>  left_join(base_dd, by = c("dwelling"="id")) |> left_join(base_jj |> select(id = personId, jobX = coordX, jobY = coordY)) |> mutate(coordXrounded = round(coordX/5000) *5000, coordYrounded = round(coordY/5000) *5000) 
 
 
 
 policy_merged <- policy_pp |> left_join(policy_hh, by = c("hhid" = "id")) |> left_join(policy_dd, by = c("dwelling"="id")) |> 
   left_join(policy_jj |> select(id = personId, jobX = coordX, jobY = coordY))  |> mutate(coordXrounded = round(coordX/5000) *5000, coordYrounded = round(coordY/5000) *5000) 
-```
 
-
-
-
-```{r}
 print("Average Income of Adults")
 print(paste0("base: ", base_merged |> filter(coordXrounded == 0 & coordYrounded == 0) |> filter(relationShip!="child") |> summarise(income = mean(income))))
 print(paste0("policy: ", policy_merged |> filter(coordXrounded == 0 & coordYrounded == 0) |> filter(relationShip!="child") |> summarise(income = mean(income))))
-```
 
 
-
-
-## Plot Home Coords
-```{r}
 zonal_counts <- base_merged |>
   select(id, coordXrounded, coordYrounded) |> 
   mutate(scenario = "base") |> 
@@ -149,10 +137,13 @@ zonal_counts <- base_merged |>
   group_by(coordXrounded,coordYrounded,scenario) |> count()
 
 
-zonal_counts |>
+xxx <-  zonal_counts |>
   pivot_wider(names_from = scenario, values_from = n) |>
-  mutate(diff = policy - base) |> 
-  ggplot() +
+  mutate(diff = policy - base) 
+  
+xxx |> filter(coordXrounded == 0 & coordYrounded == 0)
+  
+  ggplot(xxx) +
   net_pt +
   net_total +
   net_autofrei +
@@ -168,6 +159,32 @@ zonal_counts |>
   scale_size_continuous(range = c(1, 10)) +
   theme_minimal(base_size = 14) +
   labs(title = "Autofrei Policy vs. Base Case (at year 10)", fill = "Pop Diff", size = "Base Pop", x="", y="") 
+
+
+```
+
+Read Data
+```{r}
+
+```
+
+Merge Dataset
+```{r}
+
+```
+
+
+
+
+```{r}
+
+```
+
+
+
+
+## Plot Home Coords
+```{r}
 
 
 # sanity check
