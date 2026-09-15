@@ -23,23 +23,85 @@ net_total <-  list(annotate("segment", x = -10000, xend =10000,
            xend = c(-10000,-5000, 0, 5000,10000)) )
 
 
-net_autofrei <-  list(annotate("segment", x = -5000, xend =5000,
+net_autofrei_large <-  list(annotate("segment", x = -5000, xend =5000,
            y = c(-5000, 0, 5000),
            yend = c(-5000, 0, 5000), col = "red"),
   annotate("segment", y = -5000, yend =5000,
            x = c(-5000, 0, 5000),
            xend = c(-5000, 0, 5000),col = "red") )
 
+net_autofrei_small <-  list(annotate("segment", x = -5000, xend =5000,
+           y = 0, col = "red"),
+  annotate("segment", y = -5000, yend =5000, x = 0,col = "red") )
+
+
+pt_color <- "#D8BFD8"
+
+
+net_pt_nes <- list(annotate("segment", x = 0, xend = 10000, y = 0, yend = 10000, col = pt_color,lwd = 2))
+
+
+net_pt_ringsx <- list(annotate("segment", x = -10000, xend = 10000, y = -10000, yend = 10000, col = pt_color, lwd = 2),
+                      annotate("segment", x = -10000, xend = 10000, y = 10000, yend = -10000, col = pt_color, lwd = 2),
+                      annotate("segment", x = c(-10000,10000), y = -10000, yend = 10000, col = pt_color, lwd = 2),
+                      annotate("segment", y = c(-10000,10000), x = -10000, xend = 10000, col = pt_color, lwd = 2),
+                      annotate("segment", x = c(-5000,5000), y = -5000, yend = 5000, col = pt_color, lwd = 2),
+                      annotate("segment", y = c(-5000,5000), x = -5000, xend = 5000, col = pt_color, lwd = 2))
+
+
+
+
 ```
 
 
-Read Data
+Define Directory for Scenario
 ```{r}
 
+# 1:
+# Carfree: Small
+# PT: NES
 
-base_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14b-base/"
-policy_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14b-policy/"
+net_autofrei <- net_autofrei_small
+net_pt <- net_pt_nes
 
+base_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14g__autofrei-BASE__pt-NES/"
+policy_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14g__autofrei-SMALL__pt-NES/"
+
+# 2:
+# Carfree: Large
+# PT: NES
+
+net_autofrei <- net_autofrei_large
+net_pt <- net_pt_nes
+
+base_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14g__autofrei-BASE__pt-NES/"
+policy_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14g__autofrei-LARGE__pt-NES/"
+
+
+# 3:
+# Carfree: Small
+# PT: RINGSX
+
+net_autofrei <- net_autofrei_small
+net_pt <- net_pt_ringsx
+
+base_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14g__autofrei-BASE__pt-NES/"
+policy_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14g__autofrei-SMALL__pt-RINGSX/"
+
+# 4:
+# Carfree: Large
+# PT: RINGSX
+
+net_autofrei <- net_autofrei_large
+net_pt <- net_pt_ringsx
+
+base_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14g__autofrei-BASE__pt-NES/"
+policy_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14g__autofrei-LARGE__pt-RINGSX/"
+
+```
+
+Read Data
+```{r}
 # 
 # base_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-09e-base/"
 # policy_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-09e-policy/"
@@ -58,117 +120,66 @@ policy_jj <- read_csv(paste0(policy_dir,"microData/jj_",year,".csv"))
 
 Merge Dataset
 ```{r}
-base_merged <- base_pp |> left_join(base_hh, by = c("hhid" = "id")) |> left_join(base_dd, by = c("hhid"="id")) |> left_join(base_jj |> select(id = personId, jobX = coordX, jobY = coordY))
+base_merged <- base_pp |> left_join(base_hh, by = c("hhid" = "id")) |>  left_join(base_dd, by = c("dwelling"="id")) |> left_join(base_jj |> select(id = personId, jobX = coordX, jobY = coordY)) |> mutate(coordXrounded = round(coordX/5000) *5000, coordYrounded = round(coordY/5000) *5000) 
 
 
 
-policy_merged <- policy_pp |> left_join(policy_hh, by = c("hhid" = "id")) |> left_join(policy_dd, by = c("hhid"="id")) |> 
-  left_join(policy_jj |> select(id = personId, jobX = coordX, jobY = coordY))
+policy_merged <- policy_pp |> left_join(policy_hh, by = c("hhid" = "id")) |> left_join(policy_dd, by = c("dwelling"="id")) |> 
+  left_join(policy_jj |> select(id = personId, jobX = coordX, jobY = coordY))  |> mutate(coordXrounded = round(coordX/5000) *5000, coordYrounded = round(coordY/5000) *5000) 
 ```
 
+
+
+
+```{r}
+print("Average Income of Adults")
+print(paste0("base: ", base_merged |> filter(coordXrounded == 0 & coordYrounded == 0) |> filter(relationShip!="child") |> summarise(income = mean(income))))
+print(paste0("policy: ", policy_merged |> filter(coordXrounded == 0 & coordYrounded == 0) |> filter(relationShip!="child") |> summarise(income = mean(income))))
+```
 
 
 
 
 ## Plot Home Coords
 ```{r}
-base_merged |> ggplot() + geom_point(aes(coordX,coordY), alpha = 0.1) + theme_minimal(base_size = 14) + labs(title = "Base")
-  
-
-policy_merged |> ggplot() + geom_point(aes(coordX,coordY), alpha = 0.1) + theme_minimal(base_size = 14) + labs(title = "Policy")
-
-
-
-
-base_merged |>
-  select(id, coordX, coordY) |> 
-  left_join(policy_merged |> select(id, coordX, coordY), by = "id") |>
-  filter(!is.na(coordX.x) & !is.na(coordX.y)) |>
-  mutate(diff = coordX.x !=coordX.y) |> 
-  filter(diff) |> 
-  ggplot() + 
-  geom_point(aes(coordX.x,coordY.x), alpha = 0.1) +
-  theme_minimal(base_size = 14) +
-  labs(title = "Diff (Base)") 
-
-base_merged |>
-  select(id, coordX, coordY) |> 
-  left_join(policy_merged |> select(id, coordX, coordY), by = "id") |>
-  filter(!is.na(coordX.x) & !is.na(coordX.y)) |>
-  mutate(diff = coordX.x !=coordX.y) |> 
-  filter(diff) |> 
-  ggplot() + 
-  geom_point(aes(coordX.y,coordY.y), alpha = 0.1) +
-  theme_minimal(base_size = 14) +
-  labs(title = "Diff (Policy)") 
-
-
 zonal_counts <- base_merged |>
-  select(id, coordX, coordY) |> 
+  select(id, coordXrounded, coordYrounded) |> 
   mutate(scenario = "base") |> 
-  bind_rows(policy_merged |> select(id,coordX,coordY) |> mutate(scenario = "policy")) |>
-  mutate(coordX = round(coordX/5000) *5000, coordY = round(coordY/5000) *5000) |> 
-  group_by(coordX,coordY,scenario) |> count()
-
-zonal_counts |> 
-  filter(scenario == "base") |> 
-  ggplot() + 
-  geom_point(aes(coordX,coordY, col = n), size = 10) + 
-  theme_minimal(base_size = 14) +
-  labs(title = "Base Counts")
-  
-zonal_counts |> 
-  filter(scenario == "policy") |> 
-  ggplot() + 
-  geom_point(aes(coordX,coordY, col = n), size = 10) + 
-  theme_minimal(base_size = 14) +
-  labs(title = "Policy Counts")
-
-
-
-net_total <-  list(annotate("segment", x = -10000, xend =10000,
-           y = c(-10000,-5000, 0, 5000,10000),
-           yend = c(-10000,-5000, 0, 5000,10000)),
-  annotate("segment", y = -10000, yend =10000,
-           x = c(-10000,-5000, 0, 5000,10000),
-           xend = c(-10000,-5000, 0, 5000,10000)) )
-
-
-net_autofrei <-  list(annotate("segment", x = -5000, xend =5000,
-           y = c(-5000, 0, 5000),
-           yend = c(-5000, 0, 5000), col = "red"),
-  annotate("segment", y = -5000, yend =5000,
-           x = c(-5000, 0, 5000),
-           xend = c(-5000, 0, 5000),col = "red") )
+  bind_rows(policy_merged |> select(id,coordXrounded,coordYrounded) |> mutate(scenario = "policy")) |>
+  group_by(coordXrounded,coordYrounded,scenario) |> count()
 
 
 zonal_counts |>
   pivot_wider(names_from = scenario, values_from = n) |>
-  mutate(diff = policy - base) |>
+  mutate(diff = policy - base) |> 
   ggplot() +
+  net_pt +
   net_total +
   net_autofrei +
-  geom_point(aes(coordX, coordY, fill = diff), size = 10,shape = 21) +
+  geom_point(aes(coordXrounded, coordYrounded, fill = diff, size = base),shape = 21) +
   scale_fill_gradient2(
     low = "red",
     mid = "white",
     high = "blue",
-    midpoint = 0
+    midpoint = 0,
+    limits = c(-100, 100),
+    oob = scales::squish
   ) +
+  scale_size_continuous(range = c(1, 10)) +
   theme_minimal(base_size = 14) +
-  labs(title = "Policy - Base", fill = "Pop Diff") 
+  labs(title = "Autofrei Policy vs. Base Case (at year 10)", fill = "Pop Diff", size = "Base Pop", x="", y="") 
 
 
 # sanity check
-base_merged |> full_join(policy_merged, by = "id", suffix = c(".base",".policy")) |> 
-  mutate(age_same = age.base == age.policy, gender_same = gender.base == gender.policy) |> filter(!age_same)
+# base_merged |> full_join(policy_merged, by = "id", suffix = c(".base",".policy")) |> 
+#   mutate(age_same = age.base == age.policy, gender_same = gender.base == gender.policy) |> filter(!age_same)
 
 
 # People moving away from carfree zone
 base_merged |> full_join(policy_merged, by = "id", suffix = c(".base",".policy")) |> 
   filter(age.base == age.policy & gender.base == gender.policy) |> 
-  mutate(coordX.base = round(coordX.base/5000) *5000, coordY.base = round(coordY.base/5000) *5000) |> 
-  mutate(coordX.policy = round(coordX.policy/5000) *5000, coordY.policy = round(coordY.policy/5000) *5000) |> 
+  mutate(coordX.base = round(coordX.base/5000) *5000, coordY.base = round(coordY.base/5000) *5000) |>
+  mutate(coordX.policy = round(coordX.policy/5000) *5000, coordY.policy = round(coordY.policy/5000) *5000) |>
   mutate(jobX.base = round(jobX.base/5000) *5000, jobY.base = round(jobY.base/5000) *5000) |> 
   mutate(jobX.policy = round(jobX.policy/5000) *5000, jobY.policy = round(jobY.policy/5000) *5000) |> 
  filter(coordX.base == 0 & coordY.base == 0) |> 
@@ -204,13 +215,13 @@ base_merged |> full_join(policy_merged, by = "id", suffix = c(".base",".policy")
 ## Skims
 
 ```{r}
-base_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-10a-base/"
+# base_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-10a-base/"
 # policy_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-10a-policy/"
 
 # base_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-11a-base/"
-policy_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-11b-policy/"
+# policy_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-11b-policy/"
 
-year <- 5
+year <- 10
 base_car_skim <- read_csv(paste0(base_dir,"matsim/skims/carSkim_",year,".csv"))
 policy_car_skim <- read_csv(paste0(policy_dir, "matsim/skims/carSkim_",year,".csv"))
 base_pt_skim <- read_csv(paste0(base_dir, "matsim/skims/ptSkim_",year,".csv"))
@@ -237,8 +248,8 @@ policy_pt_skim |> filter(FROM  == from_node) |> left_join(fabiland_shp, by = c("
 ## Zonal System
 ## Analytics
 ```{r}
-base_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14e-base/"
-policy_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14e-policy/"
+# base_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14e-base/"
+# policy_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14e-policy/"
 
 base_analytics <- read_csv(paste0(base_dir,"avgSatisfactionByZone.csv")) |> left_join(fabiland_shp, by = c("zone" = "Id")) |> st_as_sf() 
 
@@ -367,6 +378,7 @@ zonal_counts_jobs |>
   pivot_wider(names_from = scenario, values_from = n) |>
   mutate(diff = policy - base) |>
   ggplot() +
+  net_pt +
   net_total +
   net_autofrei +
   geom_point(aes(coordX, coordY, fill = diff), size = 10,shape = 21) +
@@ -378,6 +390,73 @@ zonal_counts_jobs |>
   ) +
   theme_minimal(base_size = 14) +
   labs(title = "Policy - Base", fill = "Job Diff") 
+
+```
+
+
+## Deprecated Homes Plots
+```{r}
+
+base_merged |> ggplot() + geom_point(aes(coordX,coordY), alpha = 0.1) + theme_minimal(base_size = 14) + labs(title = "Base")
+  
+
+policy_merged |> ggplot() + geom_point(aes(coordX,coordY), alpha = 0.1) + theme_minimal(base_size = 14) + labs(title = "Policy")
+
+
+
+
+base_merged |>
+  select(id, coordX, coordY) |> 
+  left_join(policy_merged |> select(id, coordX, coordY), by = "id") |>
+  filter(!is.na(coordX.x) & !is.na(coordX.y)) |>
+  mutate(diff = coordX.x !=coordX.y) |> 
+  filter(diff) |> 
+  ggplot() + 
+  geom_point(aes(coordX.x,coordY.x), alpha = 0.1) +
+  theme_minimal(base_size = 14) +
+  labs(title = "Diff (Base)") 
+
+base_merged |>
+  select(id, coordX, coordY) |> 
+  left_join(policy_merged |> select(id, coordX, coordY), by = "id") |>
+  filter(!is.na(coordX.x) & !is.na(coordX.y)) |>
+  mutate(diff = coordX.x !=coordX.y) |> 
+  filter(diff) |> 
+  ggplot() + 
+  geom_point(aes(coordX.y,coordY.y), alpha = 0.1) +
+  theme_minimal(base_size = 14) +
+  labs(title = "Diff (Policy)") 
+zonal_counts |> 
+  filter(scenario == "base") |> 
+  ggplot() + 
+  geom_point(aes(coordXrounded,coordYrounded, col = n), size = 10) + 
+  theme_minimal(base_size = 14) +
+  labs(title = "Base Counts")
+  
+zonal_counts |> 
+  filter(scenario == "policy") |> 
+  ggplot() + 
+  geom_point(aes(coordXrounded,coordYrounded, col = n), size = 10) + 
+  theme_minimal(base_size = 14) +
+  labs(title = "Policy Counts")
+
+
+
+# net_total <-  list(annotate("segment", x = -10000, xend =10000,
+#            y = c(-10000,-5000, 0, 5000,10000),
+#            yend = c(-10000,-5000, 0, 5000,10000)),
+#   annotate("segment", y = -10000, yend =10000,
+#            x = c(-10000,-5000, 0, 5000,10000),
+#            xend = c(-10000,-5000, 0, 5000,10000)) )
+# 
+# 
+# net_autofrei <-  list(annotate("segment", x = -5000, xend =5000,
+#            y = c(-5000, 0, 5000),
+#            yend = c(-5000, 0, 5000), col = "red"),
+#   annotate("segment", y = -5000, yend =5000,
+#            x = c(-5000, 0, 5000),
+#            xend = c(-5000, 0, 5000),col = "red") )
+
 
 ```
 

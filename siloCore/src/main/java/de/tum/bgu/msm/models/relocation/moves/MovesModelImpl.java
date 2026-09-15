@@ -135,17 +135,17 @@ public class MovesModelImpl extends AbstractModel implements MovesModel {
         for (int zoneNumber = 1; zoneNumber <= sumOfSatisfactionsByZone.size(); zoneNumber++) {
             Map<String, Object> row = new LinkedHashMap<>();
             row.put("zone", zoneNumber);
-            row.put("avgSatisfaction1", sumOfSatisfactionsByZone.get(zoneNumber)/householdsByZone.get(zoneNumber));
-            row.put("avgSatisfaction2", sumAvgSatisfactionByZone.get(zoneNumber) / cntByZone.get(zoneNumber));
-            row.put("avgCurrentUtil", sumCurrentUtilByZone.get(zoneNumber) / cntByZone.get(zoneNumber));
-            row.put("avgProp", sumPropByZone.get(zoneNumber) / cntByZone.get(zoneNumber));
-            row.put("defaultProp", ((double) cntDefaultSatisfaction.getOrDefault(zoneNumber,0)) / cntByZone.get(zoneNumber));
-            row.put("ddQualityUtility",  housingStrategy1.ddQualityUtilityMap.get(zoneNumber) / housingStrategy1.cntMap.get(zoneNumber));
-            row.put("ddSizeUtility", housingStrategy1.ddSizeUtilityMap.get(zoneNumber) / housingStrategy1.cntMap.get(zoneNumber));
-            row.put("ddAutoAccessibilityUtility", housingStrategy1.ddAutoAccessibilityUtilityMap.get(zoneNumber) / housingStrategy1.cntMap.get(zoneNumber));
-            row.put("transitAccessibilityUtility", housingStrategy1.transitAccessibilityUtilityMap.get(zoneNumber) / housingStrategy1.cntMap.get(zoneNumber));
-            row.put("ddPriceUtility", housingStrategy1.ddPriceUtilityMap.get(zoneNumber) / housingStrategy1.cntMap.get(zoneNumber));
-            row.put("workDistanceUtility", housingStrategy1.workDistanceUtilityMap.get(zoneNumber) / housingStrategy1.cntMap.get(zoneNumber));
+            row.put("avgSatisfaction1", sumOfSatisfactionsByZone.getOrDefault(zoneNumber,0.)/householdsByZone.getOrDefault(zoneNumber,0));
+            row.put("avgSatisfaction2", sumAvgSatisfactionByZone.getOrDefault(zoneNumber,0.) / cntByZone.getOrDefault(zoneNumber,0));
+            row.put("avgCurrentUtil", sumCurrentUtilByZone.getOrDefault(zoneNumber,0.) / cntByZone.getOrDefault(zoneNumber,0));
+            row.put("avgProp", sumPropByZone.getOrDefault(zoneNumber,0.) / cntByZone.getOrDefault(zoneNumber,0));
+            row.put("defaultProp", ((double) cntDefaultSatisfaction.getOrDefault(zoneNumber,0)) / cntByZone.getOrDefault(zoneNumber,0));
+            row.put("ddQualityUtility",  housingStrategy1.ddQualityUtilityMap.getOrDefault(zoneNumber,0.) / housingStrategy1.cntMap.getOrDefault(zoneNumber,0));
+            row.put("ddSizeUtility", housingStrategy1.ddSizeUtilityMap.getOrDefault(zoneNumber,0.) / housingStrategy1.cntMap.getOrDefault(zoneNumber,0));
+            row.put("ddAutoAccessibilityUtility", housingStrategy1.ddAutoAccessibilityUtilityMap.getOrDefault(zoneNumber,0.) / housingStrategy1.cntMap.getOrDefault(zoneNumber,0));
+            row.put("transitAccessibilityUtility", housingStrategy1.transitAccessibilityUtilityMap.getOrDefault(zoneNumber,0.) / housingStrategy1.cntMap.getOrDefault(zoneNumber,0));
+            row.put("ddPriceUtility", housingStrategy1.ddPriceUtilityMap.getOrDefault(zoneNumber,0.) / housingStrategy1.cntMap.getOrDefault(zoneNumber,0));
+            row.put("workDistanceUtility", housingStrategy1.workDistanceUtilityMap.getOrDefault(zoneNumber,0.) / housingStrategy1.cntMap.getOrDefault(zoneNumber,0));
             row.put("commuteModeCarCnt", ((double) housingStrategy1.commuteModeCarCntMap.getOrDefault(zoneNumber,0)) / housingStrategy1.commuteModeAllCntMap.getOrDefault(zoneNumber,0));
             row.put("commuteModePtCnt", ((double) housingStrategy1.commuteModePtCntMap.getOrDefault(zoneNumber, 0)) / housingStrategy1.commuteModeAllCntMap.getOrDefault(zoneNumber, 0));
             row.put("commuteModeCarUtilSum",  housingStrategy1.commuteModeCarUtilSumMap.getOrDefault(zoneNumber,0.) / housingStrategy1.commuteModeCarCntMap.getOrDefault(zoneNumber,0));

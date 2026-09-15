@@ -11,7 +11,6 @@ import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.NetworkWriter;
@@ -23,39 +22,58 @@ import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.io.MatsimNetworkReader;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class RunFabilandAutofrei {
 
-//    static String scenario = "base";
-static String scenario = "policy";
+    enum AutofreiScenario {
+        BASE,
+        SMALL,
+        LARGE
+    }
+
+    enum PtScenario {
+//        NONE,
+        NES,
+        RINGSX
+    }
+
+
+    //    static String scenario = "base";
+    static AutofreiScenario autofreiScenario = AutofreiScenario.LARGE;
+    static PtScenario ptScenario = PtScenario.RINGSX; // nes / ringsX
 
     private final static Logger logger = LogManager.getLogger(RunFabilandAutofrei.class);
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
 
-        // see regression test
 
-        // args: SILO config, MATSim config
-        // e.g., "useCases/fabiland/scenario/1r_ae.properties useCases/fabiland/scenario/config_cap30_1-l_nes_smc.xml"
-        // or, to match regression test ...
-        // "useCases/fabiland/scenario/test.properties useCases/fabiland/scenario/config_cap30_1-l_nes_smc.xml --config:controller.lastIteration 1 "
+        // Create a temporary SILO config, wherein we overwrite the scenario name:
+        String prefix = "2026-09-15a__";
+        String scenario = prefix + "autofrei-" + autofreiScenario + "__pt-" + ptScenario;
+        Path baseSiloPropertiesFile = Path.of("useCases/fabiland/scenario/25r_ae.properties");
+        Path tempSiloPropertiesFile = Files.createTempFile(baseSiloPropertiesFile.toAbsolutePath().getParent(), "tmp-", ".properties");
+        Files.writeString(tempSiloPropertiesFile,
+                Files.readString(baseSiloPropertiesFile) + "\nscenario.name = " + scenario + "\n");
+        tempSiloPropertiesFile.toFile().deleteOnExit();
 
-//        Properties siloConfig = SiloUtil.siloInitialization("useCases/fabiland/scenario/25r_ae.properties");
-        Properties siloConfig = SiloUtil.siloInitialization("useCases/fabiland/scenario/9r_ae.properties");
 
-//        String[] matsimArgs = Arrays.copyOfRange( args, 1, args.length );
+        // load Silo properties
+        Properties siloConfig = SiloUtil.siloInitialization(tempSiloPropertiesFile.toString());
 
-        Config matsimConfig = null;
-//        if (args.length > 1 && args[1] != null) {
-        matsimConfig = ConfigUtils.loadConfig("useCases/fabiland/scenario/config_cap30_1-l_nes_smc.xml");
-//        }
+        // load MATSim config & modify certain options
+        Config matsimConfig = ConfigUtils.loadConfig("useCases/fabiland/scenario/config_cap30_1-l_nes_smc.xml");
+
+
         logger.info("Started SILO Fabiland sandbox model");
 
         // The following is obviously just a dirty quickfix until access/egress is default in MATSim
         if (siloConfig.transportModel.includeAccessEgress) {
-////            config.plansCalcRoute().setInsertingAccessEgressWalk(true); // in matsim-12
             matsimConfig.routing().setAccessEgressType(RoutingConfigGroup.AccessEgressType.accessEgressModeToLink); // in matsim-13-w37
         }
 //		config.routing().setAccessEgressType( RoutingConfigGroup.AccessEgressType.none );
@@ -63,16 +81,27 @@ static String scenario = "policy";
         // kai, apr'26
 
         matsimConfig.controller().setOverwriteFileSetting( OutputDirectoryHierarchy.OverwriteFileSetting.overwriteExistingFiles );
-        matsimConfig.controller().setLastIteration(1);
-
-        matsimConfig.network().setInputFile("matsimInput/nw_cap30_rings_x.xml");
-        matsimConfig.transit().setTransitScheduleFile("matsimInput/ts_rings_x.xml");
-        matsimConfig.transit().setVehiclesFile("matsimInput/tv_rings_x.xml");
+//        matsimConfig.controller().setLastIteration(50);
 
 
-        if (scenario.equals("base")) {
+//        if (ptScenario.equals(PtScenario.NONE)) {
+//            matsimConfig.network().setInputFile("matsimInput/nw_cap30.xml");
+//            matsimConfig.transit().setTransitScheduleFile(null);
+//        } else
+        if (ptScenario.equals(PtScenario.NES)) {
             // do nothing
-        } else if (scenario.equals("policy")) {
+        } else if (ptScenario.equals(PtScenario.RINGSX)) {
+            matsimConfig.network().setInputFile("matsimInput/nw_cap30_rings_x.xml");
+            matsimConfig.transit().setTransitScheduleFile("matsimInput/ts_rings_x.xml");
+//            matsimConfig.transit().setVehiclesFile("matsimInput/tv_rings_x.xml");
+        } else {
+            throw new RuntimeException();
+        }
+        
+
+        if (autofreiScenario.equals(AutofreiScenario.BASE)) {
+            // do nothing
+        } else if (autofreiScenario.equals(AutofreiScenario.SMALL)) {
             Network network = NetworkUtils.createNetwork();
             new MatsimNetworkReader(network).readFile("useCases/fabiland/scenario/" + matsimConfig.network().getInputFile());
 
@@ -86,9 +115,21 @@ static String scenario = "policy";
             }
 
 
+            new NetworkWriter(network).write("useCases/fabiland/scenario/matsimInput/_nw_jr_tmp.xml");
+            matsimConfig.network().setInputFile("matsimInput/_nw_jr_tmp.xml");
+        } else if (autofreiScenario.equals(AutofreiScenario.LARGE)) {
+            Network network = NetworkUtils.createNetwork();
+            new MatsimNetworkReader(network).readFile("useCases/fabiland/scenario/" + matsimConfig.network().getInputFile());
+
+            // all links must have a centroid within +-5000m
+            Set<Link> carfreeLinks = network.getLinks().values().stream().filter(link -> Math.abs(link.getCoord().getX()) <= 5000 & Math.abs(link.getCoord().getY()) <= 5000).collect(Collectors.toSet());
+            for (Link carfreeLink : carfreeLinks) {
+                carfreeLink.setFreespeed(carfreeLink.getFreespeed() / 100);
+            }
 
             new NetworkWriter(network).write("useCases/fabiland/scenario/matsimInput/_nw_jr_tmp.xml");
             matsimConfig.network().setInputFile("matsimInput/_nw_jr_tmp.xml");
+
         } else {
             throw new RuntimeException();
         }
