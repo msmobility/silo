@@ -44,7 +44,7 @@ public class RunFabilandAutofrei {
 
 
     //    static String scenario = "base";
-    static AutofreiScenario autofreiScenario = AutofreiScenario.BASE;
+    static AutofreiScenario autofreiScenario = AutofreiScenario.LARGE;
     static PtScenario ptScenario = PtScenario.NES; // nes / ringsX
 
     private final static Logger logger = LogManager.getLogger(RunFabilandAutofrei.class);

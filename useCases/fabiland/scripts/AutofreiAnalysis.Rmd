@@ -6,8 +6,8 @@ output: html_document
 
 ```{r}
 library(tidyverse)
-library(sf)
-library(tmap)
+# library(sf)
+# library(tmap)
 ```
 
 # FABILAND
@@ -57,48 +57,49 @@ net_pt_ringsx <- list(annotate("segment", x = -10000, xend = 10000, y = -10000, 
 Define Directory for Scenario
 ```{r}
 
+setwd("/home/brendan/svn/")
+root_dir <- "shared-svn/projects/fabilut/fabiland/"
+
 # 1:
 # Carfree: Small
 # PT: NES
 
 # net_autofrei <- net_autofrei_small
 # net_pt <- net_pt_nes
-# 
-# root_dir <- "useCases/fabiland/scenario/scenOutput/2026-09-15a__"
-# 
-# base_dir <- paste0(root_dir,"autofrei-BASE__pt-NES/")
-# policy_dir <- paste0(root_dir,"autofrei-SMALL__pt-NES/")
+
+base_dir <- paste0(root_dir,"2026-09-15b__autofrei-BASE__pt-NES/")
+policy_dir <- paste0(root_dir,"2026-09-15b__autofrei-SMALL__pt-NES/")
 
 # 2:
 # Carfree: Large
 # PT: NES
-# 
+
 # net_autofrei <- net_autofrei_large
 # net_pt <- net_pt_nes
 # 
-# base_dir <- paste0(root_dir,"autofrei-BASE__pt-NES/")
-# policy_dir <- paste0(root_dir,"autofrei-LARGE__pt-NES/")
-# 
+# base_dir <- paste0(root_dir,"2026-09-15b__autofrei-BASE__pt-NES/")
+# policy_dir <- paste0(root_dir,"2026-09-15b__autofrei-LARGE__pt-NES/")
+
 
 # 3:
 # Carfree: Small
 # PT: RINGSX
-
+# 
 # net_autofrei <- net_autofrei_small
 # net_pt <- net_pt_ringsx
 # 
-# base_dir <- paste0(root_dir,"autofrei-BASE__pt-RINGSX/")
-# policy_dir <- paste0(root_dir,"autofrei-SMALL__pt-RINGSX/")
+# base_dir <- paste0(root_dir,"2026-09-15b__autofrei-BASE__pt-RINGSX/")
+# policy_dir <- paste0(root_dir,"2026-09-15b__autofrei-SMALL__pt-RINGSX/")
 
 # 4:
 # Carfree: Large
 # PT: RINGSX
 
-net_autofrei <- net_autofrei_large
-net_pt <- net_pt_ringsx
-
-base_dir <- paste0(root_dir,"autofrei-BASE__pt-RINGSX/")
-policy_dir <- paste0(root_dir,"autofrei-LARGE__pt-RINGSX/")
+# net_autofrei <- net_autofrei_large
+# net_pt <- net_pt_ringsx
+# 
+# base_dir <- paste0(root_dir,"2026-09-15b__autofrei-BASE__pt-RINGSX/")
+# policy_dir <- paste0(root_dir,"2026-09-15b__autofrei-LARGE__pt-RINGSX/")
 
 
 
@@ -125,40 +126,109 @@ base_merged <- base_pp |> left_join(base_hh, by = c("hhid" = "id")) |>  left_joi
 policy_merged <- policy_pp |> left_join(policy_hh, by = c("hhid" = "id")) |> left_join(policy_dd, by = c("dwelling"="id")) |> 
   left_join(policy_jj |> select(id = personId, jobX = coordX, jobY = coordY))  |> mutate(coordXrounded = round(coordX/5000) *5000, coordYrounded = round(coordY/5000) *5000) 
 
-print("Average Income of Adults")
-print(paste0("base: ", base_merged |> filter(coordXrounded == 0 & coordYrounded == 0) |> filter(relationShip!="child") |> summarise(income = mean(income))))
-print(paste0("policy: ", policy_merged |> filter(coordXrounded == 0 & coordYrounded == 0) |> filter(relationShip!="child") |> summarise(income = mean(income))))
 
+# get agents who left zone 13 from base to policy
+policy_from13 <- policy_merged |>
+  filter(!(coordXrounded == 0 & coordYrounded == 0)) |>
+  filter(relationShip != "child") |>
+  inner_join(
+    base_merged |>
+      filter(coordXrounded == 0, coordYrounded == 0) |>
+      filter(relationShip != "child"),
+    by = "id",
+    suffix = c("_policy", "_base")
+  )
 
-zonal_counts <- base_merged |>
-  select(id, coordXrounded, coordYrounded) |> 
-  mutate(scenario = "base") |> 
-  bind_rows(policy_merged |> select(id,coordXrounded,coordYrounded) |> mutate(scenario = "policy")) |>
-  group_by(coordXrounded,coordYrounded,scenario) |> count()
+policy_to13 <- policy_merged |>
+  filter(coordXrounded == 0, coordYrounded == 0) |>
+  filter(relationShip != "child") |>
+  inner_join(
+    base_merged |>
+      filter(!(coordXrounded == 0 & coordYrounded == 0)) |>
+      filter(relationShip != "child"),
+    by = "id",
+    suffix = c("_policy", "_base")
+  )
 
+mean(policy_from13$income_policy)
+mean(policy_to13$income_policy)
 
-xxx <-  zonal_counts |>
-  pivot_wider(names_from = scenario, values_from = n) |>
-  mutate(diff = policy - base) 
-  
-xxx |> filter(coordXrounded == 0 & coordYrounded == 0)
-  
-  ggplot(xxx) +
-  net_pt +
-  net_total +
-  net_autofrei +
-  geom_point(aes(coordXrounded, coordYrounded, fill = diff, size = base),shape = 21) +
-  scale_fill_gradient2(
-    low = "red",
-    mid = "white",
-    high = "blue",
-    midpoint = 0,
-    limits = c(-100, 100),
-    oob = scales::squish
-  ) +
-  scale_size_continuous(range = c(1, 10)) +
-  theme_minimal(base_size = 14) +
-  labs(title = "Autofrei Policy vs. Base Case (at year 10)", fill = "Pop Diff", size = "Base Pop", x="", y="") 
+employment_from13 <- table(policy_from13$occupation_policy) |> 
+  setNames(c("employed", "unemployed"))
+rate <- employment_from13["employed"] / (employment_from13["employed"] + employment_from13["unemployed"])
+rate
+
+employment_to13 <- table(policy_to13$occupation_policy) |> 
+  setNames(c("employed", "unemployed"))
+rate <- employment_to13["employed"] / (employment_to13["employed"] + employment_to13["unemployed"])
+rate
+
+# print("Average Income of Adults")
+# print(paste0("base: ", base_merged |> filter(coordXrounded == 0 & coordYrounded == 0) |> filter(relationShip!="child") |> summarise(income = mean(income))))
+# print(paste0("policy: ", policy_merged |> filter(coordXrounded == 0 & coordYrounded == 0) |> filter(relationShip!="child") |> summarise(income = mean(income))))
+# 
+# zonal_counts <- base_merged |>
+#   select(id, coordXrounded, coordYrounded) |> 
+#   mutate(scenario = "base") |> 
+#   bind_rows(policy_merged |> select(id,coordXrounded,coordYrounded) |> mutate(scenario = "policy")) |>
+#   group_by(coordXrounded,coordYrounded,scenario) |> count()
+# 
+# zonal_mean_incomes  <- base_merged |>
+#   select(id, coordXrounded, coordYrounded, income) |> 
+#   mutate(scenario = "base") |> 
+#   bind_rows(policy_merged |> select(id,coordXrounded,coordYrounded, income) |> mutate(scenario = "policy")) |>
+#   group_by(coordXrounded,coordYrounded,scenario) |>
+#   summarise(mean_income = mean(income, na.rm = TRUE), .groups = "drop")
+# 
+# 
+# xxx <-  zonal_counts |>
+#   pivot_wider(names_from = scenario, values_from = n) |>
+#   mutate(diff = policy - base)
+# 
+# xxx |> filter(coordXrounded == 0 & coordYrounded == 0)
+# 
+# yyy <- zonal_mean_incomes |> 
+#   pivot_wider(names_from = scenario, values_from = mean_income) |>
+#   mutate(diff = policy - base) 
+# 
+# income_pop_diff_table <- xxx |> left_join(yyy, by = c("coordXrounded" = "coordXrounded", "coordYrounded" = "coordYrounded"))
+# 
+# 
+# # diif plot
+#   # ggplot(xxx) +
+#   # net_pt +
+#   # net_total +
+#   # net_autofrei +
+#   # geom_point(aes(coordXrounded, coordYrounded, fill = diff, size = base),shape = 21) +
+#   # scale_fill_gradient2(
+#   #   low = "red",
+#   #   mid = "white",
+#   #   high = "blue",
+#   #   midpoint = 0,
+#   #   limits = c(-100, 100),
+#   #   oob = scales::squish
+#   # ) +
+#   # scale_size_continuous(range = c(1, 10)) +
+#   # theme_minimal(base_size = 14) +
+#   # labs(title = "Autofrei Policy vs. Base Case (at year 10)", fill = "pop diff", size = "Base Pop", x="", y="")
+#   
+#   ggplot(income_pop_diff_table) +
+#   net_pt +
+#   net_total +
+#   net_autofrei +
+#   geom_point(aes(coordXrounded, coordYrounded, fill = base.y, size = base.x),shape = 21) +
+#   scale_fill_gradient2(
+#     low = "red",
+#     mid = "white",
+#     high = "blue",
+#     midpoint = 13500,
+#     limits = c(10000, 17000),
+#     oob = scales::squish
+#   ) +
+#   scale_size_continuous(range = c(5, 15)) +
+#   theme_minimal(base_size = 14) +
+#   labs(title = "Base Case (at year 10)", fill = "mean income", size = "Base Pop", x="", y="")
+
 
 
 ```
@@ -407,6 +477,45 @@ zonal_counts_jobs |>
   ) +
   theme_minimal(base_size = 14) +
   labs(title = "Policy - Base", fill = "Job Diff") 
+
+
+
+# jobs for to13 agents:
+policy_to13_jobs <- policy_to13 |> select(jobX_policy, jobY_policy) |> 
+    filter(!is.na(jobX_policy)) |>
+  mutate(coordX_policy = round(jobX_policy/5000) *5000, coordY_policy = round(jobY_policy/5000) *5000) |> 
+  group_by(coordX_policy, coordY_policy) |> count()
+
+policy_to13_jobs
+
+policy_from13_jobs <- policy_from13 |> select(jobX_policy, jobY_policy) |> 
+    filter(!is.na(jobX_policy)) |>
+  mutate(coordX_policy = round(jobX_policy/5000) *5000, coordY_policy = round(jobY_policy/5000) *5000) |> 
+  group_by(coordX_policy, coordY_policy) |> count()
+
+policy_from13_jobs
+
+policy_from13_jobs |> 
+  ggplot() + 
+  geom_point(aes(coordX_policy, coordY_policy, size = n)) +
+    scale_size_continuous(
+    breaks = c(10, 20, 30, 40, 50)
+  ) +
+  theme_minimal(base_size = 14) +
+  labs(title = "Job counts - from zone 13")
+
+policy_to13_jobs |> 
+  ggplot() + 
+  geom_point(aes(coordX_policy, coordY_policy, size = n)) + 
+  scale_size_continuous(
+    breaks = c(10, 20, 30, 40, 50)
+  ) +
+  theme_minimal(base_size = 14) +
+  labs(title = "Job counts - to zone 13")
+
+
+
+
 
 ```
 
