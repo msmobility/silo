@@ -67,7 +67,7 @@ public class RunFabilandAutofrei {
         Properties siloConfig = SiloUtil.siloInitialization(tempSiloPropertiesFile.toString());
 
         // load MATSim config & modify certain options
-        Config matsimConfig = ConfigUtils.loadConfig("useCases/fabiland/scenario/config_cap30_1-l_nes_smc.xml");
+        Config matsimConfig = ConfigUtils.loadConfig("useCases/fabiland/scenario/config_cap5_1-l_nes_smc.xml");
 
 
         logger.info("Started SILO Fabiland sandbox model");

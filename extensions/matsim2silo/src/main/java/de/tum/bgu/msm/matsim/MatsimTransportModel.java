@@ -27,9 +27,12 @@ import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.population.Activity;
+import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.api.core.v01.population.PopulationFactory;
 import org.matsim.contrib.dvrp.trafficmonitoring.TravelTimeUtils;
 import org.matsim.core.config.Config;
@@ -47,10 +50,7 @@ import org.matsim.vehicles.VehiclesFactory;
 
 import java.io.File;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 import static de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule.*;
 
@@ -70,6 +70,8 @@ public final class MatsimTransportModel implements TransportModel {
     private final DataContainer dataContainer;
 
     private MatsimScenarioAssembler scenarioAssembler;
+
+    HashMap<Id, PreviousYearPlan> previousYearPlans = new HashMap<>();
 
     public MatsimTransportModel(DataContainer dataContainer, Config matsimConfig,
                                 Properties properties, MatsimScenarioAssembler scenarioAssembler,
@@ -179,7 +181,27 @@ public final class MatsimTransportModel implements TransportModel {
 
         // TODO remove config argument as it is duplicate (cf. above)
 		// yyyyyy the following replaces "assembledScenario"!!!
-        assembledScenario = scenarioAssembler.assembleScenario(initialMatsimConfig, year, travelTimes);
+//        assembledScenario = scenarioAssembler.assembleScenario(
+//                assembledScenario.getConfig(),
+//                year,
+//                travelTimes);
+
+        if (year == properties.main.baseYear) {
+
+            assembledScenario = scenarioAssembler.assembleScenario(
+                    assembledScenario.getConfig(),
+                    year,
+                    travelTimes);
+
+        } else {
+
+            assembledScenario = scenarioAssembler.assembleScenarioWithPreviousPlans(
+                    assembledScenario.getConfig(),
+                    year,
+                    travelTimes,
+                    previousYearPlans);
+        }
+
 
         finalizeConfig(assembledScenario.getConfig(), year, Integer.toString(year));
 
@@ -191,9 +213,35 @@ public final class MatsimTransportModel implements TransportModel {
         // Get travel Times from MATSim
         logger.warn("###################################################");
         logger.warn("Using MATSim to compute travel times from zone to zone.");
+
         TravelTime travelTime = controler.getLinkTravelTimes();
         TravelDisutility travelDisutility = controler.getTravelDisutilityFactory().createTravelDisutility(travelTime);
         updateTravelTimes(travelTime, travelDisutility, year);
+
+        //don't actually need to check if not base year, since we save this after the simulation of first year,
+        // which is correct to then save "previous" year's plans
+//        if (year != properties.main.baseYear && properties.transportModel.transportModelIdentifier == TransportModelIdentifier.MATSIM) {
+            for (org.matsim.api.core.v01.population.Person person : assembledScenario.getPopulation().getPersons().values()) {
+
+                Coord workLocation = null, homeLocation = null;
+                for (PlanElement el : person.getSelectedPlan().getPlanElements()) {
+                    if (el instanceof Activity && ((Activity) el).getType().startsWith("home")) {
+                        homeLocation = ((Activity) el).getCoord();
+                    }
+                    if (el instanceof Activity && ((Activity) el).getType().startsWith("work")) {
+                        workLocation = ((Activity) el).getCoord();
+                    }
+                }
+
+                PreviousYearPlan personPyp = new PreviousYearPlan(person.getId(), person.getSelectedPlan(), workLocation, homeLocation);
+                if (previousYearPlans.containsKey( person.getId())) {
+                    previousYearPlans.replace(person.getId(), personPyp);
+                } else {
+                    previousYearPlans.put(person.getId(), personPyp);
+                }
+            }
+//        }
+
     }
 
     private void finalizeConfig(Config config, int runId, String dir) {

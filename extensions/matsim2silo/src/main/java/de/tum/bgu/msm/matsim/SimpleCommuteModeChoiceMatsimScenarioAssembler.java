@@ -2,13 +2,15 @@ package de.tum.bgu.msm.matsim;
 
 import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Day;
-import de.tum.bgu.msm.data.dwelling.Dwelling;
-import de.tum.bgu.msm.data.dwelling.RealEstateDataManager;
+import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.household.Household;
+import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
+import de.tum.bgu.msm.data.person.PersonFactory;
+import de.tum.bgu.msm.data.person.PersonFactoryImpl;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.data.vehicle.VehicleType;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoice;
@@ -19,16 +21,17 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
 import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
-import org.matsim.api.core.v01.population.Activity;
-import org.matsim.api.core.v01.population.Plan;
-import org.matsim.api.core.v01.population.Population;
-import org.matsim.api.core.v01.population.PopulationFactory;
+import org.matsim.api.core.v01.population.*;
 import org.matsim.core.config.Config;
 import org.matsim.core.gbl.MatsimRandom;
+import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 import java.util.Random;
@@ -74,6 +77,99 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
     }
 
     @Override
+    public Scenario assembleScenarioWithPreviousPlans(
+            Config matsimConfig,
+            int year,
+            TravelTimes travelTimes,
+            HashMap<Id, PreviousYearPlan> previousYearPlans) {
+
+        logger.info("Starting MATSim scenario using previous year's plans.");
+
+       // we add new people from silo to matsim in assembleScenario
+        Scenario scenario = assembleScenario(
+                matsimConfig,
+                year,
+                travelTimes);
+
+        Population population = scenario.getPopulation();
+        PopulationFactory factory = population.getFactory();
+
+        // step: Match the current SILO population against the saved IDs.
+        // how should we grab people that died/were born? We need previousYear Population as well. 
+        for (Map.Entry<Id<org.matsim.api.core.v01.population.Person>, ? extends org.matsim.api.core.v01.population.Person> entry
+                : population.getPersons().entrySet()) {
+
+            org.matsim.api.core.v01.population.Person person = entry.getValue();
+
+            PreviousYearPlan previousYearPlan =
+                    previousYearPlans.get(entry.getKey());
+
+            // new person added in assemble and given plan with createHWHPlanAndAddToAlterEgo
+            if (previousYearPlan == null) {
+                continue;
+            }
+
+            // what we need to check is if previous people have changed work or home and then generate new plan for them.
+            // do Silo persons match matsim ones? That should be the case, but do they share IDs? Silo IDs are ints, while matsim ones are
+            // saved as ID class. Need to find key to check changed work and home location.
+
+            int siloPersonId = Integer.parseInt(person.getId().toString());
+
+            Person siloPerson = dataContainer.getHouseholdDataManager()
+                            .getPersonFromId(siloPersonId);
+
+            if (homeOrWorkChanged(previousYearPlan, siloPerson)) {
+                // person's home/work changed → keep new plan
+                continue;
+            }
+
+            // this previousPlan is a reference value and we need to make a
+            // copied (by value) Plan to then insert in current year for selected person
+            Plan previousPlan = previousYearPlan.previousYearPlan;
+
+            Plan copiedPlan = factory.createPlan();
+            PopulationUtils.copyFromTo(previousPlan, copiedPlan);
+
+            person.addPlan(copiedPlan);
+            person.setSelectedPlan(copiedPlan);
+        }
+
+        return scenario;
+    }
+
+    public boolean homeOrWorkChanged(PreviousYearPlan previousYearPlan, Person siloPerson) {
+
+        Dwelling dwelling = dataContainer.getRealEstateDataManager().getDwelling(siloPerson.getHousehold().getDwellingId());
+        if(siloPerson.getOccupation() == Occupation.UNEMPLOYED)
+        {
+            // don't then check for job location, just use new job from assembleScenario
+            return true;
+        }
+        Job occupation = dataContainer.getJobDataManager().getJobFromId(siloPerson.getJobId());
+
+        Coordinate currentHomeSilo = dwelling.getCoordinate();
+        Coordinate currentWorkSilo = occupation.getCoordinate();
+
+        Coord currentHome = new Coord(
+                currentHomeSilo.getX(),
+                currentHomeSilo.getY());
+
+        Coord currentWork = new Coord(
+                currentWorkSilo.getX(),
+                currentWorkSilo.getY());
+
+        boolean homeChanged =
+                previousYearPlan.homeLocation.getX() != currentHome.getX()
+                        || previousYearPlan.homeLocation.getY() != currentHome.getY();
+
+        boolean workChanged =
+                previousYearPlan.workLocation.getX() != currentWork.getX()
+                || previousYearPlan.workLocation.getY() != currentWork.getY();
+
+        return homeChanged || workChanged;
+    }
+
+    @Override
     public Scenario assembleScenario(Config matsimConfig, int year, TravelTimes travelTimes) {
         logger.info("Starting creating (mode-respecting, home-work-home) MATSim scenario.");
 
@@ -113,6 +209,7 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
             }
 
             for (Person person : household.getPersons().values()) {
+                // does this mean the person doesn't get a plan if they don't work? So no Freizeit Activities?
                 if (person.getOccupation() != Occupation.EMPLOYED || person.getJobId() == -2) { // i.e. person does not work
                     continue;
                 }
