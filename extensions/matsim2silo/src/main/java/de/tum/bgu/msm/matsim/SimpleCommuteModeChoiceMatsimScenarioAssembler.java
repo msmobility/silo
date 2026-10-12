@@ -4,37 +4,33 @@ import de.tum.bgu.msm.container.DataContainer;
 import de.tum.bgu.msm.data.Day;
 import de.tum.bgu.msm.data.dwelling.*;
 import de.tum.bgu.msm.data.household.Household;
-import de.tum.bgu.msm.data.household.HouseholdDataManager;
 import de.tum.bgu.msm.data.job.Job;
 import de.tum.bgu.msm.data.job.JobDataManager;
 import de.tum.bgu.msm.data.person.Occupation;
 import de.tum.bgu.msm.data.person.Person;
-import de.tum.bgu.msm.data.person.PersonFactory;
-import de.tum.bgu.msm.data.person.PersonFactoryImpl;
 import de.tum.bgu.msm.data.travelTimes.TravelTimes;
 import de.tum.bgu.msm.data.vehicle.VehicleType;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoice;
 import de.tum.bgu.msm.models.modeChoice.CommuteModeChoiceMapping;
+import de.tum.bgu.msm.modules.tripGeneration.TripGeneration;
 import de.tum.bgu.msm.properties.Properties;
 import de.tum.bgu.msm.utils.SiloUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.locationtech.jts.geom.Coordinate;
+import org.matsim.analysis.TripsAndLegsWriter;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.population.*;
+import org.matsim.contrib.travelsummary.events2traveldiaries.travelcomponents.Trip;
 import org.matsim.core.config.Config;
 import org.matsim.core.gbl.MatsimRandom;
-import org.matsim.core.population.PopulationUtils;
+import org.matsim.core.router.TripStructureUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
-import java.util.Random;
+import java.util.*;
 
 public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimScenarioAssembler {
 
@@ -76,95 +72,200 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
 
     }
 
-    @Override
-    public Scenario assembleScenarioWithPreviousPlans(
-            Config matsimConfig,
-            int year,
-            TravelTimes travelTimes,
-            HashMap<Id, PreviousYearPlan> previousYearPlans) {
+        @Override
+        public Scenario assembleScenarioWithPreviousPlans(
+                Scenario oldScenario,
+        int year,
+        TravelTimes travelTimes,
+        HashMap<Id<org.matsim.api.core.v01.population.Person>, org.matsim.api.core.v01.population.Person> previousYearPopulation) {
 
-        logger.info("Starting MATSim scenario using previous year's plans.");
+            logger.info("Starting MATSim scenario using previous year's plans.");
+            switch( handlingOfRandomObject ){
+                case fromSilo:
+                    break;
+                case localInstanceFromMatsimWithAlwaysSameSeed:
+                    random.setSeed( 4711 );
+                    // (note that we WANT this with the same random seed for every year when matsim is called.  Could, however, be made dependent on the silo
+                    // seed, so that with a change of the silo seed it also changes the random seed here.  kai' jun'23)
 
-       // we add new people from silo to matsim in assembleScenario
-        Scenario scenario = assembleScenario(
-                matsimConfig,
-                year,
-                travelTimes);
+                    // yyyy this will probably not work.  A person at a certain position will not be the same person some silo years later, since
+                    // intermediate persons may have been deleted and/or added.  In matsim4urbansim, I therefore went through the remembered matsim
+                    // population, and pulled the corresponding persons from the land use population.  And then added randomly drawn additional persons
+                    // until the right amount was found (not necessarily the same as in the 1st iteration).  kai, jun'23
 
-        Population population = scenario.getPopulation();
-        PopulationFactory factory = population.getFactory();
-
-        // step: Match the current SILO population against the saved IDs.
-        // how should we grab people that died/were born? We need previousYear Population as well. 
-        for (Map.Entry<Id<org.matsim.api.core.v01.population.Person>, ? extends org.matsim.api.core.v01.population.Person> entry
-                : population.getPersons().entrySet()) {
-
-            org.matsim.api.core.v01.population.Person person = entry.getValue();
-
-            PreviousYearPlan previousYearPlan =
-                    previousYearPlans.get(entry.getKey());
-
-            // new person added in assemble and given plan with createHWHPlanAndAddToAlterEgo
-            if (previousYearPlan == null) {
-                continue;
+                    break;
+                default:
+                    throw new IllegalStateException( "Unexpected value: " + handlingOfRandomObject );
             }
 
-            // what we need to check is if previous people have changed work or home and then generate new plan for them.
-            // do Silo persons match matsim ones? That should be the case, but do they share IDs? Silo IDs are ints, while matsim ones are
-            // saved as ID class. Need to find key to check changed work and home location.
 
-            int siloPersonId = Integer.parseInt(person.getId().toString());
+            // fresh scenario, like in assembleScenario; matsimData's scenario stays untouched
+            Scenario scenario = ScenarioUtils.loadScenario(oldScenario.getConfig());
+            Population matsimPopulation = scenario.getPopulation();
+            PopulationFactory pf = matsimPopulation.getFactory();
 
-            Person siloPerson = dataContainer.getHouseholdDataManager()
-                            .getPersonFromId(siloPersonId);
+            JobDataManager jobDataManager = dataContainer.getJobDataManager();
+            RealEstateDataManager realEstateDataManager = dataContainer.getRealEstateDataManager();
 
-            if (homeOrWorkChanged(previousYearPlan, siloPerson)) {
-                // person's home/work changed → keep new plan
-                continue;
+            // 1. should pop size: all currently employed silo persons
+            int shouldPop = 0;
+            Map<Id<org.matsim.api.core.v01.population.Person>, String> source = new HashMap<>();
+
+            for (Person p : dataContainer.getHouseholdDataManager().getPersons()) {
+                if (p.getOccupation() == Occupation.EMPLOYED && p.getJobId() != -2) {
+                    shouldPop++;
+                }
             }
 
-            // this previousPlan is a reference value and we need to make a
-            // copied (by value) Plan to then insert in current year for selected person
-            Plan previousPlan = previousYearPlan.previousYearPlan;
+            // 2. carry over previous-year persons who still exist and still employed
+            List<org.matsim.api.core.v01.population.Person> previous = new ArrayList<>(previousYearPopulation.values());
+            Collections.shuffle(previous, random);   // so that, if we have too many, the ones dropped are random
 
-            Plan copiedPlan = factory.createPlan();
-            PopulationUtils.copyFromTo(previousPlan, copiedPlan);
+            int kept = 0;
+            int replanned = 0;
+            for (org.matsim.api.core.v01.population.Person matsimPerson : previous) {
+                if (kept >= shouldPop) break;        // replaces the old "shouldPop < actualPop" trimming
 
-            person.addPlan(copiedPlan);
-            person.setSelectedPlan(copiedPlan);
+                Person siloPerson = dataContainer.getHouseholdDataManager()
+                        .getPersonFromId(Integer.parseInt(matsimPerson.getId().toString()));
+
+                if (siloPerson == null) continue;    // deceased
+                if (siloPerson.getOccupation() != Occupation.EMPLOYED || siloPerson.getJobId() == -2) continue;
+
+                String mode = commuteModeChoice.assignCommuteModeChoice(
+                        realEstateDataManager.getDwelling(siloPerson.getHousehold().getDwellingId()),
+                        travelTimes, siloPerson.getHousehold()).getMode(siloPerson).mode;
+
+                TripStructureUtils.Trip firstTrip = TripStructureUtils.getTrips(matsimPerson.getSelectedPlan()).getFirst();
+                String previousMode = TripStructureUtils.getRoutingModeIdentifier().identifyMainMode(firstTrip.getTripElements());
+
+                boolean changed = homeOrWorkChanged(
+                        (int) matsimPerson.getAttributes().getAttribute("dwellingId"),
+                        (int) matsimPerson.getAttributes().getAttribute("jobId"),
+                        siloPerson)
+                        || !Objects.equals(previousMode, mode);
+
+                if (changed) {
+                    replanned++;
+                    matsimPerson.getPlans().clear();
+                    matsimPerson.setSelectedPlan(null);
+
+                    Coordinate c = realEstateDataManager.getDwelling(siloPerson.getHousehold().getDwellingId()).getCoordinate();
+                    Coord dwellingCoord = Double.isNaN(c.z) ? new Coord(c.x, c.y) : new Coord(c.x, c.y, c.z);
+                    Job job = jobDataManager.getJobFromId(siloPerson.getJobId());
+                    Coord jobCoord = getOrRandomlyChooseJobCoordinate(job);
+                    createHWHPlanAndAddToAlterEgo(pf, matsimPerson, dwellingCoord, job, jobCoord, mode);
+                }
+                source.put(matsimPerson.getId(), changed ? "replanned" : "kept");
+                matsimPopulation.addPerson(matsimPerson);   // old object, with old or new plan
+                kept++;
+            }
+
+            // 3. top up with employed silo persons who weren't in last year's population
+            int added = 0;
+            if (kept < shouldPop) {
+                ArrayList<Person> candidates = new ArrayList<>();
+                for (Person p : dataContainer.getHouseholdDataManager().getPersons()) {
+                    if (p.getOccupation() != Occupation.EMPLOYED || p.getJobId() == -2) continue;
+                    if (previousYearPopulation.containsKey(Id.createPersonId(Integer.toString(p.getId())))) continue;
+                    candidates.add(p);
+                }
+
+                int needed = Math.min(shouldPop - kept, candidates.size());
+                for (Person siloPerson : getRandomSample(candidates, needed)) {
+                    Household household = siloPerson.getHousehold();
+                    int nHhCars = (int) household.getVehicles().stream() 
+                            .filter(v -> v.getType().equals(VehicleType.CAR)).count();
+                    org.matsim.api.core.v01.population.Person matsimPerson =
+                            SiloMatsimUtils.createMatsimAlterEgo(pf, siloPerson, nHhCars);
+                    source.put(matsimPerson.getId(), "new");
+                    matsimPopulation.addPerson(matsimPerson);
+
+                    String mode = commuteModeChoice.assignCommuteModeChoice(
+                            realEstateDataManager.getDwelling(household.getDwellingId()),
+                            travelTimes, household).getMode(siloPerson).mode;
+
+                    Coordinate c = realEstateDataManager.getDwelling(household.getDwellingId()).getCoordinate();
+                    Coord dwellingCoord = Double.isNaN(c.z) ? new Coord(c.x, c.y) : new Coord(c.x, c.y, c.z);
+                    Job job = jobDataManager.getJobFromId(siloPerson.getJobId());
+                    Coord jobCoord = getOrRandomlyChooseJobCoordinate(job);
+                    createHWHPlanAndAddToAlterEgo(pf, matsimPerson, dwellingCoord, job, jobCoord, mode);
+                    added++;
+                }
+            }
+
+            logger.info("shouldPop=" + shouldPop + " kept=" + kept + " replanned=" + replanned
+                    + " added=" + added + " final=" + matsimPopulation.getPersons().size());
+
+            java.nio.file.Path csvPath = java.nio.file.Paths.get(
+                    properties.main.baseDirectory + "scenOutput/" + properties.main.scenarioName
+                            + "/matsim/" + year + "/assembledPlans.csv");
+
+            try {
+                java.nio.file.Files.createDirectories(csvPath.getParent());
+                try (java.io.BufferedWriter w = java.nio.file.Files.newBufferedWriter(csvPath)) {
+                    w.write("personId,source,nPlans,mode,homeX,homeY,workX,workY,homeEndTime,workEndTime");
+                    w.newLine();
+
+                    for (org.matsim.api.core.v01.population.Person p : matsimPopulation.getPersons().values()) {
+                        Plan plan = p.getSelectedPlan();
+                        if (plan == null) {
+                            w.write(p.getId() + "," + source.getOrDefault(p.getId(), "unknown") + "," + p.getPlans().size() + ",,,,,,,");
+                            w.newLine();
+                            continue;
+                        }
+
+                        List<Activity> acts = new ArrayList<>();
+                        String legMode = "";
+                        for (PlanElement pe : plan.getPlanElements()) {
+                            if (pe instanceof Activity a) acts.add(a);
+                            else if (pe instanceof Leg l && legMode.isEmpty()) legMode = l.getMode();
+                        }
+                        Activity home = acts.size() > 0 ? acts.get(0) : null;
+                        Activity work = acts.size() > 1 ? acts.get(1) : null;
+
+                        w.write(String.join(",",
+                                p.getId().toString(),
+                                source.getOrDefault(p.getId(), "unknown"),
+                                Integer.toString(p.getPlans().size()),
+                                legMode,
+                                home != null ? Double.toString(home.getCoord().getX()) : "",
+                                home != null ? Double.toString(home.getCoord().getY()) : "",
+                                work != null ? Double.toString(work.getCoord().getX()) : "",
+                                work != null ? Double.toString(work.getCoord().getY()) : "",
+                                home != null ? Double.toString(home.getEndTime().orElse(-1)) : "",
+                                work != null ? Double.toString(work.getEndTime().orElse(-1)) : ""));
+                        w.newLine();
+                    }
+                }
+                logger.info("Wrote assembled plans to " + csvPath);
+            } catch (java.io.IOException e) {
+                logger.error("Could not write plans csv", e);
+            }
+
+            return scenario;
         }
 
-        return scenario;
+    public <T> ArrayList<T> getRandomSample(ArrayList<T> source, int n) {
+        if (n > source.size()) throw new IllegalArgumentException("n > size");
+        List<T> copy = new ArrayList<>(source);
+        Collections.shuffle(copy);
+        return new ArrayList<>(copy.subList(0, n));
     }
 
-    public boolean homeOrWorkChanged(PreviousYearPlan previousYearPlan, Person siloPerson) {
+    public boolean homeOrWorkChanged(int matsimPersonDwellingId, int matsimPersonJobId, Person siloPerson) {
 
-        Dwelling dwelling = dataContainer.getRealEstateDataManager().getDwelling(siloPerson.getHousehold().getDwellingId());
         if(siloPerson.getOccupation() == Occupation.UNEMPLOYED)
         {
             // don't then check for job location, just use new job from assembleScenario
             return true;
         }
-        Job occupation = dataContainer.getJobDataManager().getJobFromId(siloPerson.getJobId());
-
-        Coordinate currentHomeSilo = dwelling.getCoordinate();
-        Coordinate currentWorkSilo = occupation.getCoordinate();
-
-        Coord currentHome = new Coord(
-                currentHomeSilo.getX(),
-                currentHomeSilo.getY());
-
-        Coord currentWork = new Coord(
-                currentWorkSilo.getX(),
-                currentWorkSilo.getY());
 
         boolean homeChanged =
-                previousYearPlan.homeLocation.getX() != currentHome.getX()
-                        || previousYearPlan.homeLocation.getY() != currentHome.getY();
+                matsimPersonDwellingId != siloPerson.getHousehold().getDwellingId();
 
         boolean workChanged =
-                previousYearPlan.workLocation.getX() != currentWork.getX()
-                || previousYearPlan.workLocation.getY() != currentWork.getY();
+                matsimPersonJobId != siloPerson.getJobId();
 
         return homeChanged || workChanged;
     }
@@ -195,11 +296,15 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
         SiloMatsimUtils.checkSiloPropertiesAndMatsimConfigConsistency(matsimConfig, properties);
 
         Scenario scenario = ScenarioUtils.loadScenario(matsimConfig);
+        // at this pint - population is still 0!
         Population matsimPopulation = scenario.getPopulation();
 
         JobDataManager jobDataManager = dataContainer.getJobDataManager();
         RealEstateDataManager realEstateDataManager = dataContainer.getRealEstateDataManager();
 
+        // first year: scale number of households based on populationScaleFactor
+        // for each person in this sampled num of houses, generate a plan with car or other mode
+        // decided by probability
         for (Household household: dataContainer.getHouseholdDataManager().getHouseholds()) {
 //            if (SiloUtil.getRandomNumberAsDouble() > populationScalingFactor) {
             if ( random.nextDouble() > populationScalingFactor ) {
@@ -247,6 +352,9 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
             }
         }
         logger.info("Finished creating MATSim scenario.");
+        // population is now 2877
+        // silo persons = 5715
+        // appears that person.getOccupation() != Occupation.EMPLOYED || person.getJobId() == -2 filters out around half of the pop.
         return scenario;
     }
 
@@ -278,6 +386,8 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
         }
         return new Coord(jobCoordinate.x, jobCoordinate.y);
     }
+
+    // create
 
     private void createHWHPlanAndAddToAlterEgo(PopulationFactory populationFactory, org.matsim.api.core.v01.population.Person matsimAlterEgo,
                                Coord dwellingCoord, Job job, Coord jobCoord, String transportMode) {

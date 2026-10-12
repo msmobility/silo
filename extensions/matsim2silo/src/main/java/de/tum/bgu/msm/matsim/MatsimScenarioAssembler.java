@@ -16,10 +16,10 @@ public interface MatsimScenarioAssembler {
 
     // used default identifier to allow for using following method in only one class that implements MatsimScenarioAssembler.
     default Scenario assembleScenarioWithPreviousPlans(
-            Config initialMatsimConfig,
+            Scenario matsimScenario,
             int year,
             TravelTimes travelTimes,
-            HashMap<Id, PreviousYearPlan> previousYearPlans) {
+            HashMap<Id<org.matsim.api.core.v01.population.Person>, org.matsim.api.core.v01.population.Person> previousYearPopulation) {
 
         throw new UnsupportedOperationException(
                 "This MatsimScenarioAssembler does not support previous-year plans.");

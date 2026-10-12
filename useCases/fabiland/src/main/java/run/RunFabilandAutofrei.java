@@ -54,7 +54,7 @@ public class RunFabilandAutofrei {
 
 
         // Create a temporary SILO config, wherein we overwrite the scenario name:
-        String prefix = "2026-09-15b__";
+        String prefix = "2026-10-12a__";
         String scenario = prefix + "autofrei-" + autofreiScenario + "__pt-" + ptScenario;
         Path baseSiloPropertiesFile = Path.of("useCases/fabiland/scenario/25r_ae.properties");
         Path tempSiloPropertiesFile = Files.createTempFile(baseSiloPropertiesFile.toAbsolutePath().getParent(), "tmp-", ".properties");
@@ -68,7 +68,6 @@ public class RunFabilandAutofrei {
 
         // load MATSim config & modify certain options
         Config matsimConfig = ConfigUtils.loadConfig("useCases/fabiland/scenario/config_cap5_1-l_nes_smc.xml");
-
 
         logger.info("Started SILO Fabiland sandbox model");
 

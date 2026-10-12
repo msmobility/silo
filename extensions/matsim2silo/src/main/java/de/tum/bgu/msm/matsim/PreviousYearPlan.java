@@ -9,13 +9,13 @@ public class PreviousYearPlan {
 
     Id agentId;
     Plan previousYearPlan;
-    Coord workLocation;
-    Coord homeLocation;
+    int jobId;
+    int dwellingId;
 
-    public PreviousYearPlan(Id agentId, Plan previousYearPlan, Coord workLocation, Coord homeLocation) {
+    public PreviousYearPlan(Id agentId, Plan previousYearPlan, int jobId, int dwellingId) {
         this.agentId = agentId;
         this.previousYearPlan = previousYearPlan;
-        this.workLocation =  workLocation;
-        this.homeLocation = homeLocation;
+        this.jobId =  jobId;
+        this.dwellingId = dwellingId;
     }
 }

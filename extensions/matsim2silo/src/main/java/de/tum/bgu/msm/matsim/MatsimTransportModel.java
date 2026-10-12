@@ -27,19 +27,15 @@ import de.tum.bgu.msm.models.transportModel.TransportModel;
 import de.tum.bgu.msm.properties.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
-import org.matsim.api.core.v01.population.Activity;
-import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.api.core.v01.population.PopulationFactory;
 import org.matsim.contrib.dvrp.trafficmonitoring.TravelTimeUtils;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.ControlerDefaults;
-import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.ScenarioUtils;
@@ -71,7 +67,7 @@ public final class MatsimTransportModel implements TransportModel {
 
     private MatsimScenarioAssembler scenarioAssembler;
 
-    HashMap<Id, PreviousYearPlan> previousYearPlans = new HashMap<>();
+    protected HashMap<Id<org.matsim.api.core.v01.population.Person>, org.matsim.api.core.v01.population.Person> previousYearPopulation = new HashMap<>();
 
     public MatsimTransportModel(DataContainer dataContainer, Config matsimConfig,
                                 Properties properties, MatsimScenarioAssembler scenarioAssembler,
@@ -127,6 +123,8 @@ public final class MatsimTransportModel implements TransportModel {
     private void runTransportModel(int year) {
         logger.warn("Running MATSim transport model for year " + year + ".");
 
+//        transport model starts by creating a scenario from the matsimData provided.
+
         Scenario assembledScenario = matsimData.getScenario();
 		PopulationFactory pf = assembledScenario.getPopulation().getFactory();
 
@@ -151,6 +149,7 @@ public final class MatsimTransportModel implements TransportModel {
 			}
 		}
 
+        // no input plans file - we first add silo agents to matsim
         for (Household household: dataContainer.getHouseholdDataManager().getHouseholds()) {
             for (Person pp : household.getPersons().values()) {
                 final int noHHAUtos = (int) household.getVehicles().stream().filter( vv -> vv.getType().equals( de.tum.bgu.msm.data.vehicle.VehicleType.CAR ) ).count();
@@ -186,20 +185,21 @@ public final class MatsimTransportModel implements TransportModel {
 //                year,
 //                travelTimes);
 
+//
         if (year == properties.main.baseYear) {
-
+            // this is where we generate plans for silo agents
             assembledScenario = scenarioAssembler.assembleScenario(
                     assembledScenario.getConfig(),
                     year,
                     travelTimes);
 
         } else {
-
+            // this is what we call in subsequent years - tries to identify silo agents that already have previous plan
             assembledScenario = scenarioAssembler.assembleScenarioWithPreviousPlans(
-                    assembledScenario.getConfig(),
+                    assembledScenario,
                     year,
                     travelTimes,
-                    previousYearPlans);
+                    previousYearPopulation);
         }
 
 
@@ -221,25 +221,24 @@ public final class MatsimTransportModel implements TransportModel {
         //don't actually need to check if not base year, since we save this after the simulation of first year,
         // which is correct to then save "previous" year's plans
 //        if (year != properties.main.baseYear && properties.transportModel.transportModelIdentifier == TransportModelIdentifier.MATSIM) {
+
+        // here is where we add our current year silo agents to a map (may run into memory issues, so design may change).
+        previousYearPopulation.clear();
             for (org.matsim.api.core.v01.population.Person person : assembledScenario.getPopulation().getPersons().values()) {
 
-                Coord workLocation = null, homeLocation = null;
-                for (PlanElement el : person.getSelectedPlan().getPlanElements()) {
-                    if (el instanceof Activity && ((Activity) el).getType().startsWith("home")) {
-                        homeLocation = ((Activity) el).getCoord();
-                    }
-                    if (el instanceof Activity && ((Activity) el).getType().startsWith("work")) {
-                        workLocation = ((Activity) el).getCoord();
-                    }
-                }
+                // get silo job and work ID for MATSim agent
+                int siloPersonId = Integer.parseInt(person.getId().toString());
 
-                PreviousYearPlan personPyp = new PreviousYearPlan(person.getId(), person.getSelectedPlan(), workLocation, homeLocation);
-                if (previousYearPlans.containsKey( person.getId())) {
-                    previousYearPlans.replace(person.getId(), personPyp);
-                } else {
-                    previousYearPlans.put(person.getId(), personPyp);
-                }
+                Person siloPerson = dataContainer.getHouseholdDataManager()
+                        .getPersonFromId(siloPersonId);
+
+                person.getAttributes().putAttribute("jobId", siloPerson.getJobId());
+                person.getAttributes().putAttribute("dwellingId", siloPerson.getHousehold().getDwellingId());
+
+                previousYearPopulation.put(person.getId(), person);
             }
+
+        System.out.println("test");
 //        }
 
     }
