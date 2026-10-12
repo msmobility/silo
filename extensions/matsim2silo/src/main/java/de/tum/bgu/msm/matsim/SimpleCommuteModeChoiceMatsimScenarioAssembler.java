@@ -98,7 +98,6 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
                     throw new IllegalStateException( "Unexpected value: " + handlingOfRandomObject );
             }
 
-
             // fresh scenario, like in assembleScenario; matsimData's scenario stays untouched
             Scenario scenario = ScenarioUtils.loadScenario(oldScenario.getConfig());
             Population matsimPopulation = scenario.getPopulation();
