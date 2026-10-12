@@ -104,6 +104,9 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
             Population matsimPopulation = scenario.getPopulation();
             PopulationFactory pf = matsimPopulation.getFactory();
 
+            double populationScalingFactor = properties.transportModel.matsimScaleFactor;
+            SiloMatsimUtils.checkSiloPropertiesAndMatsimConfigConsistency(oldScenario.getConfig(), properties);
+
             JobDataManager jobDataManager = dataContainer.getJobDataManager();
             RealEstateDataManager realEstateDataManager = dataContainer.getRealEstateDataManager();
 
@@ -117,6 +120,8 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
                 }
             }
 
+            shouldPop *= populationScalingFactor;
+
             // 2. carry over previous-year persons who still exist and still employed
             List<org.matsim.api.core.v01.population.Person> previous = new ArrayList<>(previousYearPopulation.values());
             Collections.shuffle(previous, random);   // so that, if we have too many, the ones dropped are random
@@ -129,7 +134,7 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
                 Person siloPerson = dataContainer.getHouseholdDataManager()
                         .getPersonFromId(Integer.parseInt(matsimPerson.getId().toString()));
 
-                if (siloPerson == null) continue;    // deceased
+                if (siloPerson == null) continue;    // deceased, for example
                 if (siloPerson.getOccupation() != Occupation.EMPLOYED || siloPerson.getJobId() == -2) continue;
 
                 String mode = commuteModeChoice.assignCommuteModeChoice(
@@ -171,10 +176,15 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
                     candidates.add(p);
                 }
 
+                if (candidates.size() < shouldPop - kept) {
+                    logger.warn("not enough silo agents to top off matsim for year ", year);
+                }
+
+                // this is probably a redundant duplicate check since we calc shouldPop earlier by filtering out unemployed.
                 int needed = Math.min(shouldPop - kept, candidates.size());
                 for (Person siloPerson : getRandomSample(candidates, needed)) {
                     Household household = siloPerson.getHousehold();
-                    int nHhCars = (int) household.getVehicles().stream() 
+                    int nHhCars = (int) household.getVehicles().stream()
                             .filter(v -> v.getType().equals(VehicleType.CAR)).count();
                     org.matsim.api.core.v01.population.Person matsimPerson =
                             SiloMatsimUtils.createMatsimAlterEgo(pf, siloPerson, nHhCars);
@@ -186,6 +196,7 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
                             travelTimes, household).getMode(siloPerson).mode;
 
                     Coordinate c = realEstateDataManager.getDwelling(household.getDwellingId()).getCoordinate();
+                    // getDwellingCoord method here
                     Coord dwellingCoord = Double.isNaN(c.z) ? new Coord(c.x, c.y) : new Coord(c.x, c.y, c.z);
                     Job job = jobDataManager.getJobFromId(siloPerson.getJobId());
                     Coord jobCoord = getOrRandomlyChooseJobCoordinate(job);

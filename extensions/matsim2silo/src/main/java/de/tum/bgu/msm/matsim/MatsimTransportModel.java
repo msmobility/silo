@@ -65,6 +65,8 @@ public final class MatsimTransportModel implements TransportModel {
 
     private final DataContainer dataContainer;
 
+    private boolean hotStart = true;
+
     private MatsimScenarioAssembler scenarioAssembler;
 
     protected HashMap<Id<org.matsim.api.core.v01.population.Person>, org.matsim.api.core.v01.population.Person> previousYearPopulation = new HashMap<>();
@@ -186,13 +188,13 @@ public final class MatsimTransportModel implements TransportModel {
 //                travelTimes);
 
 //
-        if (year == properties.main.baseYear) {
+
+        if (year == properties.main.baseYear || !hotStart) {
             // this is where we generate plans for silo agents
             assembledScenario = scenarioAssembler.assembleScenario(
                     assembledScenario.getConfig(),
                     year,
                     travelTimes);
-
         } else {
             // this is what we call in subsequent years - tries to identify silo agents that already have previous plan
             assembledScenario = scenarioAssembler.assembleScenarioWithPreviousPlans(
