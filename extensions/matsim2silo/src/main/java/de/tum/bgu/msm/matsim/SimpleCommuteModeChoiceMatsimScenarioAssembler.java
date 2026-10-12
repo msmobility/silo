@@ -195,9 +195,7 @@ public class SimpleCommuteModeChoiceMatsimScenarioAssembler implements MatsimSce
                             realEstateDataManager.getDwelling(household.getDwellingId()),
                             travelTimes, household).getMode(siloPerson).mode;
 
-                    Coordinate c = realEstateDataManager.getDwelling(household.getDwellingId()).getCoordinate();
-                    // getDwellingCoord method here
-                    Coord dwellingCoord = Double.isNaN(c.z) ? new Coord(c.x, c.y) : new Coord(c.x, c.y, c.z);
+                    Coord dwellingCoord = getOrRandomlyChooseDwellingCoord(realEstateDataManager.getDwelling(household.getDwellingId()));
                     Job job = jobDataManager.getJobFromId(siloPerson.getJobId());
                     Coord jobCoord = getOrRandomlyChooseJobCoordinate(job);
                     createHWHPlanAndAddToAlterEgo(pf, matsimPerson, dwellingCoord, job, jobCoord, mode);
