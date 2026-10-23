@@ -1,0 +1,666 @@
+---
+title: "xxx"
+output: html_document
+---
+
+
+```{r}
+library(tidyverse)
+# library(sf)
+# library(tmap)
+```
+
+# FABILAND
+
+## Setup
+networks for ggplots
+```{r}
+net_total <-  list(annotate("segment", x = -10000, xend =10000,
+           y = c(-10000,-5000, 0, 5000,10000),
+           yend = c(-10000,-5000, 0, 5000,10000)),
+  annotate("segment", y = -10000, yend =10000,
+           x = c(-10000,-5000, 0, 5000,10000),
+           xend = c(-10000,-5000, 0, 5000,10000)) )
+
+
+net_autofrei_large <-  list(annotate("segment", x = -5000, xend =5000,
+           y = c(-5000, 0, 5000),
+           yend = c(-5000, 0, 5000), col = "red"),
+  annotate("segment", y = -5000, yend =5000,
+           x = c(-5000, 0, 5000),
+           xend = c(-5000, 0, 5000),col = "red") )
+
+net_autofrei_small <-  list(annotate("segment", x = -5000, xend =5000,
+           y = 0, col = "red"),
+  annotate("segment", y = -5000, yend =5000, x = 0,col = "red") )
+
+
+pt_color <- "#D8BFD8"
+
+
+net_pt_nes <- list(annotate("segment", x = 0, xend = 10000, y = 0, yend = 10000, col = pt_color,lwd = 2))
+
+
+net_pt_ringsx <- list(annotate("segment", x = -10000, xend = 10000, y = -10000, yend = 10000, col = pt_color, lwd = 2),
+                      annotate("segment", x = -10000, xend = 10000, y = 10000, yend = -10000, col = pt_color, lwd = 2),
+                      annotate("segment", x = c(-10000,10000), y = -10000, yend = 10000, col = pt_color, lwd = 2),
+                      annotate("segment", y = c(-10000,10000), x = -10000, xend = 10000, col = pt_color, lwd = 2),
+                      annotate("segment", x = c(-5000,5000), y = -5000, yend = 5000, col = pt_color, lwd = 2),
+                      annotate("segment", y = c(-5000,5000), x = -5000, xend = 5000, col = pt_color, lwd = 2))
+
+
+
+
+```
+
+
+Define Directory for Scenario
+```{r}
+
+setwd("/home/brendan/svn/")
+root_dir <- "shared-svn/projects/fabilut/fabiland/"
+
+# 1:
+# Carfree: Small
+# PT: NES
+
+# net_autofrei <- net_autofrei_small
+# net_pt <- net_pt_nes
+
+base_dir <- paste0(root_dir,"2026-09-15b__autofrei-BASE__pt-NES/")
+policy_dir <- paste0(root_dir,"2026-09-15b__autofrei-SMALL__pt-NES/")
+
+# 2:
+# Carfree: Large
+# PT: NES
+
+# net_autofrei <- net_autofrei_large
+# net_pt <- net_pt_nes
+# 
+# base_dir <- paste0(root_dir,"2026-09-15b__autofrei-BASE__pt-NES/")
+# policy_dir <- paste0(root_dir,"2026-09-15b__autofrei-LARGE__pt-NES/")
+
+
+# 3:
+# Carfree: Small
+# PT: RINGSX
+# 
+# net_autofrei <- net_autofrei_small
+# net_pt <- net_pt_ringsx
+# 
+# base_dir <- paste0(root_dir,"2026-09-15b__autofrei-BASE__pt-RINGSX/")
+# policy_dir <- paste0(root_dir,"2026-09-15b__autofrei-SMALL__pt-RINGSX/")
+
+# 4:
+# Carfree: Large
+# PT: RINGSX
+
+# net_autofrei <- net_autofrei_large
+# net_pt <- net_pt_ringsx
+# 
+# base_dir <- paste0(root_dir,"2026-09-15b__autofrei-BASE__pt-RINGSX/")
+# policy_dir <- paste0(root_dir,"2026-09-15b__autofrei-LARGE__pt-RINGSX/")
+
+
+
+
+###
+year <- 10
+base_pp <- read_csv(paste0(base_dir,"microData/pp_",year,".csv"))
+base_hh <- read_csv(paste0(base_dir,"microData/hh_",year,".csv"))
+base_dd <- read_csv(paste0(base_dir,"microData/dd_",year,".csv"))
+base_jj <- read_csv(paste0(base_dir,"microData/jj_",year,".csv"))
+
+
+policy_pp <- read_csv(paste0(policy_dir,"microData/pp_",year,".csv"))
+policy_hh <- read_csv(paste0(policy_dir,"microData/hh_",year,".csv"))
+policy_dd <- read_csv(paste0(policy_dir,"microData/dd_",year,".csv"))
+policy_jj <- read_csv(paste0(policy_dir,"microData/jj_",year,".csv"))
+
+
+
+base_merged <- base_pp |> left_join(base_hh, by = c("hhid" = "id")) |>  left_join(base_dd, by = c("dwelling"="id")) |> left_join(base_jj |> select(id = personId, jobX = coordX, jobY = coordY)) |> mutate(coordXrounded = round(coordX/5000) *5000, coordYrounded = round(coordY/5000) *5000) 
+
+
+
+policy_merged <- policy_pp |> left_join(policy_hh, by = c("hhid" = "id")) |> left_join(policy_dd, by = c("dwelling"="id")) |> 
+  left_join(policy_jj |> select(id = personId, jobX = coordX, jobY = coordY))  |> mutate(coordXrounded = round(coordX/5000) *5000, coordYrounded = round(coordY/5000) *5000) 
+
+
+# get agents who left zone 13 from base to policy
+policy_from13 <- policy_merged |>
+  filter(!(coordXrounded == 0 & coordYrounded == 0)) |>
+  filter(relationShip != "child") |>
+  inner_join(
+    base_merged |>
+      filter(coordXrounded == 0, coordYrounded == 0) |>
+      filter(relationShip != "child"),
+    by = "id",
+    suffix = c("_policy", "_base")
+  )
+
+policy_to13 <- policy_merged |>
+  filter(coordXrounded == 0, coordYrounded == 0) |>
+  filter(relationShip != "child") |>
+  inner_join(
+    base_merged |>
+      filter(!(coordXrounded == 0 & coordYrounded == 0)) |>
+      filter(relationShip != "child"),
+    by = "id",
+    suffix = c("_policy", "_base")
+  )
+
+mean(policy_from13$income_policy)
+mean(policy_to13$income_policy)
+
+employment_from13 <- table(policy_from13$occupation_policy) |> 
+  setNames(c("employed", "unemployed"))
+rate <- employment_from13["employed"] / (employment_from13["employed"] + employment_from13["unemployed"])
+rate
+
+employment_to13 <- table(policy_to13$occupation_policy) |> 
+  setNames(c("employed", "unemployed"))
+rate <- employment_to13["employed"] / (employment_to13["employed"] + employment_to13["unemployed"])
+rate
+
+# print("Average Income of Adults")
+# print(paste0("base: ", base_merged |> filter(coordXrounded == 0 & coordYrounded == 0) |> filter(relationShip!="child") |> summarise(income = mean(income))))
+# print(paste0("policy: ", policy_merged |> filter(coordXrounded == 0 & coordYrounded == 0) |> filter(relationShip!="child") |> summarise(income = mean(income))))
+# 
+# zonal_counts <- base_merged |>
+#   select(id, coordXrounded, coordYrounded) |> 
+#   mutate(scenario = "base") |> 
+#   bind_rows(policy_merged |> select(id,coordXrounded,coordYrounded) |> mutate(scenario = "policy")) |>
+#   group_by(coordXrounded,coordYrounded,scenario) |> count()
+# 
+# zonal_mean_incomes  <- base_merged |>
+#   select(id, coordXrounded, coordYrounded, income) |> 
+#   mutate(scenario = "base") |> 
+#   bind_rows(policy_merged |> select(id,coordXrounded,coordYrounded, income) |> mutate(scenario = "policy")) |>
+#   group_by(coordXrounded,coordYrounded,scenario) |>
+#   summarise(mean_income = mean(income, na.rm = TRUE), .groups = "drop")
+# 
+# 
+# xxx <-  zonal_counts |>
+#   pivot_wider(names_from = scenario, values_from = n) |>
+#   mutate(diff = policy - base)
+# 
+# xxx |> filter(coordXrounded == 0 & coordYrounded == 0)
+# 
+# yyy <- zonal_mean_incomes |> 
+#   pivot_wider(names_from = scenario, values_from = mean_income) |>
+#   mutate(diff = policy - base) 
+# 
+# income_pop_diff_table <- xxx |> left_join(yyy, by = c("coordXrounded" = "coordXrounded", "coordYrounded" = "coordYrounded"))
+# 
+# 
+# # diif plot
+#   # ggplot(xxx) +
+#   # net_pt +
+#   # net_total +
+#   # net_autofrei +
+#   # geom_point(aes(coordXrounded, coordYrounded, fill = diff, size = base),shape = 21) +
+#   # scale_fill_gradient2(
+#   #   low = "red",
+#   #   mid = "white",
+#   #   high = "blue",
+#   #   midpoint = 0,
+#   #   limits = c(-100, 100),
+#   #   oob = scales::squish
+#   # ) +
+#   # scale_size_continuous(range = c(1, 10)) +
+#   # theme_minimal(base_size = 14) +
+#   # labs(title = "Autofrei Policy vs. Base Case (at year 10)", fill = "pop diff", size = "Base Pop", x="", y="")
+#   
+#   ggplot(income_pop_diff_table) +
+#   net_pt +
+#   net_total +
+#   net_autofrei +
+#   geom_point(aes(coordXrounded, coordYrounded, fill = base.y, size = base.x),shape = 21) +
+#   scale_fill_gradient2(
+#     low = "red",
+#     mid = "white",
+#     high = "blue",
+#     midpoint = 13500,
+#     limits = c(10000, 17000),
+#     oob = scales::squish
+#   ) +
+#   scale_size_continuous(range = c(5, 15)) +
+#   theme_minimal(base_size = 14) +
+#   labs(title = "Base Case (at year 10)", fill = "mean income", size = "Base Pop", x="", y="")
+
+
+
+```
+
+Read Data
+```{r}
+
+```
+
+Merge Dataset
+```{r}
+
+```
+
+
+
+
+```{r}
+
+```
+
+
+
+
+## Plot Home Coords
+```{r}
+
+
+# sanity check
+# base_merged |> full_join(policy_merged, by = "id", suffix = c(".base",".policy")) |> 
+#   mutate(age_same = age.base == age.policy, gender_same = gender.base == gender.policy) |> filter(!age_same)
+
+
+# People moving away from carfree zone
+base_merged |> full_join(policy_merged, by = "id", suffix = c(".base",".policy")) |> 
+  filter(age.base == age.policy & gender.base == gender.policy) |> 
+  mutate(coordX.base = round(coordX.base/5000) *5000, coordY.base = round(coordY.base/5000) *5000) |>
+  mutate(coordX.policy = round(coordX.policy/5000) *5000, coordY.policy = round(coordY.policy/5000) *5000) |>
+  mutate(jobX.base = round(jobX.base/5000) *5000, jobY.base = round(jobY.base/5000) *5000) |> 
+  mutate(jobX.policy = round(jobX.policy/5000) *5000, jobY.policy = round(jobY.policy/5000) *5000) |> 
+ filter(coordX.base == 0 & coordY.base == 0) |> 
+  mutate(category = case_when(
+  is.na(coordX.policy) ~ "disappeared",
+  coordX.policy == 0 & coordY.policy == 0 ~ "stayed",
+  .default = "movedFromCBA"
+)) |> 
+  mutate(job_in_cba = jobX.base == 0 & jobY.base == 0) |>
+  group_by(category) |> 
+  summarise(n = n(),  income.base = mean(income.base), drivers_license = mean(driversLicense.base == TRUE), job_in_cba =mean(job_in_cba == TRUE, na.rm = TRUE),has_car = mean(autos.base > 0))
+
+# People moving to carfree zone
+base_merged |> full_join(policy_merged, by = "id", suffix = c(".base",".policy")) |> 
+  filter(age.base == age.policy & gender.base == gender.policy) |> 
+  mutate(coordX.base = round(coordX.base/5000) *5000, coordY.base = round(coordY.base/5000) *5000) |> 
+  mutate(coordX.policy = round(coordX.policy/5000) *5000, coordY.policy = round(coordY.policy/5000) *5000) |>
+  mutate(jobX.base = round(jobX.base/5000) *5000, jobY.base = round(jobY.base/5000) *5000) |> 
+  mutate(jobX.policy = round(jobX.policy/5000) *5000, jobY.policy = round(jobY.policy/5000) *5000) |> 
+ filter(coordX.policy == 0 & coordY.policy == 0) |> 
+  mutate(category = case_when(
+  is.na(coordX.base) ~ "appeared",
+  coordX.base == 0 & coordY.base == 0 ~ "stayed",
+  .default = "moved2CBA"
+)) |>  mutate(job_in_cba = jobX.base == 0 & jobY.base == 0) |> 
+  group_by(category) |> 
+  summarise(n = n(),  income.base = mean(income.base), drivers_license = mean(driversLicense.base == TRUE), job_in_cba =mean(job_in_cba == TRUE, na.rm = TRUE), has_car = mean(autos.base > 0))
+
+
+```
+
+
+## Skims
+
+```{r}
+# base_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-10a-base/"
+# policy_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-10a-policy/"
+
+# base_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-11a-base/"
+# policy_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-11b-policy/"
+
+year <- 10
+base_car_skim <- read_csv(paste0(base_dir,"matsim/skims/carSkim_",year,".csv"))
+policy_car_skim <- read_csv(paste0(policy_dir, "matsim/skims/carSkim_",year,".csv"))
+base_pt_skim <- read_csv(paste0(base_dir, "matsim/skims/ptSkim_",year,".csv"))
+policy_pt_skim <- read_csv(paste0(policy_dir, "matsim/skims/ptSkim_",year,".csv"))
+
+
+fabiland_shp <- read_sf("/Users/jakob/git/silo/useCases/fabiland/scenario/input/zonesShapefile/fabiland.shp")
+
+from_node = 13
+
+base_car_skim |> filter(FROM  == from_node) |> left_join(fabiland_shp, by = c("TO" = "Id")) |> st_as_sf() |> tm_shape() + tm_polygons(fill = "VALUE") + tm_title("Base - Car")
+
+policy_car_skim |> filter(FROM  == from_node) |> left_join(fabiland_shp, by = c("TO" = "Id")) |> st_as_sf() |> tm_shape() + tm_polygons(fill = "VALUE") + tm_title("Policy - Car")
+
+
+base_pt_skim |> filter(FROM  == from_node) |> left_join(fabiland_shp, by = c("TO" = "Id")) |>  
+st_as_sf() |> tm_shape() + tm_polygons(fill = "VALUE") + tm_title("Base - PT")
+
+policy_pt_skim |> filter(FROM  == from_node) |> left_join(fabiland_shp, by = c("TO" = "Id")) |> st_as_sf() |> tm_shape() + tm_polygons(fill = "VALUE") + tm_title("Policy - PT")
+
+```
+
+
+## Zonal System
+## Analytics
+```{r}
+# base_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14e-base/"
+# policy_dir <- "/Users/jakob/git/silo/useCases/fabiland/scenario/scenOutput/2026-09-14e-policy/"
+
+base_analytics <- read_csv(paste0(base_dir,"avgSatisfactionByZone.csv")) |> left_join(fabiland_shp, by = c("zone" = "Id")) |> st_as_sf() 
+
+policy_analytics <- read_csv(paste0(policy_dir,"avgSatisfactionByZone.csv")) |> left_join(fabiland_shp, by = c("zone" = "Id")) |> st_as_sf()
+```
+
+
+```{r}
+year1 <- 0
+
+
+base_analytics |> filter(year == year1)  |> tm_shape() + tm_polygons(fill = "avgProp") + tm_title("Probability of Moving, Base, year 0")
+
+policy_analytics |> filter(year == year1)  |> tm_shape() + tm_polygons(fill = "avgProp") + tm_title("Probability of Moving, Policy, year 0")
+
+# avgSatisfaction1
+ggplot(base_analytics) + geom_line( aes(year, avgSatisfaction1,colour = as.factor(zone))) + geom_line(data = base_analytics |> filter(zone == 13), mapping = aes(year, avgSatisfaction1), col = "red", lwd = 2) + lims(y = c(0.0,0.6))+ labs(title = "avgSatisfaction1 + Base")
+
+
+ggplot(policy_analytics) + geom_line( aes(year, avgSatisfaction1,colour = as.factor(zone))) + geom_line(data = policy_analytics |> filter(zone == 13), mapping = aes(year, avgSatisfaction1), col = "red", lwd = 2)+ lims(y = c(0.0,0.6)) +labs(title = "avgSatisfaction1 + Policy")
+
+
+# avgSatisfaction2
+
+ggplot(base_analytics) + geom_line( aes(year, avgSatisfaction2,colour = as.factor(zone))) + geom_line(data = base_analytics |> filter(zone == 13), mapping = aes(year, avgSatisfaction2), col = "red", lwd = 2) + lims(y = c(0.0,0.6)) + labs(title = "avgSatisfaction2 + Base")
+
+
+ggplot(policy_analytics) + geom_line( aes(year, avgSatisfaction2,colour = as.factor(zone))) + geom_line(data = policy_analytics |> filter(zone == 13), mapping = aes(year, avgSatisfaction2), col = "red", lwd = 2)+ lims(y = c(0.0,0.6))+labs(title = "avgSatisfaction2 + Policy")
+
+
+# avgCurrentUtil
+
+ggplot(base_analytics) + geom_line( aes(year, avgCurrentUtil,colour = as.factor(zone))) + geom_line(data = base_analytics |> filter(zone == 13), mapping = aes(year, avgCurrentUtil), col = "red", lwd = 2) + lims(y = c(0.0,0.6)) + labs(title = "avgCurrentUtil + Base")
+
+
+ggplot(policy_analytics) + geom_line( aes(year, avgCurrentUtil,colour = as.factor(zone))) + geom_line(data = policy_analytics |> filter(zone == 13), mapping = aes(year, avgCurrentUtil), col = "red", lwd = 2)+ lims(y = c(0.0,0.6))+ labs(title = "avgCurrentUtil + Policy")
+
+# PROP
+
+ggplot(base_analytics) + geom_line( aes(year, avgProp,colour = as.factor(zone))) + geom_line(data = base_analytics |> filter(zone == 13), mapping = aes(year, avgProp), col = "red", lwd = 2)+ lims(y = c(0.0,0.4))+ labs(title = "avgProp + Base")
+
+
+ggplot(policy_analytics) + geom_line( aes(year, avgProp,colour = as.factor(zone))) + geom_line(data = policy_analytics |> filter(zone == 13), mapping = aes(year, avgProp), col = "red", lwd = 2)+ lims(y = c(0.0,0.4))+ labs(title = "avgProp + Policy")
+
+
+base_analytics |> mutate(scenario = "base") |> bind_rows(policy_analytics |> mutate(scenario = "policy")) |> st_drop_geometry() |>  filter(zone ==13) |>  ggplot() + geom_col(aes(year,avgCurrentUtil, fill = scenario), position = "dodge") + labs(title = "avgCurrentUtil + zone13")
+
+base_analytics |> mutate(scenario = "base") |> bind_rows(policy_analytics |> mutate(scenario = "policy")) |> st_drop_geometry() |>  filter(zone ==13) |>  ggplot() + geom_col(aes(year,avgSatisfaction1, fill = scenario), position = "dodge")+ labs(title = "avgSatisfaction1 + zone13")
+
+base_analytics |> mutate(scenario = "base") |> bind_rows(policy_analytics |> mutate(scenario = "policy")) |> st_drop_geometry() |>  filter(zone ==13) |>  ggplot() + geom_col(aes(year,avgProp, fill = scenario), position = "dodge")+ labs(title = "avgProp + zone13")
+
+
+### 
+
+base_analytics |> mutate(scenario = "base") |> bind_rows(policy_analytics |> mutate(scenario = "policy")) |> st_drop_geometry() |>  group_by(zone, scenario) |> summarise(avgCurrentUtil = mean(avgCurrentUtil)) |>  ggplot() + geom_col(aes(zone,avgCurrentUtil, fill = scenario), position = "dodge")+ labs(title = "avgCurrentUtil + average over years")+ geom_vline(xintercept = 13)
+
+base_analytics |> mutate(scenario = "base") |> bind_rows(policy_analytics |> mutate(scenario = "policy")) |> st_drop_geometry() |>  group_by(zone, scenario) |> summarise(avgSatisfaction1 = mean(avgSatisfaction1)) |>  ggplot() + geom_col(aes(zone,avgSatisfaction1, fill = scenario), position = "dodge")+ labs(title = "avgSatisfaction1 + average over years")+ geom_vline(xintercept = 13)
+
+base_analytics |> mutate(scenario = "base") |> bind_rows(policy_analytics |> mutate(scenario = "policy")) |> st_drop_geometry() |>  group_by(zone, scenario) |> summarise(avgProp = mean(avgProp)) |>  ggplot() + geom_col(aes(zone,avgProp, fill = scenario), position = "dodge")+ labs(title = "avgProp + average over years")+ geom_vline(xintercept = 13)
+```
+
+
+```{r}
+
+variables <- base_analytics |> st_drop_geometry() |> select(-c(zone,year)) |> colnames()
+# variables <- c("avgSatisfaction1","avgSatisfaction2","avgCurrentUtil","avgProp","defaultProp","ddQualityUtility","ddSizeUtility","ddAutoAccessibilityUtility","transitAccessibilityUtility","ddPriceUtility","workDistanceUtility") # Add your variable names here
+
+analytics <- base_analytics |>
+  mutate(scenario = "base") |>
+  bind_rows(policy_analytics |> mutate(scenario = "policy")) |>
+  st_drop_geometry()
+
+for (variable in variables) {
+  p <- analytics |>
+    group_by(zone, scenario) |>
+    summarise(value = mean(.data[[variable]]), .groups = "drop") |>
+    ggplot(aes(zone, value, fill = scenario)) +
+    geom_col(position = "dodge") +
+    labs(
+      title = paste(variable, "— average over years"),
+      y = variable
+    ) +
+    geom_vline(xintercept = 13)
+
+  print(p)
+}
+
+
+
+
+
+
+```
+## Plot Jobs
+```{r}
+base_merged |> ggplot() + geom_point(aes(jobX,jobY), alpha = 0.1) + theme_minimal(base_size = 14) + labs(title = "Base")
+policy_merged |> ggplot() + geom_point(aes(jobX,jobY), alpha = 0.1) + theme_minimal(base_size = 14) + labs(title = "Policy")
+
+
+zonal_counts_jobs <- base_merged |>
+  select(id, jobX, jobY) |> 
+ 
+  mutate(scenario = "base") |> 
+  bind_rows(policy_merged |> select(id,jobX, jobY) |> mutate(scenario = "policy")) |>
+  filter(!is.na(jobX)) |>
+  mutate(coordX = round(jobX/5000) *5000, coordY = round(jobY/5000) *5000) |> 
+  group_by(coordX, coordY,scenario) |> count()
+
+
+zonal_counts_jobs |> 
+  filter(scenario == "base") |> 
+  ggplot() + 
+  geom_point(aes(coordX,coordY, size = n)) + 
+  theme_minimal(base_size = 14) +
+  labs(title = "Base Counts")
+  
+zonal_counts_jobs |> 
+  filter(scenario == "policy") |> 
+  ggplot() + 
+  geom_point(aes(coordX,coordY, size = n)) + 
+  theme_minimal(base_size = 14) +
+  labs(title = "Policy Counts")
+
+
+zonal_counts_jobs |>
+  pivot_wider(names_from = scenario, values_from = n) |>
+  mutate(diff = policy - base) |>
+  ggplot() +
+  net_pt +
+  net_total +
+  net_autofrei +
+  geom_point(aes(coordX, coordY, fill = diff), size = 10,shape = 21) +
+  scale_fill_gradient2(
+    low = "red",
+    mid = "white",
+    high = "blue",
+    midpoint = 0
+  ) +
+  theme_minimal(base_size = 14) +
+  labs(title = "Policy - Base", fill = "Job Diff") 
+
+
+
+# jobs for to13 agents:
+policy_to13_jobs <- policy_to13 |> select(jobX_policy, jobY_policy) |> 
+    filter(!is.na(jobX_policy)) |>
+  mutate(coordX_policy = round(jobX_policy/5000) *5000, coordY_policy = round(jobY_policy/5000) *5000) |> 
+  group_by(coordX_policy, coordY_policy) |> count()
+
+policy_to13_jobs
+
+policy_from13_jobs <- policy_from13 |> select(jobX_policy, jobY_policy) |> 
+    filter(!is.na(jobX_policy)) |>
+  mutate(coordX_policy = round(jobX_policy/5000) *5000, coordY_policy = round(jobY_policy/5000) *5000) |> 
+  group_by(coordX_policy, coordY_policy) |> count()
+
+policy_from13_jobs
+
+policy_from13_jobs |> 
+  ggplot() + 
+  geom_point(aes(coordX_policy, coordY_policy, size = n)) +
+    scale_size_continuous(
+    breaks = c(10, 20, 30, 40, 50)
+  ) +
+  theme_minimal(base_size = 14) +
+  labs(title = "Job counts - from zone 13")
+
+policy_to13_jobs |> 
+  ggplot() + 
+  geom_point(aes(coordX_policy, coordY_policy, size = n)) + 
+  scale_size_continuous(
+    breaks = c(10, 20, 30, 40, 50)
+  ) +
+  theme_minimal(base_size = 14) +
+  labs(title = "Job counts - to zone 13")
+
+
+
+
+
+```
+
+
+## Deprecated Homes Plots
+```{r}
+
+base_merged |> ggplot() + geom_point(aes(coordX,coordY), alpha = 0.1) + theme_minimal(base_size = 14) + labs(title = "Base")
+  
+
+policy_merged |> ggplot() + geom_point(aes(coordX,coordY), alpha = 0.1) + theme_minimal(base_size = 14) + labs(title = "Policy")
+
+
+
+
+base_merged |>
+  select(id, coordX, coordY) |> 
+  left_join(policy_merged |> select(id, coordX, coordY), by = "id") |>
+  filter(!is.na(coordX.x) & !is.na(coordX.y)) |>
+  mutate(diff = coordX.x !=coordX.y) |> 
+  filter(diff) |> 
+  ggplot() + 
+  geom_point(aes(coordX.x,coordY.x), alpha = 0.1) +
+  theme_minimal(base_size = 14) +
+  labs(title = "Diff (Base)") 
+
+base_merged |>
+  select(id, coordX, coordY) |> 
+  left_join(policy_merged |> select(id, coordX, coordY), by = "id") |>
+  filter(!is.na(coordX.x) & !is.na(coordX.y)) |>
+  mutate(diff = coordX.x !=coordX.y) |> 
+  filter(diff) |> 
+  ggplot() + 
+  geom_point(aes(coordX.y,coordY.y), alpha = 0.1) +
+  theme_minimal(base_size = 14) +
+  labs(title = "Diff (Policy)") 
+zonal_counts |> 
+  filter(scenario == "base") |> 
+  ggplot() + 
+  geom_point(aes(coordXrounded,coordYrounded, col = n), size = 10) + 
+  theme_minimal(base_size = 14) +
+  labs(title = "Base Counts")
+  
+zonal_counts |> 
+  filter(scenario == "policy") |> 
+  ggplot() + 
+  geom_point(aes(coordXrounded,coordYrounded, col = n), size = 10) + 
+  theme_minimal(base_size = 14) +
+  labs(title = "Policy Counts")
+
+
+
+# net_total <-  list(annotate("segment", x = -10000, xend =10000,
+#            y = c(-10000,-5000, 0, 5000,10000),
+#            yend = c(-10000,-5000, 0, 5000,10000)),
+#   annotate("segment", y = -10000, yend =10000,
+#            x = c(-10000,-5000, 0, 5000,10000),
+#            xend = c(-10000,-5000, 0, 5000,10000)) )
+# 
+# 
+# net_autofrei <-  list(annotate("segment", x = -5000, xend =5000,
+#            y = c(-5000, 0, 5000),
+#            yend = c(-5000, 0, 5000), col = "red"),
+#   annotate("segment", y = -5000, yend =5000,
+#            x = c(-5000, 0, 5000),
+#            xend = c(-5000, 0, 5000),col = "red") )
+
+
+```
+
+# (UNUSED) BERLIN
+```{r}
+
+zones_sf <- read_sf("/Users/jakob/git/silo/useCases/berlinBrandenburg/scenario/input/zonesShapefile/zones_Berlin-Brandenburg_size_3715_popCap_5000_crs_31468.shp")
+
+od_car_base <- read_csv("/Users/jakob/git/silo/useCases/berlinBrandenburg/scenario/scenOutput/2026-09-08b-base/matsim/skims/carSkim_2012.csv")
+
+od_pt_base <- read_csv("/Users/jakob/git/silo/useCases/berlinBrandenburg/scenario/scenOutput/2026-09-08b-base/matsim/skims/ptSkim_2012.csv")
+
+od_car_policy <- read_csv("/Users/jakob/git/silo/useCases/berlinBrandenburg/scenario/scenOutput/2026-09-08-policy/matsim/skims/carSkim_2012.csv")
+
+od_pt_policy <- read_csv("/Users/jakob/git/silo/useCases/berlinBrandenburg/scenario/scenOutput/2026-09-08-policy/matsim/skims/ptSkim_2012.csv")
+
+car_tt_by_origin_base <- od_car_base |> group_by(FROM) |> summarise(tt_mean = mean(VALUE)) |> select(id = FROM, tt_mean)
+pt_tt_by_origin_base <- od_pt_base |> group_by(FROM) |> summarise(tt_mean = mean(VALUE)) |> select(id = FROM, tt_mean)
+
+
+tmap_mode("view")
+od_car_base |> filter(TO == 1713) |> left_join(zones_sf, by = c("FROM" = "id")) |> st_as_sf() |> tm_shape() + tm_polygons(fill = "VALUE")
+
+
+# CAR
+tmap_mode("view")
+zones_sf |>
+  left_join(
+    od_car_base |> filter(TO == 1713),
+    by = c("id" = "FROM")
+  ) |>
+  tm_shape() +
+  tm_polygons(
+    fill = "VALUE",
+    fill.scale = tm_scale_intervals(
+      breaks = c(0, 50,100,500, 1000, 5000, 10000, Inf)
+    )
+  )
+
+
+# PT
+
+
+zones_sf |>
+  left_join(
+    od_pt_base |> filter(TO == 1713),
+    by = c("id" = "FROM")
+  ) |>
+  tm_shape() +
+  tm_polygons(
+    fill = "VALUE",
+    fill.scale = tm_scale_intervals(
+      breaks = c(0, 50,100,500, 1000, 5000, 10000, Inf)
+    )
+  )
+
+
+pt_tt_by_origin_base |> left_join(zones_sf) |> st_as_sf() |> tm_shape() + tm_polygons(fill = "tt_mean")
+
+```
+
+```{r}
+#base
+base_pp <- read_csv("/Users/jakob/git/silo/useCases/berlinBrandenburg/scenario/scenOutput/2026-09-08-base/microData/pp_2050.csv")
+base_hh <- read_csv("/Users/jakob/git/silo/useCases/berlinBrandenburg/scenario/scenOutput/2026-09-08-base/microData/hh_2050.csv")
+base_dd <- read_csv("/Users/jakob/git/silo/useCases/berlinBrandenburg/scenario/scenOutput/2026-09-08-base/microData/dd_2050.csv")
+
+
+policy_pp <- read_csv("/Users/jakob/git/silo/useCases/berlinBrandenburg/scenario/scenOutput/2026-09-08-policy/microData/pp_2050.csv")
+policy_hh <- read_csv("/Users/jakob/git/silo/useCases/berlinBrandenburg/scenario/scenOutput/2026-09-08-policy/microData/hh_2050.csv")
+policy_dd <- read_csv("/Users/jakob/git/silo/useCases/berlinBrandenburg/scenario/scenOutput/2026-09-08-policy/microData/dd_2050.csv")
+
+tmap_mode("plot")
+base_pp |> left_join(base_hh, by = c("hhid" = "id")) |> left_join(base_dd, by = c("hhid"="id")) |> st_as_sf(coords = c("coordX","coordY"), crs = 25832) |> tm_shape() + tm_dots() + tm_basemap("Esri.WorldGrayCanvas")
+
+
+
+policy_pp |> left_join(base_hh, by = c("hhid" = "id")) |> left_join(base_dd, by = c("hhid"="id")) |> st_as_sf(coords = c("coordX","coordY"), crs = 25832) |> tm_shape() + tm_dots() + tm_basemap("Esri.WorldGrayCanvas")
+```
+
+

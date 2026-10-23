@@ -316,7 +316,7 @@ public class MarriageModelImpl extends AbstractModel implements MarriageModel {
         return moveTo;
     }
 
-    private boolean moveTogether(Person person1, Person person2, Household moveTo) {
+    protected boolean moveTogether(Person person1, Person person2, Household moveTo) {
 
         movePerson(person1, moveTo);
         movePerson(person2, moveTo);

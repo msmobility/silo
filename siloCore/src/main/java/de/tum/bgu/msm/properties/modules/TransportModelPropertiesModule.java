@@ -25,6 +25,11 @@ public class TransportModelPropertiesModule {
     public final TransportModelIdentifier transportModelIdentifier;
 
     /**
+     * Identifier for start type in MATSim {@link MatsimStartOptionIdentifier}: COLD, HOT.
+     */
+    public final MatsimStartOptionIdentifier matsimStartOption;
+
+    /**
      * Identifier for the transport model {@link TransportModelIdentifier}: MITO_MATSIM, MATSIM, NONE.
      */
     public final TravelTimeImplIdentifier travelTimeImplIdentifier;
@@ -53,6 +58,10 @@ public class TransportModelPropertiesModule {
         MITO_MATSIM, MATSIM, NONE;
     }
 
+    public enum MatsimStartOptionIdentifier {
+        COLD, HOT;
+    }
+
     /**
      * Identifier for which data structure to use for travel times.
      */
@@ -75,6 +84,9 @@ public class TransportModelPropertiesModule {
 
         PropertiesUtil.newPropertySubmodule("Transport model identifier (MITO_MATSIM, MATSIM, NONE, or empty)");
         transportModelIdentifier = TransportModelIdentifier.valueOf(PropertiesUtil.getStringProperty(bundle, "transport.model", "NONE").toUpperCase());
+
+        PropertiesUtil.newPropertySubmodule("Transport model identifier (MITO_MATSIM, MATSIM, NONE, or empty)");
+        matsimStartOption = MatsimStartOptionIdentifier.valueOf(PropertiesUtil.getStringProperty(bundle, "matsim.start", "COLD").toUpperCase());
 
         PropertiesUtil.newPropertySubmodule("Travel time data structure identifier (MATSIM or SKIM)");
         travelTimeImplIdentifier = TravelTimeImplIdentifier.valueOf(PropertiesUtil.getStringProperty(bundle, "travel.time", "SKIM").toUpperCase());

@@ -8,11 +8,14 @@ import de.tum.bgu.msm.io.output.ResultsMonitor;
 import de.tum.bgu.msm.models.AbstractModel;
 import de.tum.bgu.msm.models.EventModel;
 import de.tum.bgu.msm.models.ModelUpdateListener;
+import de.tum.bgu.msm.models.relocation.moves.MovesModelImpl;
 import de.tum.bgu.msm.utils.SiloUtil;
 import de.tum.bgu.msm.utils.TimeTracker;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.PrintWriter;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -31,7 +34,6 @@ public final class Simulator {
 
     private final List<MicroEvent> events = new ArrayList<>();
     private final TimeTracker timeTracker;
-
     private final Set<ResultsMonitor> resultsMonitors = new HashSet<>() ;
 
     public Simulator(TimeTracker timeTracker) {
@@ -143,6 +145,8 @@ public final class Simulator {
         for (ResultsMonitor resultsMonitor : resultsMonitors){
             resultsMonitor.endSimulation();
         }
+
+
 
     }
 }

@@ -38,6 +38,7 @@ import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleUtils;
 import org.matsim.vehicles.VehiclesFactory;
 
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -59,6 +60,7 @@ public final class MatsimTravelTimesAndCosts implements TravelTimes {
     private Collection<Region> regions;
 
     private final Config config;
+    private Integer skimOutputYear;
 
     public MatsimTravelTimesAndCosts(Config config) {
         this.config = config;
@@ -71,7 +73,12 @@ public final class MatsimTravelTimesAndCosts implements TravelTimes {
     }
 
     public void update(MatsimData matsimData) {
+        update(matsimData, null);
+    }
+
+    public void update(MatsimData matsimData, Integer year) {
         this.matsimData = matsimData;
+        this.skimOutputYear = year;
         this.tripRouter = matsimData.createTripRouter();
         this.skimsByMode.clear();
         this.travelTimesFromRegion.clear();
@@ -282,7 +289,10 @@ public final class MatsimTravelTimesAndCosts implements TravelTimes {
             logger.info("Calculating skim matrix for mode " + mode +
                     " using " + Properties.get().main.numberOfThreads + " threads.");
             IndexedDoubleMatrix2D skim;
-            final MatsimSkimCreator matsimSkimCreator = new MatsimSkimCreator(matsimData);
+            final String csvDirectory = Properties.get().main.baseDirectory + "scenOutput/"
+                    + Properties.get().main.scenarioName + "/matsim/skims";
+            final MatsimSkimCreator matsimSkimCreator = new MatsimSkimCreator(matsimData,
+                    Paths.get(csvDirectory), skimOutputYear);
             switch (mode) {
                 case TransportMode.car:
                     skim = matsimSkimCreator.createCarSkim(zones.values(), Properties.get().main.numberOfThreads,
@@ -318,6 +328,7 @@ public final class MatsimTravelTimesAndCosts implements TravelTimes {
         matsimTravelTimesAndCosts.zones = this.zones;
         matsimTravelTimesAndCosts.regions = this.regions;
         matsimTravelTimesAndCosts.matsimData = matsimData;
+        matsimTravelTimesAndCosts.skimOutputYear = skimOutputYear;
         matsimTravelTimesAndCosts.tripRouter = matsimData.createTripRouter();
         matsimTravelTimesAndCosts.skimsByMode.putAll(this.skimsByMode);
         matsimTravelTimesAndCosts.travelTimesFromRegion.putAll(travelTimesFromRegion);

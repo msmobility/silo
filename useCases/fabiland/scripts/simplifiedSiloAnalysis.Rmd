@@ -1,0 +1,60 @@
+---
+title: "simplifiedSiloAnalysis"
+output: html_document
+---
+
+```{r}
+# install.packages("tidyverse")
+library(tidyverse)
+
+```
+
+```{r}
+dir <- "/home/brendan/git/silo/useCases/fabiland/scenario/scenOutput/base/microData/"
+
+```
+
+Persons
+```{r}
+pp_start <- read_csv(paste0(dir,"pp_0.csv"))
+pp_end <- read_csv(paste0(dir,"pp_10.csv"))
+
+pp_comb <- full_join(pp_start,pp_end, by = "id")
+
+# how many people were born? = 498
+pp_comb %>% filter(is.na(age.x))
+
+# how many people died = 596
+pp_comb %>% filter(is.na(age.y))
+
+# is the age diff always the same? age diff is always 9.
+
+pp_comb_normal <- pp_comb %>%  filter(!is.na(age.x) & !is.na(age.y)) 
+pp_comb_normal %>% mutate(age_diff = age.y - age.x)
+
+
+#  how many people changed their workplace? = Half changed their workplace, 
+pp_comb_normal %>% mutate(job_changed = case_when(
+  workplace.x == -1 & workplace.y == -1 ~ "stay_unemployed",
+  workplace.x == -1 & workplace.y != -1 ~ "got_job",
+  workplace.x != -1 & workplace.y == -1 ~ "retired",
+  workplace.x != workplace.y ~ "changed_job",
+  .default = "stay_job"
+)) %>% group_by(job_changed) %>% count()
+
+# how many people got married or divorced (HH changed)?
+pp_comb_normal %>% mutate(relationship_changed = case_when(
+  relationShip.x != "married" & relationShip.y == "married" ~ "got married",
+  relationShip.x == "married" & relationShip.y != "married" ~ "got divorced",
+  .default = "no relationship change"
+))  %>% group_by(relationship_changed) %>% count()
+
+
+# how many people moved? 
+pp_comb_normal %>% mutate(household_changed = case_when(
+  hhid.x != hhid.y ~ "moved household",
+  .default = "stayed put"
+)) %>% group_by(household_changed) %>% count()
+
+```
+

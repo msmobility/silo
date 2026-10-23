@@ -36,7 +36,6 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.ControlerDefaults;
-import org.matsim.core.controler.OutputDirectoryHierarchy;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.ScenarioUtils;
@@ -47,10 +46,7 @@ import org.matsim.vehicles.VehiclesFactory;
 
 import java.io.File;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 import static de.tum.bgu.msm.properties.modules.TransportModelPropertiesModule.*;
 
@@ -70,6 +66,8 @@ public final class MatsimTransportModel implements TransportModel {
     private final DataContainer dataContainer;
 
     private MatsimScenarioAssembler scenarioAssembler;
+
+    protected HashMap<Id<org.matsim.api.core.v01.population.Person>, org.matsim.api.core.v01.population.Person> previousYearPopulation = new HashMap<>();
 
     public MatsimTransportModel(DataContainer dataContainer, Config matsimConfig,
                                 Properties properties, MatsimScenarioAssembler scenarioAssembler,
@@ -102,7 +100,7 @@ public final class MatsimTransportModel implements TransportModel {
             runTransportModel(properties.main.startYear);
         } else {
             String eventsFile = properties.main.baseDirectory + properties.transportModel.matsimInitialEventsFile;
-            replayFromEvents(eventsFile);
+            replayFromEvents(eventsFile, properties.main.startYear);
         }
         logger.warn("### About to leave MatsimTransportModel#setup()." );
     }
@@ -134,7 +132,7 @@ public final class MatsimTransportModel implements TransportModel {
             //if using the SimpleCommuteModeChoiceScenarioAssembler, we need some initial travel times (this will use an unlodaded network)
             TravelTime myTravelTime = SiloMatsimUtils.getAnEmptyNetworkTravelTime();
             TravelDisutility myTravelDisutility = SiloMatsimUtils.getAnEmptyNetworkTravelDisutility();
-            updateTravelTimes(myTravelTime, myTravelDisutility);
+            updateTravelTimes(myTravelTime, myTravelDisutility, year);
         }
 		{
 			Set<Id<org.matsim.api.core.v01.population.Person>> toRemove = new HashSet<>( assembledScenario.getPopulation().getPersons().keySet() );
@@ -149,6 +147,7 @@ public final class MatsimTransportModel implements TransportModel {
 			}
 		}
 
+        // no input plans file - we first add silo agents to matsim
         for (Household household: dataContainer.getHouseholdDataManager().getHouseholds()) {
             for (Person pp : household.getPersons().values()) {
                 final int noHHAUtos = (int) household.getVehicles().stream().filter( vv -> vv.getType().equals( de.tum.bgu.msm.data.vehicle.VehicleType.CAR ) ).count();
@@ -179,7 +178,28 @@ public final class MatsimTransportModel implements TransportModel {
 
         // TODO remove config argument as it is duplicate (cf. above)
 		// yyyyyy the following replaces "assembledScenario"!!!
-        assembledScenario = scenarioAssembler.assembleScenario(initialMatsimConfig, year, travelTimes);
+//        assembledScenario = scenarioAssembler.assembleScenario(
+//                assembledScenario.getConfig(),
+//                year,
+//                travelTimes);
+
+//
+
+        if (year == properties.main.baseYear || properties.transportModel.matsimStartOption != MatsimStartOptionIdentifier.HOT) {
+            // this is where we generate plans for silo agents
+            assembledScenario = scenarioAssembler.assembleScenario(
+                    assembledScenario.getConfig(),
+                    year,
+                    travelTimes);
+        } else {
+            // this is what we call in subsequent years - tries to identify silo agents that already have previous plan
+            assembledScenario = scenarioAssembler.assembleScenarioWithPreviousPlans(
+                    assembledScenario,
+                    year,
+                    travelTimes,
+                    previousYearPopulation);
+        }
+
 
         finalizeConfig(assembledScenario.getConfig(), year, Integer.toString(year));
 
@@ -191,9 +211,21 @@ public final class MatsimTransportModel implements TransportModel {
         // Get travel Times from MATSim
         logger.warn("###################################################");
         logger.warn("Using MATSim to compute travel times from zone to zone.");
+
         TravelTime travelTime = controler.getLinkTravelTimes();
         TravelDisutility travelDisutility = controler.getTravelDisutilityFactory().createTravelDisutility(travelTime);
-        updateTravelTimes(travelTime, travelDisutility);
+        updateTravelTimes(travelTime, travelDisutility, year);
+
+        //don't actually need to check if not base year, since we save this after the simulation of first year,
+        // which is correct to then save "previous" year's plans
+//        if (year != properties.main.baseYear && properties.transportModel.transportModelIdentifier == TransportModelIdentifier.MATSIM) {
+
+        // here is where we add our current year silo agents to a map (may run into memory issues, so design may change).
+        previousYearPopulation.clear();
+            for (org.matsim.api.core.v01.population.Person person : assembledScenario.getPopulation().getPersons().values()) {
+                previousYearPopulation.put(person.getId(), person);
+            }
+
     }
 
     private void finalizeConfig(Config config, int runId, String dir) {
@@ -213,16 +245,16 @@ public final class MatsimTransportModel implements TransportModel {
     /**
      * @param eventsFile
      */
-    private void replayFromEvents(String eventsFile) {
+    private void replayFromEvents(String eventsFile, int year) {
         Scenario scenario = ScenarioUtils.loadScenario(initialMatsimConfig);
         TravelTime travelTime = TravelTimeUtils.createTravelTimesFromEvents(scenario.getNetwork(), scenario.getConfig(), eventsFile);
         TravelDisutility travelDisutility = ControlerDefaults.createDefaultTravelDisutilityFactory(scenario).createTravelDisutility(travelTime);
-        updateTravelTimes(travelTime, travelDisutility);
+        updateTravelTimes(travelTime, travelDisutility, year);
     }
 
-    private void updateTravelTimes(TravelTime travelTime, TravelDisutility disutility) {
+    private void updateTravelTimes(TravelTime travelTime, TravelDisutility disutility, int year) {
         matsimData.update(disutility, travelTime);
-        internalTravelTimes.update(matsimData);
+        internalTravelTimes.update(matsimData, year);
         final TravelTimes mainTravelTimes = dataContainer.getTravelTimes();
 
         if (mainTravelTimes != this.internalTravelTimes && mainTravelTimes instanceof SkimTravelTimes) {
@@ -234,4 +266,5 @@ public final class MatsimTransportModel implements TransportModel {
                     dataContainer.getGeoData().getZones().values());
     }
     }
+
 }

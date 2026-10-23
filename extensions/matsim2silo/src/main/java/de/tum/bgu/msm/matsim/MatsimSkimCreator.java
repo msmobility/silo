@@ -13,6 +13,7 @@ import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.core.network.NetworkUtils;
@@ -24,6 +25,10 @@ import org.matsim.facilities.ActivityFacility;
 import org.matsim.facilities.Facility;
 import org.matsim.pt.transitSchedule.api.TransitStopFacility;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 public class MatsimSkimCreator {
@@ -31,9 +36,25 @@ public class MatsimSkimCreator {
     private final static Logger logger = LogManager.getLogger(MatsimSkimCreator.class);
 
     private MatsimData matsimData;
+    private final Path csvOutputDirectory;
+    private final Integer csvOutputYear;
 
     public MatsimSkimCreator(MatsimData provider) {
+        this(provider, null, null);
+    }
+
+    /**
+     * Creates a skim creator that also writes every generated skim to CSV.
+     * The CSV files use the project standard FROM,TO,VALUE format.
+     */
+    public MatsimSkimCreator(MatsimData provider, Path csvOutputDirectory) {
+        this(provider, csvOutputDirectory, null);
+    }
+
+    public MatsimSkimCreator(MatsimData provider, Path csvOutputDirectory, Integer csvOutputYear) {
         this.matsimData = provider;
+        this.csvOutputDirectory = csvOutputDirectory;
+        this.csvOutputYear = csvOutputYear;
     }
 
     public IndexedDoubleMatrix2D createCarSkim(Collection<? extends de.tum.bgu.msm.data.Id> zones, int numberOfThreads, double peakHour_s) {
@@ -77,8 +98,27 @@ public class MatsimSkimCreator {
             });
         }
         executor.execute();
+        logZeroCarSkimCells(skim);
         assignIntrazonals(5, Float.MAX_VALUE, 0.66f, skim);
+        writeSkimToCsv(skim, "car");
         return skim;
+    }
+
+    private void logZeroCarSkimCells(IndexedDoubleMatrix2D skim) {
+        long zeroCells = 0;
+        long zeroOffDiagonalCells = 0;
+        for (int row = 0; row < skim.rows(); row++) {
+            int origin = skim.getIdForInternalRowIndex(row);
+            for (int column = 0; column < skim.columns(); column++) {
+                int destination = skim.getIdForInternalColumnIndex(column);
+                if (skim.getIndexed(origin, destination) == 0.) {
+                    zeroCells++;
+                    if (origin != destination) zeroOffDiagonalCells++;
+                }
+            }
+        }
+        logger.warn("Car skim contains " + zeroCells + " zero cells, including "
+                + zeroOffDiagonalCells + " zero off-diagonal cells, before intrazonal post-processing.");
     }
 
     public IndexedDoubleMatrix2D createPtSkim(Collection<? extends de.tum.bgu.msm.data.Id> zones, int numberOfThreads,
@@ -160,6 +200,7 @@ public class MatsimSkimCreator {
         }
         executor.execute();
         assignIntrazonals(5, Float.MAX_VALUE, 0.66f, skim);
+        writeSkimToCsv(skim, "pt");
         return skim;
     }
 
@@ -210,6 +251,7 @@ public class MatsimSkimCreator {
         }
         executor.execute();
         assignIntrazonals(5, Float.MAX_VALUE, 0.66f, skim);
+        writeSkimToCsv(skim, mode);
         return skim;
     }
 
@@ -259,21 +301,52 @@ public class MatsimSkimCreator {
         }
         executor.execute();
         assignIntrazonals(5, Float.MAX_VALUE, 0.66f, skim);
+        writeSkimToCsv(skim, "freeSpeedFactor");
         return skim;
+    }
+
+    /**
+     * Writes a skim in long CSV format with one row per origin-destination pair.
+     */
+    public void writeSkimToCsv(IndexedDoubleMatrix2D skim, String name) {
+        if (csvOutputDirectory == null) {
+            return;
+        }
+
+        String yearSuffix = csvOutputYear == null ? "" : "_" + csvOutputYear;
+        Path outputFile = csvOutputDirectory.resolve(name + "Skim" + yearSuffix + ".csv");
+        try {
+            Files.createDirectories(csvOutputDirectory);
+            try (BufferedWriter writer = Files.newBufferedWriter(outputFile)) {
+                writer.write("FROM,TO,VALUE");
+                writer.newLine();
+                for (int row = 0; row < skim.rows(); row++) {
+                    int origin = skim.getIdForInternalRowIndex(row);
+                    for (int column = 0; column < skim.columns(); column++) {
+                        int destination = skim.getIdForInternalColumnIndex(column);
+                        writer.write(origin + "," + destination + "," + skim.getIndexed(origin, destination));
+                        writer.newLine();
+                    }
+                }
+            }
+            logger.info("Wrote " + name + " skim to " + outputFile);
+        } catch (IOException e) {
+            throw new RuntimeException("Could not write skim CSV to " + outputFile, e);
+        }
     }
 
     //TODO: copied from MITO car skim updater...maybe provide a utility function there
     private void assignIntrazonals(int numberOfNeighbours, float maximumMinutes, float proportionOfTime, IndexedDoubleMatrix2D skim) {
-        int nonIntrazonalCounter = 0;
-        for (int i = 1; i < skim.columns(); i++) {
+        for (int i = 0; i < skim.columns(); i++) {
             int i_id = skim.getIdForInternalColumnIndex(i);
             double[] minTimeValues = new double[numberOfNeighbours];
             for (int k = 0; k < numberOfNeighbours; k++) {
                 minTimeValues[k] = maximumMinutes;
             }
             //find the  n closest neighbors - the lower travel time values in the matrix column
-            for (int j = 1; j < skim.rows(); j++) {
+            for (int j = 0; j < skim.rows(); j++) {
                 int j_id = skim.getIdForInternalRowIndex(j);
+                if (i_id == j_id) continue;
                 int minimumPosition = 0;
                 while (minimumPosition < numberOfNeighbours) {
                     if (minTimeValues[minimumPosition] > skim.getIndexed(i_id, j_id) && skim.getIndexed(i_id, j_id) != 0) {
@@ -292,19 +365,12 @@ public class MatsimSkimCreator {
             }
             globalMinTime = globalMinTime / numberOfNeighbours * proportionOfTime;
 
-            //fill with the calculated value the cells with zero
-            for (int j = 1; j < skim.rows(); j++) {
-                int j_id = skim.getIdForInternalColumnIndex(j);
-                if (skim.getIndexed(i_id, j_id) == 0) {
-                    skim.setIndexed(i_id, j_id, globalMinTime);
-                    if (i != j) {
-                        nonIntrazonalCounter++;
-                    }
-                }
+            // Only the diagonal is intrazonal. Keep off-diagonal zero values
+            // visible because they indicate missing or unreachable routes.
+            if (skim.getIndexed(i_id, i_id) == 0) {
+                skim.setIndexed(i_id, i_id, globalMinTime);
             }
         }
         logger.info("Calculated intrazonal times and distances using the " + numberOfNeighbours + " nearest neighbours.");
-        logger.info("The calculation of intrazonals has also assigned values for cells with travel time equal to 0, that are not intrazonal: (" +
-                nonIntrazonalCounter + " cases).");
     }
 }
