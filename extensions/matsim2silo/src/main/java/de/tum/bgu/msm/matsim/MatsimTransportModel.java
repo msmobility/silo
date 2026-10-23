@@ -65,8 +65,6 @@ public final class MatsimTransportModel implements TransportModel {
 
     private final DataContainer dataContainer;
 
-    private boolean hotStart = true;
-
     private MatsimScenarioAssembler scenarioAssembler;
 
     protected HashMap<Id<org.matsim.api.core.v01.population.Person>, org.matsim.api.core.v01.population.Person> previousYearPopulation = new HashMap<>();
@@ -124,8 +122,6 @@ public final class MatsimTransportModel implements TransportModel {
 
     private void runTransportModel(int year) {
         logger.warn("Running MATSim transport model for year " + year + ".");
-
-//        transport model starts by creating a scenario from the matsimData provided.
 
         Scenario assembledScenario = matsimData.getScenario();
 		PopulationFactory pf = assembledScenario.getPopulation().getFactory();
@@ -189,7 +185,7 @@ public final class MatsimTransportModel implements TransportModel {
 
 //
 
-        if (year == properties.main.baseYear || !hotStart) {
+        if (year == properties.main.baseYear || properties.transportModel.matsimStartOption != MatsimStartOptionIdentifier.HOT) {
             // this is where we generate plans for silo agents
             assembledScenario = scenarioAssembler.assembleScenario(
                     assembledScenario.getConfig(),
@@ -227,21 +223,8 @@ public final class MatsimTransportModel implements TransportModel {
         // here is where we add our current year silo agents to a map (may run into memory issues, so design may change).
         previousYearPopulation.clear();
             for (org.matsim.api.core.v01.population.Person person : assembledScenario.getPopulation().getPersons().values()) {
-
-                // get silo job and work ID for MATSim agent
-                int siloPersonId = Integer.parseInt(person.getId().toString());
-
-                Person siloPerson = dataContainer.getHouseholdDataManager()
-                        .getPersonFromId(siloPersonId);
-
-                person.getAttributes().putAttribute("jobId", siloPerson.getJobId());
-                person.getAttributes().putAttribute("dwellingId", siloPerson.getHousehold().getDwellingId());
-
                 previousYearPopulation.put(person.getId(), person);
             }
-
-        System.out.println("test");
-//        }
 
     }
 
@@ -283,4 +266,5 @@ public final class MatsimTransportModel implements TransportModel {
                     dataContainer.getGeoData().getZones().values());
     }
     }
+
 }

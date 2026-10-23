@@ -54,7 +54,7 @@ public class RunFabilandAutofrei {
 
 
         // Create a temporary SILO config, wherein we overwrite the scenario name:
-        String prefix = "2026-10-12a__";
+        String prefix = "2026-10-23a__";
         String scenario = prefix + "autofrei-" + autofreiScenario + "__pt-" + ptScenario;
         Path baseSiloPropertiesFile = Path.of("useCases/fabiland/scenario/25r_ae.properties");
         Path tempSiloPropertiesFile = Files.createTempFile(baseSiloPropertiesFile.toAbsolutePath().getParent(), "tmp-", ".properties");
